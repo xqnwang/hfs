@@ -1,0 +1,44 @@
+
+# History files
+.Rhistory
+.Rapp.history
+
+# User-specific files
+.Ruserdata
+.DS_Store
+
+# Core latex/pdflatex auxiliary files
+*.xdv
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+*.spl
+
+# Build tool auxiliary files
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+# Bibliography auxiliary files (bibtex/biblatex/biber
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+
+# VSCode
+.vscode/
