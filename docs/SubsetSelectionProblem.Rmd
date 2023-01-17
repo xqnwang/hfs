@@ -1,0 +1,162 @@
+---
+title: "Subset Selection for Forecast Reconciliation"
+author: "Xiaoqian Wang"
+date: '2023-01-17'
+output: 
+  pdf_document:
+    number_sections: true
+linestretch: 1.5
+fontsize: 11pt
+mainfont: "Times New Roman"
+monofont: "Monaco"
+geometry: a4paper, margin=20mm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Hierarchical time series
+
+Create a hierarchical structure as complete as possible. Only nested structure is considered here. Then the summing matrix $\boldsymbol{S}$ is given and $\hat{\boldsymbol{y}}_h$ can be obtained easily by specifying forecasting models.
+
+![A 2-level hierarchical tree structure](figs/hs.png){width=20%}
+
+For example,
+$$
+\boldsymbol{S}=\left[\begin{array}{llllll}
+1 & 1 & 1 & 1 & 1 \\
+1 & 1 & 1 & 0 & 0 \\
+0 & 0 & 0 & 1 & 1 \\
+1 & 0 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 0 & 1 \\
+\end{array}\right], \text{ and } \hat{\boldsymbol{y}}_h = (10, 6, 5, 1, 4, 0, 2, 5)'.
+$$
+
+# Linear forecast reconciliation
+
+$$
+\tilde{\boldsymbol{y}}_h=\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h,
+$$
+where $\boldsymbol{G}_h$ maps the base forecasts $\hat{\boldsymbol{y}}_h$ into the bottom level, it combines all base forecasts to form bottom-level forecasts.
+
+* **Bottom-up approach:** $\boldsymbol{G}_{bu}=\left[\begin{array}{ll} \boldsymbol{O}_{n_b \times n_a} & \boldsymbol{I}_{n_b}\end{array}\right]$
+
+* **Top-down approach:** $\boldsymbol{G}_{td}=\left[\begin{array}{ll} \boldsymbol{p} & \boldsymbol{O}_{n_b \times (n-1)}\end{array}\right]$, where $\boldsymbol{p}$ is an $n_b$-dimensional vector including the set of disaggregation proportions.
+
+* **Middle-out approach:** $\boldsymbol{G}_{mo}=\left[\begin{array}{lll} \boldsymbol{O}_{n_b \times n_t} & \boldsymbol{P}_{n_b \times n_l} & \boldsymbol{O}_{n_b \times n_d}\end{array}\right]$, where $n_t + n_l + n_d = n$, $n_d \geq n_b$, $n_t \geq 1$, $\sum_{i=1}^{n_b}\sum_{j=1}^{n_l}p_{ij} = n_l$.
+
+* **Optimization approaches:** $\boldsymbol{G}_h = \left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1}$ is obtained by solving the optimization problem
+$$
+\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right), \text{ s.t. } \boldsymbol{G}_h \boldsymbol{S}=\boldsymbol{I}_{n_b}
+$$
+
+# Subset selection
+
+a. About $\boldsymbol{G}_h$. Our goal is to **zero out some columns** so that the corresponding base forecasts in $\hat{\boldsymbol{y}}_h$ are not used to form the reconciled bottom-level forecasts and, furthermore, all reconciled forecasts.
+
+b. About $\boldsymbol{S}$. It sums up the reconciled bottom-level forecasts to get the full set of reconciled forecasts. For the purpose of automatic selection and comparison, we don't need to zero out the corresponding rows.
+
+We have to add additional constraints on $\boldsymbol{G}_h$. This leads to a main question:
+
+*How to mathematically describe the constraint?*
+
+## Solution 1
+
+$$
+\tilde{\boldsymbol{y}}_h=\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h,
+$$
+where $\boldsymbol{B}_h$ is an $n \times n$ diagonal matrix with elements of the main diagonal being either zero or one.
+
+The optimization problem can be written as
+$$
+\begin{array}{r}
+\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h\right) + \lambda ||\boldsymbol{B}_h \boldsymbol{1}||_{1}, \\
+\text{ s.t. } \boldsymbol{G}_h \boldsymbol{B}_h \boldsymbol{S} =\boldsymbol{I}_{n_b} \\
+b_{ii}(1-b_{ii})=0 \text{ for } i =1,2,\ldots,n \\
+b_{ij}=0 \text{ for } i \neq j
+\end{array}
+$$
+The difficulty is that we wish to find the value of $\boldsymbol{G}_h$ and $\boldsymbol{B}_h$ simultaneously. 
+
+## Solution 2
+
+$$
+\tilde{\boldsymbol{y}}_h=\boldsymbol{S} \check{\boldsymbol{G}}_h \check{\boldsymbol{B}}_h \hat{\boldsymbol{y}}_h,
+$$
+where $\check{\boldsymbol{G}}_h$ is given using ols, wls, structural scaling, or shrinkage estimator of $\boldsymbol{W}_h$. $\check{\boldsymbol{B}}_h$ is an $n \times n$ diagonal matrix with elements of the main diagonal being either greater than or equal to zero. So $\check{\boldsymbol{B}}_h$ can adaptively changes given $\check{\boldsymbol{G}}_h$ and we can only estimate $\check{\boldsymbol{B}}_h$. But the reconciled forecasts are likely to no longer preserve the unbiasedness.
+
+The optimization problem can be written as
+$$
+\begin{array}{r}
+\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \check{\boldsymbol{G}}_h \check{\boldsymbol{B}}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \check{\boldsymbol{G}}_h \check{\boldsymbol{B}}_h \hat{\boldsymbol{y}}_h\right) + \lambda ||\check{\boldsymbol{B}}_h \boldsymbol{1}||_{1}, \\
+\text{ s.t. } b_{ii} \geq 0 \text{ for } i = 1,\ldots,n\\
+b_{ij}=0 \text{ for } i \neq j
+\end{array}
+$$
+
+### R implementation
+
+```{r example, message=FALSE, warning=FALSE}
+library(CVXR)
+
+y_hat <- c(10, 6, 5, 1, 4, 0, 2, 5)
+S <- rbind(matrix(c(rep(1, 5), c(rep(1, 3), rep(0, 2)), c(rep(0, 3), rep(1, 2))), 
+                  nrow = 3, byrow = TRUE),
+           diag(1, nrow = 5))
+
+W_inv <- solve(diag(c(5,3,2,1,1,1,1,1))) # structural scaling approximation
+G <- solve(t(S) %*% W_inv %*% S) %*% t(S) %*% W_inv
+
+b <- Variable(8)
+lambda <- 0.3
+
+e <- y_hat - S %*% G  %*% diag(b) %*% y_hat
+obj <- quad_form(e, W_inv) + lambda * norm1(b)
+prob <- Problem(Minimize(obj), constraints = list(b >= 0))
+res <- solve(prob)
+res$getValue(b)
+
+(B_check <- diag(round(as.vector(res$getValue(b)), digits = 3)))
+
+(y_tilde <- as.vector(S %*% G %*% B_check %*% y_hat))
+```
+
+### Other issues
+
+* $\boldsymbol{G}_h$ is the optimal solution of the minimization problem, while $\check{\boldsymbol{G}}_h \check{\boldsymbol{B}}_h$ is the suboptimal solution since we get $\check{\boldsymbol{B}}_h$ given $\check{\boldsymbol{G}}_h$.
+
+* If we do subset selection, it is important to take into account the forecasting performance of each time series. Thus, maybe we can replace the first term with the errors of the reconciled forecasts using expanding/rolling windows.
+
+## Solution 3
+
+$$
+\tilde{\boldsymbol{y}}_h=\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h
+$$
+The optimization problem can be written as
+$$
+\begin{array}{r}
+\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right), \\
+\text{ s.t. } \boldsymbol{G}_h \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
+||\boldsymbol{G}_{\cdot j}||_{1} < c \text{ for a sufficiently-small value } c > 0, j \in \{1,2,\ldots n\}
+\end{array}
+$$
+
+It is hard to define the constraint to shrink some columns of $\boldsymbol{G}$ to zero: (1) the number of zero-columns, and (2) If we add a penalty term $\lambda \sum_{j=1}^{n}||g_{\cdot j}||_{1}$, it is the same as $\lambda ||\operatorname{vec} \boldsymbol{G}||_1$ which aims to shrink the elements of $\boldsymbol{G}$ to zero ([Ben Taieb & Koo, 2019](https://dl.acm.org/doi/10.1145/3292500.3330976)).
+
+According to [Miyashiro & Takano (2015)](https://doi.org/10.1016/j.eswa.2014.07.056), we can rewrite the problem as
+$$
+\begin{array}{r}
+\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right) + 2\left(\sum_{j=1}^{n}b_j + 1\right) - n, \\
+\text{ s.t. } \boldsymbol{G}_h \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
+b_j = 0 \Rightarrow ||\boldsymbol{G}_{\cdot j}||_{1}=0 \quad (j=1,2, \ldots, n)\\
+b_j \in \{0,1\} \quad (j=1,2, \ldots, n)
+\end{array}
+$$
+
+
+
