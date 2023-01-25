@@ -65,7 +65,9 @@ We have to add additional constraints on $\boldsymbol{G}_h$. This leads to a mai
 
 *How to mathematically describe the constraint?*
 
-## Solution 1
+## Ideas based on MinT
+
+### Solution 1
 
 $$
 \tilde{\boldsymbol{y}}_h=\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h,
@@ -75,7 +77,7 @@ where $\boldsymbol{B}_h$ is an $n \times n$ diagonal matrix with elements of the
 The optimization problem can be written as
 $$
 \begin{array}{r}
-\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h\right) + \lambda ||\boldsymbol{B}_h \boldsymbol{1}||_{1}, \\
+\min_{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h\right) + \lambda ||\boldsymbol{B}_h \boldsymbol{1}||_{1}, \\
 \text{ s.t. } \boldsymbol{G}_h \boldsymbol{B}_h \boldsymbol{S} =\boldsymbol{I}_{n_b} \\
 b_{ii}(1-b_{ii})=0 \text{ for } i =1,2,\ldots,n \\
 b_{ij}=0 \text{ for } i \neq j
@@ -83,7 +85,7 @@ b_{ij}=0 \text{ for } i \neq j
 $$
 The difficulty is that we wish to find the value of $\boldsymbol{G}_h$ and $\boldsymbol{B}_h$ simultaneously. 
 
-## Solution 2
+### Solution 2
 
 $$
 \tilde{\boldsymbol{y}}_h=\boldsymbol{S} \check{\boldsymbol{G}}_h \check{\boldsymbol{B}}_h \hat{\boldsymbol{y}}_h,
@@ -99,9 +101,9 @@ b_{ij}=0 \text{ for } i \neq j
 \end{array}
 $$
 
-### R implementation
+**R implementation**
 
-```{r example, message=FALSE, warning=FALSE}
+```{r example1, message=FALSE, warning=FALSE}
 library(CVXR)
 
 y_hat <- c(10, 6, 5, 1, 4, 0, 2, 5)
@@ -126,37 +128,163 @@ res$getValue(b)
 (y_tilde <- as.vector(S %*% G %*% B_check %*% y_hat))
 ```
 
-### Other issues
-
-* $\boldsymbol{G}_h$ is the optimal solution of the minimization problem, while $\check{\boldsymbol{G}}_h \check{\boldsymbol{B}}_h$ is the suboptimal solution since we get $\check{\boldsymbol{B}}_h$ given $\check{\boldsymbol{G}}_h$.
-
-* If we do subset selection, it is important to take into account the forecasting performance of each time series. Thus, maybe we can replace the first term with the errors of the reconciled forecasts using expanding/rolling windows.
-
-## Solution 3
+### Solution 3
 
 $$
 \tilde{\boldsymbol{y}}_h=\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h
 $$
-The optimization problem can be written as
+
+According to [Miyashiro & Takano (2015)](https://doi.org/10.1016/j.eswa.2014.07.056), we can use mixed logical programming and rewrite the problem as
 $$
 \begin{array}{r}
-\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right), \\
-\text{ s.t. } \boldsymbol{G}_h \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
-||\boldsymbol{G}_{\cdot j}||_{1} < c \text{ for a sufficiently-small value } c > 0, j \in \{1,2,\ldots n\}
-\end{array}
-$$
-
-It is hard to define the constraint to shrink some columns of $\boldsymbol{G}$ to zero: (1) the number of zero-columns, and (2) If we add a penalty term $\lambda \sum_{j=1}^{n}||g_{\cdot j}||_{1}$, it is the same as $\lambda ||\operatorname{vec} \boldsymbol{G}||_1$ which aims to shrink the elements of $\boldsymbol{G}$ to zero ([Ben Taieb & Koo, 2019](https://dl.acm.org/doi/10.1145/3292500.3330976)).
-
-According to [Miyashiro & Takano (2015)](https://doi.org/10.1016/j.eswa.2014.07.056), we can rewrite the problem as
-$$
-\begin{array}{r}
-\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right) + 2\left(\sum_{j=1}^{n}b_j + 1\right) - n, \\
+\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right) + \lambda \sum_{j=1}^{n}b_j, \\
 \text{ s.t. } \boldsymbol{G}_h \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
 b_j = 0 \Rightarrow ||\boldsymbol{G}_{\cdot j}||_{1}=0 \quad (j=1,2, \ldots, n)\\
 b_j \in \{0,1\} \quad (j=1,2, \ldots, n)
 \end{array}
 $$
 
+## Minimization problem
+
+As already shown in [Ben Taieb & Koo (2019)](https://doi.org/10.1145/3292500.3330976),
+$$
+\begin{aligned}
+& \mathrm{E}\left[\left\|\boldsymbol{y}_{T+h}-\tilde{\boldsymbol{y}}_{h}\right\|_2^2 \mid \boldsymbol{I}_T\right] \\
+& =\left\|\boldsymbol{S G}\left(\mathrm{E}\left[\hat{\boldsymbol{y}}_{h} \mid \boldsymbol{I}_T\right]-\mathrm{E}\left[\boldsymbol{y}_{T+h} \mid \boldsymbol{I}_T\right]\right)+(\boldsymbol{S}-\boldsymbol{S G S}) \mathrm{E}\left[\boldsymbol{b}_{T+h} \mid \boldsymbol{I}_T\right]\right\|_2^2 \\
+& +\operatorname{Tr}\left(\operatorname{Var}\left[\boldsymbol{y}_{T+h}-\tilde{\boldsymbol{y}}_{h} \mid \boldsymbol{I}_T\right]\right).
+\end{aligned}
+$$
+
+Under **the unbiasedness conditions (both for base and reconciled forecasts)**, minimizing the above loss reduces to the following problem:
+$$
+\min _{\boldsymbol{G}_h \in \mathcal{G}} \operatorname{Tr}\left(\operatorname{Var}\left[\boldsymbol{y}_{T+h}-\tilde{\boldsymbol{y}}_{h} \mid \boldsymbol{I}_T\right]\right) \\
+\text { s.t. } \boldsymbol{S G_{h} S}=\boldsymbol{S}.
+$$
+
+The trace minimization problem can be reformulated in terms of a linear equality constrained least squares problem as follows:
+$$
+\min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right), \\
+\text{ s.t. } \boldsymbol{G}_h \boldsymbol{S} =\boldsymbol{I}_{n_b}
+$$
+
+* The MinT optimization problem must impose **two unbiasedness conditions**.
+
+* Such an assumption does not always hold in practice, especially when we aim to zero out some columns of $\boldsymbol{G}$.
+
+* The out-of-sample forecasting accuracy of base forecasts is an important basis for determining which columns are zeroed out.
+
+
+## Relaxation of the unbiasedness assumptions
+
+[Ben Taieb & Koo (2019)](https://doi.org/10.1145/3292500.3330976) consider the empirical risk minimization (ERM) problem:
+$$
+\begin{aligned}
+\hat{G}_{\text {ERMreg }}=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda\|\operatorname{vec}(\boldsymbol{G})\|_1\right\},\\
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda\|\operatorname{vec}(\boldsymbol{G})\|_1\right\}
+\end{aligned}
+$$
+The problem can be reduced to **a standard LASSO problem** with $\operatorname{vec}(\boldsymbol{Y})$ as dependent variable and $(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})$ as design matrix. it is a LASSO problem with $N \times n$ observations and $m \times N$ variables.
+
+## Ideas based on the assumption relaxation
+
+**For our project...**
+
+We aim to deal with the minimization problem
+$$
+\begin{aligned}
+\hat{G}=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\},\\
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
+s.t. & -M z_{j} \leq \sum_{i=0}^{m-1}|g_{j+in}| \leq M z_{j}  \text{ (Or quadratic form)}\\
+& z_{j} \in \{0, 1\} \quad \text{ for } j=1,\ldots,n
+\end{aligned}
+$$
+
+* Mixed integer programming (Do not have closed-form solution).
+
+* The results are greatly influenced by the values of $M$ and $\lambda$.
+
+* If we assume all elements of $\boldsymbol{G}$ are non-negative, it can be solved by CVXR package even if this is a non-convex problem.
+
+```{r example2, message=FALSE, warning=FALSE}
+library(CVXR)
+
+set.seed(123)
+S <- rbind(matrix(c(rep(1, 5), c(rep(1, 3), rep(0, 2)), c(rep(0, 3), rep(1, 2))), 
+                  nrow = 3, byrow = TRUE),
+           diag(1, nrow = 5))
+B <- matrix(c(rnorm(10, 1, 1), 
+              rnorm(10, 4, 1), 
+              rnorm(10, 0, 1),
+              rnorm(10, 2, 1),
+              rnorm(10, 5, 1)), 
+            byrow = FALSE, nrow = 10)
+Y <- B %*% t(S)
+Y_hat <- matrix(c(rnorm(10, 10, 1), 
+                  rnorm(10, 6, 1), 
+                  rnorm(10, 5, 1), 
+                  rnorm(10, 1, 1), 
+                  rnorm(10, 4, 1), 
+                  rnorm(10, 0, 1),
+                  rnorm(10, 2, 1),
+                  rnorm(10, 5, 1)), 
+                byrow = FALSE, nrow = 10)
+
+VecY <- as.vector(Y)
+D <- kronecker(S, Y_hat)
+
+b <- Variable(8, boolean = TRUE)
+#G_trs <- Variable(8, 5)
+GB_trs <- Variable(40)
+
+lambda <- 10
+M <- 100
+
+loss <- sum_squares(VecY - D %*% GB_trs)
+penalty <- lambda * norm1(b)
+constraints <- list(
+  GB_trs >= 0,
+  sum_entries(GB_trs[(0:4)*8 + 1]) >= - M*b[1],
+  sum_entries(GB_trs[(0:4)*8 + 2]) >= - M*b[2],
+  sum_entries(GB_trs[(0:4)*8 + 3]) >= - M*b[3],
+  sum_entries(GB_trs[(0:4)*8 + 4]) >= - M*b[4],
+  sum_entries(GB_trs[(0:4)*8 + 5]) >= - M*b[5],
+  sum_entries(GB_trs[(0:4)*8 + 6]) >= - M*b[6],
+  sum_entries(GB_trs[(0:4)*8 + 7]) >= - M*b[7],
+  sum_entries(GB_trs[(0:4)*8 + 8]) >= - M*b[8],
+  sum_entries(GB_trs[(0:4)*8 + 1]) <=  M*b[1],
+  sum_entries(GB_trs[(0:4)*8 + 2]) <=  M*b[2],
+  sum_entries(GB_trs[(0:4)*8 + 3]) <=  M*b[3],
+  sum_entries(GB_trs[(0:4)*8 + 4]) <=  M*b[4],
+  sum_entries(GB_trs[(0:4)*8 + 5]) <=  M*b[5],
+  sum_entries(GB_trs[(0:4)*8 + 6]) <=  M*b[6],
+  sum_entries(GB_trs[(0:4)*8 + 7]) <=  M*b[7],
+  sum_entries(GB_trs[(0:4)*8 + 8]) <=  M*b[8]
+)
+
+prob <- Problem(Minimize(loss + penalty), constraints)
+res <- solve(prob)
+(res$getValue(b))
+t(matrix(round(res$getValue(GB_trs), digits = 5), 8, 5, byrow = FALSE))
+```
+
+
+**Benchmark**
+
+$$
+\begin{aligned}
+\hat{G}=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{B}^{\prime} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda \| B \|_1 \right\},\\
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{B}^{\prime} \boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \| B \|_1 \right\} \\
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})(\boldsymbol{G} \otimes \boldsymbol{I}_n) \operatorname{vec}\left(\boldsymbol{B}^{\prime}\right)\right\|_2^2+\lambda \| B \|_1 \right\} \\
+= &\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})(\boldsymbol{I}_n \otimes \boldsymbol{B}^{\prime}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \| B \|_1 \right\}\\
+s.t. \quad  & b_{ii} \in \{0, 1\} \quad\text{ for } i=1,\ldots, n \\
+& b_{ij} = 0 \quad\text{ for } i\ne j
+\end{aligned}
+$$
+* Iterative process.
+
+## Temporal reconciliation
+
+
+## Non-negative constraints
 
 
