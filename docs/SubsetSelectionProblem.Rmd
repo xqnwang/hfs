@@ -1,8 +1,8 @@
 ---
 title: "Subset Selection for Forecast Reconciliation"
 author: "Xiaoqian Wang"
-date: '2023-01-17'
-output: 
+date: '2023-01-31'
+output:   
   pdf_document:
     number_sections: true
 linestretch: 1.5
@@ -37,6 +37,7 @@ $$
 \end{array}\right], \text{ and } \hat{\boldsymbol{y}}_h = (10, 6, 5, 1, 4, 0, 2, 5)'.
 $$
 
+
 # Linear forecast reconciliation
 
 $$
@@ -54,6 +55,7 @@ where $\boldsymbol{G}_h$ maps the base forecasts $\hat{\boldsymbol{y}}_h$ into t
 $$
 \min _{\boldsymbol{G}_h}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h\right), \text{ s.t. } \boldsymbol{G}_h \boldsymbol{S}=\boldsymbol{I}_{n_b}
 $$
+
 
 # Subset selection
 
@@ -173,7 +175,6 @@ $$
 
 * The out-of-sample forecasting accuracy of base forecasts is an important basis for determining which columns are zeroed out.
 
-
 ## Relaxation of the unbiasedness assumptions
 
 [Ben Taieb & Koo (2019)](https://doi.org/10.1145/3292500.3330976) consider the empirical risk minimization (ERM) problem:
@@ -187,9 +188,12 @@ The problem can be reduced to **a standard LASSO problem** with $\operatorname{v
 
 ## Ideas based on the assumption relaxation
 
+### Optimization problem
+
 **For our project...**
 
 We aim to deal with the minimization problem
+
 $$
 \begin{aligned}
 \hat{G}=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\},\\
@@ -267,8 +271,7 @@ res <- solve(prob)
 t(matrix(round(res$getValue(GB_trs), digits = 5), 8, 5, byrow = FALSE))
 ```
 
-
-**Benchmark**
+### Possible benchmark based on iterative process
 
 $$
 \begin{aligned}
@@ -280,10 +283,287 @@ s.t. \quad  & b_{ii} \in \{0, 1\} \quad\text{ for } i=1,\ldots, n \\
 & b_{ij} = 0 \quad\text{ for } i\ne j
 \end{aligned}
 $$
-* Iterative process.
+
+* Initial $\boldsymbol{G}^{0}$ $\Rightarrow$ $\boldsymbol{B}^{1}$ (Lasso problem) $\Rightarrow$ $\boldsymbol{G}^{1}$ (Analytical solution) $\Rightarrow$ $\ldots$
+
+## ROI introduction
+
+The R Optimization Infrastructure (ROI) package is an R **interface** which provides an extensible infrastructure to model linear, quadratic, conic and general nonlinear optimization problems in a consistent way.
+
+ROI provides the modeling capabilities and manages the **plugins**, the plugins add the solvers to ROI.
+
+**Optimization problem**
+
+\begin{equation}
+\label{eq:op}
+\begin{aligned}
+\text{ minimize } & f_0(x) \\
+\text { s.t. } & f_i(x) \leq b_i, \quad i=1, \ldots, m
+\end{aligned}
+\end{equation}
+
+1. Linear programming (LP)
+
+    All $f_i$ $(i= 0, \ldots ,m)$ in Equation \ref{eq:op} are linear.
+  
+    **All QPs are convex.**
+
+2. Quadratic programming (QP)
+
+    The objective function $f_0$ contains a quadratic part in addition to the linear term. QPs can be expressed in the following manner:
+$$
+\begin{aligned}
+\text { minimize } & \frac{1}{2} x^{\top} Q_0 x+a_0^{\top} x \\
+\text { s.t. } & A x \leq b
+\end{aligned}
+$$
+    **A QP is convex if and only if $Q_0$ is positive semidefinite.**
+  
+    A generalization of the QP is the quadratically constrained quadratic program (QCQP):
+$$
+\begin{aligned}
+\text { minimize } & \frac{1}{2} x^{\top} Q_0 x+a_0^{\top} x \\
+\text { s.t. } & \frac{1}{2} x^{\top} Q_i x+a_i^{\top} x \leq b_i, \quad i=1, \ldots, m
+\end{aligned}
+$$
+    **A QCQP is convex if and only if all $Q_i(i=0, \ldots, m)$ are positive semidefinite.**
+  
+3. Conic programming (CP)
+
+    **CP refers to a class of problems designed to model convex OPs.** A CP is commonly defined as:
+$$
+\begin{aligned}
+\text { minimize } & a_0^{\top} x \\
+\text { s.t. } & A x+s=b \\
+& s \in \mathcal{K}
+\end{aligned}
+$$
+    where $s$ is a slack variable that is added to an inequality constraint to transform it to an equality, and the set $\mathcal{K}$ is a nonempty closed convex cone.
+
+    Nonlinear objective functions are expressed in epigraph form:
+$$
+\begin{aligned}
+\text { minimize } & t \\
+\text { s.t. } & f_0(x) \leq t \\
+& f_i(x) \leq b_i
+\end{aligned}
+$$
+    * Zero cone and free cone
+    $$
+    \mathcal{K}_{\text {zero }}=\{0\}, \mathcal{K}_{\text {free }}=\mathbb{R}=\mathcal{K}_{\text {zero }}^*.
+    $$
+    E.g., $s_i \in \mathcal{K}_{\text {zero }} \Longleftrightarrow s_i=b_i-a_i^{\top} x=0 \Longleftrightarrow a_i^{\top} x=b_i$.
+
+    * Linear cone (non-negative orthant)
+    $$
+    \mathcal{K}_{\operatorname{lin}}=\{x \in \mathbb{R} \mid x \geq 0\} .
+    $$
+    E.g., $s_i \in \mathcal{K}_{\text {lin }} \Longleftrightarrow s_i=b_i-a_i^{\top} x \geq 0 \Longleftrightarrow a_i^{\top} x \leq b_i$.
+
+    * Second-order cone
+    $$
+    \mathcal{K}_{\mathrm{soc}}^n=\left\{(t, x) \in \mathbb{R}^n \mid x \in \mathbb{R}^{n-1}, t \in \mathbb{R},\|x\|_2 \leq t\right\} .
+    $$
+    E.g., $s_i \in \mathcal{K}_{\mathrm{soc}}^n \Longleftrightarrow s_i=b_i-a_i^{\top} x \geq 0 \Longleftrightarrow a_i^{\top} x \leq b_i$.
+    
+    * ...
+
+4. Nonlinear programming (NLP)
+    
+    At least one $f_i$, $i= 0, \ldots ,m$ in Equation \ref{eq:op} is not linear.
+    
+    NLPs are not required to be convex, which makes it in general hard to obtain a reliable global solution.
+
+5. Mixed integer programming (MIP)
+    
+    Additional constraints: some of the objective variables can only take integer values.
+
+![](figs/ROIplug-ins.png){width=90%}
+
+## Optimization problem solving
+
+### Rewrite the optimization problem
+
+Original problem:
+
+\begin{equation}
+\label{op_goal}
+\begin{aligned}
+&\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\},\\
+=&\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
+s.t. & -M z_{j} \leq \sum_{i=0}^{m-1}|g_{j+in}| \leq M z_{j}  \text{ (Or quadratic form)}\\
+& z_{j} \in \{0, 1\} \quad \text{ for } j=1,\ldots,n
+\end{aligned}
+\end{equation}
+
+Rewrite the problem:
+
+\begin{equation}
+\label{op_rewrite}
+\begin{aligned}
+&\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda_0 \sum_{j=1}^{n}z_{j} \right\} \\
+=&\underset{\boldsymbol{g}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{y}-\boldsymbol{X} \boldsymbol{g}\right\|_2^2+\lambda_0 \boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
+=&\underset{\boldsymbol{g}, \boldsymbol{\gamma}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\frac{1}{2}\boldsymbol{\gamma}^{\prime}\boldsymbol{\gamma}+\lambda \boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
+\text{ s.t. } & \boldsymbol{y}-\boldsymbol{X} \boldsymbol{g} = \boldsymbol{\gamma} \\
+& \sum_{i=0}^{m-1}\left(g_{j+in}\right)^{2} \leq M z_{j} \quad \text{ for } j=1,\ldots,n \\
+& \boldsymbol{z} \in \{0, 1\}^{n}
+\end{aligned}
+\end{equation}
+
+### ROI code logic
+
+QP with LC and QC:
+$$
+\begin{aligned}
+\underset{\boldsymbol{\beta} = \left(\boldsymbol{g}_{mn}^{\prime}, \boldsymbol{\gamma}_{Nn}^{\prime}, \boldsymbol{z}_{n}^{\prime}\right)^{\prime}}{\operatorname{argmin}} & \frac{1}{2} \boldsymbol{\beta}^{\prime} \boldsymbol{Q}_0 \boldsymbol{\beta}+\boldsymbol{a}_0^{\prime} \boldsymbol{\beta} \\
+\text { s.t. } & \boldsymbol{A}\boldsymbol{\beta} = \boldsymbol{y} \\
+& \frac{1}{2} \boldsymbol{\beta}^{\prime} \boldsymbol{Q}_j \boldsymbol{\beta}+\boldsymbol{a}_j^{\prime} \boldsymbol{\beta} \leq b_j, \quad j=1, \ldots, n \\
+& \boldsymbol{z} \in \{0, 1\}^{n}
+\end{aligned}
+$$
+
+* $\boldsymbol{Q}_{0} = \begin{pmatrix}
+\boldsymbol{O}_{mn} &                     &                    \\
+                    & \boldsymbol{1}_{Nn} &                    \\
+                    &                     & \boldsymbol{O}_{n} \\
+\end{pmatrix}$
+and
+$\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda\boldsymbol{1}_{n}^{\prime})^{\prime}$
+
+* $\boldsymbol{A} = (\boldsymbol{X}_{Nn \times mn} | \boldsymbol{1}_{Nn} | \boldsymbol{O}_{Nn \times n})$
+
+* For $j = 1, \ldots, n$, 
+    + $\boldsymbol{Q}_{j} = \begin{pmatrix}
+2\boldsymbol{D}_{mn} &                      \\
+                    & \boldsymbol{O}_{Nn+n} \\
+\end{pmatrix}$ with $d_{j+i \times n, j+i \times n} = 1$ $(i = 0, \ldots, m-1)$ and other elements are zeros. 
+    + $\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, -M\boldsymbol{1}_{n}^{\prime})^{\prime}$
+
+### ROI implementation
+
+```{r roi, message=FALSE, warning=FALSE}
+Sys.setenv(ROI_LOAD_PLUGINS = "FALSE")
+library(ROI)
+library(slam)
+library(magrittr)
+library(ROI.plugin.neos)
+library(ROI.plugin.gurobi)
+
+dbind <- function(...) {
+  ## sparse matrices construction
+  .dbind <- function(x, y) {
+    A <- simple_triplet_zero_matrix(NROW(x), NCOL(y))
+    B <- simple_triplet_zero_matrix(NROW(y), NCOL(x))
+    rbind(cbind(x, A), cbind(B, y))
+  }
+  Reduce(.dbind, list(...))
+}
+
+# Example data
+set.seed(123)
+S <- rbind(matrix(c(rep(1, 5), c(rep(1, 3), rep(0, 2)), c(rep(0, 3), rep(1, 2))), 
+                  nrow = 3, byrow = TRUE),
+           diag(1, nrow = 5))
+B <- matrix(c(rnorm(10, 1, 1), 
+              rnorm(10, 4, 1), 
+              rnorm(10, 0, 1),
+              rnorm(10, 2, 1),
+              rnorm(10, 5, 1)), 
+            byrow = FALSE, nrow = 10)
+Y <- B %*% t(S)
+Y_hat <- matrix(c(rnorm(10, 10, 1), 
+                  rnorm(10, 6, 1), 
+                  rnorm(10, 5, 1), 
+                  rnorm(10, 1, 1), 
+                  rnorm(10, 4, 1), 
+                  rnorm(10, 0, 1),
+                  rnorm(10, 2, 1),
+                  rnorm(10, 5, 1)), 
+                byrow = FALSE, nrow = 10)
+VecY <- as.vector(Y)
+D <- kronecker(S, Y_hat)
+
+# Quadratic optimization problem
+gp_op <- function(x, y, lambda, n, m, M) {
+  ## x: kronecker(S, Y_hat)
+  ## y: vec(Y)
+  ## lambda: Lagrange multiplier
+  ## n: number of all series
+  ## m: number of bottom-level series
+  ## M: big-M
+  stzm <- simple_triplet_zero_matrix
+  stdm <- simple_triplet_diag_matrix
+  
+  Nn <- NROW(x); mn <- NCOL(x)
+  Q0 <- dbind(stzm(mn), stdm(1, Nn), stzm(n))
+  a0 <- c(g = double(mn), ga = double(Nn), z = lambda * rep(1, n))
+  op <- OP(objective = Q_objective(Q = Q0, L = a0))
+  
+  ## y - X %*% g = gamma  <=>  X %*% g + gamma = y
+  A1 <- cbind(x, stdm(1, Nn), stzm(Nn, n))
+  LC1 <- L_constraint(A1, eq(Nn), y)
+  ## \sum_{i=0}^{m-1} (g_{j+in})^2 - M z_j <= 0 for j = 1,...,n
+  QNULL <- diag(0, mn + Nn + n)
+  LNULL <- c(double(mn), double(Nn), double(n))
+  Q <- lapply(1:n, function(j){
+    i <- 0:(m - 1)
+    Q_j <- QNULL
+    diag(Q_j)[j + i*n] <- 2
+    Q_j
+  })
+  L <- sapply(1:n, function(j){
+    L_j <- LNULL
+    L_j[mn + Nn + j] <- -M
+    L_j
+  }) %>% t()
+  QC1 <- Q_constraint(Q = Q,
+                      L = L,
+                      dir = rep("<=", n),
+                      rhs = rep(0, n))
+  
+  constraints(op) <- rbind(LC1, QC1)
+  bounds(op) <- V_bound(li = 1:(mn + Nn), lb = rep.int(-Inf, mn + Nn), nobj = mn + Nn + n)
+  types(op) <- c(rep("C", mn + Nn), rep("B", n))
+  op
+}
+op <- gp_op(x = D, y = VecY, lambda = 3, n = NROW(S), m = NCOL(S), M = 100)
+
+# Optimal solution - solver = "neos"
+job_neos <- ROI_solve(op, "neos", email = "xiaoqian.wang@monash.edu")
+ ## Error in raise_licence_error(job$password) : 
+ ##   Error: A valid email address is required for all NEOS jobs In some cases the solver licence does not permit connections via XML-RPC. Therefore these solvers can not be accessed by 'ROI.plugin.neos' directly. An alternative option is to write the problem out via write.op(model, 'my_op.gms', 'gams') and commit it via the web-interface. Or just use a alternative solver.
+## str(job_neos)
+slt_neos <- solution(job_neos)
+(z <- tail(slt_neos, NROW(S)))
+(G_neos <- matrix(slt_neos[1:(NCOL(S)*NROW(S))], 
+                  nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
+  t() %>% 
+  round(digits = 3))
+
+# Optimal solution - solver = "gurobi"
+job_gurobi <- ROI_solve(op, "gurobi")
+ ## Register a Gurobi account as an academic user, request for a license, and download the current version of Gurobi optimizer
+## str(job_gurobi)
+slt_gurobi <- solution(job_gurobi)
+(z <- tail(slt_gurobi, NROW(S)))
+(G_gurobi <- matrix(slt_gurobi[1:(NCOL(S)*NROW(S))], 
+                    nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
+    t() %>% 
+    round(digits = 3))
+```
+
+## Hyperparameters
+
+## Simulations
+
+* Simulation setups
+
+
+# Other issues
 
 ## Temporal reconciliation
 
+* Remove all nodes in a level or several levels.
 
 ## Non-negative constraints
 
