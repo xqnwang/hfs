@@ -40,7 +40,7 @@ VecY <- as.vector(Y)
 D <- kronecker(S, Y_hat)
 
 # Quadratic optimization problem
-gp_op <- function(x, y, lambda, n, m, M) {
+gp_op <- function(x, y, n, m, lambda, M) {
   ## x: kronecker(S, Y_hat)
   ## y: vec(Y)
   ## lambda: Lagrange multiplier
@@ -82,7 +82,7 @@ gp_op <- function(x, y, lambda, n, m, M) {
   types(op) <- c(rep("C", mn + Nn), rep("B", n))
   op
 }
-op <- gp_op(x = D, y = VecY, lambda = 3, n = NROW(S), m = NCOL(S), M = 100)
+op <- gp_op(x = D, y = VecY, n = NROW(S), m = NCOL(S), lambda = 3, M = 100)
 
 # Optimal solution - solver = "neos"
 job_neos <- ROI_solve(op, "neos", email = "xiaoqian.wang@monash.edu")

@@ -306,7 +306,7 @@ ROI provides the modeling capabilities and manages the **plugins**, the plugins 
 
     All $f_i$ $(i= 0, \ldots ,m)$ in Equation \ref{eq:op} are linear.
   
-    **All QPs are convex.**
+    **All LPs are convex.**
 
 2. Quadratic programming (QP)
 
@@ -428,16 +428,16 @@ $$
                     &                     & \boldsymbol{O}_{n} \\
 \end{pmatrix}$
 and
-$\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda\boldsymbol{1}_{n}^{\prime})^{\prime}$
+$\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda\boldsymbol{1}_{n}^{\prime})^{\prime}$.
 
-* $\boldsymbol{A} = (\boldsymbol{X}_{Nn \times mn} | \boldsymbol{1}_{Nn} | \boldsymbol{O}_{Nn \times n})$
+* $\boldsymbol{A} = (\boldsymbol{X}_{Nn \times mn} | \boldsymbol{1}_{Nn} | \boldsymbol{O}_{Nn \times n})$.
 
 * For $j = 1, \ldots, n$, 
-    + $\boldsymbol{Q}_{j} = \begin{pmatrix}
+    * $\boldsymbol{Q}_{j} = \begin{pmatrix}
 2\boldsymbol{D}_{mn} &                      \\
                     & \boldsymbol{O}_{Nn+n} \\
 \end{pmatrix}$ with $d_{j+i \times n, j+i \times n} = 1$ $(i = 0, \ldots, m-1)$ and other elements are zeros. 
-    + $\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, -M\boldsymbol{1}_{n}^{\prime})^{\prime}$
+    * $\boldsymbol{a}_{j} = (\boldsymbol{0}_{mn+Nn}^{\prime}, -M\boldsymbol{d}_{n}^{\prime})^{\prime}$ with $d_{j} = 1$.
 
 ### ROI implementation
 
@@ -530,8 +530,6 @@ op <- gp_op(x = D, y = VecY, lambda = 3, n = NROW(S), m = NCOL(S), M = 100)
 
 # Optimal solution - solver = "neos"
 job_neos <- ROI_solve(op, "neos", email = "xiaoqian.wang@monash.edu")
- ## Error in raise_licence_error(job$password) : 
- ##   Error: A valid email address is required for all NEOS jobs In some cases the solver licence does not permit connections via XML-RPC. Therefore these solvers can not be accessed by 'ROI.plugin.neos' directly. An alternative option is to write the problem out via write.op(model, 'my_op.gms', 'gams') and commit it via the web-interface. Or just use a alternative solver.
 ## str(job_neos)
 slt_neos <- solution(job_neos)
 (z <- tail(slt_neos, NROW(S)))
@@ -553,6 +551,12 @@ slt_gurobi <- solution(job_gurobi)
 ```
 
 ## Hyperparameters
+
+### $\lambda$
+
+We can use cross-validation to select the best value of $\lambda$, as implemented in the glmnet package in R.
+
+The glmnet package computes the solutions for **a decreasing sequence of values for $\lambda$**, starting at the smallest value $\lambda_{\max }$ for which the entire vector $\hat{\beta}=0$. And then it selects a minimum value $\lambda_{\min }=\epsilon \lambda_{\max }$, and construct a sequence of $K$ values of $\lambda$ decreasing from $\lambda_{\max }$ to $\lambda_{\min }$ on the log scale. Typical values are $\epsilon=0.001$ and $K=100$.
 
 ## Simulations
 
