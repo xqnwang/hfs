@@ -52,7 +52,7 @@ gp_op <- function(x, y, n, m, lambda, M) {
   
   Nn <- NROW(x); mn <- NCOL(x)
   Q0 <- dbind(stzm(mn), stdm(1, Nn), stzm(n))
-  a0 <- c(g = double(mn), ga = double(Nn), z = lambda * rep(1, n))
+  a0 <- c(g = double(mn), ga = double(Nn), z = 0.5 * lambda * Nn * rep(1, n))
   op <- OP(objective = Q_objective(Q = Q0, L = a0))
   
   ## y - X %*% g = gamma  <=>  X %*% g + gamma = y
@@ -82,26 +82,26 @@ gp_op <- function(x, y, n, m, lambda, M) {
   types(op) <- c(rep("C", mn + Nn), rep("B", n))
   op
 }
-op <- gp_op(x = D, y = VecY, n = NROW(S), m = NCOL(S), lambda = 3, M = 100)
+op <- gp_op(x = D, y = VecY, n = NROW(S), m = NCOL(S), lambda = 0.1, M = 100)
 
 # Optimal solution - solver = "neos"
 job_neos <- ROI_solve(op, "neos", email = "xiaoqian.wang@monash.edu")
- ## Error in raise_licence_error(job$password) : 
- ##   Error: A valid email address is required for all NEOS jobs In some cases the solver licence does not permit connections via XML-RPC. Therefore these solvers can not be accessed by 'ROI.plugin.neos' directly. An alternative option is to write the problem out via write.op(model, 'my_op.gms', 'gams') and commit it via the web-interface. Or just use a alternative solver.
-str(job_neos)
+## str(job_neos)
 slt_neos <- solution(job_neos)
 (z <- tail(slt_neos, NROW(S)))
-(G_neos <- matrix(slt_neos[1:(NCOL(S)*NROW(S))], nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
-  t() %>% 
-  round(digits = 3))
+(G_neos <- matrix(slt_neos[1:(NCOL(S)*NROW(S))], 
+                  nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
+    t() %>% 
+    round(digits = 3))
 
 # Optimal solution - solver = "gurobi"
 job_gurobi <- ROI_solve(op, "gurobi")
- ## Register a Gurobi account as an academic user, request for a license, and download the current version of Gurobi optimizer
-str(job_gurobi)
+## Register a Gurobi account as an academic user, request for a license, and download the current version of Gurobi optimizer
+## str(job_gurobi)
 slt_gurobi <- solution(job_gurobi)
 (z <- tail(slt_gurobi, NROW(S)))
-(G_gurobi <- matrix(slt_gurobi[1:(NCOL(S)*NROW(S))], nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
+(G_gurobi <- matrix(slt_gurobi[1:(NCOL(S)*NROW(S))], 
+                    nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
     t() %>% 
     round(digits = 3))
 

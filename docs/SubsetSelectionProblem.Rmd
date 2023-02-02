@@ -181,7 +181,7 @@ $$
 $$
 \begin{aligned}
 \hat{G}_{\text {ERMreg }}=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda\|\operatorname{vec}(\boldsymbol{G})\|_1\right\},\\
-=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda\|\operatorname{vec}(\boldsymbol{G})\|_1\right\}
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 / N n+\lambda\|\operatorname{vec}(\boldsymbol{G})\|_1\right\}
 \end{aligned}
 $$
 The problem can be reduced to **a standard LASSO problem** with $\operatorname{vec}(\boldsymbol{Y})$ as dependent variable and $(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})$ as design matrix. it is a LASSO problem with $N \times n$ observations and $m \times N$ variables.
@@ -197,7 +197,7 @@ We aim to deal with the minimization problem
 $$
 \begin{aligned}
 \hat{G}=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\},\\
-=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
 s.t. & -M z_{j} \leq \sum_{i=0}^{m-1}|g_{j+in}| \leq M z_{j}  \text{ (Or quadratic form)}\\
 & z_{j} \in \{0, 1\} \quad \text{ for } j=1,\ldots,n
 \end{aligned}
@@ -240,10 +240,10 @@ b <- Variable(8, boolean = TRUE)
 #G_trs <- Variable(8, 5)
 GB_trs <- Variable(40)
 
-lambda <- 10
+lambda <- 0.1
 M <- 100
 
-loss <- sum_squares(VecY - D %*% GB_trs)
+loss <- sum_squares(VecY - D %*% GB_trs)/(10*8)
 penalty <- lambda * norm1(b)
 constraints <- list(
   GB_trs >= 0,
@@ -276,9 +276,9 @@ t(matrix(round(res$getValue(GB_trs), digits = 5), 8, 5, byrow = FALSE))
 $$
 \begin{aligned}
 \hat{G}=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{B}^{\prime} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda \| B \|_1 \right\},\\
-=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{B}^{\prime} \boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \| B \|_1 \right\} \\
-=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})(\boldsymbol{G} \otimes \boldsymbol{I}_n) \operatorname{vec}\left(\boldsymbol{B}^{\prime}\right)\right\|_2^2+\lambda \| B \|_1 \right\} \\
-= &\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})(\boldsymbol{I}_n \otimes \boldsymbol{B}^{\prime}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \| B \|_1 \right\}\\
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{B}^{\prime} \boldsymbol{G}^{\prime}\right)\right\|_2^2 / N n+\lambda \| B \|_1 \right\} \\
+=&\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})(\boldsymbol{G} \otimes \boldsymbol{I}_n) \operatorname{vec}\left(\boldsymbol{B}^{\prime}\right)\right\|_2^2 / N n+\lambda \| B \|_1 \right\} \\
+= &\underset{\boldsymbol{G} \in \mathcal{G}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})(\boldsymbol{I}_n \otimes \boldsymbol{B}^{\prime}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 / N n+\lambda \| B \|_1 \right\}\\
 s.t. \quad  & b_{ii} \in \{0, 1\} \quad\text{ for } i=1,\ldots, n \\
 & b_{ij} = 0 \quad\text{ for } i\ne j
 \end{aligned}
@@ -390,7 +390,7 @@ Original problem:
 \label{op_goal}
 \begin{aligned}
 &\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\},\\
-=&\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
+=&\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
 s.t. & -M z_{j} \leq \sum_{i=0}^{m-1}|g_{j+in}| \leq M z_{j}  \text{ (Or quadratic form)}\\
 & z_{j} \in \{0, 1\} \quad \text{ for } j=1,\ldots,n
 \end{aligned}
@@ -401,9 +401,9 @@ Rewrite the problem:
 \begin{equation}
 \label{op_rewrite}
 \begin{aligned}
-&\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2+\lambda_0 \sum_{j=1}^{n}z_{j} \right\} \\
-=&\underset{\boldsymbol{g}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{y}-\boldsymbol{X} \boldsymbol{g}\right\|_2^2+\lambda_0 \boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
-=&\underset{\boldsymbol{g}, \boldsymbol{\gamma}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\frac{1}{2}\boldsymbol{\gamma}^{\prime}\boldsymbol{\gamma}+\lambda \boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
+&\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
+=&\underset{\boldsymbol{g}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{y}-\boldsymbol{X} \boldsymbol{g}\right\|_2^2 / N n+\lambda \boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
+=&\underset{\boldsymbol{g}, \boldsymbol{\gamma}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\frac{1}{2}\boldsymbol{\gamma}^{\prime}\boldsymbol{\gamma}+\frac{\lambda N n}{2}\boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
 \text{ s.t. } & \boldsymbol{y}-\boldsymbol{X} \boldsymbol{g} = \boldsymbol{\gamma} \\
 & \sum_{i=0}^{m-1}\left(g_{j+in}\right)^{2} \leq M z_{j} \quad \text{ for } j=1,\ldots,n \\
 & \boldsymbol{z} \in \{0, 1\}^{n}
@@ -428,7 +428,7 @@ $$
                     &                     & \boldsymbol{O}_{n} \\
 \end{pmatrix}$
 and
-$\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda\boldsymbol{1}_{n}^{\prime})^{\prime}$.
+$\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda N n \boldsymbol{1}_{n}^{\prime})^{\prime}$.
 
 * $\boldsymbol{A} = (\boldsymbol{X}_{Nn \times mn} | \boldsymbol{1}_{Nn} | \boldsymbol{O}_{Nn \times n})$.
 
@@ -484,7 +484,7 @@ VecY <- as.vector(Y)
 D <- kronecker(S, Y_hat)
 
 # Quadratic optimization problem
-gp_op <- function(x, y, lambda, n, m, M) {
+gp_op <- function(x, y, n, m, lambda, M) {
   ## x: kronecker(S, Y_hat)
   ## y: vec(Y)
   ## lambda: Lagrange multiplier
@@ -496,7 +496,7 @@ gp_op <- function(x, y, lambda, n, m, M) {
   
   Nn <- NROW(x); mn <- NCOL(x)
   Q0 <- dbind(stzm(mn), stdm(1, Nn), stzm(n))
-  a0 <- c(g = double(mn), ga = double(Nn), z = lambda * rep(1, n))
+  a0 <- c(g = double(mn), ga = double(Nn), z = 0.5 * lambda * Nn * rep(1, n))
   op <- OP(objective = Q_objective(Q = Q0, L = a0))
   
   ## y - X %*% g = gamma  <=>  X %*% g + gamma = y
@@ -526,7 +526,7 @@ gp_op <- function(x, y, lambda, n, m, M) {
   types(op) <- c(rep("C", mn + Nn), rep("B", n))
   op
 }
-op <- gp_op(x = D, y = VecY, lambda = 3, n = NROW(S), m = NCOL(S), M = 100)
+op <- gp_op(x = D, y = VecY, n = NROW(S), m = NCOL(S), lambda = 0.1, M = 100)
 
 # Optimal solution - solver = "neos"
 job_neos <- ROI_solve(op, "neos", email = "xiaoqian.wang@monash.edu")
