@@ -403,7 +403,7 @@ Rewrite the problem:
 \begin{aligned}
 &\underset{\boldsymbol{G}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 / N n+\lambda \sum_{j=1}^{n}z_{j} \right\} \\
 =&\underset{\boldsymbol{g}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\left\|\boldsymbol{y}-\boldsymbol{X} \boldsymbol{g}\right\|_2^2 / N n+\lambda \boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
-=&\underset{\boldsymbol{g}, \boldsymbol{\gamma}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\frac{1}{2}\boldsymbol{\gamma}^{\prime}\boldsymbol{\gamma}+\frac{\lambda N n}{2}\boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
+=&\underset{\boldsymbol{g}, \boldsymbol{\gamma}, \boldsymbol{z}}{\operatorname{argmin}}\left\{\frac{1}{Nn}\boldsymbol{\gamma}^{\prime}\boldsymbol{\gamma}+\lambda \boldsymbol{1}^{\prime}\boldsymbol{z} \right\} \\
 \text{ s.t. } & \boldsymbol{y}-\boldsymbol{X} \boldsymbol{g} = \boldsymbol{\gamma} \\
 & \sum_{i=0}^{m-1}\left(g_{j+in}\right)^{2} \leq M z_{j} \quad \text{ for } j=1,\ldots,n \\
 & \boldsymbol{z} \in \{0, 1\}^{n}
@@ -423,12 +423,12 @@ $$
 $$
 
 * $\boldsymbol{Q}_{0} = \begin{pmatrix}
-\boldsymbol{O}_{mn} &                     &                    \\
-                    & \boldsymbol{1}_{Nn} &                    \\
-                    &                     & \boldsymbol{O}_{n} \\
+\boldsymbol{O}_{mn} &                                 &                    \\
+                    & \frac{2}{Nn}\boldsymbol{1}_{Nn} &                    \\
+                    &                                 & \boldsymbol{O}_{n}  \\
 \end{pmatrix}$
 and
-$\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda N n \boldsymbol{1}_{n}^{\prime})^{\prime}$.
+$\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda \boldsymbol{1}_{n}^{\prime})^{\prime}$.
 
 * $\boldsymbol{A} = (\boldsymbol{X}_{Nn \times mn} | \boldsymbol{1}_{Nn} | \boldsymbol{O}_{Nn \times n})$.
 
@@ -437,7 +437,7 @@ $\boldsymbol{a}_0 = (\boldsymbol{0}_{mn+Nn}^{\prime}, \lambda N n \boldsymbol{1}
 2\boldsymbol{D}_{mn} &                      \\
                     & \boldsymbol{O}_{Nn+n} \\
 \end{pmatrix}$ with $d_{j+i \times n, j+i \times n} = 1$ $(i = 0, \ldots, m-1)$ and other elements are zeros. 
-    * $\boldsymbol{a}_{j} = (\boldsymbol{0}_{mn+Nn}^{\prime}, -M\boldsymbol{d}_{n}^{\prime})^{\prime}$ with $d_{j} = 1$.
+    * $\boldsymbol{a}_{j} = (\boldsymbol{0}_{mn+Nn}^{\prime}, -M\boldsymbol{d}_{n}^{\prime})^{\prime}$ with $d_{j} = 1$ and other elements are zeros.
 
 ### ROI implementation
 
@@ -495,8 +495,8 @@ gp_op <- function(x, y, n, m, lambda, M) {
   stdm <- simple_triplet_diag_matrix
   
   Nn <- NROW(x); mn <- NCOL(x)
-  Q0 <- dbind(stzm(mn), stdm(1, Nn), stzm(n))
-  a0 <- c(g = double(mn), ga = double(Nn), z = 0.5 * lambda * Nn * rep(1, n))
+  Q0 <- dbind(stzm(mn), stdm(2/Nn, Nn), stzm(n))
+  a0 <- c(g = double(mn), ga = double(Nn), z = lambda * rep(1, n))
   op <- OP(objective = Q_objective(Q = Q0, L = a0))
   
   ## y - X %*% g = gamma  <=>  X %*% g + gamma = y
