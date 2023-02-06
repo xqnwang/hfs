@@ -51,8 +51,8 @@ gp_op <- function(x, y, n, m, lambda, M) {
   stdm <- simple_triplet_diag_matrix
   
   Nn <- NROW(x); mn <- NCOL(x)
-  Q0 <- dbind(stzm(mn), stdm(1, Nn), stzm(n))
-  a0 <- c(g = double(mn), ga = double(Nn), z = 0.5 * lambda * Nn * rep(1, n))
+  Q0 <- dbind(stzm(mn), stdm(2/Nn, Nn), stzm(n))
+  a0 <- c(g = double(mn), ga = double(Nn), z = lambda * rep(1, n))
   op <- OP(objective = Q_objective(Q = Q0, L = a0))
   
   ## y - X %*% g = gamma  <=>  X %*% g + gamma = y
@@ -104,4 +104,3 @@ slt_gurobi <- solution(job_gurobi)
                     nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
     t() %>% 
     round(digits = 3))
-
