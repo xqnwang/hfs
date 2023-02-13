@@ -69,7 +69,7 @@ Not applicable to our OP.
 - Step 3: Makefile might have
 
 ```
-CLNFLAGS = -l{CPLEXLIB}/static_pic -m64 -lm -lpthread -framework CoreFoundation -framework IOKit
+CLNFLAGS = -l{CPLEXLIB} -m64 -lm -lpthread -framework CoreFoundation -framework IOKit
 CFLAGS = $(COPT)  -I${CPLEXINCDIR}
 ```
 
@@ -95,6 +95,46 @@ PKG_LIBS='-L/Applications/CPLEX_Studio_Community2211/cplex/lib/arm64_osx/static_
 Then, the Rcplex is installed!
 
 - Step 5: In RStudio, install cplex plugin using `install.packages("ROI.plugin.cplex")`.
+
+
+
+# MiniZinc
+
+## MiniZinc 
+
+### Introduction
+
+- MiniZinc --> Compiler
+- FlatZinc --> A solver input language that is understood by a wide range of solvers
+- MiniZin IDE --> Intergrated Development Enviroment
+- Solvers --> Gecode, Gurobi, CPLEX ...
+- Bundled binary packages --> They contain the compiler and IDE, as well as the following solvers: Gecode, Chuffed, COIN-OR CBC, and a interfaces to the Gurobi and CPLEX solvers (the Gurobi and CPLEX libraries are not included).
+
+### Installation
+
+- Download and install **bundled binary packages**, available from http://www.minizinc.org/software.html.
+
+- In order to use the MiniZinc tools from a terminal, add the path to the MiniZinc installation to the PATH environment variable. For macOS:
+
+  ```
+  $ export PATH=/Applications/MiniZincIDE.app/Contents/Resources:$PATH
+  ```
+
+- Configuring existing solvers. For example, [Section 3.2.5.2 of the MiniZinc Handbook](https://www.minizinc.org/doc-2.5.5/en/minizinc_ide.html#sec-ide-add-solvers) shows the configuratio for Gurobi and CPLEX solvers.
+
+### Problems
+
+1. **Unstable configuration**. Errors often occur: 
+
+   ```
+   Config exception: no solver with tag \<solver-name\> found
+   ```
+
+2. Some solver interfaces to MiniZinc currently don't support **quadratic constraints**. We can multiply decision variables by constants, and can add these terms together, but we cannot multiply two decision variables. Gurobi supports the variables multiplication and we need to define `QuadrFloat=true` to specify that the solver supports quadratic constraints. But:
+
+3. OP takes too much time. `float` and `int` variables should have as tight domains as possible to improve solving. Some solvers don't like **unbounded variables** at all and might hang or give an error if one is encountered.
+
+4. Matrix multiplication may not be supported. No examples for MIP, quadratic constraints, objective functions or constraints formed with matrix.
 
 
 
