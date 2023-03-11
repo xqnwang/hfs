@@ -20,25 +20,26 @@ dbind <- function(...) {
 # Example data
 #%%%%%%%%%%%%%%%%%%%%%%%%%%
 set.seed(123)
+N <- 100
 S <- rbind(matrix(c(rep(1, 5), c(rep(1, 3), rep(0, 2)), c(rep(0, 3), rep(1, 2))), 
                   nrow = 3, byrow = TRUE),
            diag(1, nrow = 5))
-B <- matrix(c(rnorm(10, 1, 1), 
-              rnorm(10, 4, 1), 
-              rnorm(10, 0, 1),
-              rnorm(10, 2, 1),
-              rnorm(10, 5, 1)), 
-            byrow = FALSE, nrow = 10)
+B <- matrix(c(rnorm(N, 1, 1), 
+              rnorm(N, 4, 1), 
+              rnorm(N, 0, 1),
+              rnorm(N, 2, 1),
+              rnorm(N, 5, 1)), 
+            byrow = FALSE, nrow = N)
 Y <- B %*% t(S)
-Y_hat <- matrix(c(rnorm(10, 10, 1), 
-                  rnorm(10, 6, 1), 
-                  rnorm(10, 5, 1), 
-                  rnorm(10, 1, 1), 
-                  rnorm(10, 4, 1), 
-                  rnorm(10, 0, 1),
-                  rnorm(10, 2, 1),
-                  rnorm(10, 5, 1)), 
-                byrow = FALSE, nrow = 10)
+Y_hat <- matrix(c(rnorm(N, 10, 1), 
+                  rnorm(N, 6, 1), 
+                  rnorm(N, 5, 1), 
+                  rnorm(N, 1, 1), 
+                  rnorm(N, 4, 1), 
+                  rnorm(N, 0, 1),
+                  rnorm(N, 2, 1),
+                  rnorm(N, 5, 1)), 
+                byrow = FALSE, nrow = N)
 VecY <- as.vector(Y)
 D <- kronecker(S, Y_hat)
 

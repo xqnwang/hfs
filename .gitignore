@@ -44,3 +44,4 @@ refs/
 
 # VSCode
 .vscode/
+.Rproj.user

@@ -1,7 +1,7 @@
 ---
 title: "Subset Selection for Forecast Reconciliation"
 author: "Xiaoqian Wang"
-date: '2023-01-31'
+date: '`r Sys.Date()`'
 output:   
   pdf_document:
     number_sections: true
@@ -69,7 +69,7 @@ We have to add additional constraints on $\boldsymbol{G}_h$. This leads to a mai
 
 ## Ideas based on MinT
 
-### Solution 1
+### Idea 1
 
 $$
 \tilde{\boldsymbol{y}}_h=\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{B}_h \hat{\boldsymbol{y}}_h,
@@ -87,7 +87,7 @@ b_{ij}=0 \text{ for } i \neq j
 $$
 The difficulty is that we wish to find the value of $\boldsymbol{G}_h$ and $\boldsymbol{B}_h$ simultaneously. 
 
-### Solution 2
+### Idea 2
 
 $$
 \tilde{\boldsymbol{y}}_h=\boldsymbol{S} \check{\boldsymbol{G}}_h \check{\boldsymbol{B}}_h \hat{\boldsymbol{y}}_h,
@@ -130,7 +130,7 @@ res$getValue(b)
 (y_tilde <- as.vector(S %*% G %*% B_check %*% y_hat))
 ```
 
-### Solution 3
+### Idea 3
 
 $$
 \tilde{\boldsymbol{y}}_h=\boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h
@@ -552,16 +552,125 @@ slt_gurobi <- solution(job_gurobi)
 
 ## Hyperparameters
 
+### Big-M
+
 ### $\lambda$
 
 We can use cross-validation to select the best value of $\lambda$, as implemented in the glmnet package in R.
 
 The glmnet package computes the solutions for **a decreasing sequence of values for $\lambda$**, starting at the smallest value $\lambda_{\max }$ for which the entire vector $\hat{\beta}=0$. And then it selects a minimum value $\lambda_{\min }=\epsilon \lambda_{\max }$, and construct a sequence of $K$ values of $\lambda$ decreasing from $\lambda_{\max }$ to $\lambda_{\min }$ on the log scale. Typical values are $\epsilon=0.001$ and $K=100$.
 
-## Simulations
+# Subset selection with shrinkage
 
-* Simulation setups
+## Subset selection + shrinkage
 
+> [Mazumder, R., Radchenko, P., & Dedieu, A. (2022). Subset selection with shrinkage: Sparse linear modeling when the SNR is low. Operations Research.](https://doi.org/10.1287/opre.2022.2276)
+
+**Best subset selection problem**
+$$
+\underset{\boldsymbol{\beta}}{\operatorname{minimize}} \quad\|\mathbf{y}-\mathbf{X} \boldsymbol{\beta}\|_2^2 \quad \text { s.t. } \quad\|\boldsymbol{\beta}\|_0 \leq k
+$$
+
+1. Computationally infeasible
+
+2. $\hat{\boldsymbol{\beta}}$ is instable, especially when SNR (signal to noise ratio) is low, the pairwise (sample) correlations among the features are high, and n is relatively small compared to p. **Overfit**
+
+**Subset selection with shrinkage**
+$$
+\underset{\boldsymbol{\beta}}{\operatorname{minimize}} \frac{1}{2}\|\mathbf{y}-\mathbf{X} \boldsymbol{\beta}\|_2^2+\underbrace{\lambda\|\boldsymbol{\beta}\|_q}_{\text {Shrinkage }} \quad \text { s.t. } \underbrace{\|\boldsymbol{\beta}\|_0 \leq k}_{\text {Sparsity }} .
+$$
+
+- Sparsity & Shrinkage
+
+MIO formulations for this problem:
+$$
+\begin{array}{c}
+\text { minimize } u / 2+\lambda v \\
+\text { s.t. }\|\mathbf{y}-\mathbf{X} \boldsymbol{\beta}\|_2^2 \leq u \\
+\|\boldsymbol{\beta}\|_q \leq v \\
+-\mathcal{M} z_j \leq \beta_j \leq \mathcal{M} z_j, j \in[p] ; \\
+\mathbf{z} \in\{0,1\}^p ; \\
+\sum_j z_j=k
+\end{array}
+$$
+```{r, out.width="0.4\\linewidth", include=TRUE, fig.align="center", fig.cap=c("Mazumder et al. (2022) framework"), echo=FALSE}
+knitr::include_graphics("figs/Mazumder_et_al_2022.pdf")
+```
+
+- [Algorithms are written in Python](https://github.com/antoine-dedieu/subset_selection_with_shrinkage). The MIO formulation is solved with Gurobi's mixed integer programming solver.
+
+## $L_0 L_q$-regularized regression problem
+
+> [Hazimeh, H., & Mazumder, R. (2020). Fast best subset selection: Coordinate descent and local combinatorial optimization algorithms. Operations Research, 68(5), 1517-1537.](https://doi.org/10.1287/opre.2019.1919)
+
+$$
+\underset{\boldsymbol{\beta}}{\operatorname{minimize}} \frac{1}{2}\|y-X \beta\|_2^2+\lambda_0\|\beta\|_0+\lambda_1\|\beta\|_{1}+\lambda_2\|\beta\|_{2}^{2}
+$$
+
+An overview of the different classes of local minima and establish the following hierarchy:
+
+$$
+\begin{array}{ccccccccc}
+\operatorname{FSI}(k) & \subseteq & \operatorname{PSI}(k) &\subseteq & \operatorname{CW} & \subseteq & \operatorname{IHT} & \subseteq & \operatorname{Stationary} \\
+\text { Minima } & & \text { Minima } & & \text { Minima } & & \text { Minima } & & \text{ Solutions }
+\end{array}
+$$
+
+- For sufficiently large k, FSI(k) and PSI(k) minima coincide with the class of global minimizers.
+
+1. Cyclic coordinate descent
+    + full minimization in every coordinate: $\beta^{k+1}$ is obtained by updating the $i$th coordinate (with others held fixed).
+    + converges to CW minima
+    
+2. Cyclic coordinate descent & local combinatorial optimization algorithms (iterative)
+    + PSI(k)
+    + FSI(k)
+
+- It cannot provide certificates of optimality.
+
+- [L0Learn](https://github.com/hazimehh/L0Learn): an extensible C++ toolkit with an R interface
+
+## Group $l_0$ problem
+
+> [Hazimeh, H., Mazumder, R., & Radchenko, P. (2021). Grouped variable selection with discrete optimization: Computational and statistical perspectives. arXiv preprint](https://arxiv.org/abs/2104.07084)
+
+Suppose that the $p$ predictors are divided into $q$ pre-specified, non-overlapping groups.
+
+**Group $l_0$ with ridge regularization**
+$$
+\underset{\boldsymbol{\beta}}{\operatorname{minimize}} \|\mathbf{y}-\mathbf{X} \boldsymbol{\beta}\|_2^2+\lambda_0 \sum_{g=1}^q \mathbf{1}\left(\boldsymbol{\beta}_g \neq \mathbf{0}\right)+\lambda_2\|\boldsymbol{\beta}\|_2^2
+$$
+
+1. Approximate algorithms (local minimizers)
+
+  - cyclic block coordinate descent (BCD) $\longrightarrow$ (improved by) local combinatorial search
+  
+  - do not deliver certificates of optimality
+  
+2. MIP formulation
+
+$$
+\begin{aligned}
+\underset{\boldsymbol{\theta}, \mathbf{z}, \boldsymbol{s}}{\operatorname{ minimize }} & \tilde{\ell}(\boldsymbol{\theta})+\lambda_0 \sum_{g=1}^q z_g+\lambda_1 \sum_{g=1}^q\left\|\boldsymbol{\theta}_g\right\|_2+\lambda_2 \sum_{g=1}^q s_g, \\
+\text { s.t. } & \left\|\boldsymbol{\theta}_g\right\|_2 \leq \mathcal{M}_{\mathrm{U}} z_g, g \in[q] \\
+& \left\|\boldsymbol{\theta}_g\right\|_2^2 \leq s_g z_g, \quad g \in[q] \\
+& z_g \in\{0,1\}, s_g \geq 0, \quad g \in[q] .
+\end{aligned}
+$$
+
+- Propose a specialized, nonlinear Branch-and-Bound (BnB) framework.
+
+- Subproblem solver: active-set algorithm, which exploits sparsity by considering a reduced problem restricted to a small subset of groups.
+
+- Upper bounds: obtain a new upper bound by restricting optimization, leading to aggressive pruning in the search tree, which can reduce the overall runtime.
+
+- Branching and search strategies: 
+    + for branching, use maximum fractional branching.
+    + for search, use breadth-first search and switch to depth-first search if memory issues are encountered.
+  
+- Solve the associated MIP problem to certified optimality.
+
+- [L0Group](https://github.com/hazimehh/L0Group) written in Python.
 
 # Other issues
 
