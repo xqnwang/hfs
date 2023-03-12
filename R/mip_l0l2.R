@@ -22,20 +22,20 @@
 #             g \in [q]
 #             j \in [p]
 
-
-library(slam)
+library(ROI)
 
 dbind <- function(...) {
   ## sparse matrices construction
   .dbind <- function(x, y) {
-    A <- simple_triplet_zero_matrix(NROW(x), NCOL(y))
-    B <- simple_triplet_zero_matrix(NROW(y), NCOL(x))
+    A <- slam::simple_triplet_zero_matrix(NROW(x), NCOL(y))
+    B <- slam::simple_triplet_zero_matrix(NROW(y), NCOL(x))
     rbind(cbind(x, A), cbind(B, y))
   }
   Reduce(.dbind, list(...))
 }
 
-mip_l0l2 <- function(x, y, group_indices, lambda_0, lambda_2, M){
+mip_l0l2 <- function(x, y, group_indices, lambda_0, lambda_2, M,
+                     solver = "gurobi"){
   # x: n*p
   # y: n
   # group_indices: list of length q (q groups)
@@ -43,9 +43,9 @@ mip_l0l2 <- function(x, y, group_indices, lambda_0, lambda_2, M){
   # lambda_2: lambda_{2}
   # M: Big-M vaule
   
-  stzm <- simple_triplet_zero_matrix
-  stdm <- simple_triplet_diag_matrix
-  stm <- simple_triplet_matrix
+  stzm <- slam::simple_triplet_zero_matrix
+  stdm <- slam::simple_triplet_diag_matrix
+  stm <- slam::simple_triplet_matrix
   
   n <- NROW(x); p <- NCOL(x)
   q <- length(group_indices)
@@ -120,7 +120,18 @@ mip_l0l2 <- function(x, y, group_indices, lambda_0, lambda_2, M){
   types(model) <- c(rep("C", p), rep("B", q), rep("C", q+n+p))
   bounds(model) <- V_bound(li = c(1:p, (p+2*q+1):(p+2*q+n)), lb = rep.int(-Inf, p+n), nobj = p+2*q+n+p) # default of lower bound is 0
   
-  model
+  # Optimal solution
+  model.solver <- ROI_solve(model, solver)
+  
+  # Output
+  model.slt <- solution(model.solver)
+  b <- model.slt[seq.int(p)] %>% 
+    {sapply(1:q, function(g) .[group_indices[[g]]])} %>%
+    t() %>%
+    `rownames<-`(paste0("group", seq.int(q)))
+  z <- model.slt[(p+1):(p+q)]
+  return(list(model = model, opt = model.solver, solution = model.slt,
+              coefficients = b, binary = z))
 }
 
 
