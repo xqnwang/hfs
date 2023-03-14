@@ -5,6 +5,7 @@ library(tsibble)
 library(tsibbledata)
 library(lubridate)
 library(purrr)
+library(ggplot2)
 
 source('R/sourceDir.R')
 sourceDir("R", recursive = TRUE)
@@ -44,7 +45,7 @@ tourism_hts <- tourism |>
   aggregate_key(State, Trips = sum(Trips))
 #tourism_hts <- tourism |>
 #  aggregate_key(State / Region, Trips = sum(Trips))
-tourism_hts
+tourism_hts |> distinct(State)
 
 
 # setup
@@ -216,6 +217,12 @@ reconcile_test <- data_windows[(1+T_validation):(T_validation + T_test)] |>
   purrr::map(\(x) reconcile_window(x, key_ben = key_ben, S, G))
 out_test <- reduce(reconcile_test, bind_rows) # Reduce a list of tsibble objects to a tsibble
 out_test <- left_join(out_test, tourism_hts, by = join_by(State, Quarter))
+out_test |> 
+  pivot_longer(cols = 3:9, names_to = "Method", values_to = "Trip") |>
+  ggplot(aes(x = Quarter, y = Trip, colour = Method, group = Method)) +
+  stat_summary(fun = sum, geom = "line") + 
+  facet_wrap(~ as.character(State),
+             nrow = 1, scales = "free_y")
 
 
 # accuracy
