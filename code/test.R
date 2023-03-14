@@ -32,7 +32,7 @@ model <- mip_l0l2(x = x, y = y, group_indices = group_indices,
                   lambda_0 = 20, lambda_2 = 2, M = 50, 
                   solver = "gurobi")
 
-{b <- model$coefficients}
-{z <- model$binary}
+b <- model$coefficients
+z <- model$binary
 
 
