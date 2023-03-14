@@ -1,3 +1,7 @@
+# Data
+*.rds
+*.csv
+
 # References
 refs/
 
