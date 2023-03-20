@@ -3,7 +3,7 @@
 #   (b,z,s)    \lambda_{0} \sum_{g=1}^{q}z_g +
 #              \lambda_{2} \sum_{g=1}^{q}s_g
 # subject to  ||b_g||_{2}^{2} <= s_g z_g
-#             ||b_g||_{0} <= M z_g
+#             ||b_g||_{1} <= M z_g
 #             z_g \in {0, 1}
 #             s_g >= 0
 #             g \in [q]
