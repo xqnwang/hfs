@@ -16,7 +16,8 @@ dbind <- function(...) {
 }
 
 mip_l0 <- function(fc, S, W, G0 = NULL, 
-                   lambda_0, lambda_1 = 0, lambda_2 = 0, M = NULL, solver = "gurobi"){
+                   lambda_0, lambda_1 = 0, lambda_2 = 0, M = NULL,
+                   solver = "gurobi"){
   # fc: an n-dimensional vector of base forecasts
   # S: an n*n_b summing matrix
   # W: an n*n covariance matrix of the base forecast errors
@@ -40,7 +41,7 @@ mip_l0 <- function(fc, S, W, G0 = NULL,
     stop("The dimensions of the inputs do not match each other")
   }
   if(is.null(G0)){
-    lambda_1 <- lambda_2 <- 0;
+    G0 <- stzm(nrow = NCOL(S), ncol = NROW(S)) # if G0 is null, then G should shrink toward 0 matrix
   } else if (!identical(NCOL(G0), NROW(S))){
     stop("The dimensions of the inputs do not match each other")
   } else if (!identical(NROW(G0), NCOL(S))){
@@ -75,10 +76,10 @@ mip_l0 <- function(fc, S, W, G0 = NULL,
   model <- OP(objective = Q_objective(Q = Q0, L = A0))
   
   ## constraints
-  ### C1: fc - kronecker(t(fc), S) %*% g <= e_check
-  ### <==> kronecker(t(fc), S) %*% g + e_check >= fc
+  ### C1: fc - kronecker(t(fc), S) %*% g = e_check
+  ### <==> kronecker(t(fc), S) %*% g + e_check = fc
   A1 <- cbind(kronecker(t(fc), S), stzm(n), stdm(1, n), stzm(n, n_b*n), stzm(n, n_b*n))
-  LC1 <- L_constraint(A1, rep(">=", n), fc)
+  LC1 <- L_constraint(A1, eq(n), fc)
   
   ### C2: kronecker(t(S), diag(1, n_b)) %*% g = vec(diag(1, n_b))
   A2 <- cbind(kronecker(t(S), diag(1, n_b)), stzm(n_b*n_b, n), stzm(n_b*n_b, n), stzm(n_b*n_b, n_b*n), stzm(n_b*n_b, n_b*n))
@@ -104,14 +105,22 @@ mip_l0 <- function(fc, S, W, G0 = NULL,
   
   ### C6: g - d_positive <= vec(G0)
   A6 <- cbind(stdm(1, n_b*n), stzm(n_b*n, n), stzm(n_b*n, n), stdm(-1, n_b*n), stzm(n_b*n))
-  LC6 <- L_constraint(A6, rep("<=", n_b*n), if(is.null(G0)){rep(0, n_b*n)}else{as.vector(G0)})
+  LC6 <- L_constraint(A6, rep("<=", n_b*n), as.vector(G0))
   
   ### C7: g + d_positive >= vec(G0)
   A7 <- cbind(stdm(1, n_b*n), stzm(n_b*n, n), stzm(n_b*n, n), stdm(1, n_b*n), stzm(n_b*n))
-  LC7 <- L_constraint(A7, rep(">=", n_b*n), if(is.null(G0)){rep(0, n_b*n)}else{as.vector(G0)})
+  LC7 <- L_constraint(A7, rep(">=", n_b*n), as.vector(G0))
   
-  constraints(model) <- rbind(LC1, LC2, LC3, LC4, LC5, LC6, LC7)
-  
+  if(lambda_0 == 0L & lambda_1 == 0L & lambda_2 == 0L){
+    constraints(model) <- rbind(LC1, LC2)
+  } else if (lambda_0 == 0L){
+    constraints(model) <- rbind(LC1, LC2, LC6, LC7)
+  } else if (lambda_1 == 0L & lambda_2 == 0L){
+    constraints(model) <- rbind(LC1, LC2, LC3, LC4, LC5)
+  } else {
+    constraints(model) <- rbind(LC1, LC2, LC3, LC4, LC5, LC6, LC7)
+  }
+
   ### z_g \in {0, 1}
   types(model) <- c(rep("C", n_b*n), rep("B", n), rep("C", n), 
                     rep("C", n_b*n), rep("C", n_b*n))
