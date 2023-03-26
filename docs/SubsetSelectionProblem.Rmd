@@ -672,6 +672,48 @@ $$
 
 - [L0Group](https://github.com/hazimehh/L0Group) written in Python.
 
+## Subset selection with shrinkage under unbiasedness assumptions
+
+The vectorization is frequently used together with the Kronecker product to express matrix multiplication as a linear transformation on matrices.
+
+$$
+\operatorname{Vec}(A B C)=\left(C^{\prime} \otimes A\right) \operatorname{vec}(B)
+$$
+With two unbiasedness conditions, the trace minimization (MinT) problem can be reformulated in terms of a linear equality constrained least squares problem as follow.
+
+$$
+\begin{gathered}
+\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b} \\
+\Downarrow \\
+\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b}
+\end{gathered}
+$$
+
+If we consider subset selection with shrinkage which also imposes the two unbiasedness conditions of MinT, we have 
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}} & \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
+& \quad + \lambda_0 \sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0 +\lambda_1\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_1+\lambda_2\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_2^2 \\
+\text { s.t. } & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b}
+\end{aligned}
+$$
+where $\boldsymbol{G}^0$ can be a benchmark weight matrix estimated by MinT or other methods, such as bottom-up and top-down.
+
+$$
+\begin{aligned}
+\min _{\operatorname{vec}\left(\boldsymbol{G}\right), \boldsymbol{z}, \check{\boldsymbol{e}}, \boldsymbol{d}^{+}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}_h^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j+\lambda_1\boldsymbol{1}^{\prime}\boldsymbol{d}^{+} + \lambda_2\boldsymbol{d}^{+\prime}\boldsymbol{d}^{+} \\
+\text { s.t. } & \hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}}  \quad \ldots (C1)\\
+& \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b} \Leftrightarrow\left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \quad \ldots (C2) \\
+& \sum_{i=1}^{n_b} \boldsymbol{g}_{i + (j-1) n_b}^{+} \leqslant M z_j, \quad j \in[n] \quad \ldots (C3) \\
+& \boldsymbol{g}^{+} \geqslant \operatorname{vec}(\boldsymbol{G}) \quad \ldots (C4) \\
+& \boldsymbol{g}^{+} \geqslant-\operatorname{vec}(\boldsymbol{G}) \quad \ldots (C5) \\
+& \boldsymbol{d}^{+} \geqslant \operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right) \quad \ldots (C6) \\
+& \boldsymbol{d}^{+} \geqslant-\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right) \quad \ldots (C7) \\
+& z_j \in\{0,1\}, \quad j \in[n]
+\end{aligned}
+$$
+
 # Other issues
 
 ## Temporal reconciliation
