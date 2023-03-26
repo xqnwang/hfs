@@ -135,6 +135,6 @@ mip_l0 <- function(fc, S, W, G0 = NULL,
     matrix(nrow = n_b, ncol = n, byrow = FALSE)
   z <- model.slt[(n_b*n+1):(n_b*n + n)]
   
-  return(list(model = model, opt = model.solver, solution = model.slt,
+  return(list(model = model, solver = model.solver, solution = model.slt,
               G = G, z = z))
 }
