@@ -13,7 +13,7 @@ geometry: a4paper, margin=20mm
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
 
@@ -529,14 +529,14 @@ gp_op <- function(x, y, n, m, lambda, M) {
 op <- gp_op(x = D, y = VecY, n = NROW(S), m = NCOL(S), lambda = 0.1, M = 100)
 
 # Optimal solution - solver = "neos"
-job_neos <- ROI_solve(op, "neos", email = "xiaoqian.wang@monash.edu")
+# job_neos <- ROI_solve(op, "neos", email = "xiaoqian.wang@monash.edu")
 ## str(job_neos)
-slt_neos <- solution(job_neos)
-(z <- tail(slt_neos, NROW(S)))
-(G_neos <- matrix(slt_neos[1:(NCOL(S)*NROW(S))], 
-                  nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
-  t() %>% 
-  round(digits = 3))
+# slt_neos <- solution(job_neos)
+# (z <- tail(slt_neos, NROW(S)))
+# (G_neos <- matrix(slt_neos[1:(NCOL(S)*NROW(S))], 
+#                   nrow = NROW(S), ncol = NCOL(S), byrow = FALSE) %>% 
+#   t() %>% 
+#   round(digits = 3))
 
 # Optimal solution - solver = "gurobi"
 job_gurobi <- ROI_solve(op, "gurobi")
@@ -713,6 +713,156 @@ $$
 & z_j \in\{0,1\}, \quad j \in[n]
 \end{aligned}
 $$
+
+### R implementation
+
+```{r, echo = FALSE}
+rm(list = ls())
+source('../R/sourceDir.R')
+sourceDir("../R", recursive = TRUE)
+MinT_G <- function(S, W){
+  solve(t(S) %*% solve(W) %*% S) %*% t(S) %*% solve(W)
+}
+obj_MP <- function(fc, S, W, G){
+  t(fc - S %*% G %*% fc) %*% solve(W) %*% (fc - S %*% G %*% fc) |> as.numeric()
+}
+obj_MinT <- function(S, W, G){
+  S %*% G %*% W %*% t(G) %*% t(S) |> diag() |> sum()
+}
+```
+
+Hierarchical structure & simple example
+```{r}
+# Hierarchical structure
+S <- rbind(rep(1, 4),
+           c(1, 1, 0, 0), c(0, 0, 1, 1),
+           diag(1, 4))
+
+# OLS and WLSs estimator
+W_I <- diag(7)
+
+W_s <- S %*% matrix(1, nrow = NCOL(S), ncol = 1) |> as.vector() |> diag()
+G_s <- MinT_G(S, W_s)
+
+# Example base forecasts
+fc <- c(10, 4, 4, 2, 4, 2, 2) # the first base forecast in the middle level performs poorly
+```
+
+The two functions (`mip_l0` and `.mip_l0`) give the identical estimated parameters.
+
+- `mip_l0`: use all the objective parameters and constraints, but select different constraints according to the $\lambda$ values.
+
+- `.mip_l0`: use different objective parameters, objective functions, and constraints according to the $\lambda$ values.
+
+```{r, results = "hold"}
+print("# mip_l0")
+rec <- mip_l0(fc, S, W_I, G0 = NULL, 
+              lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, M = NULL, 
+              solver = "gurobi")
+rec$G
+
+print("# .mip_l0")
+.rec <- .mip_l0(fc, S, W_I, G0 = NULL, 
+                lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, M = NULL, 
+                solver = "gurobi")
+.rec$G
+```
+
+If we do not put any penalty terms on $\boldsymbol{G}$, that is $\lambda_0 = \lambda_1 = \lambda_2 = 0$, the output should be identical to the result given by MinT using the corresponding estimator for the variance-covariance matrix of the base forecast errors.
+
+Here we consider $W_I$ as an identity matrix and compare various results obtained by our method and MinT.
+
+1. $\boldsymbol{G}$ matrix (**different**)
+```{r, results = "hold"}
+print("# mip_l0")
+(G <- rec$G)
+
+print("# MinT (ols)")
+(G_ols <- MinT_G(S, W_I))
+```
+
+2. Reconciled forecasts $\tilde{\boldsymbol{y}}$ (**same**)
+```{r, results = "hold"}
+# mip_l0, MinT (ols)
+cbind(S %*% G %*% fc, S %*% G_ols %*% fc)
+```
+
+3. Objective values $\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)$ (**same and both satisfy $\boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b}$**)
+```{r, results = "hold"}
+print("# mip_l0")
+obj_MP(fc, S, W_I, G)
+
+print("# MinT (ols)")
+obj_MP(fc, S, W_I, G_ols)
+```
+
+So, when $\lambda_0 = \lambda_1 = \lambda_2 = 0$, our method and MinT give same reconciled forecasts and objective values but **different G matrix**. Here are some explanations:
+
+* For our method, the columns of $\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}$ are not linearly independent, there are infinitely many least-squares solutions.
+
+* For MinT, Wickramasuriya et al. (2019) first derives the explit solution as $\boldsymbol{G} = \left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1}$, then reformulate the trace minimization problem in terms of a linear equality constrained least squares problem
+$$
+\min _{\boldsymbol{\tilde{y}}_h}\frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{\tilde{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{\tilde{y}}_h\right), \text{ s.t. } 
+\boldsymbol{\tilde{y}}_h = \boldsymbol{S}\boldsymbol{\tilde{b}}_h.
+$$
+This is a Generalized Least Squares problem, actually the objective parameter is the reconciled forecasts at the bottom level $\boldsymbol{\tilde{b}}_h$ rather than $\boldsymbol{G}$.
+
+* The GLS problem is equivalent to the following problem
+$$
+\min _{\boldsymbol{\tilde{y}}_h}\frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{\tilde{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{\tilde{y}}_h\right), \text{ s.t. } 
+\boldsymbol{U}^{\prime}\boldsymbol{\tilde{y}}_h = \boldsymbol{0}\\
+\text{ where } \boldsymbol{U}^{\prime} = [\boldsymbol{I}_{n-n_b}| -\boldsymbol{C}].
+$$
+We can directly solve the quadratic problem as follows. But both in this case and previous case, we cannot zero out columns of $\boldsymbol{G}$.
+```{r, results = "hold"}
+# lsop
+rec_lsop <- lsop(fc, S, W_I, solver = "gurobi")
+# lsop, mip_l0, MinT (ols)
+cbind(rec_lsop$y_tilde, S %*% G %*% fc, S %*% G_ols %*% fc)
+```
+
+Some questions
+
+1. Check the original objective function (the trace of the variance covariance matrix of the **reconciled forecast errors**) given by $var[\boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{h} | I_t] = \boldsymbol{S}\boldsymbol{G}\boldsymbol{W}\boldsymbol{G}^{\prime}\boldsymbol{S}^{\prime}$ subject to $\boldsymbol{S}\boldsymbol{G}\boldsymbol{S} = \boldsymbol{S}$. The results are different.
+```{r, results = "hold"}
+print("# mip_l0")
+obj_MinT(S, W_I, G)
+
+print("# MinT (ols)")
+obj_MinT(S, W_I, G_ols)
+```
+
+If we give some penalty to shrink $\boldsymbol{G}$ towards $\boldsymbol{G}_{ols}$, even if the value of $\lambda_1$ is very small, it will return the same $\boldsymbol{G}$ as that obtained from MinT explcit solution.
+```{r, results = "hold"}
+print("# G_ols")
+G_ols
+
+print("# mip_l0 with lambda_0 = lambda_1 = lambda_2 = 0")
+G
+
+print("# mip_l0 with lambda_1 = 0.1 and G0 = G_ols")
+mip_l0(fc, S, W_I, G0 = G_ols, 
+       lambda_0 = 0, lambda_1 = 0.1, lambda_2 = 0, M = NULL, 
+       solver = "gurobi")$G
+
+print("# mip_l0 with lambda_1 = 0.001 and G0 = G_ols")
+mip_l0(fc, S, W_I, G0 = G_ols, 
+       lambda_0 = 0, lambda_1 = 0.001, lambda_2 = 0, M = NULL, 
+       solver = "gurobi")$G
+
+print("# mip_l0 with lambda_1 = 0.1 and G0 = G_bu")
+G_bu <- cbind(rep(0, 4), rep(0, 4), rep(0, 4), diag(1, 4))
+mip_l0(fc, S, W_I, G0 = G_bu, 
+       lambda_0 = 0, lambda_1 = 0.1, lambda_2 = 0, M = NULL, 
+       solver = "gurobi")$G
+
+print("# mip_l0 with lambda_0 = 0.1, lambda_1 = 0.1 and G0 = G_bu")
+mip_l0(fc, S, W_I, G0 = G_bu, 
+       lambda_0 = 0.1, lambda_1 = 0.1, lambda_2 = 0, M = NULL, 
+       solver = "gurobi")$G
+```
+
+2. A.2 Theorem1 in Wickramasuriya et al. (2019).
 
 # Other issues
 
