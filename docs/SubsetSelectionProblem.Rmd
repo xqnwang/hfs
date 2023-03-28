@@ -683,9 +683,9 @@ With two unbiasedness conditions, the trace minimization (MinT) problem can be r
 
 $$
 \begin{gathered}
-\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b} \\
+\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
 \Downarrow \\
-\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b}
+\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}
 \end{gathered}
 $$
 
@@ -695,7 +695,7 @@ $$
 \begin{aligned}
 \min _{\boldsymbol{G}} & \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
 & \quad + \lambda_0 \sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0 +\lambda_1\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_1+\lambda_2\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_2^2 \\
-\text { s.t. } & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b}
+\text { s.t. } & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}
 \end{aligned}
 $$
 where $\boldsymbol{G}^0$ can be a benchmark weight matrix estimated by MinT or other methods, such as bottom-up and top-down.
@@ -787,7 +787,7 @@ print("# MinT (ols)")
 cbind(S %*% G %*% fc, S %*% G_ols %*% fc)
 ```
 
-3. Objective values $\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)$ (**same and both satisfy $\boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n b}$**)
+3. Objective values $\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)$ (**same and both satisfy $\boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}$**)
 ```{r, results = "hold"}
 print("# mip_l0")
 obj_MP(fc, S, W_I, G)
@@ -800,7 +800,7 @@ So, when $\lambda_0 = \lambda_1 = \lambda_2 = 0$, our method and MinT give same 
 
 * For our method, the columns of $\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}$ are not linearly independent, there are infinitely many least-squares solutions.
 
-* For MinT, Wickramasuriya et al. (2019) first derives the explit solution as $\boldsymbol{G} = \left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1}$, then reformulate the trace minimization problem in terms of a linear equality constrained least squares problem
+* For MinT, under the assumption $\boldsymbol{G}\boldsymbol{S} = \boldsymbol{I}_{n_b}$, Wickramasuriya et al. (2019) first derive the explit solution as $\boldsymbol{G} = \left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1}$, then reformulate the trace minimization problem in terms of a linear equality constrained least squares problem
 $$
 \min _{\boldsymbol{\tilde{y}}_h}\frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{\tilde{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{\tilde{y}}_h\right), \text{ s.t. } 
 \boldsymbol{\tilde{y}}_h = \boldsymbol{S}\boldsymbol{\tilde{b}}_h.
@@ -813,7 +813,7 @@ $$
 \boldsymbol{U}^{\prime}\boldsymbol{\tilde{y}}_h = \boldsymbol{0}\\
 \text{ where } \boldsymbol{U}^{\prime} = [\boldsymbol{I}_{n-n_b}| -\boldsymbol{C}].
 $$
-We can directly solve the quadratic problem as follows. But both in this case and previous case, we cannot zero out columns of $\boldsymbol{G}$.
+We can directly solve the quadratic problem as follows.
 ```{r, results = "hold"}
 # lsop
 rec_lsop <- lsop(fc, S, W_I, solver = "gurobi")
@@ -821,7 +821,18 @@ rec_lsop <- lsop(fc, S, W_I, solver = "gurobi")
 cbind(rec_lsop$y_tilde, S %*% G %*% fc, S %*% G_ols %*% fc)
 ```
 
-Some questions
+* In order to perform subset selection with shrinkage for $\boldsymbol{G}$. We can reformulate our minimization problem as follows.
+$$
+\begin{aligned}
+\min _{\tilde{\boldsymbol{b}}_h, \boldsymbol{G}} & \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \tilde{\boldsymbol{b}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \tilde{\boldsymbol{b}}_h\right) \\
+& + \lambda_0 \sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0 +\lambda_1\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_1+\lambda_2\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_2^2\\
+\text { s.t. } & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
+& \tilde{\boldsymbol{b}}_h = \boldsymbol{G} \hat{\boldsymbol{y}}_h
+\end{aligned}
+$$
+In this case, if $\lambda_0 = \lambda_1 = \lambda_2$, the objective parameters become $\tilde{\boldsymbol{b}$ and we only output the estimation of $\tilde{\boldsymbol{b}$. But it is actually the same with the original formulation.
+
+**Some questions**
 
 1. Check the original objective function (the trace of the variance covariance matrix of the **reconciled forecast errors**) given by $var[\boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{h} | I_t] = \boldsymbol{S}\boldsymbol{G}\boldsymbol{W}\boldsymbol{G}^{\prime}\boldsymbol{S}^{\prime}$ subject to $\boldsymbol{S}\boldsymbol{G}\boldsymbol{S} = \boldsymbol{S}$. The results are different.
 ```{r, results = "hold"}
