@@ -830,7 +830,7 @@ $$
 & \tilde{\boldsymbol{b}}_h = \boldsymbol{G} \hat{\boldsymbol{y}}_h
 \end{aligned}
 $$
-In this case, if $\lambda_0 = \lambda_1 = \lambda_2$, the objective parameters become $\tilde{\boldsymbol{b}$ and we only output the estimation of $\tilde{\boldsymbol{b}$. But it is actually the same with the original formulation.
+In this case, if $\lambda_0 = \lambda_1 = \lambda_2$, the objective parameters become $\tilde{\boldsymbol{b}}$ and we only output the estimation of $\tilde{\boldsymbol{b}}$. But it is actually the same with the original formulation.
 
 **Some questions**
 
@@ -874,6 +874,34 @@ mip_l0(fc, S, W_I, G0 = G_bu,
 ```
 
 2. A.2 Theorem1 in Wickramasuriya et al. (2019).
+
+**Lemma 1 of** [Wang et al.(1986)](https://doi.org/10.1109/TAC.1986.1104370):
+
+Let $K$ and $S$ be $(n \times n)$ matrices. If $K=K^{\prime} \geq 0$ and $S$ is symmetric, then
+$$
+\lambda_{\min }(S) \text { tr }(K) \leq \operatorname{tr}(K S) \leq \lambda_{\max }(S) \operatorname{tr}(K)
+$$
+
+The objective function,
+$$
+\operatorname{tr}\left[\boldsymbol{S P} \boldsymbol{W}_h \boldsymbol{P}^{\prime} \boldsymbol{S}^{\prime}\right]=\operatorname{tr}\left[\boldsymbol{S}^{\prime} \boldsymbol{S P} \boldsymbol{W}_h \boldsymbol{P}^{\prime}\right].
+$$
+
+$\boldsymbol{S}^{\prime} \boldsymbol{S}$ and $\boldsymbol{P} W_h \boldsymbol{P}^{\prime}$ are both symmetric, and positive definite and positive semi-definite respectively. So we have
+$$
+\lambda_{\min }\left(\boldsymbol{S}^{\prime} \boldsymbol{S}\right) \operatorname{tr}\left[\boldsymbol{P} \boldsymbol{W}_h \boldsymbol{P}^{\prime}\right] \leq \operatorname{tr}\left[\boldsymbol{S}^{\prime} \boldsymbol{S} \boldsymbol{P} \boldsymbol{W}_h \boldsymbol{P}^{\prime}\right] \leq \lambda_{\max }\left(\boldsymbol{S}^{\prime} \boldsymbol{S}\right) \operatorname{tr}\left[\boldsymbol{P} \boldsymbol{W}_h \boldsymbol{P}^{\prime}\right],
+$$
+where $\boldsymbol{S}^{\prime} \boldsymbol{S}$ is given and its eigenvalues are positive. So the original minimization problem can be restated as
+$$
+\min _{\boldsymbol{P}} \lambda_{\max }\left(\boldsymbol{S}^{\prime} \boldsymbol{S}\right)\operatorname{tr}\left[\boldsymbol{P} W_h \boldsymbol{P}^{\prime}\right] \quad \text { s.t. } \boldsymbol{P S}=\boldsymbol{I} \\
+\Longrightarrow \\
+\min _{\boldsymbol{P}} \operatorname{tr}\left[\boldsymbol{P} W_h \boldsymbol{P}^{\prime}\right] \quad \text { s.t. } \boldsymbol{P S}=\boldsymbol{I} \\
+$$
+
+* The choice of $\lambda$ is scale dependent.
+* One-step head forecast VS. multi-step ahead forecast.
+* Different models to be used for each series.
+
 
 # Other issues
 
