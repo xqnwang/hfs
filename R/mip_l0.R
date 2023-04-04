@@ -41,7 +41,7 @@ mip_l0 <- function(fc, S, W, G0 = NULL,
     stop("The dimensions of the inputs do not match each other")
   }
   if(is.null(G0)){
-    G0 <- stzm(nrow = NCOL(S), ncol = NROW(S)) # if G0 is null, then G should shrink toward 0 matrix
+    G0 <- matrix(0, nrow = NCOL(S), ncol = NROW(S)) # if G0 is null, then G should shrink toward 0 matrix
   } else if (!identical(NCOL(G0), NROW(S))){
     stop("The dimensions of the inputs do not match each other")
   } else if (!identical(NROW(G0), NCOL(S))){
@@ -50,7 +50,7 @@ mip_l0 <- function(fc, S, W, G0 = NULL,
   
   # Big-M value
   if(is.null(M)){
-    M <- NCOL(S)*3
+    M <- ifelse(is.null(G0), NCOL(S)*3, abs(G0) |> Matrix::colSums() |> max()*3)
   }
   
   # dimension info
