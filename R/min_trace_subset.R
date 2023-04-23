@@ -1,7 +1,8 @@
 min_trace_subset <- function(models,
                              method = c("wls_var", "ols", "wls_struct", "mint_cov", "mint_shrink"),
-                             subset = FALSE, lasso = FALSE, ridge = FALSE,
-                             lambda = c(ifelse(subset, NA, 0), ifelse(lasso, NA, 0), ifelse(ridge, NA, 0)),
+                             subset = TRUE, lasso = FALSE, ridge = FALSE,
+                             lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0,
+                             nlambda_0 = 20,
                              sparse = NULL){
   if(is.null(sparse)){
     sparse <- requireNamespace("Matrix", quietly = TRUE)
@@ -9,7 +10,8 @@ min_trace_subset <- function(models,
   structure(models, class = c("lst_mintsst_mdl", "lst_mdl", "list"),
             method = match.arg(method),
             subset = subset, lasso = lasso, ridge = ridge,
-            lambda = lambda,
+            lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2,
+            nlambda_0 = nlambda_0,
             sparse = sparse)
 }
 
@@ -20,12 +22,11 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
   subset <- object%@%"subset"
   lasso <- object%@%"lasso"
   ridge <- object%@%"ridge"
-  lambda <- object%@%"lambda"
+  lambda_0 <- object%@%"lambda_0"
+  lambda_1 <- object%@%"lambda_1"
+  lambda_2 <- object%@%"lambda_2"
+  nlambda_0 <- object%@%"nlambda_0"
   sparse <- object%@%"sparse"
-  
-  lambda_0 <- lambda[1]
-  lambda_1 <- lambda[2]
-  lambda_2 <- lambda[3]
   
   if(sparse){
     fabletools:::require_package("Matrix")
@@ -38,14 +39,9 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
     cov2cor <- stats::cov2cor
   }
   
-  if(length(lambda) != 3L){
-    abort("Length of lambda should be 3L.")
-  }
   if(!subset){
-    if(lambda_0 != 0L){
-      lambda_0 <- 0L
-      message("Value of lambda_0 is set to 0 to match the subset argument.")
-    }
+    lambda_0 <- 0L
+    message("Value of lambda_0 is set to 0 to match the subset argument.")
   }
   if(!lasso){
     if(lambda_1 != 0L){
@@ -59,11 +55,10 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
       message("Value of lambda_2 is set to 0 to match the ridge argument.")
     }
   }
-  if(lambda_1 == 0L & lambda_2 == 0L){
-    # Give a very small lasso/ridge penalty in order to return the MinT explicit solution when lambda = c(0L, 0L, 0L)
-    lambda_1 <- 1e-4
-  }
-  mint <- ifelse(subset|lasso|ridge, FALSE, TRUE)
+  # if(lambda_1 == 0L & lambda_2 == 0L){
+  #   # Give a very small lasso/ridge penalty in order to return the MinT explicit solution when lambda = c(0L, 0L, 0L)
+  #   lambda_1 <- 1e-4
+  # }
   
   point_method <- point_forecast
   point_forecast <- list()
@@ -71,6 +66,22 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
   fc <- NextMethod()
   if(length(unique(map(fc, interval))) > 1){
     abort("Reconciliation of temporal hierarchies is not yet supported.")
+  }
+  
+  # Extract historical values
+  values <- map(object, function(x, ...) x$data)
+  if(length(unique(map_dbl(values, nrow))) > 1){
+    values <- unname(as.matrix(reduce(values, full_join, by = index_var(values[[1]]))[,-1]))
+  } else {
+    values <- matrix(invoke(c, map(values, `[[`, 2)), ncol = length(object))
+  }
+  
+  # Extract fitted values
+  fits <- map(object, function(x, ...) fitted(x, ...), type = "response")
+  if(length(unique(map_dbl(fits, nrow))) > 1){
+    fits <- unname(as.matrix(reduce(fits, full_join, by = index_var(fits[[1]]))[,-1]))
+  } else {
+    fits <- matrix(invoke(c, map(fits, `[[`, 2)), ncol = length(object))
   }
   
   # Compute weights (sample covariance)
@@ -148,20 +159,45 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
     P0 <- solve(R%*%S)%*%R
   }
   
-  # if(mint){
-  #   P <- P0
-  # } else {
-  #   fc_h1 <- map_vec(fc, function(f) pull(f, -1) |> mean() |> head(1)) # extract one-step ahead base forecasts and use the resulted P matrix for all forecast horizons
-  #   fit.mip <- mip_l0(fc_h1, S, W, G0 = P0,
-  #                     lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2,
-  #                     M = NULL,
-  #                     solver = "gurobi")
-  #   P <- fit.mip$G
+  # Extract one-step ahead base forecasts
+  fc_h1 <- map_vec(fc, function(f) pull(f, -1) |> mean() |> head(1)) # use the resulted P matrix for all forecast horizons
+  
+  # Generate candidate lambda_0
+  if(is.null(lambda_0)){
+    lambda_0_max <- (t(fc_h1) %*% solve(W) %*% fc_h1)/NCOL(S)
+    lambda_0 <- c(0, exp(seq(from = log(1e-04*lambda_0_max), to = log(lambda_0_max), 
+                             by = log(1e04)/(nlambda_0 - 2))))
+  }
+  
+  find_lambda_0 <- function(lambda_0, lambda_1, lambda_2,
+                            fc_h1, S, W, G0,
+                            M, solver,
+                            values, fits){
+    fit.mip_i <- mip_l0(fc = fc_h1, S = S, W = W, G0 = G0,
+                        lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2,
+                        M = M,
+                        solver = solver)
+    SSE <- sum((as.vector(values) - kronecker(S, fits) %*% as.vector(t(fit.mip_i$G)))^2, na.rm = TRUE)
+    return(SSE)
+  }
+  SSE <- lambda_0 |>
+    map_dbl(find_lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2,
+            fc_h1, S, W, G0 = P0,
+            M = NULL, solver = "gurobi",
+            values, fits)
+  # SSE <- NULL
+  # for(i in seq.int(length(lambda_0))){
+  #   fit.mip_i <- mip_l0(fc_h1, S, W, G0 = P0,
+  #                       lambda_0 = lambda_0[i], lambda_1 = lambda_1, lambda_2 = lambda_2,
+  #                       M = NULL,
+  #                       solver = "gurobi")
+  #   SSE[i] <- sum((as.vector(values) - kronecker(S, fits) %*% as.vector(t(fit.mip_i$G)))^2, na.rm = TRUE)
   # }
   
-  fc_h1 <- map_vec(fc, function(f) pull(f, -1) |> mean() |> head(1)) # extract one-step ahead base forecasts and use the resulted P matrix for all forecast horizons
+  # Estimate P matrix using the selected optimal lambda_0
+  lambda_0_select <- lambda_0[which.min(SSE)]
   fit.mip <- mip_l0(fc_h1, S, W, G0 = P0,
-                    lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2,
+                    lambda_0 = lambda_0_select, lambda_1 = lambda_1, lambda_2 = lambda_2,
                     M = NULL,
                     solver = "gurobi")
   P <- fit.mip$G
