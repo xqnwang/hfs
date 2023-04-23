@@ -1,0 +1,73 @@
+# utility functions
+cumsum_matrix <- function(x) apply(x, 2, cumsum)
+brodcast_sum <- function(x, y){
+  t(apply(x, 1, function(row){row + y}))
+}
+
+# simulate seasonal time series following the simulation setup in Wickramasuriya et al. (2019)
+simulate_ts <- function(n, sigma2_varrho, sigma2_varsigma, sigma2_omega, eta_mat, m){
+  library(MASS)
+  library(MTS)
+  nseries <- dim(sigma2_omega)[1]
+  
+  # level
+  initial_level <- rnorm(nseries)
+  varrho <- mvrnorm(n-1, rep(0, nseries), sigma2_varrho)
+  level <- brodcast_sum(cumsum_matrix(varrho), initial_level)
+  level <- rbind(initial_level, level)
+  
+  # trend
+  initial_trend <- rnorm(nseries)
+  varsigma <- mvrnorm(n-1, rep(0, nseries), sigma2_varsigma)
+  trend <- rbind(initial_trend, 
+                 brodcast_sum(cumsum_matrix(varsigma), initial_trend))
+  
+  # seasonal
+  initial_seasonal <- mvrnorm(m-1, rep(0, nseries), diag(rep(1, nseries)))
+  omega <- mvrnorm(n-m+1, rep(0, nseries), sigma2_omega)
+  season <- initial_seasonal
+  for (i in m:n) {
+    season <- rbind(season, -apply(season[(i-m+1):(i-1),], 2, sum)+omega[i-m+1,])
+  }
+  # eta
+  eta <- VARMAsim(n, sample(c(0, 1), 1, replace = TRUE), sample(c(0, 1), 1, replace = TRUE),
+                  phi = diag(runif(4, 0.5, 0.7)), theta = diag(runif(4, 0.5, 0.7)),
+                  sigma = eta_mat)$series
+  bts <- level + trend + season + eta
+  bts
+}
+
+
+# setup parameters
+repeat_n = 500
+n = 180
+h = 16
+freq = 4
+sigma2_varrho = diag(rep(2, 4))
+sigma2_varsigma = diag(rep(0.007, 4))
+sigma2_varomega = diag(rep(7, 4))
+eta_mat = diag(c(5, 4, 5, 4))
+eta_mat[1, 2] = eta_mat[2, 1] = 3
+eta_mat[1, 3] = eta_mat[3, 1] = 2
+eta_mat[1, 4] = eta_mat[4, 1] = 1
+eta_mat[2, 3] = eta_mat[3, 2] = 2
+eta_mat[2, 4] = eta_mat[4, 2] = 1
+eta_mat[3, 4] = eta_mat[4, 3] = 3
+
+# simulation data
+set.seed(123)
+simulated_set = data.frame()
+for (i in 1:repeat_n) {
+  ts = simulate_ts(n, 
+                   sigma2_varrho, 
+                   sigma2_varsigma, 
+                   sigma2_varomega, 
+                   eta_mat,
+                   freq)
+  ts = data.frame(ts, t=seq(as.Date("1978-01-01"), by="quarter", length.out = n), index=i, row.names = NULL)
+  simulated_set = rbind(simulated_set, ts)
+}
+
+colnames(simulated_set) <- c("AA", "AB", "BA", "BB", "Quarter", "Index")
+
+write.csv(simulated_set, file = 'data/simulation_data.csv', row.names = FALSE)
