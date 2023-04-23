@@ -901,6 +901,52 @@ $$
 * The choice of $\lambda$ is scale dependent.
 * One-step head forecast VS. multi-step ahead forecast.
 * Different models to be used for each series.
+* Computationally expensive.
+
+### Adjustment of the MinT estimates
+
+#### MinT problem
+
+$$
+\begin{gathered}
+\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
+\Downarrow \\
+\min _{\boldsymbol{G}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}
+\end{gathered}
+$$
+
+#### Subset selection problem
+
+$$
+\begin{gathered}
+\min _{\boldsymbol{GA}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \boldsymbol{A} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \boldsymbol{A} \hat{\boldsymbol{y}}_h\right) + \lambda_0\left\|\boldsymbol{A} \boldsymbol{1}\right\|_0 \quad \text { s.t. } \boldsymbol{G} \boldsymbol{A} \boldsymbol{S}=\boldsymbol{I}_{n_b} \\
+\Downarrow \text{ assuming G is given by MinT with the W estimate}\\
+\min _{\boldsymbol{A}} \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \left(\boldsymbol{S}\boldsymbol{G}\right)\right) \operatorname{vec}(\boldsymbol{A})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \left(\boldsymbol{S}\boldsymbol{G}\right)\right) \operatorname{vec}(\boldsymbol{A})\right) + \lambda_0\left\|\boldsymbol{A} \boldsymbol{1}\right\|_0 \quad \text { s.t. } \boldsymbol{G} \boldsymbol{A} \boldsymbol{S}=\boldsymbol{I}_{n_b}
+\end{gathered}
+$$
+where $\boldsymbol{A}$ is an $n \times n$ **diagonal matrix**.
+
+**The mixed integer optimization (MIO) formulation is**
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{A, z}} & \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \left(\boldsymbol{S}\boldsymbol{G}\right)\right) \operatorname{vec}(\boldsymbol{A})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \left(\boldsymbol{S}\boldsymbol{G}\right)\right) \operatorname{vec}(\boldsymbol{A})\right) + \lambda_0 \sum_{j=1}^{n} z_j \\
+\text { s.t. } & \boldsymbol{G} \boldsymbol{A} \boldsymbol{S}=\boldsymbol{I}_{n_b} \Leftrightarrow\left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{G}\right) \operatorname{vec}(\boldsymbol{A})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
+& a_{ij} = 0, \quad i \neq j \\
+& -M \boldsymbol{z} \leqslant \boldsymbol{A} \boldsymbol{1} \leqslant M \boldsymbol{z} \\
+& z_j \in\{0,1\} \\
+& i, j \in [n]
+\end{aligned}
+$$
+
+Compared with the method that directly estimates all the elements of $\boldsymbol{G}$, this method leads to the adjustment of the estimated MinT $\boldsymbol{G}$. Specifically, the added penalty will zero out some columns of $\boldsymbol{G}_{MinT}$ and scale remaining columns proportionally. Elements in the same column will be scaled by the same proportion, which means the same scale is applied to the same base forecast to obtain the reconciled bottom forecasts through forecast combination.
+$$
+\begin{gathered}
+\boldsymbol{G}=\left[ \boldsymbol{g}_{\cdot 1}, \boldsymbol{g}_{\cdot 2}, \ldots, \boldsymbol{g}_{\cdot n} \right] \\
+\boldsymbol{GA}=\left[ a_{1}\boldsymbol{g}_{\cdot 1}, a_{2}\boldsymbol{g}_{\cdot 2}, \ldots, a_{n}\boldsymbol{g}_{\cdot n} \right]
+\end{gathered}
+$$
+
 
 
 # Other issues
