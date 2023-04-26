@@ -903,6 +903,409 @@ $$
 * Different models to be used for each series.
 * Computationally expensive.
 
+### Hyperparameter tuning
+
+Minimization problem:
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}} & \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
+& \quad + \lambda_0 \sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0 +\lambda_1\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_1+\lambda_2\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_2^2 \\
+\text { s.t. } & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}
+\end{aligned}
+$$
+
+* Set $\lambda_{1}$ and $\lambda_{2}$ to zero.
+
+* Choose $\lambda_{\max}$ to achieve maximum subset selection.
+    * unbiasedness assumption $\text{rank}(\boldsymbol{G}) = n_b \Longrightarrow \min \sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0 = n_b$
+    * assume that the maximum loss of the first term is $\frac{1}{2}\hat{\boldsymbol{y}}_h^{\prime} \boldsymbol{W}_h^{-1}\hat{\boldsymbol{y}}_h$
+  
+* Set $\lambda_{\max}$ to $\frac{1}{n_b}\frac{1}{2}\hat{\boldsymbol{y}}_h^{\prime} \boldsymbol{W}_h^{-1}\hat{\boldsymbol{y}}_h$.
+
+* Similarly to the `glmnet` package, we select a minimum value $\lambda_{\min }=\epsilon \lambda_{\max }$, and construct a sequence of $K-1$ values of $\lambda$ decreasing from $\lambda_{\max }$ to $\lambda_{\min }$ **on the log scale**. $\epsilon=10^{-4}$ and $K=20$.
+
+* Select the best value of $\lambda_0$ from $0, \lambda_{\min }, \ldots, \lambda_{\max }$ by minimizing the sum of squared reconciled forecast errors in the training set, even though fitted values are often not true one-step ahead forecasts. (Avoid cross-validation)
+
+**Simulation setup**: same with sec 3.4 of Wickramasuriya et al. (2019). This process is repeated 500 times.
+
+**Simulation results**:
+
+* Scenario 1: models for some bottom-level series (AA and BB) are mis-specified using drift method
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE, ft.arraystretch = 0.8}
+library(fable)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(lubridate)
+library(purrr)
+library(tsibble)
+library(rlang)
+library(ggplot2)
+
+all_accuracy <- readRDS("../data/simulation_accuracy_scenario1.rds")
+
+# Calculate accuracy
+sim_accuracy <- dplyr::bind_rows(all_accuracy, .id = "id")
+
+model_name <- sim_accuracy |> distinct(.model) |> pull(.model)
+filter_tab <- matrix(NA, ncol = 1, nrow = 4)
+filter_tab[1] <- "sim_accuracy |> filter(is_aggregated(Middle) & is_aggregated(Bottom))"
+filter_tab[2] <- "sim_accuracy |> filter(!is_aggregated(Middle) & is_aggregated(Bottom))"
+filter_tab[3] <- "sim_accuracy |> filter(!is_aggregated(Middle) & !is_aggregated(Bottom))"
+filter_tab[4] <- "sim_accuracy"
+accuracy_summary <- lapply(1:4, function(i){
+  err <- eval(parse(text = filter_tab[i])) |>
+    group_by(.model) |>
+    summarise_at(c("ME", "RMSE", "MAE", "MPE", "MAPE", "MASE", "RMSSE"), mean)
+  err <- err |> arrange(factor(.model, levels = model_name))
+})
+names(accuracy_summary) <- c("Total", "Middle", "Bottom", "All")
+
+accuracy_summary_1 <- lapply(1:4, function(i){
+  err <- eval(parse(text = filter_tab[i])) |>
+    filter(h == 1) |>
+    group_by(.model) |>
+    summarise_at(c("ME", "RMSE", "MAE", "MPE", "MAPE", "MASE", "RMSSE"), mean)
+  err <- err |> arrange(factor(.model, levels = model_name))
+})
+names(accuracy_summary_1) <- c("Total", "Middle", "Bottom", "All")
+
+accuracy_summary_1_8 <- lapply(1:4, function(i){
+  err <- eval(parse(text = filter_tab[i])) |>
+    filter(h <= 8) |>
+    group_by(.model) |>
+    summarise_at(c("ME", "RMSE", "MAE", "MPE", "MAPE", "MASE", "RMSSE"), mean)
+  err <- err |> arrange(factor(.model, levels = model_name))
+})
+names(accuracy_summary_1_8) <- c("Total", "Middle", "Bottom", "All")
+
+## RMSE
+RMSE_total <- cbind(accuracy_summary_1$Total |> pull(RMSE), 
+                    accuracy_summary_1_8$Total |> pull(RMSE),
+                    accuracy_summary$Total |> pull(RMSE))
+RMSE_middle <- cbind(accuracy_summary_1$Middle |> pull(RMSE), 
+                     accuracy_summary_1_8$Middle |> pull(RMSE),
+                     accuracy_summary$Middle |> pull(RMSE))
+RMSE_bottom <- cbind(accuracy_summary_1$Bottom |> pull(RMSE), 
+                     accuracy_summary_1_8$Bottom |> pull(RMSE),
+                     accuracy_summary$Bottom |> pull(RMSE))
+RMSE_all <- cbind(accuracy_summary_1$All |> pull(RMSE), 
+                  accuracy_summary_1_8$All |> pull(RMSE),
+                  accuracy_summary$All |> pull(RMSE))
+
+## MASE
+MASE_total <- cbind(accuracy_summary_1$Total |> pull(MASE), 
+                    accuracy_summary_1_8$Total |> pull(MASE),
+                    accuracy_summary$Total |> pull(MASE))
+MASE_middle <- cbind(accuracy_summary_1$Middle |> pull(MASE), 
+                     accuracy_summary_1_8$Middle |> pull(MASE),
+                     accuracy_summary$Middle |> pull(MASE))
+MASE_bottom <- cbind(accuracy_summary_1$Bottom |> pull(MASE), 
+                     accuracy_summary_1_8$Bottom |> pull(MASE),
+                     accuracy_summary$Bottom |> pull(MASE))
+MASE_all <- cbind(accuracy_summary_1$All |> pull(MASE), 
+                  accuracy_summary_1_8$All |> pull(MASE),
+                  accuracy_summary$All |> pull(MASE))
+
+total <- data.frame(Method = model_name, cbind(RMSE_total, MASE_total) |> round(3))
+middle <- data.frame(Method = model_name, cbind(RMSE_middle, MASE_middle) |> round(3))
+bottom <- data.frame(Method = model_name, cbind(RMSE_bottom, MASE_bottom) |> round(3))
+all <- data.frame(Method = model_name, cbind(RMSE_all, MASE_all) |> round(3))
+
+library(flextable)
+table_total <- flextable(total) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("Total",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_middle <- flextable(middle) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("Middle",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_bottom <- flextable(bottom) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("Bottom",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_all <- flextable(all) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("All",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_total |>  fontsize(size = 9, part = "all"); 
+table_middle |> fontsize(size = 9, part = "all");
+table_bottom |>  fontsize(size = 9, part = "all"); 
+table_all |> fontsize(size = 9, part = "all")
+```
+
+* Scenario 2: models for top-level series (Total) are mis-specified using drift method
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE, ft.arraystretch = 0.8}
+all_accuracy <- readRDS("../data/simulation_accuracy_scenario2.rds")
+
+# Calculate accuracy
+sim_accuracy <- dplyr::bind_rows(all_accuracy, .id = "id")
+
+model_name <- sim_accuracy |> distinct(.model) |> pull(.model)
+filter_tab <- matrix(NA, ncol = 1, nrow = 4)
+filter_tab[1] <- "sim_accuracy |> filter(is_aggregated(Middle) & is_aggregated(Bottom))"
+filter_tab[2] <- "sim_accuracy |> filter(!is_aggregated(Middle) & is_aggregated(Bottom))"
+filter_tab[3] <- "sim_accuracy |> filter(!is_aggregated(Middle) & !is_aggregated(Bottom))"
+filter_tab[4] <- "sim_accuracy"
+accuracy_summary <- lapply(1:4, function(i){
+  err <- eval(parse(text = filter_tab[i])) |>
+    group_by(.model) |>
+    summarise_at(c("ME", "RMSE", "MAE", "MPE", "MAPE", "MASE", "RMSSE"), mean)
+  err <- err |> arrange(factor(.model, levels = model_name))
+})
+names(accuracy_summary) <- c("Total", "Middle", "Bottom", "All")
+
+accuracy_summary_1 <- lapply(1:4, function(i){
+  err <- eval(parse(text = filter_tab[i])) |>
+    filter(h == 1) |>
+    group_by(.model) |>
+    summarise_at(c("ME", "RMSE", "MAE", "MPE", "MAPE", "MASE", "RMSSE"), mean)
+  err <- err |> arrange(factor(.model, levels = model_name))
+})
+names(accuracy_summary_1) <- c("Total", "Middle", "Bottom", "All")
+
+accuracy_summary_1_8 <- lapply(1:4, function(i){
+  err <- eval(parse(text = filter_tab[i])) |>
+    filter(h <= 8) |>
+    group_by(.model) |>
+    summarise_at(c("ME", "RMSE", "MAE", "MPE", "MAPE", "MASE", "RMSSE"), mean)
+  err <- err |> arrange(factor(.model, levels = model_name))
+})
+names(accuracy_summary_1_8) <- c("Total", "Middle", "Bottom", "All")
+
+## RMSE
+RMSE_total <- cbind(accuracy_summary_1$Total |> pull(RMSE), 
+                    accuracy_summary_1_8$Total |> pull(RMSE),
+                    accuracy_summary$Total |> pull(RMSE))
+RMSE_middle <- cbind(accuracy_summary_1$Middle |> pull(RMSE), 
+                     accuracy_summary_1_8$Middle |> pull(RMSE),
+                     accuracy_summary$Middle |> pull(RMSE))
+RMSE_bottom <- cbind(accuracy_summary_1$Bottom |> pull(RMSE), 
+                     accuracy_summary_1_8$Bottom |> pull(RMSE),
+                     accuracy_summary$Bottom |> pull(RMSE))
+RMSE_all <- cbind(accuracy_summary_1$All |> pull(RMSE), 
+                  accuracy_summary_1_8$All |> pull(RMSE),
+                  accuracy_summary$All |> pull(RMSE))
+
+## MASE
+MASE_total <- cbind(accuracy_summary_1$Total |> pull(MASE), 
+                    accuracy_summary_1_8$Total |> pull(MASE),
+                    accuracy_summary$Total |> pull(MASE))
+MASE_middle <- cbind(accuracy_summary_1$Middle |> pull(MASE), 
+                     accuracy_summary_1_8$Middle |> pull(MASE),
+                     accuracy_summary$Middle |> pull(MASE))
+MASE_bottom <- cbind(accuracy_summary_1$Bottom |> pull(MASE), 
+                     accuracy_summary_1_8$Bottom |> pull(MASE),
+                     accuracy_summary$Bottom |> pull(MASE))
+MASE_all <- cbind(accuracy_summary_1$All |> pull(MASE), 
+                  accuracy_summary_1_8$All |> pull(MASE),
+                  accuracy_summary$All |> pull(MASE))
+
+total <- data.frame(Method = model_name, cbind(RMSE_total, MASE_total) |> round(3))
+middle <- data.frame(Method = model_name, cbind(RMSE_middle, MASE_middle) |> round(3))
+bottom <- data.frame(Method = model_name, cbind(RMSE_bottom, MASE_bottom) |> round(3))
+all <- data.frame(Method = model_name, cbind(RMSE_all, MASE_all) |> round(3))
+
+library(flextable)
+table_total <- flextable(total) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("Total",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_middle <- flextable(middle) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("Middle",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_bottom <- flextable(bottom) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("Bottom",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_all <- flextable(all) |>
+  add_header_row(
+    top = TRUE,        # New header goes on top of existing header row
+    values = c("All",     # Header values for each column below
+               "RMSE", 
+               "",     # This will be the top-level header for this and two next columns
+               "",
+               "MASE",
+               "", # This will be the top-level header for this and two next columns
+               "")) |>
+  set_header_labels(         # Rename the columns in original header row
+    X1 = "h=1", 
+    X2 = "1-8",                  
+    X3 = "1-16",
+    X4 = "h=1",
+    X5 = "1-8",
+    X6 = "1-16") |>
+  bg(part = "body", bg = "gray95") |>
+  bg(j = 2, i = ~ X1 == min(X1), part = "body", bg = "orange") |>
+  bg(j = 3, i = ~ X2 == min(X2), part = "body", bg = "orange") |>
+  bg(j = 4, i = ~ X3 == min(X3), part = "body", bg = "orange") |>
+  bg(j = 5, i = ~ X4 == min(X4), part = "body", bg = "orange") |>
+  bg(j = 6, i = ~ X5 == min(X5), part = "body", bg = "orange") |>
+  bg(j = 7, i = ~ X6 == min(X6), part = "body", bg = "orange")
+
+table_total |>  fontsize(size = 9, part = "all"); 
+table_middle |> fontsize(size = 9, part = "all");
+table_bottom |>  fontsize(size = 9, part = "all"); 
+table_all |> fontsize(size = 9, part = "all")
+```
+
+1. Model misspecification (also exploring the effect of correlation)
+
+2. Poor forecastability
+
+3. Large hierarchy
+
 ### Adjustment of the MinT estimates
 
 #### MinT problem
@@ -947,9 +1350,11 @@ $$
 \end{gathered}
 $$
 
+* It will always return an identity matrix $\boldsymbol{A}$ due to unbiasedness assumption.
 
 
-# Other issues
+
+# Other issues to be solved
 
 ## Temporal reconciliation
 

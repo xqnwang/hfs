@@ -112,7 +112,7 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
     W <- covm
   } else if (method == "mint_shrink"){
     # min_trace shrink
-    tar <- diag(apply(res, 2, compose(crossprod, stats::na.omit))/n)
+    tar <- diag(apply(res, 2, purrr::compose(crossprod, stats::na.omit))/n)
     corm <- cov2cor(covm)
     xs <- scale(res, center = FALSE, scale = sqrt(diag(covm)))
     xs <- xs[stats::complete.cases(xs),]
@@ -164,7 +164,7 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
   
   # Generate candidate lambda_0
   if(is.null(lambda_0)){
-    lambda_0_max <- (t(fc_h1) %*% solve(W) %*% fc_h1)/NCOL(S)
+    lambda_0_max <- 0.5*(t(fc_h1) %*% solve(W) %*% fc_h1)/NCOL(S)
     lambda_0 <- c(0, exp(seq(from = log(1e-04*lambda_0_max), to = log(lambda_0_max), 
                              by = log(1e04)/(nlambda_0 - 2))))
   }
@@ -185,14 +185,6 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
             fc_h1, S, W, G0 = P0,
             M = NULL, solver = "gurobi",
             values, fits)
-  # SSE <- NULL
-  # for(i in seq.int(length(lambda_0))){
-  #   fit.mip_i <- mip_l0(fc_h1, S, W, G0 = P0,
-  #                       lambda_0 = lambda_0[i], lambda_1 = lambda_1, lambda_2 = lambda_2,
-  #                       M = NULL,
-  #                       solver = "gurobi")
-  #   SSE[i] <- sum((as.vector(values) - kronecker(S, fits) %*% as.vector(t(fit.mip_i$G)))^2, na.rm = TRUE)
-  # }
   
   # Estimate P matrix using the selected optimal lambda_0
   lambda_0_select <- lambda_0[which.min(SSE)]
