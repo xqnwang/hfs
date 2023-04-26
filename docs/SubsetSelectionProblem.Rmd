@@ -761,11 +761,11 @@ rec <- mip_l0(fc, S, W_I, G0 = NULL,
               solver = "gurobi")
 rec$G
 
-print("# .mip_l0")
-.rec <- .mip_l0(fc, S, W_I, G0 = NULL, 
-                lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, M = NULL, 
-                solver = "gurobi")
-.rec$G
+# print("# .mip_l0")
+# .rec <- .mip_l0(fc, S, W_I, G0 = NULL, 
+#                 lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, M = NULL, 
+#                 solver = "gurobi")
+# .rec$G
 ```
 
 If we do not put any penalty terms on $\boldsymbol{G}$, that is $\lambda_0 = \lambda_1 = \lambda_2 = 0$, the output should be identical to the result given by MinT using the corresponding estimator for the variance-covariance matrix of the base forecast errors.
