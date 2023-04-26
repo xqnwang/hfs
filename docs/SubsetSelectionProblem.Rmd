@@ -813,13 +813,6 @@ $$
 \boldsymbol{U}^{\prime}\boldsymbol{\tilde{y}}_h = \boldsymbol{0}\\
 \text{ where } \boldsymbol{U}^{\prime} = [\boldsymbol{I}_{n-n_b}| -\boldsymbol{C}].
 $$
-We can directly solve the quadratic problem as follows.
-```{r, results = "hold"}
-# lsop
-rec_lsop <- lsop(fc, S, W_I, solver = "gurobi")
-# lsop, mip_l0, MinT (ols)
-cbind(rec_lsop$y_tilde, S %*% G %*% fc, S %*% G_ols %*% fc)
-```
 
 * In order to perform subset selection with shrinkage for $\boldsymbol{G}$. We can reformulate our minimization problem as follows.
 $$
