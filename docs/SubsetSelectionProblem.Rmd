@@ -756,13 +756,13 @@ The two functions (`mip_l0` and `.mip_l0`) give the identical estimated paramete
 
 ```{r, results = "hold"}
 print("# mip_l0")
-rec <- mip_l0(fc, S, W_I, G0 = NULL, 
+rec <- mip_l0(fc, S, W_I, G_bench = NULL, 
               lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, M = NULL, 
               solver = "gurobi")
 rec$G
 
 # print("# .mip_l0")
-# .rec <- .mip_l0(fc, S, W_I, G0 = NULL, 
+# .rec <- .mip_l0(fc, S, W_I, G_bench = NULL, 
 #                 lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, M = NULL, 
 #                 solver = "gurobi")
 # .rec$G
@@ -844,24 +844,24 @@ G_ols
 print("# mip_l0 with lambda_0 = lambda_1 = lambda_2 = 0")
 G
 
-print("# mip_l0 with lambda_1 = 0.1 and G0 = G_ols")
-mip_l0(fc, S, W_I, G0 = G_ols, 
+print("# mip_l0 with lambda_1 = 0.1 and G_bench = G_ols")
+mip_l0(fc, S, W_I, G_bench = G_ols, 
        lambda_0 = 0, lambda_1 = 0.1, lambda_2 = 0, M = NULL, 
        solver = "gurobi")$G
 
-print("# mip_l0 with lambda_1 = 0.001 and G0 = G_ols")
-mip_l0(fc, S, W_I, G0 = G_ols, 
+print("# mip_l0 with lambda_1 = 0.001 and G_bench = G_ols")
+mip_l0(fc, S, W_I, G_bench = G_ols, 
        lambda_0 = 0, lambda_1 = 0.001, lambda_2 = 0, M = NULL, 
        solver = "gurobi")$G
 
-print("# mip_l0 with lambda_1 = 0.1 and G0 = G_bu")
+print("# mip_l0 with lambda_1 = 0.1 and G_bench = G_bu")
 G_bu <- cbind(rep(0, 4), rep(0, 4), rep(0, 4), diag(1, 4))
-mip_l0(fc, S, W_I, G0 = G_bu, 
+mip_l0(fc, S, W_I, G_bench = G_bu, 
        lambda_0 = 0, lambda_1 = 0.1, lambda_2 = 0, M = NULL, 
        solver = "gurobi")$G
 
-print("# mip_l0 with lambda_0 = 0.1, lambda_1 = 0.1 and G0 = G_bu")
-mip_l0(fc, S, W_I, G0 = G_bu, 
+print("# mip_l0 with lambda_0 = 0.1, lambda_1 = 0.1 and G_bench = G_bu")
+mip_l0(fc, S, W_I, G_bench = G_bu, 
        lambda_0 = 0.1, lambda_1 = 0.1, lambda_2 = 0, M = NULL, 
        solver = "gurobi")$G
 ```
