@@ -1,139 +1,132 @@
-# Subset selection with shrinkage under unbiasedness assumptions
-## Weight matrix G is directly calculated using forecasts in test set
-## Cross-validation may be still needed to select the best value of lambda
-
-
-library(ROI)
-
-dbind <- function(...) {
-  ## sparse matrices construction
-  .dbind <- function(x, y) {
-    A <- slam::simple_triplet_zero_matrix(NROW(x), NCOL(y))
-    B <- slam::simple_triplet_zero_matrix(NROW(y), NCOL(x))
-    rbind(cbind(x, A), cbind(B, y))
-  }
-  Reduce(.dbind, list(...))
-}
-
-mip_l0 <- function(fc, S, W, G0 = NULL, 
-                   lambda_0, lambda_1 = 0, lambda_2 = 0, M = NULL,
-                   solver = "gurobi"){
-  # fc: an n-dimensional vector of base forecasts
-  # S: an n*n_b summing matrix
-  # W: an n*n covariance matrix of the base forecast errors
-  # G0: a n_b*n benchmark weight matrix used for shrinkage
-  # lambda_0: lambda_{0}
-  # lambda_1: lambda_{1}
-  # lambda_2: lambda_{2}
-  # M: a Big-M vaule
-  
-  # sparse functions
-  stzm <- slam::simple_triplet_zero_matrix
-  stdm <- slam::simple_triplet_diag_matrix
-  stm <- slam::simple_triplet_matrix
-  as.matrix <- Matrix::as.matrix
-  t <- Matrix::t
-  solve <- Matrix::solve
-  cov2cor <- Matrix::cov2cor
-  
-  # check input dimension
-  if(length(unique(c(length(fc), NROW(S), NROW(W), NCOL(W)))) != 1L){
-    stop("The dimensions of the inputs do not match each other")
-  }
-  if(is.null(G0)){
-    G0 <- matrix(0, nrow = NCOL(S), ncol = NROW(S)) # if G0 is null, then G should shrink toward 0 matrix
-  } else if (!identical(NCOL(G0), NROW(S))){
-    stop("The dimensions of the inputs do not match each other")
-  } else if (!identical(NROW(G0), NCOL(S))){
+#' Subset Selection for Forecast Reconciliation
+#' 
+#' Estimate G under a trace minimization framework, while zeroing out some columns 
+#' of G to enable subset selection in the context of forecast reconciliation.
+#' 
+#' @param fc A vector contains the base forecasts.
+#' @param S Summing or structural matrix.
+#' @param W Estimated variance-covariance matrix of the h-step-ahead base forecast errors.
+#' @param G_bench Target G matrix shrinks towards.
+#' @param lambda_0 A user supplied `lambda_0` value.
+#' @param lambda_1 A user supplied `lambda_1` value.
+#' @param lambda_2 A user supplied `lambda_2` value.
+#' @param M The value of the Big M.
+#' @param solver A character vector specifying the solver to use. If missing, then `gurobi` is used.
+#' 
+#' @import ROI
+#' 
+#' @export
+mip_l0 <- function(fc, S, W, G_bench = NULL, 
+                   lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, 
+                   M = NULL, solver = "gurobi"){
+  # Check input dimension
+  if(length(unique(c(length(fc), NROW(S), dim(W)))) != 1L){
     stop("The dimensions of the inputs do not match each other")
   }
   
-  # Big-M value
-  if(is.null(M)){
-    M <- ifelse(is.null(G0), NCOL(S)*3, abs(G0) |> Matrix::colSums() |> max()*3)
-  }
-  
-  # dimension info
+  # Dimension info
   n <- NROW(S); n_b <- NCOL(S)
   
-  # parameters in MIP
+  # Set Big-M value
+  if(is.null(M)){
+    M <- ifelse(is.null(G_bench), n_b*10, abs(G_bench) |> colSums() |> max()*10)
+  }
+  
+  # G_bench
+  if(is.null(G_bench)){
+    G_bench <- matrix(0, nrow = n_b, ncol = n) # G shrink towards zero matrix
+  }else if(NROW(G_bench) != n_b | NCOL(G_bench) != n){
+    stop("The dimensions of G_bench do not match that of S")
+  }
+  
+  # Parameters in the MIP problem
   # parameters <- c(paste0("g", seq.int(n_b*n)), # vec(G)
   #                 paste0("z", seq.int(n)),
   #                 paste0("e_check", seq.int(n)),
   #                 paste0("d_positive", seq.int(n_b*n)),
   #                 paste0("g_positive", seq.int(n_b*n)))
   n_parameters <- n_b*n + n + n + n_b*n + n_b*n
+  p <- n_b*n
+  solveW <- solve(W)
   
-  # optimization problem construction
+  # Optimization problem construction
   ## Obj: 1/2 t(e_check) W^{-1} e_check + lambda_0 \sum_{j=1}^{n} z_j + 
   ##                                    lambda_1 \sum d_positive +
   ##                                    lambda_2 t(d_positive) d_positive
-  Q0 <- dbind(stzm(n_b*n), stzm(n), solve(W), stdm(2*lambda_2, n_b*n), stzm(n_b*n))
-  A0 <- stm(i = rep(1, n + n_b*n),
-            j = c((n_b*n + 1):(n_b*n + n), (n_b*n + n + n + 1):(n_b*n + n + n + n_b*n)),
-            v = c(rep(lambda_0, n), rep(lambda_1, n_b*n)),
-            nrow = 1, ncol = n_parameters)
-  model <- OP(objective = Q_objective(Q = Q0, L = A0))
+  Q0 <- Matrix::bdiag(matrix(0, p, p), matrix(0, n, n), solveW,
+                      diag(x = 2*lambda_2, p), matrix(0, p, p)) |> 
+    as.matrix()
+  A0 <- Matrix::sparseVector(
+    i = c((p + 1):(p + n), (p + n + n + 1):(p + n + n + p)),
+    x = c(rep(lambda_0, n), rep(lambda_1, p)),
+    length = n_parameters
+  ) |> as.vector()
+  model <- ROI::OP(objective = Q_objective(Q = Q0, L = A0))
   
-  ## constraints
+  ## Constraints
   ### C1: fc - kronecker(t(fc), S) %*% g = e_check
   ### <==> kronecker(t(fc), S) %*% g + e_check = fc
-  A1 <- cbind(kronecker(t(fc), S), stzm(n), stdm(1, n), stzm(n, n_b*n), stzm(n, n_b*n))
-  LC1 <- L_constraint(A1, eq(n), fc)
+  A1 <- cbind(kronecker(t(fc), S), matrix(0, n, n),
+              diag(n), matrix(0, n, 2*p))
+  LC1 <- ROI::L_constraint(A1, eq(n), fc)
   
   ### C2: kronecker(t(S), diag(1, n_b)) %*% g = vec(diag(1, n_b))
-  A2 <- cbind(kronecker(t(S), diag(1, n_b)), stzm(n_b*n_b, n), stzm(n_b*n_b, n), stzm(n_b*n_b, n_b*n), stzm(n_b*n_b, n_b*n))
-  LC2 <- L_constraint(A2, eq(n_b*n_b), as.vector(diag(1, n_b)))
+  A2 <- cbind(kronecker(t(S), diag(n_b)), matrix(0, n_b*n_b, 2*n + 2*p))
+  LC2 <- ROI::L_constraint(A2, eq(n_b*n_b), as.vector(diag(n_b)))
   
   ### C3: \sum g_positive_{(1+(j-1)*n_b):(j*n_b)} - M z_j <= 0 for j = 1,...,n
   A3 <- sapply(1:n, function(j){
-    L_j <- stm(i = rep(1, 1 + n_b),
-               j = c(n_b*n + j, n_b*n + n + n + n_b*n + (1+(j-1)*n_b):(j*n_b)),
-               v = c(-M, rep(1, n_b)),
-               nrow = 1, ncol = n_parameters)
-    as.matrix(L_j)
-  })  %>% t()
-  LC3 <- L_constraint(A3, rep("<=", n), rep(0, n))
+    L_j <- Matrix::sparseVector(
+      i = c(p + j, p + n + n + p + (1+(j-1)*n_b):(j*n_b)),
+      x = c(-M, rep(1, n_b)),
+      length = n_parameters
+    )
+    return(as.matrix(L_j))
+  }) |> t()
+  LC3 <- ROI::L_constraint(A3, rep("<=", n), rep(0, n))
   
   ### C4: g - g_positive <= 0
-  A4 <- cbind(stdm(1, n_b*n), stzm(n_b*n, n), stzm(n_b*n, n), stzm(n_b*n), stdm(-1, n_b*n))
-  LC4 <- L_constraint(A4, rep("<=", n_b*n), rep(0, n_b*n))
+  A4 <- cbind(diag(p), matrix(0, p, 2*n + p), diag(x = -1, p))
+  LC4 <- ROI::L_constraint(A4, rep("<=", p), rep(0, p))
   
   ### C5: g + g_positive >= 0
-  A5 <- cbind(stdm(1, n_b*n), stzm(n_b*n, n), stzm(n_b*n, n), stzm(n_b*n), stdm(1, n_b*n))
-  LC5 <- L_constraint(A5, rep(">=", n_b*n), rep(0, n_b*n))
+  A5 <- cbind(diag(p), matrix(0, p, 2*n + p), diag(p))
+  LC5 <- L_constraint(A5, rep(">=", p), rep(0, p))
   
-  ### C6: g - d_positive <= vec(G0)
-  A6 <- cbind(stdm(1, n_b*n), stzm(n_b*n, n), stzm(n_b*n, n), stdm(-1, n_b*n), stzm(n_b*n))
-  LC6 <- L_constraint(A6, rep("<=", n_b*n), as.vector(G0))
+  ### C6: g - d_positive <= vec(G_bench)
+  A6 <- cbind(diag(p), matrix(0, p, 2*n), diag(x = -1, p), matrix(0, p, p))
+  LC6 <- ROI::L_constraint(A6, rep("<=", p), as.vector(G_bench))
   
-  ### C7: g + d_positive >= vec(G0)
-  A7 <- cbind(stdm(1, n_b*n), stzm(n_b*n, n), stzm(n_b*n, n), stdm(1, n_b*n), stzm(n_b*n))
-  LC7 <- L_constraint(A7, rep(">=", n_b*n), as.vector(G0))
+  ### C7: g + d_positive >= vec(G_bench)
+  A7 <- cbind(diag(p), matrix(0, p, 2*n), diag(p), matrix(0, p, p))
+  LC7 <- ROI::L_constraint(A7, rep(">=", p), as.vector(G_bench))
   
   if(lambda_0 == 0L & lambda_1 == 0L & lambda_2 == 0L){
     constraints(model) <- rbind(LC1, LC2)
-  } else if (lambda_0 == 0L){
+  }else if(lambda_0 == 0L){
     constraints(model) <- rbind(LC1, LC2, LC6, LC7)
-  } else if (lambda_1 == 0L & lambda_2 == 0L){
+  }else if(lambda_1 == 0L & lambda_2 == 0L){
     constraints(model) <- rbind(LC1, LC2, LC3, LC4, LC5)
   } else {
     constraints(model) <- rbind(LC1, LC2, LC3, LC4, LC5, LC6, LC7)
   }
 
   ### z_g \in {0, 1}
-  types(model) <- c(rep("C", n_b*n), rep("B", n), rep("C", n), 
-                    rep("C", n_b*n), rep("C", n_b*n))
-  bounds(model) <- V_bound(li = c(1:(n_b*n), (n_b*n + n + 1):(n_b*n + n + n)), lb = rep.int(-Inf, n_b*n + n), nobj = n_parameters) # default of lower bound is 0
+  types(model) <- c(rep("C", p), rep("B", n), rep("C", n + 2*p))
+  bounds(model) <- ROI::V_bound(li = c(1:p, (p + n + 1):(p + n + n)), lb = rep.int(-Inf, p + n), nobj = n_parameters) # default of lower bound is 0
   
   # optimal solution
-  model.solver <- ROI_solve(model, solver)
+  model.solver <- ROI::ROI_solve(model, solver)
   
   # output
-  model.slt <- solution(model.solver)
-  G <- model.slt[seq.int(n_b*n)] %>%
+  model.slt <- ROI::solution(model.solver)
+  G <- model.slt[seq.int(p)] |>
     matrix(nrow = n_b, ncol = n, byrow = FALSE)
-  z <- model.slt[(n_b*n+1):(n_b*n + n)]
+  if(lambda_0 == 0L){
+    z <- NULL
+  }else{
+    z <- model.slt[(p + 1):(p + n)]
+  }
   
   return(list(model = model, solver = model.solver, solution = model.slt,
               G = G, z = z))
