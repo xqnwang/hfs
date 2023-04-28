@@ -15,6 +15,7 @@ refs/
 # User-specific files
 .Ruserdata
 .DS_Store
+.RData
 
 # Core latex/pdflatex auxiliary files
 *.xdv
