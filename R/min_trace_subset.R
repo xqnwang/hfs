@@ -170,10 +170,10 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
   }
   
   find_lambda_0 <- function(lambda_0, lambda_1, lambda_2,
-                            fc_h1, S, W, G0,
+                            fc_h1, S, W, G_bench,
                             M, solver,
                             values, fits){
-    fit.mip_i <- mip_l0(fc = fc_h1, S = S, W = W, G0 = G0,
+    fit.mip_i <- mip_l0(fc = fc_h1, S = S, W = W, G_bench = G_bench,
                         lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2,
                         M = M,
                         solver = solver)
@@ -182,13 +182,13 @@ forecast.lst_mintsst_mdl <- function(object, key_data,
   }
   SSE <- lambda_0 |>
     map_dbl(find_lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2,
-            fc_h1, S, W, G0 = P0,
+            fc_h1, S, W, G_bench = P0,
             M = NULL, solver = "gurobi",
             values, fits)
   
   # Estimate P matrix using the selected optimal lambda_0
   lambda_0_select <- lambda_0[which.min(SSE)]
-  fit.mip <- mip_l0(fc_h1, S, W, G0 = P0,
+  fit.mip <- mip_l0(fc_h1, S, W, G_bench = P0,
                     lambda_0 = lambda_0_select, lambda_1 = lambda_1, lambda_2 = lambda_2,
                     M = NULL,
                     solver = "gurobi")
