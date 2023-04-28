@@ -136,7 +136,7 @@ mip_l0l2 <- function(x, y, group_indices, lambda_0, lambda_2, M,
 
 
 #----------------------------------------------------------------------
-# Comparison with L0Group
+# Comparison with L0Group https://github.com/hazimehh/L0Group/blob/main/Demo.ipynb
 #----------------------------------------------------------------------
 # import numpy as np
 # import scipy as sc
