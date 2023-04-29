@@ -30,7 +30,7 @@ reconcile <- function(base_forecasts, S,
                       fitted_values = NULL, train_data = NULL,
                       subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = NULL,
                       lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0, 
-                      nlambda_0 = 20, M = NULL, solver = "gurobi",
+                      nlambda_0 = 10, M = NULL, solver = "gurobi",
                       parallel = FALSE, workers = 2){
   # Dimension info
   n <- NROW(S); n_b <- NCOL(S)
@@ -109,7 +109,7 @@ reconcile <- function(base_forecasts, S,
       
       # Candidate lambda_0
       if (is.null(lambda_0)){
-        lambda_0_max <- 0.5*(t(fc) %*% solve(W) %*% fc)/n_b
+        lambda_0_max <- 0.1 * 0.5 * (t(fc) %*% solve(W) %*% fc)/n_b
         lambda_0 <- c(0, 
                       exp(seq(from = log(1e-04*lambda_0_max), 
                               to = log(lambda_0_max), 
