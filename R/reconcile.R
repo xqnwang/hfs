@@ -28,7 +28,7 @@ reconcile <- function(base_forecasts, S,
                       method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                       residuals = NULL, 
                       fitted_values = NULL, train_data = NULL,
-                      subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = NULL,
+                      subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = c("Zero", "G"),
                       lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0, 
                       nlambda_0 = 10, M = NULL, solver = "gurobi",
                       parallel = FALSE, workers = 2){
@@ -46,6 +46,7 @@ reconcile <- function(base_forecasts, S,
   }
   
   method <- match.arg(method)
+  G_bench <- match.arg(method)
   if (method == "bu"){
     # Buttom-up
     subset <- FALSE
@@ -116,8 +117,15 @@ reconcile <- function(base_forecasts, S,
                               by = log(1e04)/(nlambda_0 - 2)))
                       )
       }
-      if (lambda_1 == 0L & lambda_2 == 0L){
-        lambda_1 <- 1e-8
+      # if (lambda_1 == 0L & lambda_2 == 0L){
+      #   lambda_1 <- 1e-8
+      # }
+      
+      # Shrinkage matrix
+      if (G_bench == "Zero"){
+        G_bench <- NULL
+      } else{
+        G_bench <- G
       }
       
       # Find optimal lambda_0 by minimizing sum of squared reconciled residuals
