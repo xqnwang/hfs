@@ -3,24 +3,6 @@ library(magrittr)
 library(tsibble)
 library(forecast)
 
-#################################################
-# Import data
-#################################################
-
-data_sim <- readr::read_csv("data/simulation_data.csv") |>
-  mutate(Time = yearquarter(Quarter),
-         A = AA + AB,
-         B = BA + BB,
-         Total = AA + AB + BA + BB) |>
-  select(c(Index, Time, AA, AB, BA, BB, A, B, Total)) 
-
-S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
-           diag(rep(1, 4)))
-
-indices <- data_sim |>
-  distinct(Index) |>
-  pull(Index)
-
 base_forecast <- function(hts, method, h){
   hts |> 
     apply(2, function(series){
@@ -36,6 +18,26 @@ base_forecast <- function(hts, method, h){
     })
 }
 
+#################################################
+# Import data
+#################################################
+data_sim <- readr::read_csv("data/simulation_data.csv") |>
+  mutate(Time = yearquarter(Quarter),
+         A = AA + AB,
+         B = BA + BB,
+         Total = AA + AB + BA + BB) |>
+  select(c(Index, Time, AA, AB, BA, BB, A, B, Total)) 
+
+S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
+           diag(rep(1, 4)))
+
+indices <- data_sim |>
+  distinct(Index) |>
+  pull(Index)
+
+#################################################
+# Generate base forecasts
+#################################################
 fits <- resids <- train <- basefc <- test <- data.frame()
 pb <- lazybar::lazyProgressBar(length(indices))
 for (index in indices){
@@ -69,6 +71,9 @@ for (index in indices){
   pb$tick()$print()
 }
 
+#################################################
+# Save results
+#################################################
 saveRDS(fits, file = "data/simulation_fits.rds")
 saveRDS(resids, file = "data/simulation_resids.rds")
 saveRDS(train, file = "data/simulation_train.rds")

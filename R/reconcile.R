@@ -87,14 +87,14 @@ reconcile <- function(base_forecasts, S,
         lambda <- max(min(lambda, 1), 0)
         W <- lambda * tar + (1 - lambda) * covm
       } else {
-        abort("Unknown reconciliation method")
+        stop("Unknown reconciliation method")
       }
     }
     
     # Check positive definiteness of weights
     eigenvalues <- eigen(W, only.values = TRUE)[["values"]]
     if (any(eigenvalues < 1e-8)) {
-      abort("MinT methods need covariance matrix to be positive definite.", call. = FALSE)
+      stop("MinT methods need covariance matrix to be positive definite.", call. = FALSE)
     }
     
     # G matrix
@@ -118,6 +118,10 @@ reconcile <- function(base_forecasts, S,
       
       # Find optimal lambda_0 by minimizing sum of squared reconciled residuals
       if (length(lambda_0) > 1){
+        if (is.null(train_data) | is.null(fitted_values)){
+          stop("Training data and fitted values are required to find the optimal lambda_0")
+        }
+        
         if (parallel){
           future::plan(multiprocess, workers = workers)
           map_fun <- furrr::future_map
@@ -137,6 +141,7 @@ reconcile <- function(base_forecasts, S,
       fit.mip <- mip_l0(fc = fc, S = S, W = W, G_bench = G_bench, 
                         lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2, 
                         M = M, solver = solver)
+      
       G <- fit.mip$G
       z <- fit.mip$z
     }
