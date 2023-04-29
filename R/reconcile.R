@@ -15,6 +15,7 @@
 #' @param lambda_0 A user supplied `lambda_0` value.
 #' @param lambda_1 A user supplied `lambda_1` value.
 #' @param lambda_2 A user supplied `lambda_2` value.
+#' @param nlambda_0 Number of candidate `lambda_0` values to choose from.
 #' @param M The value of the Big M.
 #' @param solver A character vector specifying the solver to use. If missing, then `gurobi` is used.
 #' @param parallel Logical. If true, optimal `lambda_0` will be found in parallel.
@@ -29,7 +30,7 @@ reconcile <- function(base_forecasts, S,
                       fitted_values = NULL, train_data = NULL,
                       subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = NULL,
                       lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, 
-                      M = NULL, solver = "gurobi",
+                      nlambda_0 = 20, M = NULL, solver = "gurobi",
                       parallel = FALSE, workers = 2){
   # Dimension info
   n <- NROW(S); n_b <- NCOL(S)
