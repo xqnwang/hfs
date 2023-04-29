@@ -16,6 +16,7 @@
 #' @import ROI
 #' 
 #' @export
+library(ROI)
 mip_l0 <- function(fc, S, W, G_bench = NULL, 
                    lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, 
                    M = NULL, solver = "gurobi"){
@@ -61,18 +62,18 @@ mip_l0 <- function(fc, S, W, G_bench = NULL,
     x = c(rep(lambda_0, n), rep(lambda_1, p)),
     length = n_parameters
   ) |> as.vector()
-  model <- ROI::OP(objective = Q_objective(Q = Q0, L = A0))
+  model <- ROI::OP(objective = ROI::Q_objective(Q = Q0, L = A0))
   
   ## Constraints
   ### C1: fc - kronecker(t(fc), S) %*% g = e_check
   ### <==> kronecker(t(fc), S) %*% g + e_check = fc
   A1 <- cbind(kronecker(t(fc), S), matrix(0, n, n),
               diag(n), matrix(0, n, 2*p))
-  LC1 <- ROI::L_constraint(A1, eq(n), fc)
+  LC1 <- ROI::L_constraint(A1, ROI::eq(n), fc)
   
   ### C2: kronecker(t(S), diag(1, n_b)) %*% g = vec(diag(1, n_b))
   A2 <- cbind(kronecker(t(S), diag(n_b)), matrix(0, n_b*n_b, 2*n + 2*p))
-  LC2 <- ROI::L_constraint(A2, eq(n_b*n_b), as.vector(diag(n_b)))
+  LC2 <- ROI::L_constraint(A2, ROI::eq(n_b*n_b), as.vector(diag(n_b)))
   
   ### C3: \sum g_positive_{(1+(j-1)*n_b):(j*n_b)} - M z_j <= 0 for j = 1,...,n
   A3 <- sapply(1:n, function(j){
@@ -91,7 +92,7 @@ mip_l0 <- function(fc, S, W, G_bench = NULL,
   
   ### C5: g + g_positive >= 0
   A5 <- cbind(diag(p), matrix(0, p, 2*n + p), diag(p))
-  LC5 <- L_constraint(A5, rep(">=", p), rep(0, p))
+  LC5 <- ROI::L_constraint(A5, rep(">=", p), rep(0, p))
   
   ### C6: g - d_positive <= vec(G_bench)
   A6 <- cbind(diag(p), matrix(0, p, 2*n), diag(x = -1, p), matrix(0, p, p))
