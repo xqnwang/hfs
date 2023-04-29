@@ -40,7 +40,7 @@ reconcile <- function(base_forecasts, S,
     }
     base_forecasts <- as.matrix(base_forecasts, nrow = 1, ncol = n)
   } else{
-    if(NCOL(S) != n){
+    if(NCOL(base_forecasts) != n){
       stop("The dimensions of the base_forecasts do not match S")
     }
   }
@@ -116,6 +116,9 @@ reconcile <- function(base_forecasts, S,
                               by = log(1e04)/(nlambda_0 - 2)))
                       )
       }
+      if (lambda_1 == 0L & lambda_2 == 0L){
+        lambda_1 <- 1e-8
+      }
       
       # Find optimal lambda_0 by minimizing sum of squared reconciled residuals
       if (length(lambda_0) > 1){
@@ -124,18 +127,19 @@ reconcile <- function(base_forecasts, S,
         }
         
         if (parallel){
-          future::plan(multiprocess, workers = workers)
+          future::plan(multisession, workers = workers)
           map_fun <- furrr::future_map
         } else {
           map_fun <- purrr::map
         }
         
-        fit.lambda <- lambda_0 |>
+        fit.lambda <- lambda_0[-1] |>
           map_fun(\(l0) mip_l0(lambda_0 = l0,
                                fc = fc, S = S, W = W, G_bench = G_bench,
                                lambda_1 = lambda_1, lambda_2 = lambda_2,
                                M = M, solver = solver)$G)
-        sse <- purrr::map(fit.lambda, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2))
+        fit.lambda <- append(fit.lambda, list(G), after = 0) # lambda_0 = 0
+        sse <- purrr::map_dbl(fit.lambda, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2))
         sse_summary <- data.frame(lambda0 = lambda_0, sse = sse)
         lambda_0 <- lambda_0[which.min(sse)]
       }
@@ -150,9 +154,20 @@ reconcile <- function(base_forecasts, S,
   
   # Reconciliation
   y_tilde <- base_forecasts %*% t(G) %*% t(S)
+  colnames(y_tilde) <- colnames(base_forecasts)
   
   # Output
+  if (subset){
+    z <- z
+  } else{
+    z <- NA
+  }
+  if (exists("sse_summary")){
+    lambda0_report <- sse_summary
+  } else{
+    lambda0_report <- NA
+  }
   list(y_tilde = y_tilde, G = G,
-       z = ifelse(subset, z, NA),
-       lambda0_report = ifelse(exists("sse_summary"), sse_summary, NA))
+       z = z,
+       lambda0_report = lambda0_report)
 }
