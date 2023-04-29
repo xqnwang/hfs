@@ -29,7 +29,7 @@ reconcile <- function(base_forecasts, S,
                       residuals = NULL, 
                       fitted_values = NULL, train_data = NULL,
                       subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = NULL,
-                      lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, 
+                      lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0, 
                       nlambda_0 = 20, M = NULL, solver = "gurobi",
                       parallel = FALSE, workers = 2){
   # Dimension info
