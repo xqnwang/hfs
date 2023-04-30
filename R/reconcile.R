@@ -148,7 +148,7 @@ reconcile <- function(base_forecasts, S,
                                lambda_1 = lambda_1, lambda_2 = lambda_2,
                                M = M, solver = solver)$G)
         fit.lambda <- append(fit.lambda, list(G), after = 0) # lambda_0 = 0
-        sse <- purrr::map_dbl(fit.lambda, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2))
+        sse <- purrr::map_dbl(fit.lambda, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2)) |> round(2)
         sse_summary <- data.frame(lambda0 = lambda_0, sse = sse)
         lambda_0 <- lambda_0[which.min(sse)]
       }
