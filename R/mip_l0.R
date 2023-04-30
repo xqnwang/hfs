@@ -124,7 +124,7 @@ mip_l0 <- function(fc, S, W, G_bench = NULL,
   G <- model.slt[seq.int(p)] |>
     matrix(nrow = n_b, ncol = n, byrow = FALSE)
   if(lambda_0 == 0L){
-    z <- NULL
+    z <- NA
   }else{
     z <- model.slt[(p + 1):(p + n)]
   }
