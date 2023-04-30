@@ -62,7 +62,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test,
   MinT <- reconcile(base_forecasts = base_forecasts, S = S, method = "mint_cov",
                     residuals = residuals)
   MinT_subset <- reconcile(base_forecasts = base_forecasts, S = S, method = "mint_cov",
-                           residuals = residuals, 
+                           residuals = residuals,
                            fitted_values = fitted_values, train_data = train_data,
                            subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
                            parallel = parallel, workers = workers)
@@ -116,7 +116,7 @@ calc_rmse <- function(fc, data, h){
 #################################################
 # Import data
 #################################################
-data_sim <- readr::read_csv("data/simulation_data.csv") |>
+data_sim <- readr::read_csv("data/simulation_data_noisy.csv") |>
   mutate(Time = tsibble::yearquarter(Quarter),
          A = AA + AB,
          B = BA + BB,
@@ -169,20 +169,20 @@ for (index in indices){
 #################################################
 # Save base forecast results
 #################################################
-# saveRDS(fits, file = "data/simulation_fits.rds")
-# saveRDS(resids, file = "data/simulation_resids.rds")
-# saveRDS(train, file = "data/simulation_train.rds")
-# saveRDS(basefc, file = "data/simulation_basefc.rds")
-# saveRDS(test, file = "data/simulation_test.rds")
+saveRDS(fits, file = "data/simulation_noisy_fits.rds")
+saveRDS(resids, file = "data/simulation_noisy_resids.rds")
+saveRDS(train, file = "data/simulation_noisy_train.rds")
+saveRDS(basefc, file = "data/simulation_noisy_basefc.rds")
+saveRDS(test, file = "data/simulation_noisy_test.rds")
 
 #################################################
 # Import base forecast results
 #################################################
-fits <- readRDS("data/simulation_fits.rds")
-resids <- readRDS("data/simulation_resids.rds")
-train <- readRDS("data/simulation_train.rds")
-basefc <- readRDS("data/simulation_basefc.rds")
-test <- readRDS("data/simulation_test.rds")
+fits <- readRDS("data/simulation_noisy_fits.rds")
+resids <- readRDS("data/simulation_noisy_resids.rds")
+train <- readRDS("data/simulation_noisy_train.rds")
+basefc <- readRDS("data/simulation_noisy_basefc.rds")
+test <- readRDS("data/simulation_noisy_test.rds")
 
 #################################################
 # Reconcile ets forecasts
@@ -194,7 +194,7 @@ reconsf <- indices |>
                                                 G_bench = "Zero", nlambda_0 = 20,
                                                 parallel = FALSE, workers = 8),
                     .progress = TRUE)
-reconsf <- saveRDS(reconsf, file = "data/simulation_reconsf.rds")
+reconsf <- saveRDS(reconsf, file = "data/simulation_noisy_reconsf.rds")
 rm(reconsf)
 
 #################################################
@@ -209,7 +209,7 @@ reconsf_s1 <- indices |>
                                                 G_bench = "Zero", nlambda_0 = 20, 
                                                 parallel = FALSE, workers = 8),
                     .progress = TRUE)
-reconsf_s1 <- saveRDS(reconsf_s1, file = "data/simulation_reconsf_s1.rds")
+reconsf_s1 <- saveRDS(reconsf_s1, file = "data/simulation_noisy_reconsf_s1.rds")
 rm(reconsf_s1)
 
 #################################################
@@ -224,18 +224,19 @@ reconsf_s2 <- indices |>
                                                 G_bench = "Zero", nlambda_0 = 20, 
                                                 parallel = FALSE, workers = 8),
                     .progress = TRUE)
-reconsf_s2 <- saveRDS(reconsf_s2, file = "data/simulation_reconsf_s2.rds")
+reconsf_s2 <- saveRDS(reconsf_s2, file = "data/simulation_noisy_reconsf_s2.rds")
 rm(reconsf_s2)
 
 #################################################
 # Evaluation
 #################################################
-reconsf <- readRDS("data/simulation_reconsf_s1.rds")
+reconsf <- readRDS("data/simulation_noisy_reconsf_s2.rds")
 
 # Extract reconciled forecasts
 methods <- c("Base", "BU", "OLS", "OLS_subset", 
              "WLSs", "WLSs_subset", "WLSv", "WLSv_subset", 
-             "MinT", "MinT_subset", "MinTs", "MinTs_subset")
+             "MinT", "MinT_subset", 
+             "MinTs", "MinTs_subset")
 for(method in methods) { 
   out <- indices |> 
     purrr::map(\(index) 
@@ -248,18 +249,18 @@ for(method in methods) {
 # Calculate RMSE values
 for(h in c(1, 8, 16)){
   out <- bind_rows(Base = calc_rmse(base, test, h = h),
-                       BU = calc_rmse(bu, test, h = h),
-                       OLS = calc_rmse(ols, test, h = h),
-                       OLS_subset = calc_rmse(ols_subset, test, h = h),
-                       WLSs = calc_rmse(wlss, test, h = h),
-                       WLSs_subset = calc_rmse(wlss_subset, test, h = h),
-                       WLSv = calc_rmse(wlsv, test, h = h),
-                       WLSv_subset = calc_rmse(wlsv_subset, test, h = h),
-                       MinT = calc_rmse(mint, test, h = h),
-                       MinT_subset = calc_rmse(mint_subset, test, h = h),
-                       MinTs = calc_rmse(mints, test, h = h),
-                       MinTs_subset = calc_rmse(mints_subset, test, h = h),
-                       .id = "Method") |>
+                   BU = calc_rmse(bu, test, h = h),
+                   OLS = calc_rmse(ols, test, h = h),
+                   OLS_subset = calc_rmse(ols_subset, test, h = h),
+                   WLSs = calc_rmse(wlss, test, h = h),
+                   WLSs_subset = calc_rmse(wlss_subset, test, h = h),
+                   WLSv = calc_rmse(wlsv, test, h = h),
+                   WLSv_subset = calc_rmse(wlsv_subset, test, h = h),
+                   MinT = calc_rmse(mint, test, h = h),
+                   MinT_subset = calc_rmse(mint_subset, test, h = h),
+                   MinTs = calc_rmse(mints, test, h = h),
+                   MinTs_subset = calc_rmse(mints_subset, test, h = h),
+                   .id = "Method") |>
     mutate(Top = Total,
            Middle = (A + B)/2,
            Bottom = (AA + AB + BA + BB)/4,
