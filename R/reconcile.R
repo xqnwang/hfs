@@ -22,6 +22,7 @@
 #' @param workers Number of workers when `parallel = TRUE`.
 #' 
 #' @import ROI
+#' @import future
 #' 
 #' @export
 reconcile <- function(base_forecasts, S, 
@@ -117,9 +118,9 @@ reconcile <- function(base_forecasts, S,
                               by = log(1e04)/(nlambda_0 - 2)))
                       )
       }
-      # if (lambda_1 == 0L & lambda_2 == 0L){
-      #   lambda_1 <- 1e-8
-      # }
+      if (lambda_1 == 0L & lambda_2 == 0L){
+        lambda_1 <- 1e-5
+      }
       
       # Shrinkage matrix
       if (G_bench == "Zero"){
