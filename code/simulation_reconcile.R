@@ -2,6 +2,7 @@ library(tidyverse)
 library(magrittr)
 library(future)
 library(forecast)
+library(latex2exp)
 
 source('R/sourceDir.R')
 sourceDir("R", recursive = TRUE)
@@ -295,7 +296,7 @@ z_summary |>
   ggplot(aes(x = Series, y = Frequency)) +
   geom_bar(stat="identity") +
   facet_grid(vars(Method), scales = "free_y") +
-  labs(title = "Frequency of zero lambda_0",
+  labs(title = "Frequency of being zeroed out",
        y= "")
 
 # Extract lambda0_report
@@ -320,6 +321,7 @@ lambda0_summary |>
   ggplot(aes(x = factor(sse_index))) +
   geom_bar(stat = "count") +
   facet_grid(vars(Method), scales = "free_y") +
-  labs(title = "Frequency of zero lambda_0",
+  labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
+       x = TeX(r"(index of $\lambda_0$)"),
        y= "")
 
