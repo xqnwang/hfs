@@ -111,7 +111,7 @@ reconcile <- function(base_forecasts, S,
       
       # Candidate lambda_0
       if (is.null(lambda_0)){
-        lambda_0_max <- 0.5 * (t(fc) %*% solve(W) %*% fc)/n_b
+        lambda_0_max <- (0.5 * (t(fc) %*% solve(W) %*% fc)/n_b) |> as.vector()
         lambda_0 <- c(0, 
                       exp(seq(from = log(1e-04*lambda_0_max), 
                               to = log(lambda_0_max), 

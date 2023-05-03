@@ -7,6 +7,9 @@ library(latex2exp)
 source('R/sourceDir.R')
 sourceDir("R", recursive = TRUE)
 
+#################################################
+# Utility function
+#################################################
 base_forecast <- function(hts, method, h){
   out <- list()
   for(i in 1:NCOL(hts)){
@@ -117,7 +120,7 @@ calc_rmse <- function(fc, data, h){
 #################################################
 # Import data
 #################################################
-data_sim <- readr::read_csv("data/simulation_data_noisy.csv") |>
+data_sim <- readr::read_csv("data/simulation_data.csv") |>
   mutate(Time = tsibble::yearquarter(Quarter),
          A = AA + AB,
          B = BA + BB,
@@ -170,20 +173,20 @@ for (index in indices){
 #################################################
 # Save base forecast results
 #################################################
-saveRDS(fits, file = "data/simulation_noisy_fits.rds")
-saveRDS(resids, file = "data/simulation_noisy_resids.rds")
-saveRDS(train, file = "data/simulation_noisy_train.rds")
-saveRDS(basefc, file = "data/simulation_noisy_basefc.rds")
-saveRDS(test, file = "data/simulation_noisy_test.rds")
+saveRDS(fits, file = "data/simulation_fits.rds")
+saveRDS(resids, file = "data/simulation_resids.rds")
+saveRDS(train, file = "data/simulation_train.rds")
+saveRDS(basefc, file = "data/simulation_basefc.rds")
+saveRDS(test, file = "data/simulation_test.rds")
 
 #################################################
 # Import base forecast results
 #################################################
-fits <- readRDS("data/simulation_noisy_fits.rds")
-resids <- readRDS("data/simulation_noisy_resids.rds")
-train <- readRDS("data/simulation_noisy_train.rds")
-basefc <- readRDS("data/simulation_noisy_basefc.rds")
-test <- readRDS("data/simulation_noisy_test.rds")
+fits <- readRDS("data/simulation_fits.rds")
+resids <- readRDS("data/simulation_resids.rds")
+train <- readRDS("data/simulation_train.rds")
+basefc <- readRDS("data/simulation_basefc.rds")
+test <- readRDS("data/simulation_test.rds")
 
 #################################################
 # Reconcile ets forecasts
@@ -195,7 +198,7 @@ reconsf <- indices |>
                                                 G_bench = "Zero", nlambda_0 = 20,
                                                 parallel = FALSE, workers = 8),
                     .progress = TRUE)
-reconsf <- saveRDS(reconsf, file = "data/simulation_noisy_reconsf.rds")
+reconsf <- saveRDS(reconsf, file = "data/simulation_reconsf.rds")
 rm(reconsf)
 
 #################################################
@@ -210,7 +213,7 @@ reconsf_s1 <- indices |>
                                                 G_bench = "Zero", nlambda_0 = 20, 
                                                 parallel = FALSE, workers = 8),
                     .progress = TRUE)
-reconsf_s1 <- saveRDS(reconsf_s1, file = "data/simulation_noisy_reconsf_s1.rds")
+reconsf_s1 <- saveRDS(reconsf_s1, file = "data/simulation_reconsf_s1.rds")
 rm(reconsf_s1)
 
 #################################################
@@ -225,13 +228,13 @@ reconsf_s2 <- indices |>
                                                 G_bench = "Zero", nlambda_0 = 20, 
                                                 parallel = FALSE, workers = 8),
                     .progress = TRUE)
-reconsf_s2 <- saveRDS(reconsf_s2, file = "data/simulation_noisy_reconsf_s2.rds")
+reconsf_s2 <- saveRDS(reconsf_s2, file = "data/simulation_reconsf_s2.rds")
 rm(reconsf_s2)
 
 #################################################
 # Evaluation
 #################################################
-reconsf <- readRDS("data/simulation_noisy_reconsf_s2.rds")
+reconsf <- readRDS("data/simulation_reconsf_s2.rds")
 
 # Extract reconciled forecasts
 methods <- c("Base", "BU", "OLS", "OLS_subset", 
@@ -283,7 +286,8 @@ for(method in methods) {
   out <- ifelse(out < 1e-3, 0, out) |> cbind(Method = method)
   z_summary <- rbind(z_summary, out)
 }
-colnames(z_summary) <- c("Total", "A", "B", "AA", "AB", "BA", "BB", "Index", "Method")
+series_name <- c("Total", "A", "B", "AA", "AB", "BA", "BB", "Index", "Method")
+colnames(z_summary) <- series_name
 
 z_summary |>
   as_tibble() |>
@@ -293,8 +297,8 @@ z_summary |>
     cols = Total:BB,
     names_to = "Series",
     values_to = "Frequency") |>
-  ggplot(aes(x = Series, y = Frequency)) +
-  geom_bar(stat="identity") +
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
   facet_grid(vars(Method), scales = "free_y") +
   labs(title = "Frequency of being zeroed out",
        y= "")
@@ -322,6 +326,6 @@ lambda0_summary |>
   geom_bar(stat = "count") +
   facet_grid(vars(Method), scales = "free_y") +
   labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
-       x = TeX(r"(index of $\lambda_0$)"),
+       x = TeX(r"(index of $\lambda_0$, $\lambda_{0\min} = 0$)"),
        y= "")
 
