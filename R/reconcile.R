@@ -20,6 +20,7 @@
 #' @param solver A character vector specifying the solver to use. If missing, then `gurobi` is used.
 #' @param parallel Logical. If true, optimal `lambda_0` will be found in parallel.
 #' @param workers Number of workers when `parallel = TRUE`.
+#' @param .progress Logical. If true, a progress bar will be displayed when searching optimal `lambda_0`.
 #' 
 #' @import ROI
 #' @import future
@@ -32,7 +33,7 @@ reconcile <- function(base_forecasts, S,
                       subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = c("Zero", "G"),
                       lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0, 
                       nlambda_0 = 20, M = NULL, solver = "gurobi",
-                      parallel = FALSE, workers = 2){
+                      parallel = FALSE, workers = 2, .progress = FALSE){
   # Dimension info
   n <- NROW(S); n_b <- NCOL(S)
   if (is.vector(base_forecasts)){
@@ -146,7 +147,8 @@ reconcile <- function(base_forecasts, S,
           map_fun(\(l0) mip_l0(lambda_0 = l0,
                                fc = fc, S = S, W = W, G_bench = G_bench,
                                lambda_1 = lambda_1, lambda_2 = lambda_2,
-                               M = M, solver = solver)$G)
+                               M = M, solver = solver)$G,
+                  .progress = .progress)
         fit.lambda <- append(fit.lambda, list(G), after = 0) # lambda_0 = 0
         sse <- purrr::map_dbl(fit.lambda, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2)) |> round(2)
         sse_summary <- data.frame(lambda0 = lambda_0, sse = sse)
