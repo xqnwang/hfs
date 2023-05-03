@@ -31,18 +31,25 @@ calc_rmse <- function(fc, data, h){
     filter(Horizon <= h) |>
     summarise_at(1:NCOL(err), function(x) sqrt(mean(x^2))) |>
     ungroup() |>
-    summarise_at(1:NCOL(err), mean)
+    select(!c("Index", "Horizon")) |>
+    summarise_all(mean)
   return(rmse)
 }
 
 #################################################
-# Evaluation
+# Import data
 #################################################
 data_label <- "simulation"
-reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
+reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf_s2.rds"))
 # scenario <- "s2"
 # reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf_", scenario, ".rds"))
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+
+# Structure information used to calculate RMSE across levels
+top <- 1
+middle <- 2:3
+bottom <- 4:7
+avg <- 1:7
 
 methods <- c("Base", "BU", "OLS", "OLS_subset", 
              "WLSs", "WLSs_subset", "WLSv", "WLSv_subset", 
@@ -80,10 +87,11 @@ for(h in c(1, 8, 16)){
                    MinTs = calc_rmse(mints, test, h = h),
                    MinTs_subset = calc_rmse(mints_subset, test, h = h),
                    .id = "Method") |>
-    mutate(Top = Total,
-           Middle = (A + B)/2,
-           Bottom = (AA + AB + BA + BB)/4,
-           Average = (Total + A + B + AA + AB + BA + BB)/7) |>
+    rowwise() |>
+    mutate(Top = mean(c_across(top + 1)),
+           Middle = mean(c_across(middle + 1)),
+           Bottom = mean(c_across(bottom + 1)),
+           Average = mean(c_across(avg + 1))) |>
     select(Method, Top, Middle, Bottom, Average)
   assign(paste0("rmse_h", h), out)
 }
