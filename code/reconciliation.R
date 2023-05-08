@@ -69,13 +69,34 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 }
 
 #################################################
-# Import base forecast results
+# Data
 #################################################
+#----------------------------------------------------------------------
+# Simulation data
+## Total/Middle/Bottom: 3 levels, n = 7
+## Training set:  1978Q1-2018Q4
+## Test set:      2019Q1-2022Q4
+#----------------------------------------------------------------------
 data_label <- "simulation" # used to name the results to be imported and saved
 workers <- 8 # number of workers used to run in parallel
 S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
            diag(rep(1, 4))) # S matrix
 
+#----------------------------------------------------------------------
+# Australian domestic tourism (only considering hierarchical structure)
+## Quarterly series from 1998Q1-2017Q4: 80 observations for each series
+##
+## Total/State: 2 levels, n = 9
+## Training set:  1998Q1-2015Q4
+## Test set:      2016Q1-2017Q4
+#----------------------------------------------------------------------
+data_label <- "tourism" # used to name the results to be imported and saved
+workers <- 8 # number of workers used to run in parallel
+S <- rbind(rep(1, 8), diag(rep(1, 8)))
+
+#################################################
+# Import base forecast results
+#################################################
 for (i in c("fits", "resids", "train", "basefc","test")){
   assign(i, readRDS(file = paste0("data/", data_label, "_", i, ".rds")))
 }

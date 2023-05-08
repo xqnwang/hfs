@@ -15,7 +15,8 @@ base_forecast <- function(hts, method, h){
       model <- ets(series)
     }
     fc <- forecast(model, h)$mean
-    out[[i]] <- list(fitted = model$fitted, residuals = model$residuals, 
+    resid <- residuals(model, type = 'response') # use regular residuals rather than innovation residuals
+    out[[i]] <- list(fitted = model$fitted, residuals = resid, 
                      train = model$x, forecast = fc)
   }
   names(out) <- colnames(hts)
@@ -25,8 +26,14 @@ base_forecast <- function(hts, method, h){
 #################################################
 # Import data
 #################################################
+#----------------------------------------------------------------------
+# Simulation data
+## Total/Middle/Bottom: 3 levels, n = 7
+## Training set:  1978Q1-2018Q4
+## Test set:      2019Q1-2022Q4
+#----------------------------------------------------------------------
 # Formalize data (Index, Time, Series1, ..., Seriesn)
-data_sim <- readr::read_csv("data/simulation_data.csv") |>
+dat <- readr::read_csv("data/simulation_data.csv") |>
   mutate(Time = tsibble::yearquarter(Quarter),
          A = AA + AB,
          B = BA + BB,
@@ -48,10 +55,35 @@ fmethod <- "ets"
 S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
            diag(rep(1, 4)))
 
+#----------------------------------------------------------------------
+# Australian domestic tourism (only considering hierarchical structure)
+## Quarterly series from 1998Q1-2017Q4: 80 observations for each series
+##
+## Total/State: 2 levels, n = 9
+## Training set:  1998Q1-2015Q4
+## Test set:      2016Q1-2017Q4
+#----------------------------------------------------------------------
+# Formalize data (Index, Time, Series1, ..., Seriesn)
+dat <- readRDS("data/tourism_data.rds")
+
+# Data details
+data_label <- "tourism" # used to name the saved results
+freq <- 4
+start_train <- c(1998, 1)
+end_train <- c(2015, 4)
+start_test <- c(2016, 1)
+end_test <- c(2017, 4)
+
+# Forecasting method
+fmethod <- "ets"
+
+# S matrix
+S <- rbind(rep(1, 8), diag(rep(1, 8)))
+
 #################################################
 # Generate base forecasts
 #################################################
-indices <- data_sim |>
+indices <- dat |>
   distinct(Index) |>
   pull(Index) # all indices
 
@@ -59,7 +91,7 @@ fits <- resids <- train <- basefc <- test <- data.frame()
 pb <- lazybar::lazyProgressBar(length(indices))
 for (index in indices){
   # Hierarchical time series
-  data_index <- data_sim |>
+  data_index <- dat |>
     filter(Index == index) |>
     select(!c(Index, Time)) |>
     ts(frequency = freq, start = start_train)

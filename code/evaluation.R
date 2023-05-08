@@ -39,8 +39,14 @@ calc_rmse <- function(fc, data, h){
 #################################################
 # Import data
 #################################################
+#----------------------------------------------------------------------
+# Simulation data
+## Total/Middle/Bottom: 3 levels, n = 7
+## Training set:  1978Q1-2018Q4
+## Test set:      2019Q1-2022Q4
+#----------------------------------------------------------------------
 data_label <- "simulation"
-reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf_s2.rds"))
+reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
 # scenario <- "s2"
 # reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf_", scenario, ".rds"))
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
@@ -51,6 +57,26 @@ middle <- 2:3
 bottom <- 4:7
 avg <- 1:7
 
+#----------------------------------------------------------------------
+# Australian domestic tourism (only considering hierarchical structure)
+## Quarterly series from 1998Q1-2017Q4: 80 observations for each series
+##
+## Total/State: 2 levels, n = 9
+## Training set:  1998Q1-2015Q4
+## Test set:      2016Q1-2017Q4
+#----------------------------------------------------------------------
+data_label <- "tourism"
+reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
+test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+
+# Structure information used to calculate RMSE across levels
+top <- 1
+bottom <- 2:8
+avg <- 1:9
+
+#################################################
+# Extract reconciled forecasts
+#################################################
 methods <- c("Base", "BU", "OLS", "OLS_subset", 
              "WLSs", "WLSs_subset", "WLSv", "WLSv_subset", 
              "MinT", "MinT_subset", 
@@ -58,9 +84,6 @@ methods <- c("Base", "BU", "OLS", "OLS_subset",
 subset_methods <- c("OLS_subset", "WLSs_subset", "WLSv_subset", "MinT_subset", "MinTs_subset")
 indices <- unique(test$Index)
 
-#################################################
-# Extract reconciled forecasts
-#################################################
 for(method in methods) { 
   out <- indices |> 
     purrr::map(\(index) 
@@ -89,10 +112,11 @@ for(h in c(1, 8, 16)){
                    .id = "Method") |>
     rowwise() |>
     mutate(Top = mean(c_across(top + 1)),
-           Middle = mean(c_across(middle + 1)),
+           # Middle = mean(c_across(middle + 1)),
            Bottom = mean(c_across(bottom + 1)),
            Average = mean(c_across(avg + 1))) |>
-    select(Method, Top, Middle, Bottom, Average)
+    # select(Method, Top, Middle, Bottom, Average)
+    select(Method, Top, Bottom, Average)
   assign(paste0("rmse_h", h), out)
 }
 
@@ -107,7 +131,9 @@ for(method in subset_methods) {
                                method = method, element = "z")) %>% 
     do.call(rbind, .)
   out <- ifelse(out < 1e-3, 0, out) |> cbind(Method = method)
-  z_summary <- rbind(z_summary, out)
+  if (length(out) > 1){
+    z_summary <- rbind(z_summary, out) 
+  }
 }
 series_name <- c(colnames(test), "Method")
 colnames(z_summary) <- series_name
@@ -124,6 +150,7 @@ z_summary |>
   geom_bar(stat = "identity") +
   facet_grid(vars(Method), scales = "free_y") +
   labs(title = "Frequency of being zeroed out",
+       x = "",
        y= "")
 
 #################################################
