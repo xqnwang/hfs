@@ -1,51 +1,53 @@
 library(tidyverse)
+library(tsibble)
 library(fabletools)
 library(magrittr)
 library(lubridate)
 library(fable)
+library(hts)
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
 ##
-## Quarterly series from 1998Q1-2017Q4: 80 observations for each series
+## Quarterly series from 1998Jan-2017Dec: 240 months (20 years) for each series
 ##
-## Total/State: 2 levels, n = 9
-## Total/State/Region: 3 levels, n = 85
+## Total/State/Zone/Region: 4 levels, n = 111 series in total
 ##
-## Training set:  1998Q1-2015Q4
-## Test set:      2016Q1-2017Q4
+## Training set:  1998Jan-2016Dec
+## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
-# target data
-tourism <- tsibble::tourism |>
-  mutate(State = recode(State,
-                        `New South Wales` = "NSW",
-                        `Northern Territory` = "NT",
-                        `Queensland` = "QLD",
-                        `South Australia` = "SA",
-                        `Tasmania` = "TAS",
-                        `Victoria` = "VIC",
-                        `Western Australia` = "WA"
-  ))
-tourism_hts <- tourism |>
-  aggregate_key(State, Trips = sum(Trips))
+# Import data, only include bottom-level series
+tourism <- readr::read_csv("data/TourismData-asc2021.csv", skip = 3) |>
+  select(-1) |>
+  slice(-(1:2)) |>
+  rename(Year = ...2, Month = ...3) |>
+  fill(Year, .direction = "down") |>
+  mutate(Month = str_sub(Month, 1, 3)) |>
+  mutate(across(AAA:GBD, as.numeric)) |>
+  unite("Time", Year:Month, sep = " ", remove = TRUE)
 
-# time series plot
-tourism_hts |>
-  autoplot(Trips) +
-  labs(y = "Trips ('000)",
-       title = "Australian tourism: national and states") +
-  facet_wrap(vars(State), scales = "free_y", ncol = 3) +
-  theme(legend.position = "none")
 
-# data construction
-tourism_hts <- tourism_hts |>
-  as_tibble() |>
-  pivot_wider(names_from = State,
-              values_from = Trips
-              ) |>
-  mutate(Index = 1,
-         Time = Quarter,
-         Total = `<aggregated>`,
-         .before = `<aggregated>`) |>
-  select(!c(Quarter, `<aggregated>`))
+# Hierarchical time series
+tourism_hts <- hts(tourism[-1] |> ts(start = c(1998, 1), end = c(2017, 12), frequency = 12), 
+                   characters = c(1, 1, 1))
+labels <- do.call(c, tourism_hts$labels) |> 
+  as.character()
+S <- smatrix(tourism_hts)
+tourism_hts <- (tourism_hts$bts %*% t(S)) %>% 
+  data.frame(1, tourism |> pull(Time), .)
+colnames(tourism_hts) <- c("Index", "Time", labels)
 saveRDS(tourism_hts, file = "data/tourism_data.rds")
+saveRDS(S, file = "data/tourism_data_S.rds")
+
+# Time series plot
+tourism_ts <- tourism_hts |>
+  select(-1) |>
+  as_tibble() |>
+  pivot_longer(cols = Total:GBD, names_to = "Series", values_to = "Value") |>
+  mutate(Time = yearmonth(Time)) |>
+  as_tsibble(index = Time, key = Series)
+tourism_ts |>
+  #filter(Series %in% c("Total", LETTERS[1:7])) |>
+  autoplot(Value) +
+  facet_wrap(vars(Series), scales = "free_y") +
+  theme(legend.position = "none")
