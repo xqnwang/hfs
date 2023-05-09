@@ -9,7 +9,9 @@ library(hts)
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
 ##
-## Quarterly series from 1998Jan-2017Dec: 240 months (20 years) for each series
+## Spiliotis et al. (2021) on ASC
+##
+## Monthly series from 1998Jan-2017Dec: 240 months (20 years) for each series
 ##
 ## Total/State/Zone/Region: 4 levels, n = 111 series in total
 ##
