@@ -57,28 +57,30 @@ S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
-## Quarterly series from 1998Q1-2017Q4: 80 observations for each series
 ##
-## Total/State: 2 levels, n = 9
-## Training set:  1998Q1-2015Q4
-## Test set:      2016Q1-2017Q4
+## Monthly series from 1998Jan-2017Dec: 240 months (20 years) for each series
+##
+## Total/State/Zone/Region: 4 levels, n = 111 series in total
+##
+## Training set:  1998Jan-2016Dec
+## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 # Formalize data (Index, Time, Series1, ..., Seriesn)
 dat <- readRDS("data/tourism_data.rds")
 
 # Data details
 data_label <- "tourism" # used to name the saved results
-freq <- 4
+freq <- 12
 start_train <- c(1998, 1)
-end_train <- c(2015, 4)
-start_test <- c(2016, 1)
-end_test <- c(2017, 4)
+end_train <- c(2016, 12)
+start_test <- c(2017, 1)
+end_test <- c(2017, 12)
 
 # Forecasting method
 fmethod <- "ets"
 
 # S matrix
-S <- rbind(rep(1, 8), diag(rep(1, 8)))
+S <- readRDS("data/tourism_data_S.rds")
 
 #################################################
 # Generate base forecasts
