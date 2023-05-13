@@ -2,7 +2,7 @@ import numpy as np
 
 CONIC = True
 
-def l0gurobi_activeset(x, y, initial_activeset, group_indices, l0, l2, m, lb, ub, relaxed=True):
+def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
     converged = False
     fixed_to_zero = np.where(ub == 0)[0]
     # indices of the active groups.
@@ -18,7 +18,7 @@ def l0gurobi_activeset(x, y, initial_activeset, group_indices, l0, l2, m, lb, ub
         for group_index in activeset:
             active_coordinate_indices += group_indices[group_index]
         beta_restricted, z_restricted, obj, _ = \
-        l0gurobi(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, l0, l2, m, lb[activeset], ub[activeset])
+        l0gurobi(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, W, S, l0, l2, m, lb[activeset], ub[activeset])
         # Check the KKT conditions.
         r = y - np.dot(x[:, active_coordinate_indices], beta_restricted)
         r_t_x = np.dot(r.T, x)
@@ -50,7 +50,7 @@ def l0gurobi_activeset(x, y, initial_activeset, group_indices, l0, l2, m, lb, ub
     return beta, z, obj
 
 
-def l0gurobi(x, y, group_indices, l0, l2, m, lb, ub, relaxed=True):
+def l0gurobi(x, y, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
     try:
         from gurobipy import Model, GRB, QuadExpr, LinExpr, quicksum
     except ModuleNotFoundError:
@@ -58,90 +58,73 @@ def l0gurobi(x, y, group_indices, l0, l2, m, lb, ub, relaxed=True):
     model = Model()  # the optimization model
     n = x.shape[0]  # number of samples
     p = x.shape[1]  # number of features
+    # n = S.shape[0]
+    nb = S.shape[1]  # number of bottom-level series
     group_num = len(group_indices)
-
-    beta = {}  # features coefficients
-    z = {}
-    for feature_index in range(p):
-        beta[feature_index] = model.addVar(vtype=GRB.CONTINUOUS,
-                                           name='B' + str(feature_index),
-                                           ub=m, lb=-m)
-    for group_index in range(group_num):
-        if relaxed:
-            z[group_index] = model.addVar(vtype=GRB.CONTINUOUS,
-                                            name='z' + str(feature_index),
-                                            ub=ub[group_index],
-                                            lb=lb[group_index])
-        else:
-            z[group_index] = model.addVar(vtype=GRB.BINARY,
-                                            name='z' + str(feature_index))
-
-    r = {}
-    for sample_index in range(n):
-        r[sample_index] = model.addVar(vtype=GRB.CONTINUOUS,
-                                       name='r' + str(sample_index),
-
-                                       ub=GRB.INFINITY, lb=-GRB.INFINITY)
+    
+    beta = model.addMVar(shape=p, vtype=GRB.CONTINUOUS,
+                         name=['B' + str(feature_index) for feature_index in range(p)],
+                         ub=np.repeat(m, p), lb=np.repeat(-m, p))
+    
+    if relaxed:
+        z = model.addMVar(shape=group_num, vtype=GRB.CONTINUOUS,
+                          name=['z' + str(group_index) for group_index in range(group_num)],
+                          ub=ub, lb=lb)
+    else:
+        z = model.addMVar(shape=group_num, vtype=GRB.BINARY,
+                          name=['z' + str(group_index) for group_index in range(group_num)])
+    
+    r = model.addVar(shape=n, vtype=GRB.CONTINUOUS,
+                     name=['r' + str(sample_index) for sample_index in range(n)],
+                     ub=GRB.INFINITY, lb=-GRB.INFINITY)
+    
     if l2 > 0:
-        s = {}
         if CONIC:
-            for group_index in range(group_num):
-                s[group_index] = model.addVar(vtype=GRB.CONTINUOUS,
-                                                   name='s' + str(group_index), lb=0)
+            s = model.addVar(shape=group_num, vtype=GRB.CONTINUOUS,
+                             name=['s' + str(group_index) for group_index in range(group_num)],
+                             lb=0)
+    
     model.update()
+    
 
     """ OBJECTIVE """
-
-    obj = QuadExpr()
-
-    for sample_index in range(n):
-        obj.addTerms(0.5, r[sample_index], r[sample_index])
-
-    if l2 > 0:
+    
+    if l2 == 0:
+        model.setObjective(0.5*r@W@r + l0*z, GRB.MINIMIZE)
+    else:
         if not CONIC:
-            for feature_index in range(p):
-                obj.addTerms(l2, beta[feature_index], beta[feature_index])
+            model.setObjective(0.5*r@W@r + l0*z + l2*beta@beta, GRB.MINIMIZE)
         else:
-            for group_index in range(group_num):
-                obj.addTerms(l2, s[group_index])
-
-    for group_index in range(group_num):
-        obj.addTerms(l0, z[group_index])
-
-    model.setObjective(obj, GRB.MINIMIZE)
-
+            model.setObjective(0.5*r@W@r + l0*z + l2*s@s, GRB.MINIMIZE)
+    
+    
     """ CONSTRAINTS """
-
-    for sample_index in range(n):
-        expr = LinExpr()
-        expr.addTerms(x[sample_index, :], [beta[key] for key in range(p)])
-        model.addConstr(r[sample_index] == y[sample_index] - expr)
-
-    # for group_index in range(group_num):
-    #     for feature_index in group_indices[group_index]:
-    #         model.addConstr(beta[feature_index] <= z[group_index] * m)
-    #         model.addConstr(beta[feature_index] >= -z[group_index] * m)
+    
+    model.addConstr(r == y - x@beta)
+    
     for group_index in range(group_num):
-        l2_sq = []
-        for feature_index in group_indices[group_index]:
-            l2_sq.append(beta[feature_index]*beta[feature_index])
+        l2_sq = [beta[feature_index]*beta[feature_index] for feature_index in group_indices[group_index]]
         model.addConstr(quicksum(l2_sq) <= m * m * z[group_index]*z[group_index])
-
+    
     if l2 > 0:
         if CONIC:
             for group_index in range(group_num):
-                l2_sq = []
-                for feature_index in group_indices[group_index]:
-                    l2_sq.append(beta[feature_index]*beta[feature_index])
+                l2_sq = [beta[feature_index]*beta[feature_index] for feature_index in group_indices[group_index]]
                 model.addConstr(s[group_index] * z[group_index] >= quicksum(l2_sq))
-
+    
+    tS = S.transpose()
+    I = np.identity(nb)
+    tSI = np.kron(tS, I)
+    vI = I.reshape((nb*nb,))
+    model.addConstr(vI == tSI@beta)  # kronecker(t(S), I) beta = vec(I)
+    
     model.update()
     model.setParam('OutputFlag', False)
     # model.setParam('BarConvTol', 1e-16)
     # model.setParam('BarIterLimit', 100000)
     # model.setParam('BarQCPConvTol', 1e-16)
     model.optimize()
-
+    
     output_beta = np.zeros(len(beta))
     output_z = np.zeros(len(z))
 
