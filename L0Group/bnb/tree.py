@@ -10,7 +10,7 @@ from .utilities import branch, is_integral
 
 
 class BNBTree:
-    def __init__(self, x, y, group_indices, int_tol=1e-4, rel_tol=1e-4):
+    def __init__(self, x, y, group_indices, W, S, int_tol=1e-4, rel_tol=1e-4):
         """
         Initiate a BnB Tree to solve the Group L0 problem.
 
@@ -22,6 +22,10 @@ class BNBTree:
             1 dimensional numpy array of size n
         group_indices: list
             The i-th element is a list of the indices belonging to the i-th group.
+        W: np.array
+            p x p numpy array
+        S: np.array
+            n x nb numpy array
         int_tol: float, optional
             The integral tolerance of a variable. Default 1e-4
         rel_tol: float, optional
@@ -30,6 +34,8 @@ class BNBTree:
         self.x = x
         self.y = y
         self.group_indices = group_indices
+        self.W = W
+        self.S = S
         self.int_tol = int_tol
         self.rel_tol = rel_tol
         self.xi_norm = np.linalg.norm(x, axis=0) ** 2
@@ -95,7 +101,7 @@ class BNBTree:
             print(f"initializing took {time.time() - st} seconds")
 
         # root node
-        self.root = Node(None, [], [], x=self.x, y=self.y, group_indices=self.group_indices,
+        self.root = Node(None, [], [], x=self.x, y=self.y, group_indices=self.group_indices, W=self.W, S=self.S,
                          xi_norm=self.xi_norm, integrality_generation=integrality_generation, integrality_vars=integrality_vars)
         self.root.z_support = list(z_support)
         self.bfs_queue = queue.Queue()
@@ -227,5 +233,5 @@ class BNBTree:
                         z_supp.add(group_index)
                         break
             upper_bound, upper_beta = \
-                upper_bound_solve(self.x, self.y, l0, l2, m, support, z_supp, self.group_indices)
+                upper_bound_solve(self.x, self.y, self.W, self.S, l0, l2, m, support, z_supp, self.group_indices)
             return upper_bound, upper_beta, support, z_supp
