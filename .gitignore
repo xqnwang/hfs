@@ -16,6 +16,7 @@ refs/
 .Ruserdata
 .DS_Store
 .RData
+.ipynb_checkpoints/
 
 # Core latex/pdflatex auxiliary files
 *.xdv
