@@ -81,7 +81,7 @@ def l0gurobi(x, y, group_indices, inv_W, kron_tSI, l0, l2, m, lb, ub, relaxed=Tr
     
     if l2 > 0:
         if CONIC:
-            s = model.addVar(shape=(group_num, ), vtype=GRB.CONTINUOUS,
+            s = model.addMVar(shape=(group_num, ), vtype=GRB.CONTINUOUS,
                              name=['s' + str(group_index) for group_index in range(group_num)],
                              lb=0)
     
