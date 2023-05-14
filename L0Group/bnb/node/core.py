@@ -116,7 +116,7 @@ class Node:
         return self.primal_value, self.dual_value
 
     def upper_solve(self, l0, l2, m):
-        upper_bound, upper_beta = upper_bound_solve(self.x, self.y, self.inv_W, self.S, l0, l2, m,
+        upper_bound, upper_beta = upper_bound_solve(self.x, self.y, self.inv_W, self.kron_tSI, l0, l2, m,
                                                     self.support, self.z_support, self.group_indices)
         self.upper_bound = upper_bound
         self.upper_beta = upper_beta
