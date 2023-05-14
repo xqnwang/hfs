@@ -22,12 +22,12 @@ def l0gurobi_activeset(x, y, initial_activeset, group_indices, inv_W, kron_tSI, 
         l0gurobi(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, inv_W, kron_tSI[:, active_coordinate_indices], l0, l2, m, lb[activeset], ub[activeset])
         # Check the KKT conditions.
         r = y - np.dot(x[:, active_coordinate_indices], beta_restricted)
-        r_t_x = np.dot(r.T, x)
+        rt_invW_x = r @ inv_W @ x
         if l2 != 0 and np.sqrt(l0/l2) <= m:
-            group_norms = np.array([np.linalg.norm(r_t_x[group_indices[index]]) for index in range(len(group_indices))])
+            group_norms = np.array([np.linalg.norm(rt_invW_x[group_indices[index]]) for index in range(len(group_indices))])
             violations = set(np.where(group_norms > (2*np.sqrt(l0*l2) ))[0])
         else:
-            group_norms = np.array([np.linalg.norm(r_t_x[group_indices[index]]) for index in range(len(group_indices))])
+            group_norms = np.array([np.linalg.norm(rt_invW_x[group_indices[index]]) for index in range(len(group_indices))])
             violations = set(np.where(group_norms > (l0/m + l2*m ))[0])
         no_check_indices = set(activeset).union(set(fixed_to_zero))
         violations = violations.difference(no_check_indices)
