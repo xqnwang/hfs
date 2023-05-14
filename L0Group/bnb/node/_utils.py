@@ -3,7 +3,7 @@ import math
 from scipy import optimize as sci_opt
 
 
-def upper_bound_solve(x, y, W, S, l0, l2, m, support, z_support, group_indices):
+def upper_bound_solve(x, y, W, kron_tSI, l0, l2, m, support, z_support, group_indices):
     if len(support) != 0:
         # x_support = x[:, support]
         # if l2 > 0:
@@ -16,7 +16,6 @@ def upper_bound_solve(x, y, W, S, l0, l2, m, support, z_support, group_indices):
         # res = sci_opt.lsq_linear(x_upper, y_upper, (-m, m))
         # upper_bound = res.cost + l0 * len(z_support)
         # upper_beta = res.x
-        nb = S.shape[1]
         activeset = z_support
         group_indices_restricted = [group_indices[index] for index in activeset]
         group_indices_restricted_reset_indices = []
@@ -27,9 +26,6 @@ def upper_bound_solve(x, y, W, S, l0, l2, m, support, z_support, group_indices):
         active_coordinate_indices = []
         for group_index in activeset:
             active_coordinate_indices += group_indices[group_index]
-        tS = S.transpose()
-        I = np.identity(nb)
-        kron_tSI = np.kron(tS, I)
         upper_bound, upper_beta = gurobi_constrained_ridge_regression(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, W, kron_tSI[:, active_coordinate_indices], l0, l2, m)
     else:
         upper_bound = 0.5 * np.linalg.norm(y) ** 2

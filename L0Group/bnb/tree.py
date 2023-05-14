@@ -21,9 +21,9 @@ class BNBTree:
         y: np.array
             1 dimensional numpy array of size n
         group_indices: list
-            The i-th element is a list of the indices belonging to the i-th group.
+            The i-th element is a list of the indices belonging to the i-th group
         W: np.array
-            p x p numpy array
+            n x n numpy array. The covariance matrix of the base forecast errors
         S: np.array
             n x nb numpy array
         int_tol: float, optional
@@ -39,12 +39,19 @@ class BNBTree:
         self.int_tol = int_tol
         self.rel_tol = rel_tol
         self.xi_norm = np.linalg.norm(x, axis=0) ** 2
-
+        
         # The number of features
         self.p = x.shape[1]
         self.n = x.shape[0]
+        self.nb = S.shape[1]
 
         self.num_groups = len(self.group_indices)
+        
+        # Kronecker product of t(S) and I_nb
+        tS = self.S.transpose()
+        I = np.identity(self.nb)
+        kron_tSI = np.kron(tS, I)
+        self.kron_tSI = kron_tSI
 
         self.bfs_queue = None
         self.dfs_queue = None
@@ -101,7 +108,7 @@ class BNBTree:
             print(f"initializing took {time.time() - st} seconds")
 
         # root node
-        self.root = Node(None, [], [], x=self.x, y=self.y, group_indices=self.group_indices, W=self.W, S=self.S,
+        self.root = Node(None, [], [], x=self.x, y=self.y, group_indices=self.group_indices, W=self.W, kron_tSI=self.kron_tSI,
                          xi_norm=self.xi_norm, integrality_generation=integrality_generation, integrality_vars=integrality_vars)
         self.root.z_support = list(z_support)
         self.bfs_queue = queue.Queue()
@@ -233,5 +240,5 @@ class BNBTree:
                         z_supp.add(group_index)
                         break
             upper_bound, upper_beta = \
-                upper_bound_solve(self.x, self.y, self.W, self.S, l0, l2, m, support, z_supp, self.group_indices)
+                upper_bound_solve(self.x, self.y, self.W, self.kron_tSI, l0, l2, m, support, z_supp, self.group_indices)
             return upper_bound, upper_beta, support, z_supp
