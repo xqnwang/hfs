@@ -34,7 +34,7 @@ class BNBTree:
         self.x = x
         self.y = y
         self.group_indices = group_indices
-        self.W = W
+        self.inv_W = np.linalg.inv(W)
         self.S = S
         self.int_tol = int_tol
         self.rel_tol = rel_tol
@@ -108,7 +108,7 @@ class BNBTree:
             print(f"initializing took {time.time() - st} seconds")
 
         # root node
-        self.root = Node(None, [], [], x=self.x, y=self.y, group_indices=self.group_indices, W=self.W, kron_tSI=self.kron_tSI,
+        self.root = Node(None, [], [], x=self.x, y=self.y, group_indices=self.group_indices, inv_W=self.inv_W, kron_tSI=self.kron_tSI,
                          xi_norm=self.xi_norm, integrality_generation=integrality_generation, integrality_vars=integrality_vars)
         self.root.z_support = list(z_support)
         self.bfs_queue = queue.Queue()
@@ -240,5 +240,5 @@ class BNBTree:
                         z_supp.add(group_index)
                         break
             upper_bound, upper_beta = \
-                upper_bound_solve(self.x, self.y, self.W, self.kron_tSI, l0, l2, m, support, z_supp, self.group_indices)
+                upper_bound_solve(self.x, self.y, self.inv_W, self.kron_tSI, l0, l2, m, support, z_supp, self.group_indices)
             return upper_bound, upper_beta, support, z_supp

@@ -28,10 +28,10 @@ class Node:
         y: np.array
             The data vector (n x 1). If not specified the data will be inherited
             from the parent node
-        W: np.array
-            p x p numpy array
-        S: np.array
-            n x nb numpy array
+        inv_W: np.array
+            n x n numpy array. Inverse of the covariance matrix of the base forecast errors
+        kron_tSI: np.array
+            nb^2 x (n*nb) numpy array
         xi_xi: np.array
             The norm of each column in x (p x 1). If not specified the data will
             be inherited from the parent node
@@ -49,8 +49,8 @@ class Node:
         """
         self.x = kwargs.get('x', parent.x if parent else None)
         self.y = kwargs.get('y', parent.y if parent else None)
-        self.W = kwargs.get('W', parent.W if parent else None)
-        self.S = kwargs.get('S', parent.S if parent else None)
+        self.inv_W = kwargs.get('inv_W', parent.inv_W if parent else None)
+        self.kron_tSI = kwargs.get('kron_tSI', parent.kron_tSI if parent else None)
         self.xi_norm = kwargs.get('xi_norm',
                                   parent.xi_norm if parent else None)
         self.group_indices = kwargs.get('group_indices', parent.group_indices if parent else None)
@@ -95,7 +95,7 @@ class Node:
             full_zub = np.ones(len(self.group_indices))
             full_zub[self.zub] = 0
             primal_beta, z, self.primal_value = \
-                l0gurobi_activeset(self.x, self.y, initial_activeset, self.group_indices, self.W, self.S, l0, l2, m, full_zlb, full_zub)
+                l0gurobi_activeset(self.x, self.y, initial_activeset, self.group_indices, self.inv_W, self.kron_tSI, l0, l2, m, full_zlb, full_zub)
             self.dual_value = self.primal_value
         else:
             raise ValueError(f'solver {solver} not supported')
@@ -116,7 +116,7 @@ class Node:
         return self.primal_value, self.dual_value
 
     def upper_solve(self, l0, l2, m):
-        upper_bound, upper_beta = upper_bound_solve(self.x, self.y, self.W, self.S, l0, l2, m,
+        upper_bound, upper_beta = upper_bound_solve(self.x, self.y, self.inv_W, self.S, l0, l2, m,
                                                     self.support, self.z_support, self.group_indices)
         self.upper_bound = upper_bound
         self.upper_beta = upper_beta

@@ -3,7 +3,7 @@ import math
 from scipy import optimize as sci_opt
 
 
-def upper_bound_solve(x, y, W, kron_tSI, l0, l2, m, support, z_support, group_indices):
+def upper_bound_solve(x, y, inv_W, kron_tSI, l0, l2, m, support, z_support, group_indices):
     if len(support) != 0:
         # x_support = x[:, support]
         # if l2 > 0:
@@ -26,9 +26,9 @@ def upper_bound_solve(x, y, W, kron_tSI, l0, l2, m, support, z_support, group_in
         active_coordinate_indices = []
         for group_index in activeset:
             active_coordinate_indices += group_indices[group_index]
-        upper_bound, upper_beta = gurobi_constrained_ridge_regression(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, W, kron_tSI[:, active_coordinate_indices], l0, l2, m)
+        upper_bound, upper_beta = gurobi_constrained_ridge_regression(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, inv_W, kron_tSI[:, active_coordinate_indices], l0, l2, m)
     else:
-        upper_bound = 0.5 * np.linalg.norm(y) ** 2
+        upper_bound = 0.5 * y @ inv_W @ y
         upper_beta = []
     return upper_bound, upper_beta
 
@@ -38,7 +38,7 @@ def upper_bound_solve(x, y, W, kron_tSI, l0, l2, m, support, z_support, group_in
 
 
 
-def gurobi_constrained_ridge_regression(x, y, group_indices, W, kron_tSI, l0, l2, m):
+def gurobi_constrained_ridge_regression(x, y, group_indices, inv_W, kron_tSI, l0, l2, m):
     try:
         from gurobipy import Model, GRB, QuadExpr, MQuadExpr, LinExpr, quicksum
     except ModuleNotFoundError:
@@ -66,7 +66,7 @@ def gurobi_constrained_ridge_regression(x, y, group_indices, W, kron_tSI, l0, l2
 
     """ OBJECTIVE """
     
-    model.setObjective(0.5*r.T@W@r + l0*quicksum(z) + l2*beta.T@beta, GRB.MINIMIZE)
+    model.setObjective(0.5*r.T@inv_W@r + l0*quicksum(z) + l2*beta.T@beta, GRB.MINIMIZE)
     
 
     """ CONSTRAINTS """

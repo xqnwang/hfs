@@ -3,7 +3,7 @@ import math
 
 CONIC = True
 
-def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, kron_tSI, l0, l2, m, lb, ub, relaxed=True):
+def l0gurobi_activeset(x, y, initial_activeset, group_indices, inv_W, kron_tSI, l0, l2, m, lb, ub, relaxed=True):
     converged = False
     fixed_to_zero = np.where(ub == 0)[0]
     # indices of the active groups.
@@ -19,7 +19,7 @@ def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, kron_tSI, l0, 
         for group_index in activeset:
             active_coordinate_indices += group_indices[group_index]
         beta_restricted, z_restricted, obj, _ = \
-        l0gurobi(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, W, kron_tSI[:, active_coordinate_indices], l0, l2, m, lb[activeset], ub[activeset])
+        l0gurobi(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, inv_W, kron_tSI[:, active_coordinate_indices], l0, l2, m, lb[activeset], ub[activeset])
         # Check the KKT conditions.
         r = y - np.dot(x[:, active_coordinate_indices], beta_restricted)
         r_t_x = np.dot(r.T, x)
@@ -51,7 +51,7 @@ def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, kron_tSI, l0, 
     return beta, z, obj
 
 
-def l0gurobi(x, y, group_indices, W, kron_tSI, l0, l2, m, lb, ub, relaxed=True):
+def l0gurobi(x, y, group_indices, inv_W, kron_tSI, l0, l2, m, lb, ub, relaxed=True):
     try:
         from gurobipy import Model, GRB, QuadExpr, LinExpr, quicksum
     except ModuleNotFoundError:
@@ -91,12 +91,12 @@ def l0gurobi(x, y, group_indices, W, kron_tSI, l0, l2, m, lb, ub, relaxed=True):
     """ OBJECTIVE """
     
     if l2 == 0:
-        model.setObjective(0.5*r.T@W@r + l0*quicksum(z), GRB.MINIMIZE)
+        model.setObjective(0.5*r.T@inv_W@r + l0*quicksum(z), GRB.MINIMIZE)
     else:
         if not CONIC:
-            model.setObjective(0.5*r.T@W@r + l0*quicksum(z) + l2*beta.T@beta, GRB.MINIMIZE)
+            model.setObjective(0.5*r.T@inv_W@r + l0*quicksum(z) + l2*beta.T@beta, GRB.MINIMIZE)
         else:
-            model.setObjective(0.5*r.T@W@r + l0*quicksum(z) + l2*s.T@s, GRB.MINIMIZE)
+            model.setObjective(0.5*r.T@inv_W@r + l0*quicksum(z) + l2*s.T@s, GRB.MINIMIZE)
     
     
     """ CONSTRAINTS """
