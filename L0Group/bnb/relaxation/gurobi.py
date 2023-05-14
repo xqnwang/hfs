@@ -1,8 +1,9 @@
 import numpy as np
+import math
 
 CONIC = True
 
-def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
+def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, kron_tSI, l0, l2, m, lb, ub, relaxed=True):
     converged = False
     fixed_to_zero = np.where(ub == 0)[0]
     # indices of the active groups.
@@ -18,7 +19,7 @@ def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, S, l0, l2, m, 
         for group_index in activeset:
             active_coordinate_indices += group_indices[group_index]
         beta_restricted, z_restricted, obj, _ = \
-        l0gurobi(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, W, S, l0, l2, m, lb[activeset], ub[activeset])
+        l0gurobi(x[:, active_coordinate_indices], y, group_indices_restricted_reset_indices, W, kron_tSI[:, active_coordinate_indices], l0, l2, m, lb[activeset], ub[activeset])
         # Check the KKT conditions.
         r = y - np.dot(x[:, active_coordinate_indices], beta_restricted)
         r_t_x = np.dot(r.T, x)
@@ -50,7 +51,7 @@ def l0gurobi_activeset(x, y, initial_activeset, group_indices, W, S, l0, l2, m, 
     return beta, z, obj
 
 
-def l0gurobi(x, y, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
+def l0gurobi(x, y, group_indices, W, kron_tSI, l0, l2, m, lb, ub, relaxed=True):
     try:
         from gurobipy import Model, GRB, QuadExpr, LinExpr, quicksum
     except ModuleNotFoundError:
@@ -59,28 +60,28 @@ def l0gurobi(x, y, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
     n = x.shape[0]  # number of samples
     p = x.shape[1]  # number of features
     # n = S.shape[0]
-    nb = S.shape[1]  # number of bottom-level series
+    nb = int(math.sqrt(kron_tSI.shape[0]))  # number of bottom-level series
     group_num = len(group_indices)
     
-    beta = model.addMVar(shape=p, vtype=GRB.CONTINUOUS,
+    beta = model.addMVar(shape=(p, ), vtype=GRB.CONTINUOUS,
                          name=['B' + str(feature_index) for feature_index in range(p)],
                          ub=np.repeat(m, p), lb=np.repeat(-m, p))
     
     if relaxed:
-        z = model.addMVar(shape=group_num, vtype=GRB.CONTINUOUS,
+        z = model.addMVar(shape=(group_num, ), vtype=GRB.CONTINUOUS,
                           name=['z' + str(group_index) for group_index in range(group_num)],
                           ub=ub, lb=lb)
     else:
-        z = model.addMVar(shape=group_num, vtype=GRB.BINARY,
+        z = model.addMVar(shape=(group_num, ), vtype=GRB.BINARY,
                           name=['z' + str(group_index) for group_index in range(group_num)])
     
-    r = model.addVar(shape=n, vtype=GRB.CONTINUOUS,
+    r = model.addMVar(shape=(n, ), vtype=GRB.CONTINUOUS,
                      name=['r' + str(sample_index) for sample_index in range(n)],
                      ub=GRB.INFINITY, lb=-GRB.INFINITY)
     
     if l2 > 0:
         if CONIC:
-            s = model.addVar(shape=group_num, vtype=GRB.CONTINUOUS,
+            s = model.addVar(shape=(group_num, ), vtype=GRB.CONTINUOUS,
                              name=['s' + str(group_index) for group_index in range(group_num)],
                              lb=0)
     
@@ -90,12 +91,12 @@ def l0gurobi(x, y, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
     """ OBJECTIVE """
     
     if l2 == 0:
-        model.setObjective(0.5*r@W@r + l0*z, GRB.MINIMIZE)
+        model.setObjective(0.5*r.T@W@r + l0*quicksum(z), GRB.MINIMIZE)
     else:
         if not CONIC:
-            model.setObjective(0.5*r@W@r + l0*z + l2*beta@beta, GRB.MINIMIZE)
+            model.setObjective(0.5*r.T@W@r + l0*quicksum(z) + l2*beta.T@beta, GRB.MINIMIZE)
         else:
-            model.setObjective(0.5*r@W@r + l0*z + l2*s@s, GRB.MINIMIZE)
+            model.setObjective(0.5*r.T@W@r + l0*quicksum(z) + l2*s.T@s, GRB.MINIMIZE)
     
     
     """ CONSTRAINTS """
@@ -112,11 +113,9 @@ def l0gurobi(x, y, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
                 l2_sq = [beta[feature_index]*beta[feature_index] for feature_index in group_indices[group_index]]
                 model.addConstr(s[group_index] * z[group_index] >= quicksum(l2_sq))
     
-    tS = S.transpose()
     I = np.identity(nb)
-    tSI = np.kron(tS, I)
     vI = I.reshape((nb*nb,))
-    model.addConstr(vI == tSI@beta)  # kronecker(t(S), I) beta = vec(I)
+    model.addConstr(vI == kron_tSI@beta)  # kronecker(t(S), I) beta = vec(I)
     
     model.update()
     model.setParam('OutputFlag', False)
@@ -125,10 +124,10 @@ def l0gurobi(x, y, group_indices, W, S, l0, l2, m, lb, ub, relaxed=True):
     # model.setParam('BarQCPConvTol', 1e-16)
     model.optimize()
     
-    output_beta = np.zeros(len(beta))
-    output_z = np.zeros(len(z))
+    output_beta = np.zeros(beta.shape[0])
+    output_z = np.zeros(z.shape[0])
 
-    for i in range(len(beta)):
+    for i in range(beta.shape[0]):
         output_beta[i] = beta[i].x
     for group_index in range(group_num):
         output_z[group_index] = z[group_index].x
