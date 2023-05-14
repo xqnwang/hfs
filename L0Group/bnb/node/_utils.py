@@ -50,7 +50,7 @@ def gurobi_constrained_ridge_regression(x, y, group_indices, W, kron_tSI, l0, l2
     model = Model()  # the optimization model
     n = x.shape[0]  # number of samples. n = S.shape[0]
     p = x.shape[1]  # number of features
-    nb = math.sqrt(kron_tSI.shape[0])  # number of bottom-level series
+    nb = int(math.sqrt(kron_tSI.shape[0]))  # number of bottom-level series
     group_num = len(group_indices)
     
     beta = model.addMVar(shape=(p, ), vtype=GRB.CONTINUOUS,
@@ -61,7 +61,7 @@ def gurobi_constrained_ridge_regression(x, y, group_indices, W, kron_tSI, l0, l2
                       name=['z' + str(group_index) for group_index in range(group_num)],
                       ub=np.repeat(1, group_num), lb=np.repeat(1, group_num))
     
-    r = model.addVar(shape=(n, ), vtype=GRB.CONTINUOUS,
+    r = model.addMVar(shape=(n, ), vtype=GRB.CONTINUOUS,
                      name=['r' + str(sample_index) for sample_index in range(n)],
                      ub=GRB.INFINITY, lb=-GRB.INFINITY)
     
@@ -92,10 +92,10 @@ def gurobi_constrained_ridge_regression(x, y, group_indices, W, kron_tSI, l0, l2
     # model.setParam('BarQCPConvTol', 1e-16)
     model.optimize()
 
-    output_beta = np.zeros(len(beta))
-    output_z = np.zeros(len(z))
+    output_beta = np.zeros(beta.shape[0])
+    output_z = np.zeros(z.shape[0])
 
-    for i in range(len(beta)):
+    for i in range(beta.shape[0]):
         output_beta[i] = beta[i].x
     for group_index in range(group_num):
         output_z[group_index] = z[group_index].x
