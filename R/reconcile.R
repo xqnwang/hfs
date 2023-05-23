@@ -31,7 +31,7 @@ reconcile <- function(base_forecasts, S,
                       residuals = NULL, 
                       fitted_values = NULL, train_data = NULL,
                       subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = c("Zero", "G"),
-                      lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0, 
+                      lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0, unbiased = TRUE,
                       nlambda_0 = 20, M = NULL, solver = "gurobi",
                       parallel = FALSE, workers = 2, .progress = FALSE){
   # Dimension info
@@ -119,9 +119,9 @@ reconcile <- function(base_forecasts, S,
                               by = log(1e04)/(nlambda_0 - 2)))
                       )
       }
-      if (lambda_1 == 0L & lambda_2 == 0L){
-        lambda_1 <- 1e-5
-      }
+      # if (lambda_1 == 0L & lambda_2 == 0L){
+      #   lambda_1 <- 1e-5
+      # }
       
       # Shrinkage matrix
       if (G_bench == "Zero"){
@@ -156,7 +156,7 @@ reconcile <- function(base_forecasts, S,
       }
       if (lambda_0 == 0L){
         G <- G
-        z <- NA
+        z <- rep(1, n)
       } else{
         fit.mip <- mip_l0(fc = fc, S = S, W = W, G_bench = G_bench, 
                           lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2, 
