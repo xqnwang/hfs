@@ -1,0 +1,681 @@
+---
+title: "Results of Forecast Reconciliation with Subset Selection"
+author: "Xiaoqian Wang"
+date: '`r Sys.Date()`'
+output:   
+  pdf_document:
+    number_sections: true
+linestretch: 1.5
+fontsize: 11pt
+mainfont: "Times New Roman"
+monofont: "Monaco"
+geometry: a4paper, margin=20mm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+options(dplyr.summarise.inform = FALSE)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(latex2exp)
+```
+
+# Forecast Reconciliation with Subset Selection
+
+With two unbiasedness conditions, the trace minimization (MinT) problem can be reformulated in terms of a **linear equality constrained least squares problem** as follow:
+
+$$
+\min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right) \quad \text { s.t. } \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}.
+$$
+
+If we consider the optimization problem with $\ell_0$, $\ell_1$, and $\ell_2$ penalizations, we have: 
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
+& \quad + \lambda_0 \sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0 +\lambda_1\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_1+\lambda_2\left\|\operatorname{vec}\left(\boldsymbol{G}-\boldsymbol{G}^0\right)\right\|_2^2 \\
+\text { s.t. } \quad & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b},
+\end{aligned}
+$$
+where $\boldsymbol{G}^0$ can be a benchmark $\boldsymbol{G}$ matrix estimated by MinT or other methods, such as bottom-up and top-down. The optimization problem can be formulated to a Big-M based MIP formulation, which is a Mixed Integer Quadratic Program (MIQP).
+
+## Small hierarchy
+
+Estimate the whole $\boldsymbol{G}$ matrix.
+
+### Data simulation
+
+Structure:
+
+* Top: Total
+* Middle: A, B
+* Bottom: AA, AB, BA, BB
+
+The bottom-level series were generated using the basic structural time series model
+$$
+\boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t
+$$
+where $\boldsymbol{\mu}_t, \boldsymbol{\gamma}_t$, and $\boldsymbol{\eta}_t$ are the trend, seasonal, and error components, respectively,
+$$
+\begin{aligned}
+\boldsymbol{\mu}_t & =\boldsymbol{\mu}_{t-1}+\boldsymbol{v}_t+\boldsymbol{\varrho}_t, & \boldsymbol{\varrho}_t & \sim \mathcal{N}\left(\mathbf{0}, \sigma_{\varrho}^2 \boldsymbol{I}_4\right), \\
+\boldsymbol{v}_t & =\boldsymbol{v}_{t-1}+\boldsymbol{\zeta}_t, & \boldsymbol{\zeta}_t & \sim \mathcal{N}\left(\mathbf{0}, \sigma_\zeta^2 \boldsymbol{I}_4\right), \\
+\boldsymbol{\gamma}_t & =-\sum_{i=1}^{s-1} \boldsymbol{\gamma}_{t-i}+\boldsymbol{\omega}_t, & \boldsymbol{\omega}_t & \sim \mathcal{N}\left(\mathbf{0}, \sigma_\omega^2 \mathbf{I}_4\right),
+\end{aligned}
+$$
+and $\varrho_t, \zeta_t$, and $\omega_t$ are errors independent of each other and over time.
+
+* $\sigma_{\varrho}^2=2, \sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$.
+* $s=4$ for quarterly data, $n=180$, $h=16$.
+* The initial values for $\boldsymbol{\mu}_0, \boldsymbol{v}_0, \boldsymbol{\gamma}_0, \boldsymbol{\gamma}_1, \boldsymbol{\gamma}_2$ were generated independently from a multivariate normal distribution with mean zero and covariance matrix, $\Sigma_0=I_4$.
+* Each component of $\boldsymbol{\eta}_t$ was generated from an $\operatorname{ARIMA}(p, 0, q)$ process with $p$ and $q$ taking values of 0 and 1 with equal probability.
+* The bottom-level series were then appropriately summed to obtain the data for higher levels.
+* This process was repeated 500 times.
+
+### Model specification
+
+1. **Hyperparameter:**
+
+* Set $\lambda_1 = \lambda_2 = 0$
+
+* $\lambda_0$ is selected by minimizing sum of squared residuals in the training set.
+    + Set $\lambda_{\max}$ to $\frac{1}{n_b}\frac{1}{2}\hat{\boldsymbol{y}}_h^{\prime} \boldsymbol{W}_h^{-1}\hat{\boldsymbol{y}}_h$.
+
+    + Similarly to the `glmnet` package, we select a minimum value $\lambda_{\min }=\epsilon \lambda_{\max }$, and construct a sequence of $K-1$ values of $\lambda$ decreasing from $\lambda_{\max }$ to $\lambda_{\min }$ **on the log scale**. $\epsilon=10^{-4}$ and $K=20$.
+
+    + Select the best value of $\lambda_0$ from $0, \lambda_{\min }, \ldots, \lambda_{\max }$ by minimizing the sum of squared reconciled forecast errors in the training set, even though fitted values are often not true one-step ahead forecasts. (Avoid cross-validation)
+
+2. **Four scenarios:**
+
+* S0: ETS
+    + ETS models are used to generate base forecasts.
+
+* S1: D-AA
+    + Base forecasts (and also fitted values) of **series AA** multiplied by 1.5 to achieve deterioration.
+
+* S2: D-A
+    + Base forecasts (and also fitted values) of **series A** multiplied by 1.5 to achieve deterioration.
+
+* S3: D-Total
+    + Base forecasts (and also fitted values) of **series Total** multiplied by 1.5 to achieve deterioration.
+
+
+### Results
+
+#### S0: ETS
+
+1. RMSE results
+
+```{r s0-rmse}
+data_label <- "simulation"
+scenario <- NULL
+horizon <- c(1,4,8,16)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
+2. Selection results
+
+```{r s0-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+```
+
+3. Hyperparameters results
+
+```{r s0-lambda}
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+  group_by(Method, Index) |>
+  summarise(sse_index = which.min(sse)) |>
+  ungroup() |>
+  group_by(Method) |>
+  ggplot(aes(x = factor(sse_index))) +
+  geom_bar(stat = "count") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
+       x = TeX(r"(index of $\lambda_0$ $(\lambda_{0\min} = 0)$)"),
+       y = "")
+```
+
+#### S1: D-AA
+
+1. RMSE results
+
+```{r s1-rmse}
+data_label <- "simulation"
+scenario <- "s1"
+horizon <- c(1,4,8,16)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
+2. Selection results
+
+```{r s1-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+```
+
+3. Hyperparameters results
+
+```{r s1-lambda}
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+  group_by(Method, Index) |>
+  summarise(sse_index = which.min(sse)) |>
+  ungroup() |>
+  group_by(Method) |>
+  ggplot(aes(x = factor(sse_index))) +
+  geom_bar(stat = "count") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
+       x = TeX(r"(index of $\lambda_0$ $(\lambda_{0\min} = 0)$)"),
+       y = "")
+```
+
+#### S2: D-A
+
+1. RMSE results
+
+```{r s2-rmse}
+data_label <- "simulation"
+scenario <- "s2"
+horizon <- c(1,4,8,16)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
+2. Selection results
+
+```{r s2-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+```
+
+3. Hyperparameters results
+
+```{r s2-lambda}
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+  group_by(Method, Index) |>
+  summarise(sse_index = which.min(sse)) |>
+  ungroup() |>
+  group_by(Method) |>
+  ggplot(aes(x = factor(sse_index))) +
+  geom_bar(stat = "count") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
+       x = TeX(r"(index of $\lambda_0$ $(\lambda_{0\min} = 0)$)"),
+       y = "")
+```
+
+#### S3: D-Total
+
+1. RMSE results
+
+```{r s3-rmse}
+data_label <- "simulation"
+scenario <- "s3"
+horizon <- c(1,4,8,16)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
+2. Selection results
+
+```{r s3-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+```
+
+3. Hyperparameters results
+
+```{r s3-lambda}
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+  group_by(Method, Index) |>
+  summarise(sse_index = which.min(sse)) |>
+  ungroup() |>
+  group_by(Method) |>
+  ggplot(aes(x = factor(sse_index))) +
+  geom_bar(stat = "count") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
+       x = TeX(r"(index of $\lambda_0$ $(\lambda_{0\min} = 0)$)"),
+       y = "")
+```
+
+
+## Large hierarchy
+
+### Strategy 1: direct
+
+**Idea:** Directly estimate the whole $\boldsymbol{G}$ matrix. 
+
+* MIP solvers: Lack of scalability. The best subset selection is an NP-hard problem, which is computationally intensive.
+* L0Group: $\boldsymbol{W}_h^{-1}$ and unbiasedness constraints.
+* L0Group modification
+    +  Branch-and-Bound algorithm
+
+### Strategy 2: indirect
+
+**Idea:** Let $\boldsymbol{G} = \boldsymbol{G}^{*}\boldsymbol{A}$, where $\boldsymbol{G}^{*}$ is MinT solution, and $\boldsymbol{A}$ is an $n \times n$ diagonal matrix. Then the aim is to estimate diagonal elements of $\boldsymbol{A}$.
+
+Setup: $\lambda_0$ and $\lambda_2$ ($10^{-4}, 10^{-2}, 10^{0}, 10^{2}, 10^{4}$) are selected by minimizing sum of squared residuals, $\lambda_1 = 0$
+
+1. Under unbiasedness constraints.
+
+* Small hierarchy
+    + **Results:** For simulation data (S1, S2, and S3), the method did not play a role in subset selection, thus giving same results as correponding MinT methods.
+    + It is extremely difficult to get a solution of $\boldsymbol{A}$ other than $\boldsymbol{I}$.
+
+* Large hierarchy
+    + **Results:** For tourism data (Total/State/Zone/Region: 4 levels, 111 series in total), only `OLS_subset` did subset selection (remove 6 bottom-level series: indices 40, 49, 53, 98, 99, 100), but it achieved the same RMSE performance as `OLS` for every horizon.
+    + It is difficult to get a solution of $\boldsymbol{A}$ other than $\boldsymbol{I}$. Even when we get an estimate of $\boldsymbol{A}$ with some of the diagonal elements being zero, the initial weights on the "removed" series are assigned to other time series in the hierarchy to obtain updated bottom-level series. This means the "removed" series are represented using the linear combination of other series.
+
+$$
+\begin{aligned}
+\boldsymbol{G}\boldsymbol{\hat{y}} & = \left[ \boldsymbol{g}_{\cdot 1}, \boldsymbol{g}_{\cdot 2}, \cdots, \boldsymbol{g}_{\cdot n} \right]\boldsymbol{\hat{y}}; \\
+\boldsymbol{GA}\boldsymbol{\hat{y}} & = \left[\boldsymbol{g}_{\cdot 1}, \boldsymbol{g}_{\cdot 2}, \cdots, \boldsymbol{g}_{\cdot n} \right]\left[\begin{array}{c}
+a_{1}\hat{y}_{1} \\ a_{2}\hat{y}_{2} \\ \cdots \\ a_{n}\hat{y}_{n}
+\end{array}\right].
+\end{aligned}
+$$
+
+```{r tourism-rmse}
+# reconcile_diag (unbiased = TRUE, Part: Estimate G using optimal lambda_0 and lambda_2)
+data_label <- "tourism"
+scenario <- NULL
+horizon <- c(1,4,8,12)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(5))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "State" = 4, "Zone" = 4, "Region" = 4, "Average" = 4), align = "c")
+```
+
+```{r tourism-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "") +
+  scale_x_discrete(breaks = c("A", "AA", "AAA"))
+```
+
+2. Remove unbiasedness constraints.
+
+    **Results based on tourism data** (Total/State/Zone/Region: 4 levels, 111 series in total)
+
+* `OLS_subset`, `WLSs_subset`, and `WLSv_subset` did subset selection. They give almost the same performance as the corresponding MinT methods for $h=1$, but extremely worse performance for $h>1$.
+
+```{r tourism-biased-rmse}
+# reconcile_diag (unbiased = FALSE, Part: Estimate G using optimal lambda_0 and lambda_2)
+data_label <- "tourism"
+scenario <- NULL
+horizon <- c(1,4,8,12)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf_biased", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(5))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "State" = 4, "Zone" = 4, "Region" = 4, "Average" = 4), align = "c")
+```
+
+```{r tourism-biased-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf_biased", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "") +
+  scale_x_discrete(breaks = c("A", "AA", "AAA"))
+```
+
+* Naturally, when implementing subset selection on forecasts for each horizon, they give almost the same performance as the corresponding MinT methods for all horizons.
+
+### Strategy 3: two-step
+
+**Idea:** Implement selection first, and then estimation. (MIP solvers are not scalable, but QP solvers are scalable.)
+
+* Step 1: obtain output of binary variables $\boldsymbol{z}$ using **Strategy 2 without unbiasedness constraints**.
+
+* Step 2: directly use $\boldsymbol{\hat{z}}$ to solve the **QP problem with unbiasedness constraints**.
+
+**Results:** Sometimes cannot find the estimated $\boldsymbol{G}$ in step 2 using the z of step 1. Even if step 2 can find the estimated $\boldsymbol{G}$, it performs worse than the corresponding MinT methods, but its forecasts for large horizons are still in a reasonable range.
+
+
+```{r tourism-biased-qp-rmse}
+# reconcile_diag (unbiased = FALSE, Part: Estimate G using QP with output z)
+data_label <- "tourism"
+scenario <- NULL
+horizon <- c(1,4,8,12)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf_biased_QP", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(5))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x, na.rm = TRUE), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "State" = 4, "Zone" = 4, "Region" = 4, "Average" = 4), align = "c")
+```
+
+```{r tourism-biased-qp-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf_biased_QP", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "") +
+  scale_x_discrete(breaks = c("A", "AA", "AAA"))
+```
+
+### Other potential strategies
+
+* Grouped version of forward/backward stepwise.
+* Group regularizers: Grouped Lasso, MCP (minimax concave penalty), SCAD (smoothly clipped absolute deviation).
+* Unconstrained reconciliation using in-sample observations and fitted values.
+
+
+
