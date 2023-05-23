@@ -39,7 +39,7 @@ tourism_hts <- (tourism_hts$bts %*% t(S)) %>%
   data.frame(1, tourism |> pull(Time), .)
 colnames(tourism_hts) <- c("Index", "Time", labels)
 saveRDS(tourism_hts, file = "data/tourism_data.rds")
-saveRDS(S, file = "data/tourism_data_S.rds")
+saveRDS(S, file = "data/tourism_S.rds")
 
 # Time series plot
 tourism_ts <- tourism_hts |>

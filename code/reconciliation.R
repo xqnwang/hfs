@@ -5,11 +5,14 @@ library(forecast)
 
 source("R/mip_l0.R")
 source("R/reconcile.R")
+source("R/mip_l0_diag.R") # large hierarchy
+source("R/reconcile_diag.R") # large hierarchy
+source("R/qp_l0.R") # QP with output z
 
 # Utility function
-reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
+reconcile_forecast <- function(index, fits, train, basefc, resids, test, S, large = FALSE,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
-                               G_bench, nlambda_0 = 20, 
+                               G_bench, nlambda_0 = 20, unbiased = TRUE,
                                parallel = FALSE, workers = 8, .progress = FALSE){
   
   n <- NCOL(fits)
@@ -24,48 +27,65 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
     residuals <- train_data - fitted_values
   }
   
-  BU <- reconcile(base_forecasts = base_forecasts, S = S, method = "bu")
-  OLS <- reconcile(base_forecasts = base_forecasts, S = S, method = "ols")
-  OLS_subset <- reconcile(base_forecasts = base_forecasts, S = S, method = "ols",
-                          residuals = residuals, 
-                          fitted_values = fitted_values, train_data = train_data,
-                          subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
-                          parallel = parallel, workers = workers, .progress = .progress)
-  WLSs <- reconcile(base_forecasts = base_forecasts, S = S, method = "wls_struct")
-  WLSs_subset <- reconcile(base_forecasts = base_forecasts, S = S, method = "wls_struct",
-                           residuals = residuals, 
-                           fitted_values = fitted_values, train_data = train_data,
-                           subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
-                           parallel = parallel, workers = workers, .progress = .progress)
-  WLSv <- reconcile(base_forecasts = base_forecasts, S = S, method = "wls_var",
-                    residuals = residuals)
-  WLSv_subset <- reconcile(base_forecasts = base_forecasts, S = S, method = "wls_var",
-                           residuals = residuals, 
-                           fitted_values = fitted_values, train_data = train_data,
-                           subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
-                           parallel = parallel, workers = workers, .progress = .progress)
-  MinT <- reconcile(base_forecasts = base_forecasts, S = S, method = "mint_cov",
-                    residuals = residuals)
-  MinT_subset <- reconcile(base_forecasts = base_forecasts, S = S, method = "mint_cov",
-                           residuals = residuals,
-                           fitted_values = fitted_values, train_data = train_data,
-                           subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
-                           parallel = parallel, workers = workers, .progress = .progress)
-  MinTs <- reconcile(base_forecasts = base_forecasts, S = S, method = "mint_shrink",
-                     residuals = residuals)
-  MinTs_subset <- reconcile(base_forecasts = base_forecasts, S = S, method = "mint_shrink",
-                            residuals = residuals, 
+  if (large){
+    f.reconcile <- reconcile_diag
+  } else{
+    f.reconcile <- reconcile
+  }
+  
+  BU <- f.reconcile(base_forecasts = base_forecasts, S = S, method = "bu")
+  OLS <- f.reconcile(base_forecasts = base_forecasts, S = S, method = "ols")
+  OLS_subset <- f.reconcile(base_forecasts = base_forecasts, S = S, 
+                            method = "ols", residuals = residuals, 
                             fitted_values = fitted_values, train_data = train_data,
                             subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
-                            parallel = parallel, workers = workers, .progress = .progress)
+                            unbiased = unbiased,
+                            parallel = parallel, workers = workers, 
+                            .progress = .progress)
+  WLSs <- f.reconcile(base_forecasts = base_forecasts, S = S, method = "wls_struct")
+  WLSs_subset <- f.reconcile(base_forecasts = base_forecasts, S = S, 
+                             method = "wls_struct", residuals = residuals, 
+                             fitted_values = fitted_values, train_data = train_data,
+                             subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
+                             unbiased = unbiased,
+                             parallel = parallel, workers = workers, 
+                             .progress = .progress)
+  WLSv <- f.reconcile(base_forecasts = base_forecasts, S = S, method = "wls_var",
+                      residuals = residuals)
+  WLSv_subset <- f.reconcile(base_forecasts = base_forecasts, S = S, 
+                             method = "wls_var", residuals = residuals, 
+                             fitted_values = fitted_values, train_data = train_data,
+                             subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
+                             unbiased = unbiased,
+                             parallel = parallel, workers = workers, 
+                             .progress = .progress)
+  # MinT <- f.reconcile(base_forecasts = base_forecasts, S = S, method = "mint_cov",
+  #                     residuals = residuals)
+  # MinT_subset <- f.reconcile(base_forecasts = base_forecasts, S = S, 
+  #                            method = "mint_cov", residuals = residuals,
+  #                            fitted_values = fitted_values, train_data = train_data,
+  #                            subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
+  #                            unbiased = unbiased,
+  #                            parallel = parallel, workers = workers, 
+  #                            .progress = .progress)
+  MinTs <- f.reconcile(base_forecasts = base_forecasts, S = S, method = "mint_shrink",
+                       residuals = residuals)
+  MinTs_subset <- f.reconcile(base_forecasts = base_forecasts, S = S,
+                              method = "mint_shrink", residuals = residuals, 
+                              fitted_values = fitted_values, train_data = train_data,
+                              subset = TRUE, G_bench = G_bench, nlambda_0 = nlambda_0,
+                              unbiased = unbiased,
+                              parallel = parallel, workers = workers, 
+                              .progress = .progress)
   
   list(Base = list(y_tilde = base_forecasts, G = NA, z = NA, lambda0_report = NA), 
-       BU = BU, 
+       BU = BU,
        OLS = OLS, OLS_subset = OLS_subset,
        WLSs = WLSs, WLSs_subset = WLSs_subset,
        WLSv = WLSv, WLSv_subset = WLSv_subset,
-       MinT = MinT, MinT_subset = MinT_subset,
-       MinTs = MinTs, MinTs_subset = MinTs_subset)
+       # MinT = MinT, MinT_subset = MinT_subset,
+       MinTs = MinTs, MinTs_subset = MinTs_subset
+       )
 }
 
 #################################################
@@ -79,25 +99,37 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 #----------------------------------------------------------------------
 data_label <- "simulation" # used to name the results to be imported and saved
 workers <- 8 # number of workers used to run in parallel
-S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
-           diag(rep(1, 4))) # S matrix
+large <- FALSE
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
-## Quarterly series from 1998Q1-2017Q4: 80 observations for each series
 ##
-## Total/State: 2 levels, n = 9
-## Training set:  1998Q1-2015Q4
-## Test set:      2016Q1-2017Q4
+## Monthly series from 1998Jan-2017Dec: 240 months (20 years) for each series
+##
+## Total/State/Zone/Region: 4 levels, n = 111 series in total
+##
+## Training set:  1998Jan-2016Dec
+## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 data_label <- "tourism" # used to name the results to be imported and saved
 workers <- 8 # number of workers used to run in parallel
-S <- rbind(rep(1, 8), diag(rep(1, 8)))
+large <- TRUE # use reconcile_diag
+unbiased <- TRUE # only work when using reconcile_diag
+# S <- rbind(rep(1, 7), diag(1, 7))
+# S <- rbind(rep(1, 27),
+#            c(rep(1, 6), rep(0, 21)),
+#            c(rep(0, 6), rep(1, 5), rep(0, 16)),
+#            c(rep(0, 11), rep(1, 4), rep(0, 12)),
+#            c(rep(0, 15), rep(1, 4), rep(0, 8)),
+#            c(rep(0, 19), rep(1, 3), rep(0, 5)),
+#            c(rep(0, 22), rep(1, 3), rep(0, 2)),
+#            c(rep(0, 25), rep(1, 2)),
+#            diag(1, 27))
 
 #################################################
 # Import base forecast results
 #################################################
-for (i in c("fits", "resids", "train", "basefc","test")){
+for (i in c("S", "fits", "resids", "train", "basefc","test")){
   assign(i, readRDS(file = paste0("data/", data_label, "_", i, ".rds")))
 }
 
@@ -114,10 +146,11 @@ if (length(indices) == 1){
 #################################################
 plan(multisession, workers = workers)
 reconsf <- indices |>
-  map_fun(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
-                                      deteriorate = FALSE,
+  map_fun(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, 
+                                      large = large, deteriorate = FALSE,
                                       G_bench = "Zero", nlambda_0 = 20,
                                       parallel = ifelse(length(indices) == 1, TRUE, FALSE),
+                                      unbiased = unbiased,
                                       workers = workers, .progress = ifelse(length(indices) == 1, TRUE, FALSE)),
                     .progress = ifelse(length(indices) == 1, FALSE, TRUE))
 saveRDS(reconsf, file = paste0("data/", data_label, "_reconsf.rds"))
@@ -126,15 +159,16 @@ rm(reconsf)
 #################################################
 # Reconcile forecasts - deteriorate base forecasts for some time series
 #################################################
-deteriorate_series <- c("AA", "B") # s1
-# deteriorate_series <- c("Total") # s2
+deteriorate_series <- c("AA") # s1  deteriorate_series <- c("WA", "QLD")
+# deteriorate_series <- c("Total")
 deteriorate_rate <- 1.5
 scenario <- "s1"
+# scenario <- "s2"
 
 plan(multisession, workers = workers)
 reconsf_s <- indices |>
   map_fun(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
-                                      deteriorate = TRUE, 
+                                      large = large, deteriorate = TRUE, 
                                       deteriorate_series = deteriorate_series,
                                       deteriorate_rate = deteriorate_rate,
                                       G_bench = "Zero", nlambda_0 = 20,

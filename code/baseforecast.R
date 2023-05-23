@@ -80,7 +80,7 @@ end_test <- c(2017, 12)
 fmethod <- "ets"
 
 # S matrix
-S <- readRDS("data/tourism_data_S.rds")
+S <- readRDS("data/tourism_S.rds")
 
 #################################################
 # Generate base forecasts
@@ -125,7 +125,7 @@ for (index in indices){
 #################################################
 # Save base forecast results
 #################################################
-for (i in c("fits", "resids", "train", "basefc","test")){
+for (i in c("S", "fits", "resids", "train", "basefc","test")){
   saveRDS(get(i), file = paste0("data/", data_label, "_", i, ".rds"))
 }
 

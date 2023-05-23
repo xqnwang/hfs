@@ -46,9 +46,12 @@ calc_rmse <- function(fc, data, h){
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
 data_label <- "simulation"
-reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
-# scenario <- "s2"
-# reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf_", scenario, ".rds"))
+scenario <- NULL
+if (is.null(scenario)){
+  reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
+} else{
+  reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf_", scenario, ".rds"))
+}
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
 
 # Structure information used to calculate RMSE across levels
@@ -56,6 +59,7 @@ top <- 1
 middle <- 2:3
 bottom <- 4:7
 avg <- 1:7
+horizon <- c(1, 4, 8, 16)
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
@@ -66,22 +70,28 @@ avg <- 1:7
 ## Test set:      2016Q1-2017Q4
 #----------------------------------------------------------------------
 data_label <- "tourism"
+scenario <- NULL
 reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
 
 # Structure information used to calculate RMSE across levels
 top <- 1
-bottom <- 2:8
-avg <- 1:9
+state <- 2:8
+zone <- 9:35
+region <- 36:111
+avg <- 1:111
+horizon <- c(1, 4, 8, 12)
 
 #################################################
 # Extract reconciled forecasts
 #################################################
 methods <- c("Base", "BU", "OLS", "OLS_subset", 
              "WLSs", "WLSs_subset", "WLSv", "WLSv_subset", 
-             "MinT", "MinT_subset", 
+             # "MinT", "MinT_subset", 
              "MinTs", "MinTs_subset")
-subset_methods <- c("OLS_subset", "WLSs_subset", "WLSv_subset", "MinT_subset", "MinTs_subset")
+subset_methods <- c("OLS_subset", "WLSs_subset", "WLSv_subset", 
+                    # "MinT_subset", 
+                    "MinTs_subset")
 indices <- unique(test$Index)
 
 for(method in methods) { 
@@ -96,7 +106,7 @@ for(method in methods) {
 #################################################
 # Calculate RMSE values
 #################################################
-for(h in c(1, 8, 16)){
+for(h in horizon){
   out <- bind_rows(Base = calc_rmse(base, test, h = h),
                    BU = calc_rmse(bu, test, h = h),
                    OLS = calc_rmse(ols, test, h = h),
@@ -105,19 +115,27 @@ for(h in c(1, 8, 16)){
                    WLSs_subset = calc_rmse(wlss_subset, test, h = h),
                    WLSv = calc_rmse(wlsv, test, h = h),
                    WLSv_subset = calc_rmse(wlsv_subset, test, h = h),
-                   MinT = calc_rmse(mint, test, h = h),
-                   MinT_subset = calc_rmse(mint_subset, test, h = h),
+                   # MinT = calc_rmse(mint, test, h = h),
+                   # MinT_subset = calc_rmse(mint_subset, test, h = h),
                    MinTs = calc_rmse(mints, test, h = h),
                    MinTs_subset = calc_rmse(mints_subset, test, h = h),
                    .id = "Method") |>
     rowwise() |>
     mutate(Top = mean(c_across(top + 1)),
-           # Middle = mean(c_across(middle + 1)),
-           Bottom = mean(c_across(bottom + 1)),
+           State = mean(c_across(state + 1)),
+           Zone = mean(c_across(zone + 1)),
+           Region = mean(c_across(region + 1)),
+           # Middle = mean(c_across((middle + 1))),
+           # Bottom = mean(c_across((bottom + 1))),
            Average = mean(c_across(avg + 1))) |>
     # select(Method, Top, Middle, Bottom, Average)
-    select(Method, Top, Bottom, Average)
+    select(Method, Top, State, Zone, Region, Average)
   assign(paste0("rmse_h", h), out)
+  # if (is.null(scenario)){
+  #   saveRDS(out, file = paste0("data/", data_label, "_reconsf_rmse_", h, ".rds"))
+  # } else{
+  #   saveRDS(out, file = paste0("data/", data_label, "_reconsf_", scenario, "_rmse_", h, ".rds"))
+  # }
 }
 
 #################################################
@@ -137,6 +155,11 @@ for(method in subset_methods) {
 }
 series_name <- c(colnames(test), "Method")
 colnames(z_summary) <- series_name
+if (is.null(scenario)){
+  saveRDS(z_summary, file = paste0("data/", data_label, "_reconsf_z_summary.rds"))
+} else{
+  saveRDS(z_summary, file = paste0("data/", data_label, "_reconsf_", scenario, "_z_summary.rds"))
+}
 
 z_summary |>
   as_tibble() |>
@@ -166,6 +189,11 @@ for(method in subset_methods) {
   out <- cbind(out, Method = method)
   lambda0_summary <- rbind(lambda0_summary, out)
 }
+if (is.null(scenario)){
+  saveRDS(lambda0_summary, file = paste0("data/", data_label, "_reconsf_lambda0_summary.rds"))
+} else{
+  saveRDS(lambda0_summary, file = paste0("data/", data_label, "_reconsf_", scenario, "_lambda0_summary.rds"))
+}
 
 lambda0_summary |>
   group_by(Method, Index) |>
@@ -178,3 +206,4 @@ lambda0_summary |>
   labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
        x = TeX(r"(index of $\lambda_0$, $\lambda_{0\min} = 0$)"),
        y= "")
+
