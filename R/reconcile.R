@@ -9,13 +9,14 @@
 #' @param fitted_values Fitted values in training set.
 #' @param train_data Training data.
 #' @param subset Logical. If true, mixed integer programming is implemented to achieve subset selection.
-#' @param lasso Logical. If true, `l1 norm` is included to achieve shrinkage.
+#' @param lasso Logical. If true, Group lasso is included to achieve shrinkage.
 #' @param ridge Logical. If true, `l2 norm` is included to achieve shrinkage.
 #' @param G_bench Target G matrix shrinks towards.
-#' @param lambda_0 A user supplied `lambda_0` value.
-#' @param lambda_1 A user supplied `lambda_1` value.
-#' @param lambda_2 A user supplied `lambda_2` value.
-#' @param nlambda_0 Number of candidate `lambda_0` values to choose from.
+#' @param ELasso Logical. If both lasso and ELasso are TRUE, Group lasso based on training set is implemented.
+#' @param lambda_0 A user supplied `lambda_0` value for subset selection.
+#' @param lambda_1 A user supplied `lambda_1` value for group lasso.
+#' @param lambda_2 A user supplied `lambda_2` value for subset selection.
+#' @param nlambda Number of candidate `lambda_0`(or `lambda_1`) values to choose from for subset selection (group lasso) problem.
 #' @param M The value of the Big M.
 #' @param solver A character vector specifying the solver to use. If missing, then `gurobi` is used.
 #' @param parallel Logical. If true, optimal `lambda_0` will be found in parallel.
@@ -24,15 +25,17 @@
 #' 
 #' @import ROI
 #' @import future
+#' @import gglasso
 #' 
 #' @export
 reconcile <- function(base_forecasts, S, 
                       method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                       residuals = NULL, 
                       fitted_values = NULL, train_data = NULL,
-                      subset = FALSE, lasso = FALSE, ridge = FALSE, G_bench = c("Zero", "G"),
-                      lambda_0 = NULL, lambda_1 = 0, lambda_2 = 0, unbiased = TRUE,
-                      nlambda_0 = 20, M = NULL, solver = "gurobi",
+                      lasso = FALSE, ELasso = FALSE, lambda_1 = NULL,
+                      subset = FALSE, ridge = FALSE, lambda_0 = NULL, lambda_2 = 0, 
+                      G_bench = c("Zero", "G"), unbiased = TRUE,
+                      nlambda = 20, M = NULL, solver = "gurobi",
                       parallel = FALSE, workers = 2, .progress = FALSE){
   # Dimension info
   n <- NROW(S); n_b <- NCOL(S)
@@ -116,11 +119,11 @@ reconcile <- function(base_forecasts, S,
         lambda_0 <- c(0, 
                       exp(seq(from = log(1e-04*lambda_0_max), 
                               to = log(lambda_0_max), 
-                              by = log(1e04)/(nlambda_0 - 2)))
+                              by = log(1e04)/(nlambda - 2)))
                       )
       }
-      # if (lambda_1 == 0L & lambda_2 == 0L){
-      #   lambda_1 <- 1e-5
+      # if (lambda_2 == 0L){
+      #   lambda_2 <- 1e-5
       # }
       
       # Shrinkage matrix
@@ -144,9 +147,8 @@ reconcile <- function(base_forecasts, S,
         }
         
         fit.lambda <- lambda_0[-1] |>
-          map_fun(\(l0) mip_l0(lambda_0 = l0,
+          map_fun(\(l0) mip_l0(lambda_0 = l0, lambda_2 = lambda_2,
                                fc = fc, S = S, W = W, G_bench = G_bench,
-                               lambda_1 = lambda_1, lambda_2 = lambda_2,
                                M = M, solver = solver)$G,
                   .progress = .progress)
         fit.lambda <- append(fit.lambda, list(G), after = 0) # lambda_0 = 0
@@ -159,13 +161,63 @@ reconcile <- function(base_forecasts, S,
         z <- rep(1, n)
       } else{
         fit.mip <- mip_l0(fc = fc, S = S, W = W, G_bench = G_bench, 
-                          lambda_0 = lambda_0, lambda_1 = lambda_1, lambda_2 = lambda_2, 
+                          lambda_0 = lambda_0, lambda_2 = lambda_2, 
                           M = M, solver = solver)
         
         G <- fit.mip$G
         z <- fit.mip$z
       }
     }
+    
+    if (lasso){
+      if (ELasso){
+        # Group lasso based on in-sample observations and fitted values
+        if (is.null(fitted_values) | is.null(train_data)){
+          stop("Historical residuals are required to implement empirical group lasso")
+        }
+        if (NROW(fitted_values) != NROW(train_data)){
+          stop("The dimensions of the fitted_values do not match train_data")
+        }
+        
+        N <- NROW(train_data)
+        X <- kronecker(S, fitted_values)
+        y <- as.vector(train_data)
+        index <- matrix(seq.int(n_b*n), nrow = n_b, ncol = n, byrow = FALSE) |> 
+          t() |> 
+          as.vector()
+        
+        # Reorder data to make 'group' as a vector of consecutive integers
+        X <- X[ , order(index)]
+        group <- rep(seq.int(n), each = n_b)
+        
+        cvfit <- gglasso::cv.gglasso(x = X, y = y, group = group, intercept = FALSE,
+                                     loss = "ls", pred.loss = "L1", 
+                                     nfolds = 5, nlambda = nlambda, lambda.factor = 1e-05)
+        vec_G <- coef(cvfit, s = "lambda.min")[-1] # remove 0 intercept
+        G <- matrix(vec_G, nrow = n_b, ncol = n, byrow = FALSE)
+        sse_summary <- data.frame(lambda1 = cvfit$lambda, sse = cvfit$cvm)
+        z <- ifelse(round(colSums(G), 3) == 0, 0, 1)
+      } else{
+        # Group lasso based on one-step ahead forecasts using different W (WLS)
+        y_hat <- base_forecasts[1, ] |> as.vector() # One-step ahead base forecasts
+        X <- kronecker(t(y_hat), S)
+        group <- rep(seq.int(n), each = n_b)
+        
+        fit <- gglasso::gglasso(x = X, y = y_hat, group = group, intercept = FALSE,
+                                loss = "wls", weight = solve(W), 
+                                nlambda = nlambda, lambda.factor = 1e-05, eps = 1e-04)
+        sse <- purrr::map_dbl(1:nlambda, \(i){
+          G <- fit$beta[, i] |> as.vector() |> 
+            matrix(nrow = n_b, ncol = n, byrow = FALSE)
+          sum(stats::na.omit(train_data - fitted_values %*% t(G) %*% t(S))^2)
+        }) |> round(2)
+        lambda_index <- which.min(sse)
+        G <- fit$beta[, lambda_index] |> as.vector() |> 
+          matrix(nrow = n_b, ncol = n, byrow = FALSE)
+        sse_summary <- data.frame(lambda1 = fit$lambda, sse = sse)
+        z <- ifelse(round(colSums(G), 3) == 0, 0, 1)
+      }
+    } 
   }
   
   # Reconciliation
@@ -173,17 +225,17 @@ reconcile <- function(base_forecasts, S,
   colnames(y_tilde) <- colnames(base_forecasts)
   
   # Output
-  if (subset){
+  if (subset | lasso){
     z <- z
   } else{
     z <- NA
   }
   if (exists("sse_summary")){
-    lambda0_report <- sse_summary
+    lambda_report <- sse_summary
   } else{
-    lambda0_report <- NA
+    lambda_report <- NA
   }
   list(y_tilde = y_tilde, G = G,
        z = z,
-       lambda0_report = lambda0_report)
+       lambda_report = lambda_report)
 }
