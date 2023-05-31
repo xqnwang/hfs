@@ -147,6 +147,41 @@ rmse |>
 
 ```
 
+```{r s0-lasso-rmse}
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
 2. Selection results
 
 ```{r s0-z}
@@ -173,7 +208,7 @@ z_summary |>
 3. Hyperparameters results
 
 ```{r s0-lambda}
-readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda_summary.rds")) |>
   group_by(Method, Index) |>
   summarise(sse_index = which.min(sse)) |>
   ungroup() |>
@@ -230,6 +265,41 @@ rmse |>
 
 ```
 
+```{r s1-lasso-rmse}
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
 2. Selection results
 
 ```{r s1-z}
@@ -253,10 +323,31 @@ z_summary |>
        y = "")
 ```
 
+```{r s1-lasso-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+```
+
 3. Hyperparameters results
 
 ```{r s1-lambda}
-readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda_summary.rds")) |>
   group_by(Method, Index) |>
   summarise(sse_index = which.min(sse)) |>
   ungroup() |>
@@ -313,6 +404,41 @@ rmse |>
 
 ```
 
+```{r s2-lasso-rmse}
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
 2. Selection results
 
 ```{r s2-z}
@@ -336,10 +462,31 @@ z_summary |>
        y = "")
 ```
 
+```{r s2-lasso-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+```
+
 3. Hyperparameters results
 
 ```{r s2-lambda}
-readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda_summary.rds")) |>
   group_by(Method, Index) |>
   summarise(sse_index = which.min(sse)) |>
   ungroup() |>
@@ -396,6 +543,41 @@ rmse |>
 
 ```
 
+```{r s3-lasso-rmse}
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+
+```
+
 2. Selection results
 
 ```{r s3-z}
@@ -419,10 +601,31 @@ z_summary |>
        y = "")
 ```
 
+```{r s3-lasso-z}
+z_summary <- readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+```
+
 3. Hyperparameters results
 
 ```{r s3-lambda}
-readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda0_summary.rds")) |>
+readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_lambda_summary.rds")) |>
   group_by(Method, Index) |>
   summarise(sse_index = which.min(sse)) |>
   ungroup() |>
@@ -482,6 +685,41 @@ horizon <- c(1,4,8,12)
 for(h in horizon){
   assign(paste0("rmse_h", h), 
          readRDS(file = paste0("../data/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+         )
+}
+levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+rmse <- NULL
+for (l in levels){
+  rmse_l <- NULL
+  for (h in horizon){
+    rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+  }
+  rmse <- cbind(rmse, rmse_l)
+}
+rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(5))
+rmse$Method <- sub("_", "-", rmse$Method)
+rmse[, 1] <- ifelse(grepl("subset", rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), bold = TRUE), format(round(x,2), nsmall = 2))
+})
+rmse |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        escape = FALSE,
+        linesep = "") |>
+  #kable_paper("striped", full_width = F) |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  row_spec(0, align = "c") |>
+  add_header_above(c("", "Top" = 4, "State" = 4, "Zone" = 4, "Region" = 4, "Average" = 4), align = "c")
+```
+
+```{r tourism-lasso-rmse}
+# reconcile_diag (unbiased = TRUE, Part: Estimate G using optimal lambda_0 and lambda_2)
+for(h in horizon){
+  assign(paste0("rmse_h", h), 
+         readRDS(file = paste0("../data/", data_label, "_reconsf_lasso", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
          )
 }
 levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
@@ -670,6 +908,13 @@ z_summary |>
        y = "") +
   scale_x_discrete(breaks = c("A", "AA", "AAA"))
 ```
+
+### Strategy 3: $\bar{\boldsymbol{S}} = \bar{\boldsymbol{A}}\boldsymbol{S}$
+
+Let $\bar{\boldsymbol{S}} = \bar{\boldsymbol{A}}\boldsymbol{S}$, where $\boldsymbol{A}$ is a diagonal matrix, $\boldsymbol{A} = \text{diag}(z_i)$ where $z_i \in \{0, 1\}$.
+
+Then $\bar{\boldsymbol{G}} = (\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}$
+
 
 ### Other potential strategies
 
