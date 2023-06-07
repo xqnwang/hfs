@@ -19,7 +19,7 @@
 library(ROI)
 mip_l0 <- function(fc, S, W, G_bench = NULL, 
                    lambda_0 = 0, lambda_1 = 0, lambda_2 = 0, 
-                   M = NULL, solver = "gurobi"){
+                   M = NULL, solver = "gurobi", mip.gap = NULL){
   # Check input dimension
   if(length(unique(c(length(fc), NROW(S), dim(W)))) != 1L){
     stop("The dimensions of the inputs do not match each other")
@@ -27,10 +27,15 @@ mip_l0 <- function(fc, S, W, G_bench = NULL,
   
   # Dimension info
   n <- NROW(S); n_b <- NCOL(S)
+  p <- n_b * n
+  
+  if(is.null(mip.gap)){
+    mip.gap <- ifelse(p > 500, 0.01, 0.0001)
+  }
   
   # Set Big-M value
   if(is.null(M)){
-    M <- ifelse(is.null(G_bench), n_b*10, abs(G_bench) |> colSums() |> max()*10)
+    M <- ifelse(is.null(G_bench), n_b, abs(G_bench) |> colSums() |> max()*3)
   }
   
   # G_bench
@@ -47,7 +52,6 @@ mip_l0 <- function(fc, S, W, G_bench = NULL,
   #                 paste0("d_positive", seq.int(n_b*n)),
   #                 paste0("g_positive", seq.int(n_b*n)))
   n_parameters <- n_b*n + n + n + n_b*n + n_b*n
-  p <- n_b*n
   solveW <- solve(W)
   
   # Optimization problem construction
@@ -114,17 +118,22 @@ mip_l0 <- function(fc, S, W, G_bench = NULL,
 
   ### z_g \in {0, 1}
   types(model) <- c(rep("C", p), rep("B", n), rep("C", n + 2*p))
-  bounds(model) <- ROI::V_bound(li = c(1:p, (p + n + 1):(p + n + n)), lb = rep.int(-Inf, p + n), nobj = n_parameters) # default of lower bound is 0
+  # bounds(model) <- ROI::V_bound(li = c(1:p, (p + n + 1):(p + n + n)), lb = rep.int(-Inf, p + n), nobj = n_parameters) # default of lower bound is 0
+  bounds(model) <- ROI::V_bound(li = c(1:p, (p + n + 1):(p + n + n)), 
+                                lb = c(rep(-1, p), rep(-Inf, n)), 
+                                ui = c(1:p, (p + n + 1):(p + n + n), (p + n + n + 1):(p + n + n + p + p)),
+                                ub = c(rep(1, p), rep(Inf, n), rep(1, p), rep(2, p)),
+                                nobj = n_parameters) # default of lower bound is 0
   
   # optimal solution
-  model.solver <- ROI::ROI_solve(model, solver)
+  model.solver <- ROI::ROI_solve(model, solver, control = list(MIPGap = mip.gap))
   
   # output
   model.slt <- ROI::solution(model.solver)
   G <- model.slt[seq.int(p)] |>
     matrix(nrow = n_b, ncol = n, byrow = FALSE)
   if(lambda_0 == 0L){
-    z <- NA
+    z <- rep(1, n)
   }else{
     z <- model.slt[(p + 1):(p + n)]
   }
