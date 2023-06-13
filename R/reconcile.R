@@ -31,17 +31,13 @@
 #' @export
 reconcile <- function(base_forecasts, S, 
                       method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
-                      residuals = NULL, 
-                      fitted_values = NULL, train_data = NULL,
-                      lasso = FALSE, ELasso = FALSE, lambda_1 = NULL,
-                      subset = FALSE, ridge = FALSE, lambda_0 = NULL, lambda_2 = 0, 
-                      G_bench = c("Zero", "G"), unbiased = TRUE,
-                      nlambda = 20, M = NULL, solver = "gurobi", 
-                      pythonpath = NULL,
-                      pyfunpath = NULL,
-                      parallel = FALSE, workers = 2, .progress = FALSE){
+                      residuals = NULL, fitted_values = NULL, train_data = NULL,
+                      subset = FALSE, ridge = FALSE,
+                      lambda_0 = NULL, lambda_2 = NULL, 
+                      m = NULL, M = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
+                      TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE){
   # Dimension info
-  n <- NROW(S); n_b <- NCOL(S)
+  n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
     if (length(base_forecasts) != n){
       stop("The dimensions of the base_forecasts do not match S")
@@ -54,11 +50,10 @@ reconcile <- function(base_forecasts, S,
   }
   
   method <- match.arg(method)
-  G_bench <- match.arg(method)
   if (method == "bu"){
     # Buttom-up
     subset <- FALSE
-    G <- cbind(matrix(0, n_b, n-n_b), diag(n_b))
+    G <- cbind(matrix(0, nb, n-nb), diag(nb))
   } else{
     # W matrix
     if (method == "ols"){
@@ -111,165 +106,66 @@ reconcile <- function(base_forecasts, S,
     R <- t(S) %*% solve(W)
     G <- solve(R %*% S) %*% R
     
-    # Subset selection
+    # Group best-subset selection with ridge regularization
     if (subset){
       # One-step ahead base forecasts
-      fc <- base_forecasts[1, ] |> as.vector()
-
-      # Candidate lambda_0
-      if (is.null(lambda_0)){
-        lambda_0_max <- (0.5 * (t(fc) %*% solve(W) %*% fc)/n_b) |> as.vector()
-        lambda_0 <- c(0,
-                      exp(seq(from = log(1e-04*lambda_0_max),
-                              to = log(lambda_0_max),
-                              by = log(1e04)/(nlambda - 2)))
-                      )
-      }
-      # if (lambda_2 == 0L){
-      #   lambda_2 <- 1e-5
-      # }
-
-      # Shrinkage matrix
-      if (G_bench == "Zero"){
-        G_bench <- NULL
-      } else{
-        G_bench <- G
-      }
-
+      fc <- base_forecasts[1, ] |> matrix(nrow = n, ncol = 1)
+      fc_tilde_init <- S %*% G %*% fc
+      obj_init <- 0.5 * t(fc - fc_tilde_init) %*% solve(W) %*% (fc - fc_tilde_init) |> 
+        as.numeric()
+      
       # Find optimal lambda_0 by minimizing sum of squared reconciled residuals
       if (is.null(train_data) | is.null(fitted_values)){
         stop("Training data and fitted values are required to find the optimal lambda_0")
       }
       
-      if (parallel){
-        future::plan(multisession, workers = workers)
-        map_fun <- furrr::future_map
-      } else {
-        map_fun <- purrr::map
+      # Candidate lambda_0
+      if (is.null(lambda_0)){
+        ndigits <- floor(log10(abs(obj_init/nb))) + 2
+        lambda_0 <- c(0, 10^seq(from = ndigits - 4, to = ndigits, by = 1))
       }
       
-      fit.out <- lambda_0 |>
-        map_fun(\(l0) mip_l0(lambda_0 = l0, lambda_2 = lambda_2,
-                             fc = fc, S = S, W = W, G_bench = G_bench,
-                             M = M, solver = solver),
-                .progress = .progress)
-      
-      index0 <- which(lambda_0 == 0)
-      fit.G <- lapply(fit.out, function(l) l$G)
-      fit.G[[index0]] <- G
-      fit.z <- lapply(fit.out, function(l) l$z)
-      sse <- purrr::map_dbl(fit.G, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2)) |> round(2)
-      sse_summary <- data.frame(lambda0 = lambda_0, sse = sse)
-      lambda_0 <- lambda_0[which.min(sse)]
-      z <- fit.z[[which.min(sse)]]
-      G <- fit.G[[which.min(sse)]]
-    }
-    
-    # Subset selection
-    # if (subset){
-    #   # One-step ahead base forecasts
-    #   fc <- base_forecasts[1, ] |> as.vector()
-    #   
-    #   # Candidate lambda_0
-    #   if (is.null(lambda_0)){
-    #     lambda_0_max <- (0.5 * (t(fc) %*% solve(W) %*% fc)/n_b) |> as.vector()
-    #     lambda_0 <- c(0, 
-    #                   exp(seq(from = log(1e-04*lambda_0_max), 
-    #                           to = log(lambda_0_max), 
-    #                           by = log(1e04)/(nlambda - 2)))
-    #                   )
-    #   }
-    #   
-    #   # Call python function
-    #   py_fun <- function(y, S, W, l0, M){
-    #     reticulate::use_python(pythonpath, required = T)
-    #     reticulate::source_python(pyfunpath)
-    #     A_diag <- miqp(y = y, S = S, W = W, l0 = l0, M = M)
-    #     C <- t(S) %*% solve(W) %*% diag(A_diag) %*% S
-    #     ev <- eigen(C, only.values = TRUE)[["values"]]
-    #     if (any(ev < 1e-8)) {
-    #       G <- NULL
-    #     } else{
-    #       G <- solve(C) %*% t(S) %*% solve(W) %*% diag(A_diag)
-    #     }
-    #     return(G)
-    #   }
-    #   
-    #   # Find optimal lambda_0 by minimizing sum of squared reconciled residuals
-    #   if (is.null(train_data) | is.null(fitted_values)){
-    #     stop("Training data and fitted values are required to find the optimal lambda_0")
-    #   }
-    #   
-    #   if (parallel){
-    #     future::plan(multisession, workers = workers)
-    #     map_fun <- furrr::future_map
-    #   } else {
-    #     map_fun <- purrr::map
-    #   }
-    #   
-    #   G_candidates <- lambda_0 |>
-    #     map_fun(\(l0) py_fun(l0 = l0, y = fc, S = S, W = W, M = 2),
-    #             .progress = .progress)
-    #   index <- !sapply(G_candidates, is.null)
-    #   G_candidates <- G_candidates[index]
-    #   lambda_0 <- lambda_0[index]
-    #   sse <- purrr::map_dbl(G_candidates, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2)) |> round(2)
-    #   sse_summary <- data.frame(lambda0 = lambda_0, sse = sse)
-    #   lambda_0 <- lambda_0[which.min(sse)]
-    #   G <- G_candidates[which.min(sse)]
-    #   z <- ifelse(colSums(G) == 0, 0, 1)
-    # }
-    
-    # Group lasso
-    if (lasso){
-      if (ELasso){
-        # Group lasso based on in-sample observations and fitted values
-        if (is.null(fitted_values) | is.null(train_data)){
-          stop("Historical residuals are required to implement empirical group lasso")
+      # Candidate lambda_2
+      if (ridge){
+        if (is.null(lambda_2)){
+          lambda_2 <- c(0, 10^seq(from = -2, to = 2, by = 1))
         }
-        if (NROW(fitted_values) != NROW(train_data)){
-          stop("The dimensions of the fitted_values do not match train_data")
-        }
-        
-        N <- NROW(train_data)
-        X <- kronecker(S, fitted_values)
-        y <- as.vector(train_data)
-        index <- matrix(seq.int(n_b*n), nrow = n_b, ncol = n, byrow = FALSE) |> 
-          t() |> 
-          as.vector()
-        
-        # Reorder data to make 'group' as a vector of consecutive integers
-        X <- X[ , order(index)]
-        group <- rep(seq.int(n), each = n_b)
-        
-        cvfit <- gglasso::cv.gglasso(x = X, y = y, group = group, intercept = FALSE,
-                                     loss = "ls", pred.loss = "L1", 
-                                     nfolds = 5, nlambda = nlambda, lambda.factor = 1e-05)
-        vec_G <- coef(cvfit, s = "lambda.min")[-1] # remove 0 intercept
-        G <- matrix(vec_G, nrow = n_b, ncol = n, byrow = FALSE)
-        sse_summary <- data.frame(lambda1 = cvfit$lambda, sse = cvfit$cvm)
-        z <- ifelse(round(colSums(G), 3) == 0, 0, 1)
       } else{
-        # Group lasso based on one-step ahead forecasts using different W (WLS)
-        y_hat <- base_forecasts[1, ] |> as.vector() # One-step ahead base forecasts
-        X <- kronecker(t(y_hat), S)
-        group <- rep(seq.int(n), each = n_b)
-        
-        fit <- gglasso::gglasso(x = X, y = y_hat, group = group, intercept = FALSE,
-                                loss = "wls", weight = solve(W), 
-                                nlambda = nlambda, lambda.factor = 1e-05, eps = 1e-04)
-        sse <- purrr::map_dbl(1:nlambda, \(i){
-          G <- fit$beta[, i] |> as.vector() |> 
-            matrix(nrow = n_b, ncol = n, byrow = FALSE)
-          sum(stats::na.omit(train_data - fitted_values %*% t(G) %*% t(S))^2)
-        }) |> round(2)
-        lambda_index <- which.min(sse)
-        G <- fit$beta[, lambda_index] |> as.vector() |> 
-          matrix(nrow = n_b, ncol = n, byrow = FALSE)
-        sse_summary <- data.frame(lambda1 = fit$lambda, sse = sse)
-        z <- ifelse(round(colSums(G), 3) == 0, 0, 1)
+        lambda_2 <- 0
       }
-    } 
+      
+      # Search optimal l0 and l2
+      if (MIPVerbose){
+        LogToConsole = 1
+        OutputFlag = 1
+      } else{
+        LogToConsole = 0
+        OutputFlag = 0
+      }
+      
+      lambda <- expand.grid(l0 = lambda_0, l2 = lambda_2)
+      mip.out <- purrr::pmap(lambda, function(l0, l2){
+        if (l0 == 0 & l2 == 0){
+          fit <- list(l0 = l0, l2 = l2, G = G, Z = rep(1, n), obj = obj_init, gap = 0, opt = 1)
+        } else{
+          fit <- miqp(fc, S, W, l0, l2, 
+                      m, M, MIPGap, TimeLimit, 
+                      LogToConsole, OutputFlag, 
+                      WarmStart, MIPFocus, Cuts)
+          names(fit) <- c("G", "Z", "obj", "gap", "opt")
+          fit <- append(list(l0 = l0, l2 = l2), fit)
+        }
+        sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
+        fit$sse <- sse
+        fit
+      }, .progress = SearchVerbose)
+
+      sse_summary <- sapply(mip.out, function(l) c(l$l0, l$l2, l$sse)) |> t() |> data.frame()
+      names(sse_summary) <- c("lambda0", "lambda2", "sse")
+      min.index <- purrr::map_dbl(mip.out, function(l) l$sse) |> round(2) |> which.min()
+      z <- mip.out[[min.index]]$Z |> as.vector()
+      G <- mip.out[[min.index]]$G
+    }
   }
   
   # Reconciliation
@@ -277,7 +173,7 @@ reconcile <- function(base_forecasts, S,
   colnames(y_tilde) <- colnames(base_forecasts)
   
   # Output
-  if (subset | lasso){
+  if (subset){
     z <- z
   } else{
     z <- NA
