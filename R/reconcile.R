@@ -160,8 +160,10 @@ reconcile <- function(base_forecasts, S,
         fit
       }, .progress = SearchVerbose)
 
-      sse_summary <- sapply(mip.out, function(l) c(l$l0, l$l2, l$sse)) |> t() |> data.frame()
-      names(sse_summary) <- c("lambda0", "lambda2", "sse")
+      sse_summary <- sapply(mip.out, function(l) c(l$l0, l$l2, sum(as.vector(l$Z)), l$sse, l$obj, l$gap, l$opt)) |> 
+        t() |> 
+        data.frame()
+      names(sse_summary) <- c("lambda0", "lambda2", "k", "sse", "obj", "gap", "opt")
       min.index <- purrr::map_dbl(mip.out, function(l) l$sse) |> round(2) |> which.min()
       z <- mip.out[[min.index]]$Z |> as.vector()
       G <- mip.out[[min.index]]$G
