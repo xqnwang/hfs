@@ -9,6 +9,7 @@ source("R/reconcile.R")
 
 # Utility function
 reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
+                               method, method_name,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
                                MIPFocus, Cuts, TimeLimit,
                                MIPVerbose, SearchVerbose){
@@ -25,9 +26,8 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
     residuals <- train_data - fitted_values
   }
   
+  Base <- list(y_tilde = base_forecasts, G = NA, z = NA, lambda_report = NA)
   BU <- reconcile(base_forecasts = base_forecasts, S = S, method = "bu")
-  method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
-  method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
   for(i in 1:length(method)){
     assign(method_name[i], 
            reconcile(base_forecasts = base_forecasts, S = S, method = method[i], 
@@ -39,16 +39,10 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                      subset = TRUE, ridge = TRUE,
                      MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                      MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose))
+    print(paste("===", method_name[i], "finished!"))
   }
   
-  list(Base = list(y_tilde = base_forecasts, G = NA, z = NA, lambda_report = NA), 
-       BU = BU,
-       OLS = OLS, OLS_subset = OLS_subset, 
-       WLSs = WLSs, WLSs_subset = WLSs_subset,
-       WLSv = WLSv, WLSv_subset = WLSv_subset,
-       MinT = MinT, MinT_subset = MinT_subset,
-       MinTs = MinTs, MinTs_subset = MinTs_subset
-       )
+  mget(c("Base", "BU", method_name, paste0(method_name, "_subset")))
 }
 
 #################################################
@@ -62,6 +56,8 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 #----------------------------------------------------------------------
 data_label <- "simulation" # used to name the results to be imported and saved
 MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = FALSE
+method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
+method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
@@ -75,6 +71,8 @@ MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = FA
 #----------------------------------------------------------------------
 data_label <- "tourism" # used to name the results to be imported and saved
 MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = TRUE
+method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
+method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
 
 #################################################
 # Import base forecast results
@@ -89,6 +87,7 @@ indices <- unique(fits$Index)
 #################################################
 reconsf <- indices |>
   purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, 
+                                         method, method_name,
                                          deteriorate = FALSE, 
                                          MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                                          MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
@@ -105,6 +104,7 @@ deteriorate_rate <- rep(1.5, 3)
 for (i in 1:3){
   reconsf_s <- indices |>
     purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
+                                           method, method_name,
                                            deteriorate = TRUE, 
                                            deteriorate_series = deteriorate_series[i],
                                            deteriorate_rate = deteriorate_rate[i], 
