@@ -12,6 +12,7 @@ refs/
 .Rapp.history
 .pyc
 __pycache__/
+*_files/
 
 # User-specific files
 .Ruserdata
