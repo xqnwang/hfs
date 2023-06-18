@@ -21,9 +21,9 @@ extract_element <- function(data, index, method, element){
   out
 }
 
-calc_rmse <- function(fc, data, h){
-  err <- subset(data, select = -Index) - subset(fc, select = -Index)
-  err <- cbind(err, Index = subset(data, select = Index))
+calc_rmse <- function(fc, test, h){
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  err <- cbind(err, Index = subset(test, select = Index))
   rmse <- err |> 
     as_tibble() |> 
     group_by(Index) |> 
@@ -36,6 +36,25 @@ calc_rmse <- function(fc, data, h){
   return(rmse)
 }
 
+calc_mase <- function(fc, train, test, freq, h){
+  x <- subset(train, select = -Index)
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  scaling <- apply(x, 2, function(s) mean(abs(diff(as.vector(s), freq))))
+  q <- cbind(t(t(err) /scaling), Index = subset(test, select = Index))
+  
+  mase <- q |> 
+    as_tibble() |> 
+    group_by(Index) |> 
+    mutate(Horizon = row_number()) |> 
+    filter(Horizon <= h) |>
+    summarise_at(1:NCOL(q), function(x) mean(abs(x))) |>
+    ungroup() |>
+    select(!c("Index", "Horizon")) |>
+    summarise_all(mean)
+  
+  return(mase)
+}
+
 #################################################
 # Import data
 #################################################
@@ -46,13 +65,16 @@ calc_rmse <- function(fc, data, h){
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
 data_label <- "simulation"
+freq <- 4
 scenario <- NULL
 if (is.null(scenario)){
-  reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_reconsf.rds"))
 } else{
-  reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf_", scenario, ".rds"))
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_reconsf_", scenario, ".rds"))
 }
+train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+method <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 
 # Structure information used to calculate RMSE across levels
 top <- 1
@@ -63,16 +85,21 @@ horizon <- c(1, 4, 8, 16)
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
-## Quarterly series from 1998Q1-2017Q4: 80 observations for each series
 ##
-## Total/State: 2 levels, n = 9
-## Training set:  1998Q1-2015Q4
-## Test set:      2016Q1-2017Q4
+## Monthly series from 1998Jan-2017Dec: 240 months (20 years) for each series
+##
+## Total/State/Zone/Region: 4 levels, n = 111 series in total
+##
+## Training set:  1998Jan-2016Dec
+## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 data_label <- "tourism"
+freq <- 12
 scenario <- NULL
-reconsf <- readRDS(file = paste0("data/", data_label, "_reconsf.rds"))
+reconsf <- readRDS(file = paste0("data_new/", data_label, "_reconsf.rds"))
+train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+method <- c("OLS", "WLSs", "WLSv", "MinTs")
 
 # Structure information used to calculate RMSE across levels
 top <- 1
@@ -85,19 +112,8 @@ horizon <- c(1, 4, 8, 12)
 #################################################
 # Extract reconciled forecasts
 #################################################
-methods <- c("Base", "BU", 
-             "OLS", "OLS_subset", "OLS_lasso",
-             "WLSs", "WLSs_subset", "WLSs_lasso",
-             "WLSv", "WLSv_subset", "WLSv_lasso",
-             "MinT", "MinT_subset", "MinT_lasso",
-             "MinTs", "MinTs_subset", "MinTs_lasso",
-             "Emp_lasso")
-subset_methods <- c("OLS_subset", "OLS_lasso", 
-                    "WLSs_subset", "WLSs_lasso", 
-                    "WLSv_subset", "WLSv_lasso",
-                    "MinT_subset", "MinT_lasso",
-                    "MinTs_subset", "MinTs_lasso",
-                    "Emp_lasso")
+methods <- c("Base", "BU", method, paste0(method, "_subset"))
+subset_methods <- paste0(method, "_subset")
 indices <- unique(test$Index)
 
 for(method in methods) { 
@@ -110,27 +126,21 @@ for(method in methods) {
 }
 
 #################################################
-# Calculate RMSE values
+# Calculate RMSE & MASE values
 #################################################
 for(h in horizon){
   out <- bind_rows(Base = calc_rmse(base, test, h = h),
                    BU = calc_rmse(bu, test, h = h),
                    OLS = calc_rmse(ols, test, h = h),
                    OLS_subset = calc_rmse(ols_subset, test, h = h),
-                   OLS_lasso = calc_rmse(ols_lasso, test, h = h),
                    WLSs = calc_rmse(wlss, test, h = h),
                    WLSs_subset = calc_rmse(wlss_subset, test, h = h),
-                   WLSs_lasso = calc_rmse(wlss_lasso, test, h = h),
                    WLSv = calc_rmse(wlsv, test, h = h),
                    WLSv_subset = calc_rmse(wlsv_subset, test, h = h),
-                   WLSv_lasso = calc_rmse(wlsv_lasso, test, h = h),
                    MinT = calc_rmse(mint, test, h = h),
                    MinT_subset = calc_rmse(mint_subset, test, h = h),
-                   MinT_lasso = calc_rmse(mint_lasso, test, h = h),
                    MinTs = calc_rmse(mints, test, h = h),
                    MinTs_subset = calc_rmse(mints_subset, test, h = h),
-                   MinTs_lasso = calc_rmse(mints_lasso, test, h = h),
-                   Emp_lasso = calc_rmse(emp_lasso, test, h = h),
                    .id = "Method") |>
     rowwise() |>
     mutate(Top = mean(c_across(top + 1)),
@@ -144,11 +154,44 @@ for(h in horizon){
     # select(Method, Top, State, Zone, Region, Average)
   assign(paste0("rmse_h", h), out)
   # if (is.null(scenario)){
-  #   saveRDS(out, file = paste0("data/", data_label, "_reconsf_rmse_", h, ".rds"))
+  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_rmse_", h, ".rds"))
   # } else{
-  #   saveRDS(out, file = paste0("data/", data_label, "_reconsf_", scenario, "_rmse_", h, ".rds"))
+  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_", scenario, "_rmse_", h, ".rds"))
   # }
 }
+
+for(h in horizon){
+  out <- bind_rows(Base = calc_mase(base, train, test, freq, h = h),
+                   BU = calc_mase(bu, train, test, freq, h = h),
+                   OLS = calc_mase(ols, train, test, freq, h = h),
+                   OLS_subset = calc_mase(ols_subset, train, test, freq, h = h),
+                   WLSs = calc_mase(wlss, train, test, freq, h = h),
+                   WLSs_subset = calc_mase(wlss_subset, train, test, freq, h = h),
+                   WLSv = calc_mase(wlsv, train, test, freq, h = h),
+                   WLSv_subset = calc_mase(wlsv_subset, train, test, freq, h = h),
+                   MinT = calc_mase(mint, train, test, freq, h = h),
+                   MinT_subset = calc_mase(mint_subset, train, test, freq, h = h),
+                   MinTs = calc_mase(mints, train, test, freq, h = h),
+                   MinTs_subset = calc_mase(mints_subset, train, test, freq, h = h),
+                   .id = "Method") |>
+    rowwise() |>
+    mutate(Top = mean(c_across(top + 1)),
+           # State = mean(c_across(state + 1)),
+           # Zone = mean(c_across(zone + 1)),
+           # Region = mean(c_across(region + 1)),
+           Middle = mean(c_across((middle + 1))),
+           Bottom = mean(c_across((bottom + 1))),
+           Average = mean(c_across(avg + 1))) |>
+    select(Method, Top, Middle, Bottom, Average)
+    # select(Method, Top, State, Zone, Region, Average)
+  assign(paste0("mase_h", h), out)
+  # if (is.null(scenario)){
+  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_mase_", h, ".rds"))
+  # } else{
+  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_", scenario, "_mase_", h, ".rds"))
+  # }
+}
+
 
 #################################################
 # Extract z
@@ -168,9 +211,9 @@ for(method in subset_methods) {
 series_name <- c(colnames(test), "Method")
 colnames(z_summary) <- series_name
 if (is.null(scenario)){
-  saveRDS(z_summary, file = paste0("data/", data_label, "_reconsf_z_summary.rds"))
+  saveRDS(z_summary, file = paste0("data_new/", data_label, "_reconsf_z_summary.rds"))
 } else{
-  saveRDS(z_summary, file = paste0("data/", data_label, "_reconsf_", scenario, "_z_summary.rds"))
+  saveRDS(z_summary, file = paste0("data_new/", data_label, "_reconsf_", scenario, "_z_summary.rds"))
 }
 
 z_summary |>
