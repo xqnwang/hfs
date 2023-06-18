@@ -5,7 +5,7 @@ library(forecast)
 
 reticulate::use_python("/Users/xwan0362/Library/r-miniconda-arm64/bin/python3.10", required = T)
 reticulate::source_python("Python/subset.py")
-source("R/reconcile.R")
+source("R/subset_reconcile.R")
 
 # Utility function
 reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
@@ -27,13 +27,13 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
   }
   
   Base <- list(y_tilde = base_forecasts, G = NA, z = NA, lambda_report = NA)
-  BU <- reconcile(base_forecasts = base_forecasts, S = S, method = "bu")
+  BU <- subset.reconcile(base_forecasts = base_forecasts, S = S, method = "bu")
   for(i in 1:length(method)){
     assign(method_name[i], 
-           reconcile(base_forecasts = base_forecasts, S = S, method = method[i], 
+           subset.reconcile(base_forecasts = base_forecasts, S = S, method = method[i], 
                      residuals = residuals))
     assign(paste0(method_name[i], "_subset"), 
-           reconcile(base_forecasts = base_forecasts, S = S,
+           subset.reconcile(base_forecasts = base_forecasts, S = S,
                      method = method[i], residuals = residuals,
                      fitted_values = fitted_values, train_data = train_data,
                      subset = TRUE, ridge = TRUE,

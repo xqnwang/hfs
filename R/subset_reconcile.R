@@ -9,33 +9,29 @@
 #' @param fitted_values Fitted values in training set.
 #' @param train_data Training data.
 #' @param subset Logical. If true, mixed integer programming is implemented to achieve subset selection.
-#' @param lasso Logical. If true, Group lasso is included to achieve shrinkage.
 #' @param ridge Logical. If true, `l2 norm` is included to achieve shrinkage.
-#' @param G_bench Target G matrix shrinks towards.
-#' @param ELasso Logical. If both lasso and ELasso are TRUE, Group lasso based on training set is implemented.
 #' @param lambda_0 A user supplied `lambda_0` value for subset selection.
-#' @param lambda_1 A user supplied `lambda_1` value for group lasso.
 #' @param lambda_2 A user supplied `lambda_2` value for subset selection.
-#' @param nlambda Number of candidate `lambda_0`(or `lambda_1`) values to choose from for subset selection (group lasso) problem.
-#' @param M The value of the Big M.
-#' @param solver A character vector specifying the solver to use. If missing, then `gurobi` is used.
+#' @param nlambda Number of candidate `lambda_0` values to choose from for subset selection problem.
+#' @param M The value of the Big M for sum of absolute values of each column in G.
+#' @param m The value of the Big M for each element in G.
 #' @param parallel Logical. If true, optimal `lambda_0` will be found in parallel.
 #' @param workers Number of workers when `parallel = TRUE`.
-#' @param .progress Logical. If true, a progress bar will be displayed when searching optimal `lambda_0`.
+#' @param MIPVerbose Logical. If true, enable console logging of MIP.
+#' @param SearchVerbose Logical. If true, a progress bar will be displayed when searching optimal combination of `lambda_0` and `lambda_2`.
 #' 
 #' @import ROI
 #' @import future
-#' @import gglasso
 #' @import reticulate
 #' 
 #' @export
-reconcile <- function(base_forecasts, S, 
-                      method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
-                      residuals = NULL, fitted_values = NULL, train_data = NULL,
-                      subset = FALSE, ridge = FALSE,
-                      lambda_0 = NULL, lambda_2 = NULL, 
-                      m = NULL, M = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
-                      TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE){
+subset.reconcile <- function(base_forecasts, S, 
+                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
+                             residuals = NULL, fitted_values = NULL, train_data = NULL,
+                             subset = FALSE, ridge = FALSE,
+                             lambda_0 = NULL, lambda_2 = NULL, 
+                             m = NULL, M = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
+                             TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){

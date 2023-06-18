@@ -165,61 +165,6 @@
       G <- fit.G[[which.min(sse)]]
     }
     
-    # Subset selection
-    # if (subset){
-    #   # One-step ahead base forecasts
-    #   fc <- base_forecasts[1, ] |> as.vector()
-    #   
-    #   # Candidate lambda_0
-    #   if (is.null(lambda_0)){
-    #     lambda_0_max <- (0.5 * (t(fc) %*% solve(W) %*% fc)/n_b) |> as.vector()
-    #     lambda_0 <- c(0, 
-    #                   exp(seq(from = log(1e-04*lambda_0_max), 
-    #                           to = log(lambda_0_max), 
-    #                           by = log(1e04)/(nlambda - 2)))
-    #                   )
-    #   }
-    #   
-    #   # Call python function
-    #   py_fun <- function(y, S, W, l0, M){
-    #     reticulate::use_python(pythonpath, required = T)
-    #     reticulate::source_python(pyfunpath)
-    #     A_diag <- miqp(y = y, S = S, W = W, l0 = l0, M = M)
-    #     C <- t(S) %*% solve(W) %*% diag(A_diag) %*% S
-    #     ev <- eigen(C, only.values = TRUE)[["values"]]
-    #     if (any(ev < 1e-8)) {
-    #       G <- NULL
-    #     } else{
-    #       G <- solve(C) %*% t(S) %*% solve(W) %*% diag(A_diag)
-    #     }
-    #     return(G)
-    #   }
-    #   
-    #   # Find optimal lambda_0 by minimizing sum of squared reconciled residuals
-    #   if (is.null(train_data) | is.null(fitted_values)){
-    #     stop("Training data and fitted values are required to find the optimal lambda_0")
-    #   }
-    #   
-    #   if (parallel){
-    #     future::plan(multisession, workers = workers)
-    #     map_fun <- furrr::future_map
-    #   } else {
-    #     map_fun <- purrr::map
-    #   }
-    #   
-    #   G_candidates <- lambda_0 |>
-    #     map_fun(\(l0) py_fun(l0 = l0, y = fc, S = S, W = W, M = 2),
-    #             .progress = .progress)
-    #   index <- !sapply(G_candidates, is.null)
-    #   G_candidates <- G_candidates[index]
-    #   lambda_0 <- lambda_0[index]
-    #   sse <- purrr::map_dbl(G_candidates, \(x) sum(stats::na.omit(train_data - fitted_values %*% t(x) %*% t(S))^2)) |> round(2)
-    #   sse_summary <- data.frame(lambda0 = lambda_0, sse = sse)
-    #   lambda_0 <- lambda_0[which.min(sse)]
-    #   G <- G_candidates[which.min(sse)]
-    #   z <- ifelse(colSums(G) == 0, 0, 1)
-    # }
-    
     # Group lasso
     if (lasso){
       if (ELasso){
