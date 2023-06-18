@@ -108,7 +108,7 @@ def miqp(y, S, W, l0 = 0, l2 = 0, m = None, M = None, MIPGap = None, TimeLimit =
     # Error
     E = model.addMVar(shape=(n, ), vtype=GRB.CONTINUOUS,
                   ub=np.repeat(emax, n), lb=np.repeat(-emax, n))
-                  # ub=[i * 3 for i in np.absolute(y)], lb=[-i * 3 for i in np.absolute(y)]
+
     # Binary
     Z = model.addMVar(shape=(n, ), vtype=GRB.BINARY)
     model.update()
