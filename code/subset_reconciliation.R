@@ -3,7 +3,7 @@ library(magrittr)
 library(future)
 library(forecast)
 
-reticulate::use_python("/Users/xwan0362/Library/r-miniconda-arm64/bin/python3.10", required = T)
+reticulate::use_python("~/Library/r-miniconda-arm64/bin/python3.10", required = T)
 reticulate::source_python("Python/subset.py")
 source("R/subset_reconcile.R")
 
@@ -39,7 +39,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                      subset = TRUE, ridge = TRUE,
                      MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                      MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose))
-    print(paste("===", method_name[i], "finished!"))
+    # print(paste("===", method_name[i], "finished!"))
   }
   
   mget(c("Base", "BU", method_name, paste0(method_name, "_subset")))
@@ -113,6 +113,6 @@ for (i in 1:3){
                .progress = !SearchVerbose)
   saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_reconsf_", scenario[i], ".rds"))
   rm(reconsf_s)
-  print(paste("i =", i, "finished!"))
+  # print(paste("i =", i, "finished!"))
 }
 
