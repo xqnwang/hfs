@@ -7,7 +7,8 @@ library(reticulate)
 # py_install("numpy", pip = TRUE); py_install("gurobipy", pip = TRUE); py_install("scipy", pip = TRUE)
 
 # Set the path to the Python executable file
-reticulate::use_python("/Users/xwan0362/Library/r-miniconda-arm64/bin/python3.10", required = T)
+reticulate::use_python("~/Library/r-miniconda-arm64/bin/python3.10", required = T)
+# "~/.local/share/r-miniconda/bin/python3.10" in MonARCH
 
 # Check the version of Python
 py_config()
