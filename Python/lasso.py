@@ -4,7 +4,7 @@ import gurobipy as gp
 from gurobipy import GRB, quicksum
 # Gurobi Optimizer version 10.0.1 build v10.0.1rc0
 
-def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 600, LogToConsole = 0, OutputFlag = 0):
+def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 0, LogToConsole = 0, OutputFlag = 0):
     """
     Solve the OP problem: min_{G} 0.5 * (y - SGy)' W^{-1} (y - SGy) + l1 * sum_{j}(||G_{.j}||_2)
                           s.t. GS = I
@@ -59,8 +59,8 @@ def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 600, LogTo
     env.setParam("OutputFlag",OutputFlag)
     env.start()
     
-    """ MIP MODEL """
-    model = gp.Model('MIP', env=env) # the optimization model
+    """ SOCP MODEL """
+    model = gp.Model('SOCP', env=env) # the optimization model
     
     """ PARAMETERS """
     # G matrix
@@ -93,7 +93,8 @@ def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 600, LogTo
     """ OPTIMIZE """
     model.Params.OutputFlag = OutputFlag
     model.Params.LogToConsole = LogToConsole
-    model.params.TimeLimit = TimeLimit
+    if TimeLimit > 0:
+        model.params.TimeLimit = TimeLimit
     model.optimize()
     # model.Params.Threads = 1
     
