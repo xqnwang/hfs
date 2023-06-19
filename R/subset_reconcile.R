@@ -15,8 +15,6 @@
 #' @param nlambda Number of candidate `lambda_0` values to choose from for subset selection problem.
 #' @param M The value of the Big M for sum of absolute values of each column in G.
 #' @param m The value of the Big M for each element in G.
-#' @param parallel Logical. If true, optimal `lambda_0` will be found in parallel.
-#' @param workers Number of workers when `parallel = TRUE`.
 #' @param MIPVerbose Logical. If true, enable console logging of MIP.
 #' @param SearchVerbose Logical. If true, a progress bar will be displayed when searching optimal combination of `lambda_0` and `lambda_2`.
 #' 
@@ -110,7 +108,7 @@ subset.reconcile <- function(base_forecasts, S,
       obj_init <- 0.5 * t(fc - fc_tilde_init) %*% solve(W) %*% (fc - fc_tilde_init) |> 
         as.numeric()
       
-      # Find optimal lambda_0 by minimizing sum of squared reconciled residuals
+      # Find optimal combination of lambda_0 and lambda_2 by minimizing sum of squared reconciled residuals
       if (is.null(train_data) | is.null(fitted_values)){
         stop("Training data and fitted values are required to find the optimal lambda_0")
       }
