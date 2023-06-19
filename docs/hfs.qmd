@@ -1,0 +1,759 @@
+---
+title: "Forecast reconciliation with subset selection"
+format: 
+  pdf:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+    keep-tex: true
+    fig-pos: 'H'
+    df-print: paged
+execute:
+    freeze: auto
+editor: visual
+bibliography: hfs.bib
+---
+
+# Group best-subset selection
+
+## MinT reconciliation
+
+The unique solution of MinT is $\boldsymbol{G} = \left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1}$, which has a similar representation to a GLS estimator of a least square problem.
+
+Consider a hierarchy consisting of $n$ time series in total and $n_b$ time series in the bottom level. Let $\boldsymbol{y}_t \in \mathbb{R}^n$ denote a vector of observations at time $t$ of all time series in the hierarchy, $\boldsymbol{b}_t \in \mathbb{R}^{n_b} \ (n_b < n)$ denote a vector of observations at time $t$ of only the most disaggregated bottom-level series.
+
+Therefore, the trace minimization problem can be reformulated in terms of a Quadratic Programming (QP) problem as follows:
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}\hat{\boldsymbol{y}}_h} & \quad \left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h\right) \\
+\text{ s.t. } & \quad \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}.
+\end{aligned}
+$$ {#eq-mint}
+
+Note that the variable of interest is $\boldsymbol{G}\hat{\boldsymbol{y}}_h$ rather than $\boldsymbol{G}$. So we can get a unique solution of reconciled forecasts at the bottom level, while infinitely many least-squares solutions of $\boldsymbol{G}$ as the columns of $\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}$ are not linearly independent.
+
+## Best-subset selection
+
+To eliminate the negative effect of some underperforming base forecasts on the performance of the reconciled forecasts, we want to **zero out some columns of** $\boldsymbol{G}$. Thus, the corresponding base forecasts in $\hat{\boldsymbol{y}}_h$ are not used to form the reconciled bottom-level forecasts and, moreover, are not used for all reconciled forecasts.
+
+One way to achieve this goal is by considering an $\ell_0$-norm regularization. **Best-subset selection** generally performs well in high signal-to-noise (SNR) ratio regimes, while lasso performs better in low SNR regimes. We also include an additional $\ell_2$-norm regularization (in addition to the $\ell_0$ penalty), which is motivated by some related works [@hastie2020; @mazumder2023], which suggest that when the SNR is low, additional ridge regularization can improve the prediction performance of best-subset selection.
+
+## Group best-subset selection with ridge regularization
+
+The vectorization is frequently used together with the Kronecker product to express matrix multiplication as a linear transformation on matrices $\operatorname{vec}(A B C)=\left(C^{\prime} \otimes A\right) \operatorname{vec}(B)$. Therefore, the QP minimization problem can be reduced to a regression problem as follows:
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}} & \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
+\text { s.t. } & \quad \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b}.
+\end{aligned}
+$$ {#eq-mintreg}
+
+Here, we consider the following $\ell_0\ell_2$**-regularized regression problem** of the following form to achieve selection in hierarchical forecasting:
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
+& \quad + \lambda_0 \sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0 + \lambda_2\left\|\operatorname{vec}\left(\boldsymbol{G}\right)\right\|_2^2 \\
+\text { s.t. } \quad & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b},
+\end{aligned}
+$$ {#eq-subsetreg}
+
+where $\lambda_0 > 0$ controls the number of non-zero columns of $\boldsymbol{G}$, and $\lambda_2 \geqslant 0$ controls the strength of the ridge regularization, $\sum_{j=1}^n \left\|\boldsymbol{G}_{\cdot j}\right\|_0$ is the number of non-zero columns of $\boldsymbol{G}$. In a hierarchy setting, the target variable, $\operatorname{vec}(\boldsymbol{G})$, in the minimization problem has a natural group structure, i.e., each column of $\boldsymbol{G}$ is a group. Thus, the $n \times n_b$ predictors in the regularized regression problem are divided into $n$ pre-specified, non-overlapping groups, with each group consisting of $n_b$ predictors. Therefore, the target problem is essentially **a group best-subset selection with ridge regularization**.
+
+## Mixed integer program
+
+We propose MIP formulations to solve @eq-subsetreg. We first present a **Big-M based MIP formulation** for problem @eq-subsetreg:
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}, \boldsymbol{z}, \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}_h^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \boldsymbol{g}^{+\prime}\boldsymbol{g}^{+} \\
+\text { s.t. } \quad & \hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}}  \quad \cdots (C1)\\
+& \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b} \Leftrightarrow\left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \quad \cdots (C2) \\
+& \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \quad \cdots (C3) \\
+& \boldsymbol{g}^{+} \geqslant \operatorname{vec}(\boldsymbol{G}) \quad \cdots (C4) \\
+& \boldsymbol{g}^{+} \geqslant-\operatorname{vec}(\boldsymbol{G}) \quad \cdots (C5) \\
+& z_j \in\{0,1\}, \quad j \in[n] \quad \cdots (C6)
+\end{aligned}
+$$ {#eq-subsetmip}
+
+where, $\mathcal{M}$ is a priori specified constant (leading to the name "Big-M") such that some optimal solution, say $\boldsymbol{g}^{+*}$, to @eq-subsetmip satisfies $\max _{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$, the binary variable $z_j$ controls whether all the regression coefficients in group $j$ are zero or not: $z_j=0$ implies that $\boldsymbol{G}_{\cdot j}=\mathbf{0}$, and $z_j=1$ implies that $\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$. Such Big-M formulations are commonly used in mixed integer programming to model relations between discrete and continuous variables, and have been recently used in $\ell_0$-regularized regression.
+
+This is a **Mixed Integer Quadratic Program (MIQP)** and then get solved using some efficient commercial solvers such as Gurobi, CPLEX, and MOSEK. Note that the best subset selection is an **NP-hard problem**, which is computationally intensive.
+
+## Hyperparameter
+
+-   $\lambda_0 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2 n_b}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)$. [(Reason)]{.underline}
+
+-   $\lambda_2 = \{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}$
+
+To avoid cross-validation, we select the best combination of $\lambda_0$ and $\lambda_2$ by minimizing the sum of squared reconciled forecast errors in the training set, even though fitted values are often not true one-step ahead forecasts.
+
+## Simulation results
+
+### Data simulation
+
+**Structure:**
+
+-   Top: Total
+-   Middle: A, B
+-   Bottom: AA, AB, BA, BB
+
+**Data generation:**
+
+The bottom-level series were generated using the basic structural time series model
+
+$$
+\boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t
+$$
+
+where $\boldsymbol{\mu}_t, \boldsymbol{\gamma}_t$, and $\boldsymbol{\eta}_t$ are the trend, seasonal, and error components, respectively,
+
+$$
+\begin{aligned}
+\boldsymbol{\mu}_t & =\boldsymbol{\mu}_{t-1}+\boldsymbol{v}_t+\boldsymbol{\varrho}_t, & \boldsymbol{\varrho}_t & \sim \mathcal{N}\left(\mathbf{0}, \sigma_{\varrho}^2 \boldsymbol{I}_4\right), \\
+\boldsymbol{v}_t & =\boldsymbol{v}_{t-1}+\boldsymbol{\zeta}_t, & \boldsymbol{\zeta}_t & \sim \mathcal{N}\left(\mathbf{0}, \sigma_\zeta^2 \boldsymbol{I}_4\right), \\
+\boldsymbol{\gamma}_t & =-\sum_{i=1}^{s-1} \boldsymbol{\gamma}_{t-i}+\boldsymbol{\omega}_t, & \boldsymbol{\omega}_t & \sim \mathcal{N}\left(\mathbf{0}, \sigma_\omega^2 \mathbf{I}_4\right),
+\end{aligned}
+$$
+
+and $\varrho_t, \zeta_t$, and $\omega_t$ are errors independent of each other and over time.
+
+**Other details:**
+
+-   $\sigma_{\varrho}^2=2, \sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$.
+-   $s=4$ for quarterly data, $n=180$, $h=16$.
+-   The initial values for $\boldsymbol{\mu}_0, \boldsymbol{v}_0, \boldsymbol{\gamma}_0, \boldsymbol{\gamma}_1, \boldsymbol{\gamma}_2$ were generated independently from a multivariate normal distribution with mean zero and covariance matrix, $\Sigma_0=I_4$.
+-   Each component of $\boldsymbol{\eta}_t$ was generated from an $\operatorname{ARIMA}(p, 0, q)$ process with $p$ and $q$ taking values of 0 and 1 with equal probability.
+-   The bottom-level series were then appropriately summed to obtain the data for higher levels.
+-   This process was repeated 500 times.
+
+### Results
+
+```{r}
+#| label: package
+#| echo: false
+#| message: false
+#| warning: false
+
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(latex2exp)
+```
+
+```{r}
+#| label: fun-sim
+#| echo: false
+
+rmse_calc <- function(data_label, approach = "subset", scenario, horizon){
+  for(h in horizon){
+    assign(paste0("rmse_h", h), 
+           readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+    )
+  }
+  levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+  rmse <- NULL
+  for (l in levels){
+    rmse_l <- NULL
+    for (h in horizon){
+      rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+    }
+    rmse <- cbind(rmse, rmse_l)
+  }
+  rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+  colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+  rmse$Method <- sub("_", "-", rmse$Method)
+  rmse[, 1] <- ifelse(grepl(approach, tolower(rmse[, 1])), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+  rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), color = "red"), format(round(x,2), nsmall = 2))
+  })
+  rmse |>
+    kable(format = "latex",
+          booktabs = TRUE,
+          digits = 2,
+          escape = FALSE,
+          linesep = "") |>
+    #kable_paper("striped", full_width = F) |>
+    kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+    row_spec(0, align = "c") |>
+    row_spec(2+(1:5)*2, background = "#BBBBBB") |>
+    add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+}
+
+mase_calc <- function(data_label, approach = "subset", scenario, horizon){
+  for(h in horizon){
+    assign(paste0("mase_h", h), 
+           readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_mase_", h, ".rds"))
+    )
+  }
+  levels <- colnames(get(paste0("mase_h", horizon[1])))[-1]
+  mase <- NULL
+  for (l in levels){
+    mase_l <- NULL
+    for (h in horizon){
+      mase_l <- cbind(mase_l, get(paste0("mase_h", h)) |> pull(l))
+    }
+    mase <- cbind(mase, mase_l)
+  }
+  mase <- data.frame(get(paste0("mase_h", h)) |> pull("Method"), mase)
+  colnames(mase) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
+  mase$Method <- sub("_", "-", mase$Method)
+  mase[, 1] <- ifelse(grepl(approach, tolower(mase[, 1])), cell_spec(mase[, 1], bold = TRUE), mase[, 1])
+  mase[, -1] <- lapply(mase[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), color = "red"), format(round(x,2), nsmall = 2))
+  })
+  mase |>
+    kable(format = "latex",
+          booktabs = TRUE,
+          digits = 2,
+          escape = FALSE,
+          linesep = "") |>
+    #kable_paper("striped", full_width = F) |>
+    kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+    row_spec(0, align = "c") |>
+    row_spec(2+(1:5)*2, background = "#BBBBBB") |>
+    add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
+}
+
+z_summary <- function(data_label, scenario){
+  z_summary <- readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
+  series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
+  
+  z_summary |>
+  as_tibble() |>
+  group_by(Method) |>
+  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
+  pivot_longer(
+    cols = 2:(NCOL(z_summary)-1),
+    names_to = "Series",
+    values_to = "Frequency") |>
+  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
+  geom_bar(stat = "identity") +
+  facet_grid(vars(Method), scales = "free_y") +
+  theme(strip.text = element_text(
+    size = 7)) +
+  labs(title = "Frequency of being zeroed out",
+       x = "",
+       y = "")
+}
+```
+
+#### Scenario 0: ETS
+
+-   ETS models are used to generate base forecasts. @tbl-rmse-s0, @tbl-mase-s0, and @fig-s0.
+
+```{r}
+#| label: tbl-rmse-s0
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 0."
+
+data_label <- "simulation"
+scenario <- NULL
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-mase-s0
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 0."
+
+data_label <- "simulation"
+scenario <- NULL
+horizon <- c(1,4,8,16)
+mase_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: fig-s0
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 0."
+#| fig-height: 4
+
+data_label <- "simulation"
+scenario <- NULL
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+#### Scenario 1: D-AA
+
+-   Base forecasts (and also fitted values) of **series AA** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s1, @tbl-mase-s1, and @fig-s1.
+
+```{r}
+#| label: tbl-rmse-s1
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 1."
+
+data_label <- "simulation"
+scenario <- "s1"
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-mase-s1
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 1."
+
+data_label <- "simulation"
+scenario <- "s1"
+horizon <- c(1,4,8,16)
+mase_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: fig-s1
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 1."
+#| fig-height: 4
+
+data_label <- "simulation"
+scenario <- "s1"
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+#### Scenario 2: D-A
+
+-   Base forecasts (and also fitted values) of **series A** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s2, @tbl-mase-s2, and @fig-s2.
+
+```{r}
+#| label: tbl-rmse-s2
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 2."
+
+data_label <- "simulation"
+scenario <- "s2"
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-mase-s2
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 2."
+
+data_label <- "simulation"
+scenario <- "s2"
+horizon <- c(1,4,8,16)
+mase_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: fig-s2
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 2."
+#| fig-height: 4
+
+data_label <- "simulation"
+scenario <- "s2"
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+#### Scenario 3: D-Total
+
+-   Base forecasts (and also fitted values) of **series Total** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s3, @tbl-mase-s3 and @fig-s3.
+
+```{r}
+#| label: tbl-rmse-s3
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 3."
+
+data_label <- "simulation"
+scenario <- "s3"
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-mase-s3
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 3."
+
+data_label <- "simulation"
+scenario <- "s3"
+horizon <- c(1,4,8,16)
+mase_calc(data_label, "subset", scenario, horizon)
+```
+
+```{r}
+#| label: fig-s3
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 3."
+#| fig-height: 4
+
+data_label <- "simulation"
+scenario <- "s3"
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+## Tourism data results
+
+### Data description
+
+Australian domestic tourism (only considering hierarchical structure)
+
+-   Monthly series from 1998 Jan to 2017 Dec.
+-   240 months (20 years) for each series.
+-   Hierarchy: Total/State/Zone/Region, 4 levels, n = 111 series in total.
+-   Training set: 1998 Jan-2016 Dec.
+-   Test set: 2017 Jan-2017 Dec.
+
+### Results
+
+-   OLS_subset: $\lambda_0 = 0, \lambda_2 = 0.1, \sum z = 111$
+-   WLSs_subset: $\lambda_0 = 10, \lambda_2 = 10, \sum z = 92$
+-   WLSv_subset: $\lambda_0 = 0, \lambda_2 = 100, \sum z = 111$
+-   MinTs_subset: $\lambda_0 = 0, \lambda_2 = 0, \sum z = 111$
+
+```{r}
+#| label: fun-tourism
+#| echo: false
+
+rmse_calc_tourism <- function(data_label, approach, scenario, horizon){
+  for(h in horizon){
+    assign(paste0("rmse_h", h), 
+           readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
+    )
+  }
+  levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
+  rmse <- NULL
+  for (l in levels){
+    rmse_l <- NULL
+    for (h in horizon){
+      rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
+    }
+    rmse <- cbind(rmse, rmse_l)
+  }
+  rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
+  colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(5))
+  rmse$Method <- sub("_", "-", rmse$Method)
+  rmse[, 1] <- ifelse(grepl(approach, rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
+  rmse[, -1] <- lapply(rmse[, -1], function(x) {
+    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), color = "red"), format(round(x,2), nsmall = 2))
+  })
+  rmse |>
+    kable(format = "latex",
+          booktabs = TRUE,
+          digits = 2,
+          escape = FALSE,
+          linesep = "") |>
+    #kable_paper("striped", full_width = F) |>
+    kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+    row_spec(0, align = "c") |>
+    row_spec(2+(1:5)*2, background = "#BBBBBB") |>
+    add_header_above(c("", "Top" = 4, "Sate" = 4, "Zone" = 4, "Region" = 4, "Average" = 4), align = "c")
+}
+```
+
+```{r}
+#| label: tbl-tourism
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Tourism data."
+
+data_label <- "tourism"
+scenario <- NULL
+horizon <- c(1,4,8,12)
+rmse_calc_tourism(data_label, "subset", scenario, horizon)
+```
+
+## Some issues
+
+**NP-hard problem.**
+
+**Setup:**
+
+-   gurobipy: parameters
+
+    -   WarmStart: (1) Bottom-up, (2) All retained, (3) Relaxed problem `ifelse(z >= 0.001, 1, 0)`.
+    -   TimeLimit = 600s.
+    -   MIPGap = $\left|z_P-z_D\right| / \left|z_P\right| = 0.01$ for large hierarchy (default value is $10^{-4}$), where $z_P$ is the primal objective bound (i.e., the incumbent objective value, which is the upper bound for minimization problems), and $z_D$ is the dual objective bound (i.e., the lower bound for minimization problems),
+    -   MIPFocus = 3: when the best objective bound is moving very slowly (or not at all), this focus more on the bound.
+    -   Cuts = 2: aggressive cut generation.
+
+-   Bound of variables
+
+    -   should be as tight as possible to speed up computation.
+    -   $\check{e} = \hat{y} - \tilde{y}: \quad [-|y|_{\max}, |y|_{\max}]$.
+    -   $\mathcal{M}_k$ for each element in $\boldsymbol{G}$: $[-G_{\max}^{\text{bench}} - 1, G_{\max}^{\text{bench}} + 1]$.
+    -   $\mathcal{M}$ for sum of absolute values of each column: $[-n_b, n_b]$.
+
+# Group lasso
+
+## Out-of-sample based method
+
+### Group lasso with the unbiasedness constraint
+
+The best-subset selection method is a NP-hard problem, which is computationally intensive.
+
+Instead of involving an $\ell_0$ penalty, we consider the following $\ell_1$**-regularized regression problem** of the following form to achieve selection in hierarchical forecasting:
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
+& \quad + \lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
+\text { s.t. } \quad & \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b},
+\end{aligned}
+$$ {#eq-lassoreg}
+
+where $\lambda_1 \geqslant 0$ is a tuning parameter, the $w_j$ terms account for the varying group sizes. The $\ell_1$-norm penalty induces sparsity in the solution. By introducing such a penalty, group lasso achieves sparse selection not of individual covariates but rather their groups. The target problem is essentially **a group lasso problem with the unbiasedness constraint**.
+
+### Second-order cone program
+
+We propose Second-order Cone Program (SOCP) formulations to solve @eq-lassoreg.
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}, \boldsymbol{z}, \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}_h^{-1}\check{\boldsymbol{e}} + \lambda_1 \sum_{j=1}^n w_j c_j \\
+\text { s.t. } \quad & \hat{\boldsymbol{y}}_h-\left(\hat{\boldsymbol{y}}_h^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}}  \quad \cdots (C1) \\
+& c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{2}}, \quad j \in[n] \quad \cdots (C2) \\
+& \boldsymbol{G} \boldsymbol{S}=\boldsymbol{I}_{n_b} \Leftrightarrow\left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \quad \cdots (C3)
+\end{aligned}
+$$ {#eq-lassosocp}
+
+where constraint (C2) is a second-order cone.
+
+### Some issues
+
+**Problem: about** $w_j$ **and (C3)**
+
+In a hierarchy setting, we can consider $w_j = 1$ as each group has the same size. After experiments on simulation data and tourism data, it shows that:
+
+-   it can **hardly** shrink some columns of G to 0 when including **the unbiasedness constraint**.
+-   if we remove the unbiasedness constraint, it frequently gives a **top-down** G or a G with only few number of non-zero columns, and the performance is very **poor and unstable**, especially for longer horizons.
+
+**Reason: penalty term** $\lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2$.
+
+-   For a given $j$, if $\boldsymbol{G}_{\cdot j}$ is zeroed out, then other columns of $\boldsymbol{G}$ tend to be changed, which may have larger $\ell_2$-norm values.
+-   Top level (first column) tends to have smaller $\ell_2$-norm when other columns are zeroed out.
+
+**Strategy:**
+
+-   Consider a more flexible group lasso by putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$, and also include the unbiasedness constraint.
+-   $\lambda_1$ sequence: $\lambda_{\max} = 10^{k+1}, \quad \lambda_{\min} = 10^{k-4}$ and construct a sequence of nlambda values decreasing from $\lambda_{\max}$ to $\lambda_{\min}$ on the log scale.
+
+## In-sample based method
+
+### Empirical group lasso
+
+Here, we consider using the in-sample residuals to formulate the problem. Let $\boldsymbol{Y}$ denote $N \times n$ matrix of historical data of all the time series in the structure, and $\hat{\boldsymbol{Y}}$ denote the matrix of in-sample 1-step-ahead forecasts of all the time series, where $N$ is the number of historical observations for each series, and $n$ is the number of time series in the hierarchy of interest.
+
+Assuming that **the series in the structure are jointly weakly stationary**, the minimization problem can be given by:
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{G}} & \quad \frac{1}{2 N n} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
+\Downarrow \\
+\min _{\boldsymbol{G}} & \quad \frac{1}{2 N n} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
+\end{aligned}
+$$
+
+After reformulation, it reduced to a standard group lasso problem with $\operatorname{vec}(\boldsymbol{Y})$ as dependent variable and $\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}$ as design matrix.
+
+**Strategy:**
+
+-   Consider putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2$.
+-   Use the `gglasso` package, specify `intercept = FALSE`, `pf = w`, `lambda.factor = 1e-05`, `eps = 1e-04`, `foldid` to ensure each fold contains t number of observations from each variable (time series).
+
+## Simulation results
+
+### Scenario 0: ETS
+
+-   ETS models are used to generate base forecasts. @tbl-lasso-rmse-s0, @tbl-lasso-mase-s0, and @fig-lasso-s0.
+
+```{r}
+#| label: tbl-lasso-rmse-s0
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 0."
+
+data_label <- "simulation_lasso"
+scenario <- NULL
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, approach = "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-lasso-mase-s0
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 0."
+
+data_label <- "simulation_lasso"
+scenario <- NULL
+horizon <- c(1,4,8,16)
+mase_calc(data_label, approach = "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: fig-lasso-s0
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 0."
+#| fig-height: 4
+
+data_label <- "simulation_lasso"
+scenario <- NULL
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+### Scenario 1: D-AA
+
+-   Base forecasts (and also fitted values) of **series AA** multiplied by 1.5 to achieve deterioration. @tbl-lasso-rmse-s1, @tbl-lasso-mase-s1, and @fig-lasso-s1.
+
+```{r}
+#| label: tbl-lasso-rmse-s1
+#| eval: false
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 1."
+
+data_label <- "simulation_lasso"
+scenario <- "s1"
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-lasso-mase-s1
+#| eval: false
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 1."
+
+data_label <- "simulation_lasso"
+scenario <- "s1"
+horizon <- c(1,4,8,16)
+mase_calc(data_label, "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: fig-lasso-s1
+#| eval: false
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 1."
+#| fig-height: 4
+
+data_label <- "simulation_lasso"
+scenario <- "s1"
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+### Scenario 2: D-A
+
+-   Base forecasts (and also fitted values) of **series A** multiplied by 1.5 to achieve deterioration. @tbl-lasso-rmse-s2, @tbl-lasso-mase-s2, and @fig-lasso-s2.
+
+```{r}
+#| label: tbl-lasso-rmse-s2
+#| eval: false
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 2."
+
+data_label <- "simulation_lasso"
+scenario <- "s2"
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-lasso-mase-s2
+#| eval: false
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 2."
+
+data_label <- "simulation_lasso"
+scenario <- "s2"
+horizon <- c(1,4,8,16)
+mase_calc(data_label, "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: fig-lasso-s2
+#| eval: false
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 2."
+#| fig-height: 4
+
+data_label <- "simulation_lasso"
+scenario <- "s2"
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+### Scenario 3: D-Total
+
+-   Base forecasts (and also fitted values) of **series Total** multiplied by 1.5 to achieve deterioration. @tbl-lasso-rmse-s3, @tbl-lasso-mase-s3 and @fig-lasso-s3.
+
+```{r}
+#| label: tbl-lasso-rmse-s3
+#| eval: false
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Scenario 3."
+
+data_label <- "simulation_lasso"
+scenario <- "s3"
+horizon <- c(1,4,8,16)
+rmse_calc(data_label, "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: tbl-lasso-mase-s3
+#| eval: false
+#| echo: false
+#| tbl-cap: "Out-of-sample average MASE results in Scenario 3."
+
+data_label <- "simulation_lasso"
+scenario <- "s3"
+horizon <- c(1,4,8,16)
+mase_calc(data_label, "lasso", scenario, horizon)
+```
+
+```{r}
+#| label: fig-lasso-s3
+#| eval: false
+#| echo: false
+#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 3."
+#| fig-height: 4
+
+data_label <- "simulation_lasso"
+scenario <- "s3"
+horizon <- c(1,4,8,16)
+z_summary(data_label, scenario)
+```
+
+## Tourism data results
+
+-   OLS_Lasso: $\lambda_1 = , \sum z =$
+-   WLSs_Lasso: $\lambda_1 = , \sum z =$
+-   WLSv_Lasso: $\lambda_1 = , \sum z =$
+-   MinTs_Lasso: $\lambda_1 = , \sum z =$
+-   ELasso: $\lambda_1 = , \sum z =$
+
+```{r}
+#| label: tbl-lasso-tourism
+#| echo: false
+#| tbl-cap: "Out-of-sample average RMSE results in Tourism data."
+
+data_label <- "tourism_lasso"
+scenario <- NULL
+horizon <- c(1,4,8,12)
+rmse_calc_tourism(data_label, "lasso", scenario, horizon)
+```
+
+# Intuitive method
+
+# Further issues
+
+-   Parallel issue: We cannot export **reticulate** `python.builtin.module` objects from one R process to another. They are designed to only work within the same R process they're created.
+-   HPC: gurobi license.
+-   Simulation: include structural break.
+-   Large hierarchy:
+    -   Candidate lambda sequence
+    -   Sub hierarchy + Voting
+-   Theoretical aspects
+-   Grouped time series
