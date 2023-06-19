@@ -15,10 +15,11 @@ __pycache__/
 *_files/
 
 # User-specific files
-.Ruserdata
-.DS_Store
-.RData
-.ipynb_checkpoints/
+*.tex
+*.Ruserdata
+*.DS_Store
+*.RData
+*.ipynb_checkpoints/
 
 # Core latex/pdflatex auxiliary files
 *.xdv
