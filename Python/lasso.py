@@ -5,7 +5,7 @@ from gurobipy import GRB, quicksum
 # Gurobi Optimizer version 10.0.1 build v10.0.1rc0
 # import math
 
-def socp(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, TimeLimit = 0, Quick = 1, LogToConsole = 0, OutputFlag = 0):
+def socp(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, TimeLimit = 0, LogToConsole = 0, OutputFlag = 0):
     """
     Solve the OP problem: min_{G} 0.5 * (y - SGy)' W^{-1} (y - SGy) + l1 * sum_{j}(||G_{.j}||_2)
                           s.t. GS = I
@@ -107,7 +107,7 @@ def socp(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, Ti
     """ OPTIMIZE """
     model.Params.OutputFlag = OutputFlag
     model.Params.LogToConsole = LogToConsole
-    if Quick:
+    if n > 50:
         model.Params.NumericFocus = 1
         model.Params.OptimalityTol = 1e-4
         model.Params.FeasibilityTol = 1e-4
