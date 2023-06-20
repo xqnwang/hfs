@@ -483,7 +483,7 @@ rmse_calc_tourism(data_label, "subset", scenario, horizon)
 
     -   should be as tight as possible to speed up computation.
     -   $\check{e} = \hat{y} - \tilde{y}: \quad [-|y|_{\max}, |y|_{\max}]$.
-    -   $\mathcal{M}_k$ for each element in $\boldsymbol{G}$: $[-G_{\max}^{\text{bench}} - 1, G_{\max}^{\text{bench}} + 1]$.
+    -   $\mathcal{M}_k$ for each element in $\boldsymbol{G}$: $[-|G|_{\max}^{\text{bench}} - 1, |G|_{\max}^{\text{bench}} + 1]$.
     -   $\mathcal{M}$ for sum of absolute values of each column: $[-n_b, n_b]$.
 
 # Group lasso
@@ -521,7 +521,7 @@ $$ {#eq-lassosocp}
 
 where constraint (C2) is a second-order cone.
 
-### Some issues
+### Strategy & hyperparameter
 
 **Problem: about** $w_j$ **and (C3)**
 
@@ -539,6 +539,11 @@ In a hierarchy setting, we can consider $w_j = 1$ as each group has the same siz
 
 -   Consider a more flexible group lasso by putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$, and also include the unbiasedness constraint.
 -   $\lambda_1$ sequence: $\lambda_{\max} = 10^{k+1}, \quad \lambda_{\min} = 10^{k-4}$ and construct a sequence of nlambda values decreasing from $\lambda_{\max}$ to $\lambda_{\min}$ on the log scale.
+-   Bound of variables
+    -   should be as tight as possible to speed up computation.
+    -   $\check{e} = \hat{y} - \tilde{y}: \quad [-|y|_{\max}, |y|_{\max}]$.
+    -   $\mathcal{M}_k$ for each element in $\boldsymbol{G}$: $[-|G|_{\max}^{\text{bench}} - 1, |G|_{\max}^{\text{bench}} + 1]$.
+    -   $\mathcal{M}$ for sum of absolute values of each column: $[-n_b, n_b]$.
 
 ## In-sample based method
 
@@ -558,7 +563,7 @@ $$
 
 After reformulation, it reduced to a standard group lasso problem with $\operatorname{vec}(\boldsymbol{Y})$ as dependent variable and $\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}$ as design matrix.
 
-**Strategy:**
+### Strategy & hyperparameter
 
 -   Consider putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2$.
 -   Use the `gglasso` package, specify `intercept = FALSE`, `pf = w`, `lambda.factor = 1e-05`, `eps = 1e-04`, `foldid` to ensure each fold contains t number of observations from each variable (time series).
@@ -609,7 +614,6 @@ z_summary(data_label, scenario)
 
 ```{r}
 #| label: tbl-lasso-rmse-s1
-#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average RMSE results in Scenario 1."
 
@@ -621,7 +625,6 @@ rmse_calc(data_label, "lasso", scenario, horizon)
 
 ```{r}
 #| label: tbl-lasso-mase-s1
-#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average MASE results in Scenario 1."
 
@@ -633,7 +636,6 @@ mase_calc(data_label, "lasso", scenario, horizon)
 
 ```{r}
 #| label: fig-lasso-s1
-#| eval: false
 #| echo: false
 #| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 1."
 #| fig-height: 4
@@ -650,7 +652,6 @@ z_summary(data_label, scenario)
 
 ```{r}
 #| label: tbl-lasso-rmse-s2
-#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average RMSE results in Scenario 2."
 
@@ -662,7 +663,6 @@ rmse_calc(data_label, "lasso", scenario, horizon)
 
 ```{r}
 #| label: tbl-lasso-mase-s2
-#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average MASE results in Scenario 2."
 
@@ -674,7 +674,6 @@ mase_calc(data_label, "lasso", scenario, horizon)
 
 ```{r}
 #| label: fig-lasso-s2
-#| eval: false
 #| echo: false
 #| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 2."
 #| fig-height: 4
@@ -728,6 +727,12 @@ z_summary(data_label, scenario)
 
 ## Tourism data results
 
+Use the following parameters to speed up calculations:
+
+-   `NumericFocus, OptimalityTol, FeasibilityTol, BarConvTol, BarQCPConvTol`
+
+Results:
+
 -   OLS_Lasso: $\lambda_1 = , \sum z =$
 -   WLSs_Lasso: $\lambda_1 = , \sum z =$
 -   WLSv_Lasso: $\lambda_1 = , \sum z =$
@@ -736,6 +741,7 @@ z_summary(data_label, scenario)
 
 ```{r}
 #| label: tbl-lasso-tourism
+#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average RMSE results in Tourism data."
 
