@@ -77,7 +77,7 @@ def miqp(y, S, W, l0 = 0, l2 = 0, m = None, M = None, MIPGap = None, TimeLimit =
     obj_guess = 0.5 * (y - S@G_mint@y).T @ inv_W @ (y - S@G_mint@y) + l0 * nb + l2 * LA.norm(G_mint, 2)**2
     
     if m is None:
-        m = np.amax(G_mint) + 1
+        m = np.amax(abs(G_mint)) + 1
     
     if M is None:
         M = nb
