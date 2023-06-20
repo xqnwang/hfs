@@ -97,7 +97,7 @@ indices <- unique(fits$Index)
 #################################################
 # Reconcile forecasts
 #################################################
-nlambda = 10; nfolds = 5
+nlambda = 20; nfolds = 5
 reconsf <- indices |>
   purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
                                          method, method_name,
