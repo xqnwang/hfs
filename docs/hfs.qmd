@@ -690,7 +690,6 @@ z_summary(data_label, scenario)
 
 ```{r}
 #| label: tbl-lasso-rmse-s3
-#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average RMSE results in Scenario 3."
 
@@ -702,7 +701,6 @@ rmse_calc(data_label, "lasso", scenario, horizon)
 
 ```{r}
 #| label: tbl-lasso-mase-s3
-#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average MASE results in Scenario 3."
 
@@ -714,7 +712,6 @@ mase_calc(data_label, "lasso", scenario, horizon)
 
 ```{r}
 #| label: fig-lasso-s3
-#| eval: false
 #| echo: false
 #| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 3."
 #| fig-height: 4
