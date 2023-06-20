@@ -3,8 +3,9 @@ from numpy import linalg as LA
 import gurobipy as gp
 from gurobipy import GRB, quicksum
 # Gurobi Optimizer version 10.0.1 build v10.0.1rc0
+# import math
 
-def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 0, LogToConsole = 0, OutputFlag = 0):
+def socp(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, TimeLimit = 0, Quick = 1, LogToConsole = 0, OutputFlag = 0):
     """
     Solve the OP problem: min_{G} 0.5 * (y - SGy)' W^{-1} (y - SGy) + l1 * sum_{j}(||G_{.j}||_2)
                           s.t. GS = I
@@ -49,11 +50,24 @@ def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 0, LogToCo
     """ MinT solution """
     R = S.T @ inv_W
     G_mint = np.linalg.inv(R @ S) @ R
+    
+    """ POSSIBLE MAX LAMBDA
+    obj_init = 0.5 * (y - S@G_mint@y).T @ inv_W @ (y - S@G_mint@y)
+    ndigits = math.floor(math.log10(abs(obj_init))) + 2
+    lambda_max = 10**ndigits
+    """
+    
     if weight:
         w = 1/LA.norm(G_mint, axis=0)
     else:
         w = np.repeat(1, n)
-        
+    
+    if m is None:
+        m = np.amax(abs(G_mint)) + 1
+    if M is None:
+        M = nb
+    emax = np.amax(abs(y))
+    
     """ SUPPRESS ALL OUTPUT """
     env = gp.Env(empty=True)
     env.setParam("OutputFlag",OutputFlag)
@@ -65,13 +79,13 @@ def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 0, LogToCo
     """ PARAMETERS """
     # G matrix
     G = model.addMVar(shape=(p, ), vtype=GRB.CONTINUOUS,
-                      ub=GRB.INFINITY, lb=-GRB.INFINITY)
+                      ub=np.repeat(m, p), lb=np.repeat(-m, p))
     # Error
     E = model.addMVar(shape=(n, ), vtype=GRB.CONTINUOUS,
-                      ub=GRB.INFINITY, lb=-GRB.INFINITY)
+                      ub=np.repeat(emax, n), lb=np.repeat(-emax, n))
     # Auxiliary variables for l2 norm
     AUX = model.addMVar(shape=(n, ), vtype=GRB.CONTINUOUS,
-                  ub=GRB.INFINITY, lb=np.repeat(0, n))
+                        ub=GRB.INFINITY, lb=np.repeat(0, n))
     model.update()
 
     """ OBJECTIVE """
@@ -93,6 +107,12 @@ def socp(y, S, W, l1 = 0, weight = True, unbiased = True, TimeLimit = 0, LogToCo
     """ OPTIMIZE """
     model.Params.OutputFlag = OutputFlag
     model.Params.LogToConsole = LogToConsole
+    if Quick:
+        model.Params.NumericFocus = 1
+        model.Params.OptimalityTol = 1e-4
+        model.Params.FeasibilityTol = 1e-4
+        model.Params.BarConvTol = 1e-4
+        model.Params.BarQCPConvTol = 1e-4
     if TimeLimit > 0:
         model.params.TimeLimit = TimeLimit
     model.optimize()
