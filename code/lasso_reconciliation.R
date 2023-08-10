@@ -21,7 +21,7 @@ source("R/lasso_reconcile.R")
 reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                                method, method_name,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
-                               nlambda, SearchVerbose){
+                               SearchVerbose){
   
   n <- NCOL(fits)
   fitted_values <- fits[fits$Index == index, -n] |> as.matrix()
@@ -45,13 +45,13 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
            lasso.reconcile(base_forecasts = base_forecasts, S = S,
                            method = method[i], residuals = residuals,
                            fitted_values = fitted_values, train_data = train_data,
-                           lasso = "Lasso", nlambda = nlambda,
+                           lasso = "Lasso",
                            SearchVerbose = SearchVerbose))
   }
   ELasso <- lasso.reconcile(base_forecasts = base_forecasts, S = S,
                             method = "ols", residuals = residuals,
                             fitted_values = fitted_values, train_data = train_data,
-                            lasso = "ELasso", nlambda = nlambda,
+                            lasso = "ELasso",
                             SearchVerbose = SearchVerbose)
   mget(c("Base", "BU", method_name, paste0(method_name, "_Lasso"), "ELasso"))
 }
@@ -96,11 +96,9 @@ indices <- unique(fits$Index)
 #################################################
 # Reconcile forecasts
 #################################################
-nlambda = 20
 reconsf <- indices |>
   purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
                                          method, method_name,
-                                         nlambda = nlambda,
                                          SearchVerbose = SearchVerbose),
           .progress = !SearchVerbose)
 saveRDS(reconsf, file = paste0("data_new/", data_label, "_lasso_reconsf.rds"))
@@ -109,7 +107,6 @@ saveRDS(reconsf, file = paste0("data_new/", data_label, "_lasso_reconsf.rds"))
 # Reconcile forecasts - deteriorate base forecasts for some time series
 #################################################
 if (data_label == "simulation"){
-  nlambda = 20
   scenario <- c("s1", "s2", "s3")
   deteriorate_series <- c("AA", "A", "Total")
   deteriorate_rate <- rep(1.5, 3)
@@ -120,7 +117,6 @@ if (data_label == "simulation"){
                                              deteriorate = TRUE, 
                                              deteriorate_series = deteriorate_series[i],
                                              deteriorate_rate = deteriorate_rate[i], 
-                                             nlambda, nfolds,
                                              SearchVerbose),
                  .progress = !SearchVerbose
       )

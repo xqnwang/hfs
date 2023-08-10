@@ -9,7 +9,6 @@
 #' @param fitted_values Fitted values in training set.
 #' @param train_data Training data.
 #' @param lasso Data to use. Valid option are `NULL` no lasso, `Lasso` for out-of-sample based lasso and `ELasso` for in-sample based lasso.
-#' @param nlambda Number of candidate `lambda_1` values to choose from for group lasso problem.
 #' @param nfolds Number of folds in cross-validation
 #' @param SearchVerbose Logical. If true, a progress bar will be displayed when searching optimal combination of `lambda_0` and `lambda_2`.
 #' 
@@ -21,7 +20,7 @@
 lasso.reconcile <- function(base_forecasts, S, 
                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                             residuals = NULL, fitted_values = NULL, train_data = NULL,
-                            lasso = NULL, nlambda = 20,
+                            lasso = NULL,
                             TimeLimit = 600, SearchVerbose = FALSE){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
@@ -141,25 +140,6 @@ lasso.reconcile <- function(base_forecasts, S,
       min.index <- purrr::map_dbl(socp.out, function(l) l$sse) |> round(2) |> which.min()
       z <- socp.out[[min.index]]$Z |> as.vector()
       G <- socp.out[[min.index]]$G
-      
-      # # Directly using group lasso without unbiasedness constraint (can specify pf - penalty weights applied to each group)
-      # y_hat <- base_forecasts[1, ] |> as.vector() # One-step ahead base forecasts
-      # X <- kronecker(t(y_hat), S)
-      # group <- rep(seq.int(n), each = nb)
-      # 
-      # fit <- gglasso::gglasso(x = X, y = y_hat, group = group, intercept = FALSE,
-      #                         loss = "wls", weight = solve(W), 
-      #                         nlambda = nlambda, lambda.factor = 1e-05, eps = 1e-04)
-      # sse <- purrr::map_dbl(1:nlambda, \(i){
-      #   G <- fit$beta[, i] |> as.vector() |> 
-      #     matrix(nrow = nb, ncol = n, byrow = FALSE)
-      #   sum(stats::na.omit(train_data - fitted_values %*% t(G) %*% t(S))^2)
-      # }) |> round(2)
-      # lambda_index <- which.min(sse)
-      # G <- fit$beta[, lambda_index] |> as.vector() |> 
-      #   matrix(nrow = nb, ncol = n, byrow = FALSE)
-      # sse_summary <- data.frame(lambda1 = fit$lambda, sse = sse)
-      # z <- ifelse(round(colSums(abs(G)), 5) == 0, 0, 1)
     }
     
     # Empirical group lasso
