@@ -4,6 +4,8 @@ library(future)
 library(forecast)
 
 # Setup
+data_label <- "simulation"
+# data_label == "tourism"
 MonARCH <- TRUE
 workers <- parallel::detectCores()
 if (MonARCH){
@@ -65,10 +67,11 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 ## Training set:  1978Q1-2018Q4
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
-data_label <- "simulation" # used to name the results to be imported and saved
-SearchVerbose = FALSE
-method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
-method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+if (data_label == "simulation"){
+  SearchVerbose = FALSE
+  method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
+  method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+}
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
@@ -80,10 +83,11 @@ method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 ## Training set:  1998Jan-2016Dec
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
-data_label <- "tourism" # used to name the results to be imported and saved
-SearchVerbose = TRUE
-method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
-method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
+if (data_label == "tourism"){
+  SearchVerbose = TRUE
+  method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
+  method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
+}
 
 #################################################
 # Import base forecast results
