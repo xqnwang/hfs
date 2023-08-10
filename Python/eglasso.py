@@ -50,11 +50,15 @@ def eglasso(Y, Y_hat, S, l1 = 0, m = None, M = None, weight = True, TimeLimit = 
     R = S.T @ inv_W
     G_ols = np.linalg.inv(R @ S) @ R
     
+    """ Penalty factor """
     if weight:
         w = 1/LA.norm(G_ols, axis=0)
     else:
         w = np.repeat(1, n)
     
+    w = w/w.sum()# normalize weight vector to sum to 1 
+    
+    """ Bound """
     if m is None:
         m = np.amax(abs(G_ols)) + 1
     if M is None:
