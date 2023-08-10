@@ -5,10 +5,10 @@ from gurobipy import GRB, quicksum
 # Gurobi Optimizer version 10.0.1 build v10.0.1rc0
 # import math
 
-def socp(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, TimeLimit = 0, LogToConsole = 0, OutputFlag = 0):
+def glasso(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, TimeLimit = 0, LogToConsole = 0, OutputFlag = 0):
     """
-    Solve the OP problem: min_{G} 0.5 * (y - SGy)' W^{-1} (y - SGy) + l1 * sum_{j}(||G_{.j}||_2)
-                          s.t. GS = I
+    Solve the SOCP problem: min_{G} 0.5 * (y - SGy)' W^{-1} (y - SGy) + l1 * sum_{j}(||G_{.j}||_2)
+                            s.t. GS = I
                           
 
     Parameters
@@ -35,7 +35,7 @@ def socp(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, Ti
         
     Returns
     -------
-    1-d numpy array of diagonal elements of A.
+    G, Z, obj
 
     """
             
@@ -73,8 +73,8 @@ def socp(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, Ti
     env.setParam("OutputFlag",OutputFlag)
     env.start()
     
-    """ SOCP MODEL """
-    model = gp.Model('SOCP', env=env) # the optimization model
+    """ GLASSO MODEL """
+    model = gp.Model('GLASSO', env=env) # the optimization model
     
     """ PARAMETERS """
     # G matrix
