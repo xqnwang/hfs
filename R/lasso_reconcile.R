@@ -21,8 +21,8 @@
 lasso.reconcile <- function(base_forecasts, S, 
                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                             residuals = NULL, fitted_values = NULL, train_data = NULL,
-                            lasso = NULL, nlambda = 20, nfolds = 5,
-                            TimeLimit = 0, SearchVerbose = FALSE){
+                            lasso = NULL, nlambda = 20,
+                            TimeLimit = 600, SearchVerbose = FALSE){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
@@ -130,7 +130,7 @@ lasso.reconcile <- function(base_forecasts, S,
         if (l1 == 0){
           fit <- list(l1 = l1, G = G, Z = rep(1, n), obj = obj_init)
         } else{
-          fit <- socp(y = fc, S = S, W = W, l1 = l1, weight = 1, unbiased = 1, TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
+          fit <- glasso(y = fc, S = S, W = W, l1 = l1, weight = 1, unbiased = 1, TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
           names(fit) <- c("G", "Z", "obj")
           fit <- append(list(l1 = l1), fit)
         }
@@ -177,35 +177,54 @@ lasso.reconcile <- function(base_forecasts, S,
       }
       
       N <- NROW(train_data)
-      X <- kronecker(S, fitted_values)
-      y <- as.vector(train_data)
-      index <- matrix(seq.int(nb*n), nrow = nb, ncol = n, byrow = FALSE) |> 
-        t() |> 
-        as.vector()
-      
-      # Separate penalty weights can be applied to each group
-      pf <- 1/apply(G, 2, function(x) sqrt(sum(x^2))) |> as.vector()
-      
-      # Reorder data to make 'group' as a vector of consecutive integers
-      X <- X[ , order(index)]
-      group <- rep(seq.int(n), each = nb)
-      
-      # Cross-validation for gglasso
       if (N < 20) {
         stop("At least 20 observation should be used in ELasso")
       }
-      eachfoldid <- sample(rep(seq(nfolds), length = N))
-      foldid <- rep(eachfoldid, n)
-      cvfit <- gglasso::cv.gglasso(x = X, y = y, group = group, intercept = FALSE, 
-                                   pf = pf,
-                                   loss = "ls", pred.loss = "L1", 
-                                   foldid = foldid, nlambda = nlambda, lambda.factor = 1e-05,
-                                   eps = 1e-04)
-      vec_G <- coef(cvfit, s = "lambda.min")[-1] # remove 0 intercept
-      G <- matrix(vec_G, nrow = nb, ncol = n, byrow = FALSE)
-      sse_summary <- data.frame(lambda1 = cvfit$lambda, 
-                                sse = cvfit$cvm)
-      z <- ifelse(colSums(abs(G) > 1e-8) == 0, 0, 1)
+      
+      Y <- head(train_data, -floor(N/10))
+      Y_hat <- head(fitted_values, -floor(N/10))
+      
+      Y_tilde_init <- Y_hat %*% t(G) %*% t(S)
+      obj_init <- 0.5 * 1/(N - floor(N/10)) * t(as.vector(Y) - as.vector(Y_tilde_init)) %*% (as.vector(Y) - as.vector(Y_tilde_init)) |>
+        as.numeric()
+      
+      # Candidate lambda_1
+      ndigits <- floor(log10(abs(obj_init))) + 2
+      lambda_max <- 10^ndigits
+      lambda <- c(0,
+                  exp(seq(from = log(1e-05*lambda_max),
+                          to = log(lambda_max),
+                          by = log(1e05)/(nlambda - 2)))
+      )
+      
+      # Find the optimal lambda_1 by splitting training data
+      socp.out <- purrr::map(lambda, function(l1){
+        if (l1 == 0){
+          fit <- list(l1 = l1, G = G, Z = rep(1, n), obj = obj_init)
+        } else{
+          fit <- eglasso(Y = Y, Y_hat = Y_hat, S = S, l1 = l1, weight = 1, 
+                         TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
+          names(fit) <- c("G", "Z", "obj")
+          fit <- append(list(l1 = l1), fit)
+        }
+        sse <- sum(stats::na.omit(tail(train_data, floor(N/10)) - tail(fitted_values, floor(N/10)) %*% t(fit$G) %*% t(S))^2)
+        fit$sse <- sse
+        fit
+      }, .progress = SearchVerbose)
+      
+      sse_summary <- sapply(socp.out, function(l) c(l$l1, sum(as.vector(l$Z)), l$sse, l$obj)) |> 
+        t() |> 
+        data.frame()
+      names(sse_summary) <- c("lambda1", "k", "sse", "obj")
+      min.index <- purrr::map_dbl(socp.out, function(l) l$sse) |> round(2) |> which.min()
+      lambda_opt <- socp.out[[min.index]]$l1
+      
+      # Resolve model to get G matrix
+      fit_opt <- eglasso(Y = train_data, Y_hat = fitted_values, S = S, l1 = lambda_opt, weight = 1, 
+                         TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
+      names(fit_opt) <- c("G", "Z", "obj")
+      z <- fit_opt$Z |> as.vector()
+      G <- fit_opt$G
     }
   }
   
