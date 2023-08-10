@@ -537,8 +537,8 @@ In a hierarchy setting, we can consider $w_j = 1$ as each group has the same siz
 
 **Strategy:**
 
--   Consider a more flexible group lasso by putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$, and also include the unbiasedness constraint.
--   $\lambda_1$ sequence: $\lambda_{\max} = 10^{k+1}, \quad \lambda_{\min} = 10^{k-4}$ and construct a sequence of nlambda values decreasing from $\lambda_{\max}$ to $\lambda_{\min}$ on the log scale.
+-   Consider a more flexible group lasso by putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$ (it will be normalized to sum to 1.), and also include the unbiasedness constraint.
+-   $\lambda_1$ sequence: $\lambda_1 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)$.
 -   Bound of variables
     -   should be as tight as possible to speed up computation.
     -   $\check{e} = \hat{y} - \tilde{y}: \quad [-|y|_{\max}, |y|_{\max}]$.
@@ -555,9 +555,9 @@ Assuming that **the series in the structure are jointly weakly stationary**, the
 
 $$
 \begin{aligned}
-\min _{\boldsymbol{G}} & \quad \frac{1}{2 N n} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
+\min _{\boldsymbol{G}} & \quad \frac{1}{2 N} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
 \Downarrow \\
-\min _{\boldsymbol{G}} & \quad \frac{1}{2 N n} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
+\min _{\boldsymbol{G}} & \quad \frac{1}{2 N} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda_1 \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
 \end{aligned}
 $$
 
@@ -565,8 +565,10 @@ After reformulation, it reduced to a standard group lasso problem with $\operato
 
 ### Strategy & hyperparameter
 
--   Consider putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2$.
--   Use the `gglasso` package, specify `intercept = FALSE`, `pf = w`, `lambda.factor = 1e-05`, `eps = 1e-04`, `foldid` to ensure each fold contains t number of observations from each variable (time series).
+-   Consider putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2$. We normalize the penalty weights to sum to 1.
+-   We can use the `gglasso` package, specifically we set `intercept = FALSE`, `pf = w`, `lambda.factor = 1e-05`, `eps = 1e-04`, and `foldid` to ensure each fold contains t number of observations from each variable (time series). [It's very slow when we set penalty factor by setting the `pf` parameter.]{style="color:red;"}
+-   Thus, we consider proposing SOCP formulations to solve it, as in the out-of-sample based method.
+-   $\lambda_1$ sequence: $\lambda_1 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2 N^{\text{train}}}\left\|\boldsymbol{Y}^{\text{train}}-\hat{\boldsymbol{Y}}^{\text{train}} \boldsymbol{G}^{\prime\text{MinT}} \boldsymbol{S}^{\prime}\right\|_F^2$.
 
 ## Simulation results
 
@@ -760,3 +762,8 @@ rmse_calc_tourism(data_label, "lasso", scenario, horizon)
     -   Sub hierarchy + Voting
 -   Theoretical aspects
 -   Grouped time series
+
+# References
+
+::: {#refs}
+:::

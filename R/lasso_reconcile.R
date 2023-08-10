@@ -119,12 +119,7 @@ lasso.reconcile <- function(base_forecasts, S,
       
       # Candidate lambda_1
       ndigits <- floor(log10(abs(obj_init))) + 2
-      lambda_max <- 10^ndigits
-      lambda <- c(0,
-                    exp(seq(from = log(1e-05*lambda_max),
-                            to = log(lambda_max),
-                            by = log(1e05)/(nlambda - 2)))
-      )
+      lambda <- c(0, 10^seq(from = ndigits - 4, to = ndigits, by = 1))
       
       socp.out <- purrr::map(lambda, function(l1){
         if (l1 == 0){
@@ -190,13 +185,8 @@ lasso.reconcile <- function(base_forecasts, S,
       
       # Candidate lambda_1
       ndigits <- floor(log10(abs(obj_init))) + 2
-      lambda_max <- 10^ndigits
-      lambda <- c(0,
-                  exp(seq(from = log(1e-05*lambda_max),
-                          to = log(lambda_max),
-                          by = log(1e05)/(nlambda - 2)))
-      )
-      
+      lambda <- c(0, 10^seq(from = ndigits - 4, to = ndigits, by = 1))
+
       # Find the optimal lambda_1 by splitting training data
       socp.out <- purrr::map(lambda, function(l1){
         if (l1 == 0){
