@@ -57,11 +57,15 @@ def glasso(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, 
     lambda_max = 10**ndigits
     """
     
+    """ Penalty factor """
     if weight:
         w = 1/LA.norm(G_mint, axis=0)
     else:
         w = np.repeat(1, n)
     
+    w = w/w.sum() # normalize weight vector to sum to 1
+    
+    """ Bound """
     if m is None:
         m = np.amax(abs(G_mint)) + 1
     if M is None:
