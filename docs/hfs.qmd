@@ -732,15 +732,14 @@ Use the following parameters to speed up calculations:
 
 Results:
 
--   OLS_Lasso: $\lambda_1 = , \sum z =$
--   WLSs_Lasso: $\lambda_1 = , \sum z =$
--   WLSv_Lasso: $\lambda_1 = , \sum z =$
--   MinTs_Lasso: $\lambda_1 = , \sum z =$
--   ELasso: $\lambda_1 = , \sum z =$
+-   OLS_Lasso: $\lambda_1 = 0, \sum z = 111$
+-   WLSs_Lasso: $\lambda_1 = 0, \sum z = 111$
+-   WLSv_Lasso: $\lambda_1 = 0, \sum z = 111$
+-   MinTs_Lasso: $\lambda_1 = 0, \sum z = 111$
+-   ELasso: $\lambda_1 = 0, \sum z = 111$
 
 ```{r}
 #| label: tbl-lasso-tourism
-#| eval: false
 #| echo: false
 #| tbl-cap: "Out-of-sample average RMSE results in Tourism data."
 
