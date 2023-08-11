@@ -5,7 +5,7 @@ library(forecast)
 
 # Setup
 data_label <- "simulation"
-# data_label == "tourism"
+# data_label <- "tourism"
 MonARCH <- TRUE
 workers <- parallel::detectCores()
 if (MonARCH){
@@ -115,7 +115,7 @@ if (data_label == "simulation"){
   deteriorate_series <- c("AA", "A", "Total")
   deteriorate_rate <- rep(1.5, 3)
   for (i in 1:3){
-    reconsf <- indices |>
+    reconsf_s <- indices |>
       purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
                                              method, method_name,
                                              deteriorate = TRUE, 
@@ -126,7 +126,7 @@ if (data_label == "simulation"){
       )
     saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_lasso_reconsf_", scenario[i], ".rds"))
     rm(reconsf_s)
-    print(paste("i =", i, "finished!"))
+    print(paste0("Scenario s", i, " finished!"))
   } 
 }
 
