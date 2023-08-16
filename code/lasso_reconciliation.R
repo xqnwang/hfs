@@ -6,6 +6,7 @@ library(forecast)
 # Setup
 data_label <- "simulation"
 # data_label <- "tourism"
+nlambda <- 20
 MonARCH <- TRUE
 workers <- parallel::detectCores()
 if (MonARCH){
@@ -21,7 +22,7 @@ source("R/lasso_reconcile.R")
 
 # Utility function
 reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
-                               method, method_name,
+                               method, method_name, nlambda,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
                                SearchVerbose){
   
@@ -47,13 +48,13 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
            lasso.reconcile(base_forecasts = base_forecasts, S = S,
                            method = method[i], residuals = residuals,
                            fitted_values = fitted_values, train_data = train_data,
-                           lasso = "Lasso",
+                           lasso = "Lasso", nlambda = nlambda,
                            SearchVerbose = SearchVerbose))
   }
   ELasso <- lasso.reconcile(base_forecasts = base_forecasts, S = S,
                             method = "ols", residuals = residuals,
                             fitted_values = fitted_values, train_data = train_data,
-                            lasso = "ELasso",
+                            lasso = "ELasso", nlambda = nlambda,
                             SearchVerbose = SearchVerbose)
   mget(c("Base", "BU", method_name, paste0(method_name, "_Lasso"), "ELasso"))
 }
@@ -102,7 +103,7 @@ indices <- unique(fits$Index)
 #################################################
 reconsf <- indices |>
   purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
-                                         method, method_name,
+                                         method, method_name, nlambda,
                                          SearchVerbose = SearchVerbose),
           .progress = !SearchVerbose)
 saveRDS(reconsf, file = paste0("data_new/", data_label, "_lasso_reconsf.rds"))
@@ -117,7 +118,7 @@ if (data_label == "simulation"){
   for (i in 1:3){
     reconsf_s <- indices |>
       purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
-                                             method, method_name,
+                                             method, method_name, nlambda,
                                              deteriorate = TRUE, 
                                              deteriorate_series = deteriorate_series[i],
                                              deteriorate_rate = deteriorate_rate[i], 
