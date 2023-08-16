@@ -63,7 +63,7 @@ def glasso(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, 
     else:
         w = np.repeat(1, n)
     
-    w = w/w.sum() # normalize weight vector to sum to 1
+    # w = w/w.sum() # normalize weight vector to sum to 1
     
     """ Bound """
     if m is None:
