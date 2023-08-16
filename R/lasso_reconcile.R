@@ -9,6 +9,7 @@
 #' @param fitted_values Fitted values in training set.
 #' @param train_data Training data.
 #' @param lasso Data to use. Valid option are `NULL` no lasso, `Lasso` for out-of-sample based lasso and `ELasso` for in-sample based lasso.
+#' @param nlambda Number of candidate `lambda_1` values.
 #' @param nfolds Number of folds in cross-validation
 #' @param SearchVerbose Logical. If true, a progress bar will be displayed when searching optimal combination of `lambda_0` and `lambda_2`.
 #' 
@@ -20,7 +21,7 @@
 lasso.reconcile <- function(base_forecasts, S, 
                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                             residuals = NULL, fitted_values = NULL, train_data = NULL,
-                            lasso = NULL,
+                            lasso = NULL, nlambda = 20,
                             TimeLimit = 600, SearchVerbose = FALSE){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
@@ -117,8 +118,16 @@ lasso.reconcile <- function(base_forecasts, S,
       }
       
       # Candidate lambda_1
-      ndigits <- floor(log10(abs(obj_init))) + 2
-      lambda <- c(0, 10^seq(from = ndigits - 4, to = ndigits, by = 1))
+      X <- kronecker(t(fc), S)
+      w <- 1/apply(G, 2, function(x) sqrt(sum(x^2)))
+      lambda_max <- sapply(1:n, function(j){
+        w_j <- w[j]
+        cj <- ((j-1)*nb + 1):(j*nb)
+        delta_loss_j <- - t(X[, cj]) %*% solve(W) %*% (fc - X[, cj] %*% as.vector(G[, j]))
+        return(sqrt(sum(delta_loss_j^2))/w_j)
+      }) |> max()
+      lambda_min <- 0.0001 * lambda_max
+      lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/nlambda-1)), 0)
       
       socp.out <- purrr::map(lambda, function(l1){
         if (l1 == 0){
@@ -164,19 +173,23 @@ lasso.reconcile <- function(base_forecasts, S,
         as.numeric()
       
       # Candidate lambda_1
-      ndigits <- floor(log10(abs(obj_init))) + 2
-      lambda <- c(0, 10^seq(from = ndigits - 4, to = ndigits, by = 1))
+      X <- kronecker(S, Y_hat)
+      w <- 1/apply(G, 2, function(x) sqrt(sum(x^2)))
+      lambda_max <- sapply(1:n, function(j){
+        w_j <- w[j]
+        cj <- (0:(nb-1))*n + j
+        delta_loss_j <- - 1/N * t(X[, cj]) %*% (as.vector(Y) - X[, cj] %*% as.vector(t(G[, j])))
+        return(sqrt(sum(delta_loss_j^2))/w_j)
+      }) |> max()
+      lambda_min <- 0.0001 * lambda_max
+      lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/nlambda-1)), 0)
 
       # Find the optimal lambda_1 by splitting training data
       socp.out <- purrr::map(lambda, function(l1){
-        if (l1 == 0){
-          fit <- list(l1 = l1, G = G, Z = rep(1, n), obj = obj_init)
-        } else{
-          fit <- eglasso(Y = Y, Y_hat = Y_hat, S = S, l1 = l1, weight = 1, 
-                         TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
-          names(fit) <- c("G", "Z", "obj")
-          fit <- append(list(l1 = l1), fit)
-        }
+        fit <- eglasso(Y = Y, Y_hat = Y_hat, S = S, l1 = l1, weight = 1, 
+                       TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
+        names(fit) <- c("G", "Z", "obj")
+        fit <- append(list(l1 = l1), fit)
         sse <- sum(stats::na.omit(tail(train_data, floor(N/10)) - tail(fitted_values, floor(N/10)) %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         fit

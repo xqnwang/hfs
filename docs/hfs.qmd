@@ -535,15 +535,44 @@ In a hierarchy setting, we can consider $w_j = 1$ as each group has the same siz
 -   For a given $j$, if $\boldsymbol{G}_{\cdot j}$ is zeroed out, then other columns of $\boldsymbol{G}$ tend to be changed, which may have larger $\ell_2$-norm values.
 -   Top level (first column) tends to have smaller $\ell_2$-norm when other columns are zeroed out.
 
-**Strategy:**
+#### Penalty weights
 
--   Consider a more flexible group lasso by putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$ (it will be normalized to sum to 1.), and also include the unbiasedness constraint.
--   $\lambda_1$ sequence: $\lambda_1 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)$.
--   Bound of variables
-    -   should be as tight as possible to speed up computation.
-    -   $\check{e} = \hat{y} - \tilde{y}: \quad [-|y|_{\max}, |y|_{\max}]$.
-    -   $\mathcal{M}_k$ for each element in $\boldsymbol{G}$: $[-|G|_{\max}^{\text{bench}} - 1, |G|_{\max}^{\text{bench}} + 1]$.
-    -   $\mathcal{M}$ for sum of absolute values of each column: $[-n_b, n_b]$.
+-   Consider a more flexible group lasso by putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$, and also include the unbiasedness constraint.
+
+#### Bound of variables
+
+-   should be as tight as possible to speed up computation
+-   $\check{e} = \hat{y} - \tilde{y}: \quad [-|y|_{\max}, |y|_{\max}]$.
+-   $\mathcal{M}_k$ for each element in $\boldsymbol{G}$: $[-|G|_{\max}^{\text{bench}} - 1, |G|_{\max}^{\text{bench}} + 1]$.
+-   $\mathcal{M}$ for sum of absolute values of each column: $[-n_b, n_b]$.
+
+#### $\lambda$ Sequence
+
+1.  **Former strategy**
+
+-   $\lambda_1 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)$
+
+2.  **New strategy**
+
+The method used in [@yang2014] to decide a sequence of $\lambda$ values for group-lasso penalize learning problem is shown below.
+
+The objective function is
+
+$$
+L(\boldsymbol{\beta} \mid \mathbf{D})+\lambda \sum_{j=1}^n w_j\left\|\boldsymbol{\beta}^{(j)}\right\|_2.
+$$
+
+We define $\lambda^{[1]}$ as the smallest $\lambda$ value such that all predictors (without intercept) have zero coefficients. Then the solution at $\lambda^{[1]}$ is $\widehat{\boldsymbol{\beta}}^{[1]} = \boldsymbol{0}$ as the null model estimates. Our strategy is to select a minimum value $\lambda_{\min}$, and construct a sequence of $K$ values of $\lambda$ decreasing from $\lambda_{max}$ to $\lambda_{\min}$ on the log scale.
+
+$$
+\lambda_{\max}=\lambda^{[1]}=\max _{j=1, \ldots, n}\left\|\left[\nabla L\left(\widehat{\boldsymbol{\beta}}^{[1]} \mid \mathbf{D}\right)\right]^{(j)}\right\|_2 / w_j, \quad w_j \neq 0
+$$
+
+For the out-of-sample based group lasso method, we ignore the unbiasedness constraint when we decide $\lambda_{\max}$. As $\boldsymbol{W}^{-1}$ is symmetric,
+
+$$
+\lambda_{\max}=\max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot cj}\right)^{\prime} \boldsymbol{W}^{-1} \left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot cj} \operatorname{vec}(\boldsymbol{G}_{\cdot j})\right)\right\|_2 / w_j
+$$
 
 ## In-sample based method
 
@@ -565,10 +594,26 @@ After reformulation, it reduced to a standard group lasso problem with $\operato
 
 ### Strategy & hyperparameter
 
--   Consider putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2$. We normalize the penalty weights to sum to 1.
 -   We can use the `gglasso` package, specifically we set `intercept = FALSE`, `pf = w`, `lambda.factor = 1e-05`, `eps = 1e-04`, and `foldid` to ensure each fold contains t number of observations from each variable (time series). [It's very slow when we set penalty factor by setting the `pf` parameter.]{style="color:red;"}
 -   Thus, we consider proposing SOCP formulations to solve it, as in the out-of-sample based method.
--   $\lambda_1$ sequence: $\lambda_1 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2 N^{\text{train}}}\left\|\boldsymbol{Y}^{\text{train}}-\hat{\boldsymbol{Y}}^{\text{train}} \boldsymbol{G}^{\prime\text{MinT}} \boldsymbol{S}^{\prime}\right\|_F^2$.
+
+#### Penalty weights
+
+-   Consider putting different penalty weights $w_j$ on each group, e.g., $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2, j = 1,2,\ldots,n$.
+
+#### $\lambda$ Sequence
+
+1.  **Former strategy**
+
+$\lambda_1$ sequence: $\lambda_1 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2 N^{\text{train}}}\left\|\boldsymbol{Y}^{\text{train}}-\hat{\boldsymbol{Y}}^{\text{train}} \boldsymbol{G}^{\prime\text{MinT}} \boldsymbol{S}^{\prime}\right\|_F^2$.
+
+2.  **New strategy**
+
+For the in-sample based group lasso method,
+
+$$
+\lambda_{\max}=\max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\right)_{\cdot cj}\right)^{\prime} \left(\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})_{\cdot cj} \operatorname{vec}\left(\boldsymbol{G_{\cdot j}}^{\prime}\right)\right)\right\|_2 / w_j
+$$
 
 ## Simulation results
 
