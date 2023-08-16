@@ -7,9 +7,14 @@ reticulate::use_python("~/Library/r-miniconda-arm64/bin/python3.10", required = 
 reticulate::source_python("Python/subset.py")
 source("R/subset_reconcile.R")
 
+# Setup
+data_label <- "simulation"
+# data_label <- "tourism"
+nlambda <- 20
+
 # Utility function
 reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
-                               method, method_name,
+                               method, method_name, nlambda,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
                                MIPFocus, Cuts, TimeLimit,
                                MIPVerbose, SearchVerbose){
@@ -36,7 +41,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
            subset.reconcile(base_forecasts = base_forecasts, S = S,
                      method = method[i], residuals = residuals,
                      fitted_values = fitted_values, train_data = train_data,
-                     subset = TRUE, ridge = TRUE,
+                     subset = TRUE, ridge = TRUE, nlambda = nlambda,
                      MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                      MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose))
     # print(paste("===", method_name[i], "finished!"))
@@ -54,10 +59,11 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 ## Training set:  1978Q1-2018Q4
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
-data_label <- "simulation" # used to name the results to be imported and saved
-MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = FALSE
-method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
-method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+if (data_label == "simulation"){
+  MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = FALSE
+  method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
+  method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+}
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
@@ -69,10 +75,11 @@ method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 ## Training set:  1998Jan-2016Dec
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
-data_label <- "tourism" # used to name the results to be imported and saved
-MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = TRUE
-method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
-method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
+if (data_label == "tourism"){
+  MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = TRUE
+  method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
+  method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
+}
 
 #################################################
 # Import base forecast results
@@ -87,7 +94,7 @@ indices <- unique(fits$Index)
 #################################################
 reconsf <- indices |>
   purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, 
-                                         method, method_name,
+                                         method, method_name, nlambda,
                                          deteriorate = FALSE, 
                                          MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                                          MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
@@ -98,21 +105,24 @@ rm(reconsf)
 #################################################
 # Reconcile forecasts - deteriorate base forecasts for some time series
 #################################################
-scenario <- c("s1", "s2", "s3")
-deteriorate_series <- c("AA", "A", "Total")
-deteriorate_rate <- rep(1.5, 3)
-for (i in 1:3){
-  reconsf_s <- indices |>
-    purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
-                                           method, method_name,
-                                           deteriorate = TRUE, 
-                                           deteriorate_series = deteriorate_series[i],
-                                           deteriorate_rate = deteriorate_rate[i], 
-                                           MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
-                                           MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
-               .progress = !SearchVerbose)
-  saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_reconsf_", scenario[i], ".rds"))
-  rm(reconsf_s)
-  # print(paste("i =", i, "finished!"))
+if (data_label == "simulation"){
+  scenario <- c("s1", "s2", "s3")
+  deteriorate_series <- c("AA", "A", "Total")
+  deteriorate_rate <- rep(1.5, 3)
+  for (i in 1:3){
+    reconsf_s <- indices |>
+      purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
+                                             method, method_name, nlambda,
+                                             deteriorate = TRUE, 
+                                             deteriorate_series = deteriorate_series[i],
+                                             deteriorate_rate = deteriorate_rate[i], 
+                                             MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
+                                             MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
+                 .progress = !SearchVerbose)
+    saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_reconsf_", scenario[i], ".rds"))
+    rm(reconsf_s)
+    # print(paste("i =", i, "finished!"))
+  }
 }
+
 

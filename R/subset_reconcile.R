@@ -27,7 +27,7 @@ subset.reconcile <- function(base_forecasts, S,
                              method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                              residuals = NULL, fitted_values = NULL, train_data = NULL,
                              subset = FALSE, ridge = FALSE,
-                             lambda_0 = NULL, lambda_2 = NULL, 
+                             lambda_0 = NULL, lambda_2 = NULL, nlambda = 20,
                              m = NULL, M = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
                              TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE){
   # Dimension info
@@ -115,8 +115,9 @@ subset.reconcile <- function(base_forecasts, S,
       
       # Candidate lambda_0
       if (is.null(lambda_0)){
-        ndigits <- floor(log10(abs(obj_init/nb))) + 2
-        lambda_0 <- c(0, 10^seq(from = ndigits - 4, to = ndigits, by = 1))
+        lambda_0_max <- obj_init
+        lambda_0_min <- 0.0001 * lambda_0_max
+        lambda_0 <- c(sapply(0:(nlambda-1), function(j) lambda_0_max*(lambda_0_min/lambda_0_max)^(j/nlambda-1)), 0)
       }
       
       # Candidate lambda_2

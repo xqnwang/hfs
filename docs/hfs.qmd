@@ -85,11 +85,19 @@ This is a **Mixed Integer Quadratic Program (MIQP)** and then get solved using s
 
 ## Hyperparameter
 
+1.  **Former strategy**
+
 -   $\lambda_0 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10^{k+1}\}$, where $k$ is the number of digits before the decimal point for $\frac{1}{2 n_b}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)$. [(Reason)]{.underline}
 
 -   $\lambda_2 = \{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}$
 
 To avoid cross-validation, we select the best combination of $\lambda_0$ and $\lambda_2$ by minimizing the sum of squared reconciled forecast errors in the training set, even though fitted values are often not true one-step ahead forecasts.
+
+2.  **New strategy**
+
+-   $\lambda_{0\max} = \frac{1}{2 n_b}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)^{\prime} \boldsymbol{W}_h^{-1}\left(\hat{\boldsymbol{y}}_h-\tilde{\boldsymbol{y}}_h^{\text{MinT}}\right)$, $\lambda_{0\min} = 0.0001\lambda_{0\max}$, We compute solutions over a grid of $k-1$ values between $\lambda_{0\min }$ and $\lambda_{0\max }$, where $\lambda_{0, j}=\lambda_{0\max }\left(\lambda_{0\min } / \lambda_{0\max }\right)^{j / (k-1)}$ for $j=0, \ldots, k-1$. Thus, $\lambda_0=\{0, \lambda_{0,0}, \ldots, \lambda_{0,k-1}\}$. In our implementation, the default value for $k$ is 20.
+
+-   $\lambda_2 = \{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}$
 
 ## Simulation results
 
