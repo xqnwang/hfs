@@ -3,14 +3,21 @@ library(magrittr)
 library(future)
 library(forecast)
 
-reticulate::use_python("~/Library/r-miniconda-arm64/bin/python3.10", required = T)
-reticulate::source_python("Python/subset.py")
-source("R/subset_reconcile.R")
-
 # Setup
 data_label <- "simulation"
 # data_label <- "tourism"
 nlambda <- 20
+MonARCH <- TRUE
+workers <- parallel::detectCores()
+if (MonARCH){
+  path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
+  setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
+} else{
+  path <- "~/Library/r-miniconda-arm64/bin/python3.10"
+}
+reticulate::use_python(path, required = T)
+reticulate::source_python("Python/subset.py")
+source("R/subset_reconcile.R")
 
 # Utility function
 reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
