@@ -41,12 +41,11 @@ def miqp(y, S, W, l0 = 0, l2 = 0, m = None, M = None, MIPGap = None, TimeLimit =
         If you are more interested in finding feasible solutions quickly, you can select MIPFocus=1. If you believe the solver is having no trouble finding good quality solutions, and wish to focus more attention on proving optimality, select MIPFocus=2. If the best objective bound is moving very slowly (or not at all), you may want to try MIPFocus=3 to focus on the bound.
     Cuts: int, optional
         Global cut aggressiveness setting. Use value 0 to shut off cuts, 1 for moderate cut generation, 2 for aggressive cut generation, and 3 for very aggressive cut generation. This parameter is overridden by the parameters that control individual cut types (e.g., CliqueCuts).
-
-        
-        
+    
+    
     Returns
     -------
-    1-d numpy array of diagonal elements of A.
+    G, Z, obj, gap, opt
 
     """
     
