@@ -183,7 +183,8 @@ def miqp(y, S, W, l0 = 0, l2 = 0, m = None, M = None, MIPGap = None, TimeLimit =
     model.Params.LogToConsole = LogToConsole
     model.Params.MIPFocus = MIPFocus
     model.Params.Cuts = Cuts
-    model.params.TimeLimit = TimeLimit
+    if TimeLimit > 0:
+        model.params.TimeLimit = TimeLimit
     model.optimize()
     # model.Params.Threads = 1
     """ Change parameters in a callback

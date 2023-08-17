@@ -124,7 +124,7 @@ def glasso(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, 
     
     g = G.X
     G = g.reshape(n, nb).T
-    Z = 1 - (~(abs(G) > 1e-8).any(axis=0))*1
+    Z = 1 - (~(abs(G) > 1e-5).any(axis=0))*1
     obj = model.objval
     
     return G, Z, obj

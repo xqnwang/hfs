@@ -22,7 +22,7 @@ lasso.reconcile <- function(base_forecasts, S,
                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                             residuals = NULL, fitted_values = NULL, train_data = NULL,
                             lasso = NULL, nlambda = 20,
-                            TimeLimit = 600, SearchVerbose = FALSE){
+                            TimeLimit = 0, SearchVerbose = FALSE){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
