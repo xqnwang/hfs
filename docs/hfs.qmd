@@ -804,16 +804,41 @@ rmse_calc_tourism(data_label, "lasso", scenario, horizon)
 
 # Intuitive method
 
+Let $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \text{diag}(z_i)$ is a diagonal matrix with $z_i \in \{0, 1\}$. Then $\bar{\boldsymbol{G}} = (\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}$.
+
+The problem of eatimating the whole $\boldsymbol{G}$ reduces to estimating an appropriate $\boldsymbol{A}$ and then obtaining $\bar{\boldsymbol{G}}$.
+
+Therefore, the problem can be reduced to a minimization problem as follows:
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right) + \lambda_0 \sum_{j=1}^n z_i \\
+\text { s.t. } \quad & \bar{\boldsymbol{G}} = (\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1} \\
+& \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I}
+\end{aligned}
+$$
+
+The main problem with the calculation is that we need to ensure that $(\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})$ is invertible. In Gurobi, we can formulate the problem as follows.
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{A},\bar{\boldsymbol{G}},\boldsymbol{C}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right) + \lambda_0 \sum_{j=1}^n z_i \\
+\text { s.t. } \quad & \bar{\boldsymbol{G}} = \boldsymbol{C}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1} \\
+& \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I}
+\end{aligned}
+$$
+
 # Further issues
 
 -   Parallel issue: We cannot export **reticulate** `python.builtin.module` objects from one R process to another. They are designed to only work within the same R process they're created.
--   HPC: gurobi license.
--   Simulation: include structural break.
--   Large hierarchy:
-    -   Candidate lambda sequence
+-   Results after updating the way to decide $\lambda$ sequence.
+-   WarmStart for intuitive method.
+-   Simulation: using different base models across the hierarchy.
+-   Result presentation: visualization aspect.
+-   Grouped time series.
+-   Theoretical aspects.
+-   More on large hierarchy:
     -   Sub hierarchy + Voting
--   Theoretical aspects
--   Grouped time series
 
 # References
 
