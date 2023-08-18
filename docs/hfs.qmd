@@ -579,8 +579,10 @@ $$
 For the out-of-sample based group lasso method, we ignore the unbiasedness constraint when we decide $\lambda_{\max}$. As $\boldsymbol{W}^{-1}$ is symmetric,
 
 $$
-\lambda_{\max}=\max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot cj}\right)^{\prime} \boldsymbol{W}^{-1} \left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot cj} \operatorname{vec}(\boldsymbol{G}_{\cdot j})\right)\right\|_2 / w_j
+\lambda_{\max}=\max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot cj}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j,
 $$
+
+where $cj$ is the column indices of $\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)$ corresponding to the $j$th column of $\boldsymbol{G}$.
 
 ## In-sample based method
 
@@ -620,8 +622,10 @@ $\lambda_1$ sequence: $\lambda_1 = \{0, 10^{k-3}, 10^{k-2}, 10^{k-1}, 10^{k}, 10
 For the in-sample based group lasso method,
 
 $$
-\lambda_{\max}=\max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\right)_{\cdot cj}\right)^{\prime} \left(\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})_{\cdot cj} \operatorname{vec}\left(\boldsymbol{G_{\cdot j}}^{\prime}\right)\right)\right\|_2 / w_j
+\lambda_{\max}=\max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\right)_{\cdot cj}\right)^{\prime} \operatorname{vec}(\boldsymbol{Y})\right\|_2 / w_j
 $$
+
+where $cj$ is the column indices of $(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})$ corresponding to the $j$th column of $\boldsymbol{G}$.
 
 ## Simulation results
 
@@ -806,13 +810,13 @@ rmse_calc_tourism(data_label, "lasso", scenario, horizon)
 
 Let $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \text{diag}(z_i)$ is a diagonal matrix with $z_i \in \{0, 1\}$. Then $\bar{\boldsymbol{G}} = (\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}$.
 
-The problem of eatimating the whole $\boldsymbol{G}$ reduces to estimating an appropriate $\boldsymbol{A}$ and then obtaining $\bar{\boldsymbol{G}}$.
+The problem of estimating the whole $\boldsymbol{G}$ reduces to estimating an appropriate $\boldsymbol{A}$ and then obtaining $\bar{\boldsymbol{G}}$.
 
 Therefore, the problem can be reduced to a minimization problem as follows:
 
 $$
 \begin{aligned}
-\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right) + \lambda_0 \sum_{j=1}^n z_i \\
+\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right) + \lambda_0 \sum_{j=1}^n z_i \\
 \text { s.t. } \quad & \bar{\boldsymbol{G}} = (\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1} \\
 & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I}
 \end{aligned}
@@ -823,7 +827,9 @@ The main problem with the calculation is that we need to ensure that $(\boldsymb
 $$
 \begin{aligned}
 \min _{\boldsymbol{A},\bar{\boldsymbol{G}},\boldsymbol{C}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right) + \lambda_0 \sum_{j=1}^n z_i \\
-\text { s.t. } \quad & \bar{\boldsymbol{G}} = \boldsymbol{C}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1} \\
+\text { s.t. } \quad & 
+\boldsymbol{C}(\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S}) = \boldsymbol{I} \\
+& \bar{\boldsymbol{G}} = \boldsymbol{C}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1} \\
 & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I}
 \end{aligned}
 $$
