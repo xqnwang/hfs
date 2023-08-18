@@ -123,7 +123,7 @@ lasso.reconcile <- function(base_forecasts, S,
       lambda_max <- sapply(1:n, function(j){
         w_j <- w[j]
         cj <- ((j-1)*nb + 1):(j*nb)
-        delta_loss_j <- - t(X[, cj]) %*% solve(W) %*% (fc - X[, cj] %*% as.vector(G[, j]))
+        delta_loss_j <- - t(X[, cj]) %*% solve(W) %*% fc
         return(sqrt(sum(delta_loss_j^2))/w_j)
       }) |> max()
       lambda_min <- 0.0001 * lambda_max
@@ -178,7 +178,7 @@ lasso.reconcile <- function(base_forecasts, S,
       lambda_max <- sapply(1:n, function(j){
         w_j <- w[j]
         cj <- (0:(nb-1))*n + j
-        delta_loss_j <- - 1/N * t(X[, cj]) %*% (as.vector(Y) - X[, cj] %*% as.vector(t(G[, j])))
+        delta_loss_j <- - 1/N * t(X[, cj]) %*% as.vector(Y)
         return(sqrt(sum(delta_loss_j^2))/w_j)
       }) |> max()
       lambda_min <- 0.0001 * lambda_max
