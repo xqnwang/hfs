@@ -142,7 +142,7 @@ def miqp(y, S, W, l0 = 0, l2 = 0, m = None, M = None, MIPGap = None, TimeLimit =
         
         # 3. Optimal
         """ QP MODEL """
-        qp = gp.Model('MIP', env=env) # the optimization model
+        qp = gp.Model('QP', env=env) # the optimization model
         
         """ PARAMETERS """
         # G matrix
