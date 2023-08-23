@@ -206,7 +206,7 @@ lasso.reconcile <- function(base_forecasts, S,
         return(sqrt(sum(delta_loss_j^2))/w_j)
       }) |> max()
       lambda_min <- 0.0001 * lambda_max
-      lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/nlambda-1)), 0)
+      lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/(nlambda-1))), 0)
 
       # Find the optimal lambda_1 by splitting training data
       cl <- parallel::makeCluster(workers)
@@ -249,6 +249,14 @@ lasso.reconcile <- function(base_forecasts, S,
       lambda_opt <- socp.out[[min.index]]$l1
       
       # Resolve model to get G matrix
+      if (MonARCH){
+        path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
+        setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
+      } else{
+        path <- "~/Library/r-miniconda-arm64/bin/python3.10"
+      }
+      reticulate::use_python(path, required = T)
+      reticulate::source_python("Python/eglasso.py")
       fit_opt <- eglasso(Y = train_data, Y_hat = fitted_values, S = S, l1 = lambda_opt, weight = 1, 
                          TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
       names(fit_opt) <- c("G", "Z", "obj")
