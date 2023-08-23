@@ -13,7 +13,6 @@
 #' @param nlambda Number of candidate `lambda_0` values to choose from for subset selection problem.
 #' @param m The value of the Big M for each element in G.
 #' @param MIPVerbose Logical. If true, enable console logging of MIP.
-#' @param SearchVerbose Logical. If true, a progress bar will be displayed when searching optimal `lambda_0`.
 #' 
 #' @import ROI
 #' @import future
@@ -26,7 +25,7 @@ intuitive.reconcile <- function(base_forecasts, S,
                                 subset = FALSE,
                                 lambda_0 = NULL, nlambda = 20,
                                 m = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
-                                TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE,
+                                TimeLimit = 600, MIPVerbose = FALSE,
                                 MonARCH = FALSE, workers = 4){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
@@ -169,7 +168,7 @@ intuitive.reconcile <- function(base_forecasts, S,
       #   sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
       #   fit$sse <- sse
       #   return(fit)
-      # }, .progress = SearchVerbose)
+      # })
       
       sse_summary <- sapply(mip.out, function(l) c(l$l0, sum(as.vector(l$Z)), l$sse, l$obj, l$gap, l$opt)) |> 
         t() |> 

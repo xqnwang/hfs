@@ -9,14 +9,6 @@ data_label <- "simulation"
 nlambda <- 20
 MonARCH <- TRUE
 workers <- parallel::detectCores()
-if (MonARCH){
-  path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
-  setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
-} else{
-  path <- "~/Library/r-miniconda-arm64/bin/python3.10"
-}
-reticulate::use_python(path, required = T)
-reticulate::source_python("Python/intuitive.py")
 source("R/intuitive_reconcile.R")
 
 # Utility function
@@ -24,7 +16,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                                method, method_name, nlambda,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
                                MIPFocus, Cuts, TimeLimit,
-                               MIPVerbose, SearchVerbose){
+                               MIPVerbose, MonARCH, workers){
   
   n <- NCOL(fits)
   fitted_values <- fits[fits$Index == index, -n] |> as.matrix()
@@ -39,18 +31,19 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
   }
   
   Base <- list(y_tilde = base_forecasts, G = NA, z = NA, lambda_report = NA)
-  BU <- intuitive.reconcile(base_forecasts = base_forecasts, S = S, method = "bu")
+  BU <- intuitive.reconcile(base_forecasts = base_forecasts, S = S, method = "bu",
+                            MonARCH = MonARCH, workers = workers)
   for(i in 1:length(method)){
     assign(method_name[i], 
            intuitive.reconcile(base_forecasts = base_forecasts, S = S, method = method[i], 
-                               residuals = residuals))
+                               residuals = residuals, MonARCH = MonARCH, workers = workers))
     assign(paste0(method_name[i], "_intuitive"), 
            intuitive.reconcile(base_forecasts = base_forecasts, S = S,
                                method = method[i], residuals = residuals,
                                fitted_values = fitted_values, train_data = train_data,
                                subset = TRUE, nlambda = nlambda,
                                MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
-                               MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose))
+                               MIPVerbose = MIPVerbose, MonARCH = MonARCH, workers = workers))
     print(paste("===", method_name[i], "finished!"))
   }
   
@@ -67,7 +60,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
 if (data_label == "simulation"){
-  MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = FALSE
+  MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 }
@@ -83,7 +76,7 @@ if (data_label == "simulation"){
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 if (data_label == "tourism"){
-  MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = TRUE
+  MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
 }
@@ -104,8 +97,7 @@ reconsf <- indices |>
                                          method, method_name, nlambda,
                                          deteriorate = FALSE, 
                                          MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
-                                         MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
-             .progress = !SearchVerbose)
+                                         MIPVerbose = MIPVerbose, MonARCH = MonARCH, workers = workers))
 saveRDS(reconsf, file = paste0("data_new/", data_label, "_intuitive_reconsf.rds"))
 rm(reconsf)
 
@@ -124,8 +116,7 @@ if (data_label == "simulation"){
                                              deteriorate_series = deteriorate_series[i],
                                              deteriorate_rate = deteriorate_rate[i], 
                                              MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
-                                             MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
-                 .progress = !SearchVerbose)
+                                             MIPVerbose = MIPVerbose, MonARCH = MonARCH, workers = workers))
     saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_intuitive_reconsf_", scenario[i], ".rds"))
     rm(reconsf_s)
     print(paste("Scenario", i, "finished!"))
