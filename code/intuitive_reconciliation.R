@@ -2,9 +2,13 @@ library(tidyverse)
 library(magrittr)
 library(future)
 library(forecast)
+library(doParallel)
+library(foreach)
+library(parallel)
 
 # Setup
-data_label <- "simulation"
+data_label <- commandArgs(trailingOnly = TRUE)
+# data_label <- "simulation"
 # data_label <- "tourism"
 nlambda <- 20
 MonARCH <- TRUE

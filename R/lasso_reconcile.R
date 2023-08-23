@@ -21,7 +21,7 @@ lasso.reconcile <- function(base_forecasts, S,
                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                             residuals = NULL, fitted_values = NULL, train_data = NULL,
                             lasso = NULL, nlambda = 20,
-                            TimeLimit = 0){
+                            TimeLimit = 0, MonARCH = FALSE, workers = 4){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
@@ -128,7 +128,18 @@ lasso.reconcile <- function(base_forecasts, S,
       lambda_min <- 0.0001 * lambda_max
       lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/(nlambda-1))), 0)
       
-      socp.out <- purrr::map(lambda, function(l1){
+      cl <- parallel::makeCluster(workers)
+      doParallel::registerDoParallel(cl)
+      socp.out <- foreach::foreach(l1 = lambda) %dopar% {
+        if (MonARCH){
+          path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
+          setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
+        } else{
+          path <- "~/Library/r-miniconda-arm64/bin/python3.10"
+        }
+        reticulate::use_python(path, required = T)
+        reticulate::source_python("Python/glasso.py")
+        
         if (l1 == 0){
           fit <- list(l1 = l1, G = G, Z = rep(1, n), obj = obj_init)
         } else{
@@ -138,8 +149,22 @@ lasso.reconcile <- function(base_forecasts, S,
         }
         sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
-        fit
-      })
+        return(fit)
+      }
+      stopCluster(cl)
+      
+      # socp.out <- purrr::map(lambda, function(l1){
+      #   if (l1 == 0){
+      #     fit <- list(l1 = l1, G = G, Z = rep(1, n), obj = obj_init)
+      #   } else{
+      #     fit <- glasso(y = fc, S = S, W = W, l1 = l1, weight = 1, unbiased = 1, TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
+      #     names(fit) <- c("G", "Z", "obj")
+      #     fit <- append(list(l1 = l1), fit)
+      #   }
+      #   sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
+      #   fit$sse <- sse
+      #   fit
+      # })
       
       sse_summary <- sapply(socp.out, function(l) c(l$l1, sum(as.vector(l$Z)), l$sse, l$obj)) |> 
         t() |> 
@@ -184,15 +209,37 @@ lasso.reconcile <- function(base_forecasts, S,
       lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/nlambda-1)), 0)
 
       # Find the optimal lambda_1 by splitting training data
-      socp.out <- purrr::map(lambda, function(l1){
+      cl <- parallel::makeCluster(workers)
+      doParallel::registerDoParallel(cl)
+      socp.out <- foreach::foreach(l1 = lambda) %dopar% {
+        if (MonARCH){
+          path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
+          setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
+        } else{
+          path <- "~/Library/r-miniconda-arm64/bin/python3.10"
+        }
+        reticulate::use_python(path, required = T)
+        reticulate::source_python("Python/eglasso.py")
+        
         fit <- eglasso(Y = Y, Y_hat = Y_hat, S = S, l1 = l1, weight = 1, 
                        TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
         names(fit) <- c("G", "Z", "obj")
         fit <- append(list(l1 = l1), fit)
         sse <- sum(stats::na.omit(tail(train_data, floor(N/10)) - tail(fitted_values, floor(N/10)) %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
-        fit
-      })
+        return(fit)
+      }
+      stopCluster(cl)
+      
+      # socp.out <- purrr::map(lambda, function(l1){
+      #   fit <- eglasso(Y = Y, Y_hat = Y_hat, S = S, l1 = l1, weight = 1, 
+      #                  TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
+      #   names(fit) <- c("G", "Z", "obj")
+      #   fit <- append(list(l1 = l1), fit)
+      #   sse <- sum(stats::na.omit(tail(train_data, floor(N/10)) - tail(fitted_values, floor(N/10)) %*% t(fit$G) %*% t(S))^2)
+      #   fit$sse <- sse
+      #   fit
+      # })
       
       sse_summary <- sapply(socp.out, function(l) c(l$l1, sum(as.vector(l$Z)), l$sse, l$obj)) |> 
         t() |> 

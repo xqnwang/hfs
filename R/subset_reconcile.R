@@ -28,7 +28,8 @@ subset.reconcile <- function(base_forecasts, S,
                              subset = FALSE, ridge = FALSE,
                              lambda_0 = NULL, lambda_2 = NULL, nlambda = 20,
                              m = NULL, M = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
-                             TimeLimit = 600, MIPVerbose = FALSE){
+                             TimeLimit = 600, MIPVerbose = FALSE,
+                             MonARCH = FALSE, workers = 4){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
@@ -138,7 +139,20 @@ subset.reconcile <- function(base_forecasts, S,
       }
       
       lambda <- expand.grid(l0 = lambda_0, l2 = lambda_2)
-      mip.out <- purrr::pmap(lambda, function(l0, l2){
+      cl <- parallel::makeCluster(workers)
+      doParallel::registerDoParallel(cl)
+      mip.out <- foreach::foreach(i = 1:NROW(lambda)) %dopar% {
+        l0 <- lambda[i, 1]
+        l2 <- lambda[i, 2]
+        if (MonARCH){
+          path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
+          setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
+        } else{
+          path <- "~/Library/r-miniconda-arm64/bin/python3.10"
+        }
+        reticulate::use_python(path, required = T)
+        reticulate::source_python("Python/subset.py")
+        
         if (l0 == 0 & l2 == 0){
           fit <- list(l0 = l0, l2 = l2, G = G, Z = rep(1, n), obj = obj_init, gap = 0, opt = 1)
         } else{
@@ -151,8 +165,25 @@ subset.reconcile <- function(base_forecasts, S,
         }
         sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
-        fit
-      })
+        return(fit)
+      }
+      stopCluster(cl)
+      
+      # mip.out <- purrr::pmap(lambda, function(l0, l2){
+      #   if (l0 == 0 & l2 == 0){
+      #     fit <- list(l0 = l0, l2 = l2, G = G, Z = rep(1, n), obj = obj_init, gap = 0, opt = 1)
+      #   } else{
+      #     fit <- miqp(fc, S, W, l0, l2, 
+      #                 m, M, MIPGap, TimeLimit, 
+      #                 LogToConsole, OutputFlag, 
+      #                 WarmStart, MIPFocus, Cuts)
+      #     names(fit) <- c("G", "Z", "obj", "gap", "opt")
+      #     fit <- append(list(l0 = l0, l2 = l2), fit)
+      #   }
+      #   sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
+      #   fit$sse <- sse
+      #   fit
+      # })
 
       sse_summary <- sapply(mip.out, function(l) c(l$l0, l$l2, sum(as.vector(l$Z)), l$sse, l$obj, l$gap, l$opt)) |> 
         t() |> 
