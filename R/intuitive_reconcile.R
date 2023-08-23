@@ -26,7 +26,8 @@ intuitive.reconcile <- function(base_forecasts, S,
                                 subset = FALSE,
                                 lambda_0 = NULL, nlambda = 20,
                                 m = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
-                                TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE){
+                                TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE,
+                                MonARCH = FALSE, workers = 4){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
@@ -126,7 +127,18 @@ intuitive.reconcile <- function(base_forecasts, S,
         OutputFlag = 0
       }
       
-      mip.out <- purrr::map(lambda_0, function(l0){
+      cl <- parallel::makeCluster(workers)
+      doParallel::registerDoParallel(cl)
+      mip.out <- foreach::foreach(l0 = lambda_0) %dopar% {
+        if (MonARCH){
+          path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
+          setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
+        } else{
+          path <- "~/Library/r-miniconda-arm64/bin/python3.10"
+        }
+        reticulate::use_python(path, required = T)
+        reticulate::source_python("Python/intuitive.py")
+        
         if (l0 == 0){
           fit <- list(l0 = l0, G = G, Z = rep(1, n), obj = obj_init, gap = 0, opt = 1)
         } else{
@@ -140,7 +152,24 @@ intuitive.reconcile <- function(base_forecasts, S,
         sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         return(fit)
-      }, .progress = SearchVerbose)
+      }
+      stopCluster(cl)
+      
+      # mip.out <- purrr::map(lambda_0, function(l0){
+      #   if (l0 == 0){
+      #     fit <- list(l0 = l0, G = G, Z = rep(1, n), obj = obj_init, gap = 0, opt = 1)
+      #   } else{
+      #     fit <- miqp_AS(fc, S, W, l0,
+      #                    m, MIPGap, TimeLimit, 
+      #                    LogToConsole, OutputFlag, 
+      #                    WarmStart, MIPFocus, Cuts)
+      #     names(fit) <- c("G", "Z", "obj", "gap", "opt")
+      #     fit <- append(list(l0 = l0), fit)
+      #   }
+      #   sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
+      #   fit$sse <- sse
+      #   return(fit)
+      # }, .progress = SearchVerbose)
       
       sse_summary <- sapply(mip.out, function(l) c(l$l0, sum(as.vector(l$Z)), l$sse, l$obj, l$gap, l$opt)) |> 
         t() |> 
