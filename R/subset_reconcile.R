@@ -115,9 +115,9 @@ subset.reconcile <- function(base_forecasts, S,
       
       # Candidate lambda_0
       if (is.null(lambda_0)){
-        lambda_0_max <- obj_init
+        lambda_0_max <- obj_init/nb
         lambda_0_min <- 0.0001 * lambda_0_max
-        lambda_0 <- c(sapply(0:(nlambda-1), function(j) lambda_0_max*(lambda_0_min/lambda_0_max)^(j/nlambda-1)), 0)
+        lambda_0 <- c(sapply(0:(nlambda-1), function(j) lambda_0_max*(lambda_0_min/lambda_0_max)^(j/(nlambda-1))), 0)
       }
       
       # Candidate lambda_2

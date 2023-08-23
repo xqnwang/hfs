@@ -127,7 +127,7 @@ lasso.reconcile <- function(base_forecasts, S,
         return(sqrt(sum(delta_loss_j^2))/w_j)
       }) |> max()
       lambda_min <- 0.0001 * lambda_max
-      lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/nlambda-1)), 0)
+      lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/(nlambda-1))), 0)
       
       socp.out <- purrr::map(lambda, function(l1){
         if (l1 == 0){
