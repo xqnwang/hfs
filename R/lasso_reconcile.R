@@ -11,7 +11,6 @@
 #' @param lasso Data to use. Valid option are `NULL` no lasso, `Lasso` for out-of-sample based lasso and `ELasso` for in-sample based lasso.
 #' @param nlambda Number of candidate `lambda_1` values.
 #' @param nfolds Number of folds in cross-validation
-#' @param SearchVerbose Logical. If true, a progress bar will be displayed when searching optimal combination of `lambda_0` and `lambda_2`.
 #' 
 #' @import future
 #' @import gglasso
@@ -22,7 +21,7 @@ lasso.reconcile <- function(base_forecasts, S,
                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
                             residuals = NULL, fitted_values = NULL, train_data = NULL,
                             lasso = NULL, nlambda = 20,
-                            TimeLimit = 0, SearchVerbose = FALSE){
+                            TimeLimit = 0){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
@@ -140,7 +139,7 @@ lasso.reconcile <- function(base_forecasts, S,
         sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         fit
-      }, .progress = SearchVerbose)
+      })
       
       sse_summary <- sapply(socp.out, function(l) c(l$l1, sum(as.vector(l$Z)), l$sse, l$obj)) |> 
         t() |> 
@@ -193,7 +192,7 @@ lasso.reconcile <- function(base_forecasts, S,
         sse <- sum(stats::na.omit(tail(train_data, floor(N/10)) - tail(fitted_values, floor(N/10)) %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         fit
-      }, .progress = SearchVerbose)
+      })
       
       sse_summary <- sapply(socp.out, function(l) c(l$l1, sum(as.vector(l$Z)), l$sse, l$obj)) |> 
         t() |> 

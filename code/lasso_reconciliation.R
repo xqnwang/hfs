@@ -23,8 +23,7 @@ source("R/lasso_reconcile.R")
 # Utility function
 reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                                method, method_name, nlambda,
-                               deteriorate = FALSE, deteriorate_series, deteriorate_rate,
-                               SearchVerbose){
+                               deteriorate = FALSE, deteriorate_series, deteriorate_rate){
   
   n <- NCOL(fits)
   fitted_values <- fits[fits$Index == index, -n] |> as.matrix()
@@ -48,14 +47,12 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
            lasso.reconcile(base_forecasts = base_forecasts, S = S,
                            method = method[i], residuals = residuals,
                            fitted_values = fitted_values, train_data = train_data,
-                           lasso = "Lasso", nlambda = nlambda,
-                           SearchVerbose = SearchVerbose))
+                           lasso = "Lasso", nlambda = nlambda))
   }
   ELasso <- lasso.reconcile(base_forecasts = base_forecasts, S = S,
                             method = "ols", residuals = residuals,
                             fitted_values = fitted_values, train_data = train_data,
-                            lasso = "ELasso", nlambda = nlambda,
-                            SearchVerbose = SearchVerbose)
+                            lasso = "ELasso", nlambda = nlambda)
   mget(c("Base", "BU", method_name, paste0(method_name, "_Lasso"), "ELasso"))
 }
 
@@ -69,7 +66,6 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
 if (data_label == "simulation"){
-  SearchVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 }
@@ -85,7 +81,6 @@ if (data_label == "simulation"){
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 if (data_label == "tourism"){
-  SearchVerbose = TRUE
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
 }
@@ -103,9 +98,7 @@ indices <- unique(fits$Index)
 #################################################
 reconsf <- indices |>
   purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
-                                         method, method_name, nlambda,
-                                         SearchVerbose = SearchVerbose),
-          .progress = !SearchVerbose)
+                                         method, method_name, nlambda))
 saveRDS(reconsf, file = paste0("data_new/", data_label, "_lasso_reconsf.rds"))
 
 #################################################
@@ -121,10 +114,7 @@ if (data_label == "simulation"){
                                              method, method_name, nlambda,
                                              deteriorate = TRUE, 
                                              deteriorate_series = deteriorate_series[i],
-                                             deteriorate_rate = deteriorate_rate[i], 
-                                             SearchVerbose),
-                 .progress = !SearchVerbose
-      )
+                                             deteriorate_rate = deteriorate_rate[i]))
     saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_lasso_reconsf_", scenario[i], ".rds"))
     rm(reconsf_s)
     print(paste0("Scenario s", i, " finished!"))

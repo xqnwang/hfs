@@ -16,7 +16,6 @@
 #' @param M The value of the Big M for sum of absolute values of each column in G.
 #' @param m The value of the Big M for each element in G.
 #' @param MIPVerbose Logical. If true, enable console logging of MIP.
-#' @param SearchVerbose Logical. If true, a progress bar will be displayed when searching optimal combination of `lambda_0` and `lambda_2`.
 #' 
 #' @import ROI
 #' @import future
@@ -29,7 +28,7 @@ subset.reconcile <- function(base_forecasts, S,
                              subset = FALSE, ridge = FALSE,
                              lambda_0 = NULL, lambda_2 = NULL, nlambda = 20,
                              m = NULL, M = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
-                             TimeLimit = 600, MIPVerbose = FALSE, SearchVerbose = FALSE){
+                             TimeLimit = 600, MIPVerbose = FALSE){
   # Dimension info
   n <- NROW(S); nb <- NCOL(S)
   if (is.vector(base_forecasts)){
@@ -153,7 +152,7 @@ subset.reconcile <- function(base_forecasts, S,
         sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         fit
-      }, .progress = SearchVerbose)
+      })
 
       sse_summary <- sapply(mip.out, function(l) c(l$l0, l$l2, sum(as.vector(l$Z)), l$sse, l$obj, l$gap, l$opt)) |> 
         t() |> 

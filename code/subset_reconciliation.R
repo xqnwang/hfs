@@ -24,7 +24,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                                method, method_name, nlambda,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
                                MIPFocus, Cuts, TimeLimit,
-                               MIPVerbose, SearchVerbose){
+                               MIPVerbose){
   
   n <- NCOL(fits)
   fitted_values <- fits[fits$Index == index, -n] |> as.matrix()
@@ -50,7 +50,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                      fitted_values = fitted_values, train_data = train_data,
                      subset = TRUE, ridge = TRUE, nlambda = nlambda,
                      MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
-                     MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose))
+                     MIPVerbose = MIPVerbose))
     # print(paste("===", method_name[i], "finished!"))
   }
   
@@ -67,7 +67,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
 if (data_label == "simulation"){
-  MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = FALSE
+  MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 }
@@ -83,7 +83,7 @@ if (data_label == "simulation"){
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 if (data_label == "tourism"){
-  MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE; SearchVerbose = TRUE
+  MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
 }
@@ -104,8 +104,7 @@ reconsf <- indices |>
                                          method, method_name, nlambda,
                                          deteriorate = FALSE, 
                                          MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
-                                         MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
-          .progress = !SearchVerbose)
+                                         MIPVerbose = MIPVerbose))
 saveRDS(reconsf, file = paste0("data_new/", data_label, "_reconsf.rds"))
 rm(reconsf)
 
@@ -124,8 +123,7 @@ if (data_label == "simulation"){
                                              deteriorate_series = deteriorate_series[i],
                                              deteriorate_rate = deteriorate_rate[i], 
                                              MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
-                                             MIPVerbose = MIPVerbose, SearchVerbose = SearchVerbose),
-                 .progress = !SearchVerbose)
+                                             MIPVerbose = MIPVerbose))
     saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_reconsf_", scenario[i], ".rds"))
     rm(reconsf_s)
     # print(paste("i =", i, "finished!"))
