@@ -876,13 +876,10 @@ According to the unbiasedness constraint, we have
 
 # Further issues
 
--   Parallel issue: We cannot export **reticulate** `python.builtin.module` objects from one R process to another. They are designed to only work within the same R process they're created.
--   Results after updating the way to decide $\lambda$ sequence.
--   WarmStart for intuitive method.
+-   Update all the results after using a new way to decide $\lambda$ sequence.
 -   Simulation: using different base models across the hierarchy.
 -   Result presentation: visualization aspect.
 -   Grouped time series.
--   Theoretical aspects.
 -   More on large hierarchy:
     -   Sub hierarchy + Voting
 
