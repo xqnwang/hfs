@@ -808,7 +808,7 @@ rmse_calc_tourism(data_label, "lasso", scenario, horizon)
 
 # Intuitive method
 
-Let $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \text{diag}(z_i)$ is a diagonal matrix with $z_i \in \{0, 1\}$. Then $\bar{\boldsymbol{G}} = (\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}$.
+Let $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \text{diag}(z_i)$ is a **diagonal matrix** with $z_i \in \{0, 1\}$. Then $\bar{\boldsymbol{G}} = (\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1}$.
 
 The problem of estimating the whole $\boldsymbol{G}$ reduces to estimating an appropriate $\boldsymbol{A}$ and then obtaining $\bar{\boldsymbol{G}}$.
 
@@ -833,6 +833,46 @@ $$
 & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I}
 \end{aligned}
 $$
+
+To be able to use Gurobi, we rewrite the problem (constraints) as follows.
+
+$$
+\begin{aligned}
+\min _{\boldsymbol{A},\bar{\boldsymbol{G}},\boldsymbol{C}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\bar{\boldsymbol{G}})\right) + \lambda_0 \sum_{j=1}^n z_i \\
+\text { s.t. } \quad & 
+\bar{\boldsymbol{G}}\boldsymbol{A}\boldsymbol{S} = \boldsymbol{I} \\
+& \bar{\boldsymbol{G}} = \boldsymbol{C}\boldsymbol{S}'\boldsymbol{A}'\boldsymbol{W}^{-1} \\
+& \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I}
+\end{aligned}
+$$
+
+# More on the unbiasedness constraint
+
+The unbiasedness constraint is
+
+$$
+\boldsymbol{G}\boldsymbol{S} = \boldsymbol{I}
+$$
+
+and our focus is to estimate $\boldsymbol{G}$ by minimizing a loss function with several constraints.
+
+According to the unbiasedness constraint, we have
+
+1.  **Rank --- Number of non-zero columns**
+
+    Conclusion: $\operatorname{rank}(\boldsymbol{G}) \geq n_b$ which means that the **number** of non-zero columns of the estimated $\boldsymbol{G}$ should be at least $n_b$.
+
+    Proof: $\min (\operatorname{rank}(\boldsymbol{G}), \operatorname{rank}(S)) \geq \operatorname{rank}(\boldsymbol{I})=n_b$
+
+2.  **Hierarchical structure --- Location of non-zero columns**
+
+    Let $\boldsymbol{G}_{\cdot \mathbb{S}} \in \mathbb{R}^{n_b \times |\mathbb{S}|}$ denote the submatrix of $\boldsymbol{G}$ whose columns are indexed by a set $\mathbb{S}$ (and when $\mathbb{S} = \{j\}$, we simply use $\boldsymbol{G}_{j}$), and $\boldsymbol{G}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times n}$ denote the submatrix of $\boldsymbol{G}$ whose rows are indexed by a set $\mathbb{S}$ (and when $\mathbb{S} = \{i\}$, we simply use $\boldsymbol{G}_{i\cdot}$),
+
+    Conclusion: If the set $\mathbb{S}$ involves the indices of non-zero columns of the estimated $\boldsymbol{G}$, then $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$ which means that we should make sure that the whole hierarchy is still **revertible** after removing the nodes corresponding to zero columns of $\boldsymbol{G}$.
+
+    Proof: If the set $\mathbb{S}$ involves the indices of non-zero columns of the estimated $\boldsymbol{G}$, then $\boldsymbol{G}\boldsymbol{S} = \boldsymbol{G}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot}$ and $\min (\operatorname{rank}\left(\boldsymbol{G}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I})=n_b$.
+
+    Recall that $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b$ as $\boldsymbol{S}$ has $n_b$ columns. Hence, $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$.
 
 # Further issues
 
