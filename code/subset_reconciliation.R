@@ -102,7 +102,7 @@ reconsf <- indices |>
                                          deteriorate = FALSE, 
                                          MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                                          MIPVerbose = MIPVerbose, MonARCH = MonARCH, workers = workers))
-saveRDS(reconsf, file = paste0("data_new/", data_label, "_reconsf.rds"))
+saveRDS(reconsf, file = paste0("data_new/", data_label, "_subset_reconsf.rds"))
 rm(reconsf)
 
 #################################################
@@ -121,7 +121,7 @@ if (data_label == "simulation"){
                                              deteriorate_rate = deteriorate_rate[i], 
                                              MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                                              MIPVerbose = MIPVerbose, MonARCH = MonARCH, workers = workers))
-    saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_reconsf_", scenario[i], ".rds"))
+    saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_subset_reconsf_", scenario[i], ".rds"))
     rm(reconsf_s)
     print(paste("Scenario", i, "finished!"))
   }
