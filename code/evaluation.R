@@ -4,6 +4,13 @@ library(future)
 library(forecast)
 library(latex2exp)
 
+# Setup
+input <- commandArgs(trailingOnly = TRUE)
+
+method_label <- input[1] # "subset", "lasso", "intuitive"
+data_label <- input[2] # "simulation", "tourism"
+scenario <- input[3] # NULL, "s1", "s2", "s3"
+
 # Utility functions
 extract_element <- function(data, index, method, element){
   out <- data[[index]][[method]][[element]]
@@ -64,24 +71,31 @@ calc_mase <- function(fc, train, test, freq, h){
 ## Training set:  1978Q1-2018Q4
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
-data_label <- "simulation"
-freq <- 4
-scenario <- NULL
-if (is.null(scenario)){
-  reconsf <- readRDS(file = paste0("data_new/", data_label, "_reconsf.rds"))
-} else{
-  reconsf <- readRDS(file = paste0("data_new/", data_label, "_reconsf_", scenario, ".rds"))
+if (data_label == "simulation"){
+  # Import results
+  freq <- 4
+  if (is.null(scenario)){
+    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf.rds"))
+  } else{
+    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf_", scenario, ".rds"))
+  }
+  train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+  test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+  method <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+  
+  # Structure information used to calculate RMSE across levels
+  top <- 1
+  middle <- 2:3
+  bottom <- 4:7
+  avg <- 1:7
+  horizon <- c(1, 4, 8, 16)
+  
+  # Reconciliation methods considered
+  methods <- c("Base", "BU", 
+               sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso") methods <- c(methods, "Elasso")
+  reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
-train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
-test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
-method <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
-
-# Structure information used to calculate RMSE across levels
-top <- 1
-middle <- 2:3
-bottom <- 4:7
-avg <- 1:7
-horizon <- c(1, 4, 8, 16)
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
@@ -93,27 +107,33 @@ horizon <- c(1, 4, 8, 16)
 ## Training set:  1998Jan-2016Dec
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
-data_label <- "tourism"
-freq <- 12
-scenario <- NULL
-reconsf <- readRDS(file = paste0("data_new/", data_label, "_reconsf.rds"))
-train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
-test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
-method <- c("OLS", "WLSs", "WLSv", "MinTs")
-
-# Structure information used to calculate RMSE across levels
-top <- 1
-state <- 2:8
-zone <- 9:35
-region <- 36:111
-avg <- 1:111
-horizon <- c(1, 4, 8, 12)
+if (data_label == "tourism"){
+  # Import results
+  freq <- 12
+  scenario <- NULL
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf.rds"))
+  train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+  test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+  method <- c("OLS", "WLSs", "WLSv", "MinTs")
+  
+  # Structure information used to calculate RMSE across levels
+  top <- 1
+  state <- 2:8
+  zone <- 9:35
+  region <- 36:111
+  avg <- 1:111
+  horizon <- c(1, 4, 8, 12)
+  
+  # Reconciliation methods considered
+  methods <- c("Base", "BU", 
+               sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso") methods <- c(methods, "Elasso")
+  reconcile_methods <- grep(method_label, methods, value = TRUE)
+}
 
 #################################################
 # Extract reconciled forecasts
 #################################################
-methods <- c("Base", "BU", method, paste0(method, "_subset"))
-subset_methods <- paste0(method, "_subset")
 indices <- unique(test$Index)
 
 for(method in methods) { 
@@ -129,75 +149,78 @@ for(method in methods) {
 # Calculate RMSE & MASE values
 #################################################
 for(h in horizon){
-  out <- bind_rows(Base = calc_rmse(base, test, h = h),
-                   BU = calc_rmse(bu, test, h = h),
-                   OLS = calc_rmse(ols, test, h = h),
-                   OLS_subset = calc_rmse(ols_subset, test, h = h),
-                   WLSs = calc_rmse(wlss, test, h = h),
-                   WLSs_subset = calc_rmse(wlss_subset, test, h = h),
-                   WLSv = calc_rmse(wlsv, test, h = h),
-                   WLSv_subset = calc_rmse(wlsv_subset, test, h = h),
-                   MinT = calc_rmse(mint, test, h = h),
-                   MinT_subset = calc_rmse(mint_subset, test, h = h),
-                   MinTs = calc_rmse(mints, test, h = h),
-                   MinTs_subset = calc_rmse(mints_subset, test, h = h),
-                   .id = "Method") |>
-    rowwise() |>
-    mutate(Top = mean(c_across(top + 1)),
-           # State = mean(c_across(state + 1)),
-           # Zone = mean(c_across(zone + 1)),
-           # Region = mean(c_across(region + 1)),
-           Middle = mean(c_across((middle + 1))),
-           Bottom = mean(c_across((bottom + 1))),
-           Average = mean(c_across(avg + 1))) |>
-    select(Method, Top, Middle, Bottom, Average)
-    # select(Method, Top, State, Zone, Region, Average)
+  rmse <- lapply(methods, function(lmethod){
+    assign(lmethod, calc_rmse(fc = get(tolower(lmethod)), test = test, h = h))
+  })
+  names(rmse) <- methods
+  
+  if (data_label == "simulation"){
+    out <- bind_rows(rmse, .id = "Method") |>
+      rowwise() |>
+      mutate(Top = mean(c_across(top + 1)),
+             Middle = mean(c_across((middle + 1))),
+             Bottom = mean(c_across((bottom + 1))),
+             Average = mean(c_across(avg + 1))) |>
+      select(Method, Top, Middle, Bottom, Average)
+  } else if (data_label == "tourism"){
+    out <- bind_rows(rmse, .id = "Method") |>
+      rowwise() |>
+      mutate(Top = mean(c_across(top + 1)),
+             State = mean(c_across(state + 1)),
+             Zone = mean(c_across(zone + 1)),
+             Region = mean(c_across(region + 1)),
+             Average = mean(c_across(avg + 1))) |>
+      select(Method, Top, State, Zone, Region, Average)
+  }
   assign(paste0("rmse_h", h), out)
-  # if (is.null(scenario)){
-  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_rmse_", h, ".rds"))
-  # } else{
-  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_", scenario, "_rmse_", h, ".rds"))
-  # }
+  
+  if (is.null(scenario)){
+    saveRDS(out, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_rmse_", h, ".rds"))
+  } else{
+    saveRDS(out, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_", scenario, "_rmse_", h, ".rds"))
+  }
 }
 
 for(h in horizon){
-  out <- bind_rows(Base = calc_mase(base, train, test, freq, h = h),
-                   BU = calc_mase(bu, train, test, freq, h = h),
-                   OLS = calc_mase(ols, train, test, freq, h = h),
-                   OLS_subset = calc_mase(ols_subset, train, test, freq, h = h),
-                   WLSs = calc_mase(wlss, train, test, freq, h = h),
-                   WLSs_subset = calc_mase(wlss_subset, train, test, freq, h = h),
-                   WLSv = calc_mase(wlsv, train, test, freq, h = h),
-                   WLSv_subset = calc_mase(wlsv_subset, train, test, freq, h = h),
-                   MinT = calc_mase(mint, train, test, freq, h = h),
-                   MinT_subset = calc_mase(mint_subset, train, test, freq, h = h),
-                   MinTs = calc_mase(mints, train, test, freq, h = h),
-                   MinTs_subset = calc_mase(mints_subset, train, test, freq, h = h),
-                   .id = "Method") |>
-    rowwise() |>
-    mutate(Top = mean(c_across(top + 1)),
-           # State = mean(c_across(state + 1)),
-           # Zone = mean(c_across(zone + 1)),
-           # Region = mean(c_across(region + 1)),
-           Middle = mean(c_across((middle + 1))),
-           Bottom = mean(c_across((bottom + 1))),
-           Average = mean(c_across(avg + 1))) |>
-    select(Method, Top, Middle, Bottom, Average)
-    # select(Method, Top, State, Zone, Region, Average)
+  mase <- lapply(methods, function(lmethod){
+    assign(lmethod, calc_mase(fc = get(tolower(lmethod)), 
+                              train = train, test = test, 
+                              freq = freq, h = h))
+  })
+  names(mase) <- methods
+  
+  if (data_label == "simulation"){
+    out <- bind_rows(mase, .id = "Method") |>
+      rowwise() |>
+      mutate(Top = mean(c_across(top + 1)),
+             Middle = mean(c_across((middle + 1))),
+             Bottom = mean(c_across((bottom + 1))),
+             Average = mean(c_across(avg + 1))) |>
+      select(Method, Top, Middle, Bottom, Average)
+  } else if (data_label == "tourism"){
+    out <- bind_rows(mase, .id = "Method") |>
+      rowwise() |>
+      mutate(Top = mean(c_across(top + 1)),
+             State = mean(c_across(state + 1)),
+             Zone = mean(c_across(zone + 1)),
+             Region = mean(c_across(region + 1)),
+             Average = mean(c_across(avg + 1))) |>
+      select(Method, Top, State, Zone, Region, Average)
+  }
   assign(paste0("mase_h", h), out)
-  # if (is.null(scenario)){
-  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_mase_", h, ".rds"))
-  # } else{
-  #   saveRDS(out, file = paste0("data_new/", data_label, "_reconsf_", scenario, "_mase_", h, ".rds"))
-  # }
+  
+  if (is.null(scenario)){
+    saveRDS(out, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_mase_", h, ".rds"))
+  } else{
+    saveRDS(out, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_", scenario, "_mase_", h, ".rds"))
+  }
 }
-
 
 #################################################
 # Extract z
 #################################################
 z_summary <- NULL
-for(method in subset_methods) { 
+for(method in reconcile_methods) { 
   out <- indices |> 
     purrr::map(\(index) 
                extract_element(data = reconsf, index = index, 
@@ -211,9 +234,9 @@ for(method in subset_methods) {
 series_name <- c(colnames(test), "Method")
 colnames(z_summary) <- series_name
 if (is.null(scenario)){
-  saveRDS(z_summary, file = paste0("data_new/", data_label, "_reconsf_z_summary.rds"))
+  saveRDS(z_summary, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_z_summary.rds"))
 } else{
-  saveRDS(z_summary, file = paste0("data_new/", data_label, "_reconsf_", scenario, "_z_summary.rds"))
+  saveRDS(z_summary, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_", scenario, "_z_summary.rds"))
 }
 
 z_summary |>
@@ -231,34 +254,4 @@ z_summary |>
        x = "",
        y= "")
 
-#################################################
-# Extract lambda_report
-#################################################
-lambda_summary <- NULL
-for(method in subset_methods) { 
-  out <- indices |> 
-    purrr::map(\(index) 
-               extract_element(data = reconsf, index = index, 
-                               method = method, element = "lambda_report")) %>% 
-    do.call(rbind, .)
-  out <- cbind(out, Method = method)
-  lambda_summary <- rbind(lambda_summary, out)
-}
-if (is.null(scenario)){
-  saveRDS(lambda_summary, file = paste0("data/", data_label, "_reconsf_lambda_summary.rds"))
-} else{
-  saveRDS(lambda_summary, file = paste0("data/", data_label, "_reconsf_", scenario, "_lambda_summary.rds"))
-}
-
-lambda_summary |>
-  group_by(Method, Index) |>
-  summarise(sse_index = which.min(sse)) |>
-  ungroup() |>
-  group_by(Method) |>
-  ggplot(aes(x = factor(sse_index))) +
-  geom_bar(stat = "count") +
-  facet_grid(vars(Method), scales = "free_y") +
-  labs(title = TeX(r"(Frequency of being selected as the optimal $\lambda_0$)"),
-       x = TeX(r"(index of $\lambda_0$, $\lambda_{0\min} = 0$)"),
-       y= "")
 
