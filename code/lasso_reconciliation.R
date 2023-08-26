@@ -41,7 +41,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
            lasso.reconcile(base_forecasts = base_forecasts, S = S, method = method[i],
                            residuals = residuals, lasso = NULL,
                            MonARCH = MonARCH, workers = workers))
-    assign(paste0(method_name[i], "_Lasso"),
+    assign(paste0(method_name[i], "_lasso"),
            lasso.reconcile(base_forecasts = base_forecasts, S = S,
                            method = method[i], residuals = residuals,
                            fitted_values = fitted_values, train_data = train_data,
@@ -49,13 +49,13 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
                            MonARCH = MonARCH, workers = workers))
     print(paste("===", method_name[i], "finished!"))
   }
-  ELasso <- lasso.reconcile(base_forecasts = base_forecasts, S = S,
+  Elasso <- lasso.reconcile(base_forecasts = base_forecasts, S = S,
                             method = "ols", residuals = residuals,
                             fitted_values = fitted_values, train_data = train_data,
                             lasso = "ELasso", nlambda = nlambda,
                             MonARCH = MonARCH, workers = workers)
-  print(paste("=== ELasso finished!"))
-  mget(c("Base", "BU", method_name, paste0(method_name, "_Lasso"), "ELasso"))
+  print(paste("=== Elasso finished!"))
+  mget(c("Base", "BU", method_name, paste0(method_name, "_lasso"), "Elasso"))
 }
 
 #################################################
