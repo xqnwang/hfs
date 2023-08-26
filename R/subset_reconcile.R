@@ -24,7 +24,7 @@
 #' @export
 subset.reconcile <- function(base_forecasts, S, 
                              method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
-                             residuals = NULL, fitted_values = NULL, train_data = NULL,
+                             residuals = NULL, fitted_values = NULL, train_data = NULL, nvalid = NULL,
                              subset = FALSE, ridge = FALSE,
                              lambda_0 = NULL, lambda_2 = NULL, nlambda = 20,
                              m = NULL, M = NULL, MIPGap = NULL, WarmStart = 1, MIPFocus = 0, Cuts = -1,
@@ -112,10 +112,14 @@ subset.reconcile <- function(base_forecasts, S,
       if (is.null(train_data) | is.null(fitted_values)){
         stop("Training data and fitted values are required to find the optimal lambda_0")
       }
+      if (NROW(train_data) != NROW(fitted_values)){
+        stop("The dimensions of the fitted_values do not match train_data")
+      }
+      nvalid <- ifelse(is.null(nvalid), NROW(train_data), nvalid)
       
       # Candidate lambda_0
       if (is.null(lambda_0)){
-        lambda_0_max <- obj_init/nb
+        lambda_0_max <- obj_init
         lambda_0_min <- 0.0001 * lambda_0_max
         lambda_0 <- c(sapply(0:(nlambda-1), function(j) lambda_0_max*(lambda_0_min/lambda_0_max)^(j/(nlambda-1))), 0)
       }
@@ -163,7 +167,7 @@ subset.reconcile <- function(base_forecasts, S,
           names(fit) <- c("G", "Z", "obj", "gap", "opt")
           fit <- append(list(l0 = l0, l2 = l2), fit)
         }
-        sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
+        sse <- sum(stats::na.omit(tail(train_data, nvalid) - tail(fitted_values, nvalid) %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         return(fit)
       }
@@ -190,6 +194,8 @@ subset.reconcile <- function(base_forecasts, S,
         data.frame()
       names(sse_summary) <- c("lambda0", "lambda2", "k", "sse", "obj", "gap", "opt")
       min.index <- purrr::map_dbl(mip.out, function(l) l$sse) |> round(2) |> which.min()
+      lambda_opt <- c(mip.out[[min.index]]$l0, mip.out[[min.index]]$l2)
+      names(lambda_opt) <- c("l0", "l2")
       z <- mip.out[[min.index]]$Z |> as.vector()
       G <- mip.out[[min.index]]$G
     }
@@ -202,8 +208,10 @@ subset.reconcile <- function(base_forecasts, S,
   # Output
   if (subset){
     z <- z
+    lambda_opt <- lambda_opt
   } else{
     z <- NA
+    lambda_opt <- NA
   }
   if (exists("sse_summary")){
     lambda_report <- sse_summary
@@ -212,5 +220,6 @@ subset.reconcile <- function(base_forecasts, S,
   }
   list(y_tilde = y_tilde, G = G,
        z = z,
-       lambda_report = lambda_report)
+       lambda_report = lambda_report,
+       lambda_opt = lambda_opt)
 }
