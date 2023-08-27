@@ -9,7 +9,11 @@ input <- commandArgs(trailingOnly = TRUE)
 
 method_label <- input[1] # "subset", "lasso", "intuitive"
 data_label <- input[2] # "simulation", "tourism"
-scenario <- input[3] # NULL, "s1", "s2", "s3"
+if(is.na(input[3])){
+  scenario <- NULL
+} else{
+  scenario <- input[3]
+} # NULL, "s1", "s2", "s3"
 
 # Utility functions
 extract_element <- function(data, index, method, element){
