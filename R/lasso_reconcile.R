@@ -19,7 +19,7 @@
 #' @export
 lasso.reconcile <- function(base_forecasts, S, 
                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
-                            residuals = NULL, fitted_values = NULL, train_data = NULL,
+                            residuals = NULL, fitted_values = NULL, train_data = NULL, nvalid = NULL,
                             lasso = NULL, nlambda = 20,
                             TimeLimit = 0, MonARCH = FALSE, workers = 4){
   # Dimension info
@@ -115,6 +115,10 @@ lasso.reconcile <- function(base_forecasts, S,
       if (is.null(train_data) | is.null(fitted_values)){
         stop("Training data and fitted values are required to find the optimal lambda_0")
       }
+      if (NROW(train_data) != NROW(fitted_values)){
+        stop("The dimensions of the fitted_values do not match train_data")
+      }
+      nvalid <- ifelse(is.null(nvalid), NROW(train_data), nvalid)
       
       # Candidate lambda_1
       X <- kronecker(t(fc), S)
@@ -147,7 +151,7 @@ lasso.reconcile <- function(base_forecasts, S,
           names(fit) <- c("G", "Z", "obj")
           fit <- append(list(l1 = l1), fit)
         }
-        sse <- sum(stats::na.omit(train_data - fitted_values %*% t(fit$G) %*% t(S))^2)
+        sse <- sum(stats::na.omit(tail(train_data, nvalid) - tail(fitted_values, nvalid) %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         return(fit)
       }
@@ -171,6 +175,8 @@ lasso.reconcile <- function(base_forecasts, S,
         data.frame()
       names(sse_summary) <- c("lambda1", "k", "sse", "obj")
       min.index <- purrr::map_dbl(socp.out, function(l) l$sse) |> round(2) |> which.min()
+      lambda_opt <- socp.out[[min.index]]$l1
+      names(lambda_opt) <- "l1"
       z <- socp.out[[min.index]]$Z |> as.vector()
       G <- socp.out[[min.index]]$G
     }
@@ -188,21 +194,14 @@ lasso.reconcile <- function(base_forecasts, S,
       if (N < 20) {
         stop("At least 20 observation should be used in ELasso")
       }
-      
-      Y <- head(train_data, -floor(N/10))
-      Y_hat <- head(fitted_values, -floor(N/10))
-      
-      Y_tilde_init <- Y_hat %*% t(G) %*% t(S)
-      obj_init <- 0.5 * 1/(N - floor(N/10)) * t(as.vector(Y) - as.vector(Y_tilde_init)) %*% (as.vector(Y) - as.vector(Y_tilde_init)) |>
-        as.numeric()
+      nvalid <- ifelse(is.null(nvalid), floor(N/10), nvalid)
       
       # Candidate lambda_1
-      X <- kronecker(S, Y_hat)
       w <- 1/apply(G, 2, function(x) sqrt(sum(x^2)))
       lambda_max <- sapply(1:n, function(j){
         w_j <- w[j]
         cj <- (0:(nb-1))*n + j
-        delta_loss_j <- - 1/N * t(X[, cj]) %*% as.vector(Y)
+        delta_loss_j <- - 1/N * t(kronecker(S, fitted_values)[, cj]) %*% as.vector(train_data)
         return(sqrt(sum(delta_loss_j^2))/w_j)
       }) |> max()
       lambda_min <- 0.0001 * lambda_max
@@ -221,11 +220,11 @@ lasso.reconcile <- function(base_forecasts, S,
         reticulate::use_python(path, required = T)
         reticulate::source_python("Python/eglasso.py")
         
-        fit <- eglasso(Y = Y, Y_hat = Y_hat, S = S, l1 = l1, weight = 1, 
+        fit <- eglasso(Y = train_data, Y_hat = fitted_values, S = S, l1 = l1, weight = 1, 
                        TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
         names(fit) <- c("G", "Z", "obj")
         fit <- append(list(l1 = l1), fit)
-        sse <- sum(stats::na.omit(tail(train_data, floor(N/10)) - tail(fitted_values, floor(N/10)) %*% t(fit$G) %*% t(S))^2)
+        sse <- sum(stats::na.omit(tail(train_data, nvalid) - tail(fitted_values, nvalid) %*% t(fit$G) %*% t(S))^2)
         fit$sse <- sse
         return(fit)
       }
@@ -247,21 +246,9 @@ lasso.reconcile <- function(base_forecasts, S,
       names(sse_summary) <- c("lambda1", "k", "sse", "obj")
       min.index <- purrr::map_dbl(socp.out, function(l) l$sse) |> round(2) |> which.min()
       lambda_opt <- socp.out[[min.index]]$l1
-      
-      # Resolve model to get G matrix
-      if (MonARCH){
-        path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
-        setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
-      } else{
-        path <- "~/Library/r-miniconda-arm64/bin/python3.10"
-      }
-      reticulate::use_python(path, required = T)
-      reticulate::source_python("Python/eglasso.py")
-      fit_opt <- eglasso(Y = train_data, Y_hat = fitted_values, S = S, l1 = lambda_opt, weight = 1, 
-                         TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
-      names(fit_opt) <- c("G", "Z", "obj")
-      z <- fit_opt$Z |> as.vector()
-      G <- fit_opt$G
+      names(lambda_opt) <- "l1"
+      z <- socp.out[[min.index]]$Z |> as.vector()
+      G <- socp.out[[min.index]]$G
     }
   }
   
@@ -272,8 +259,10 @@ lasso.reconcile <- function(base_forecasts, S,
   # Output
   if (subset){
     z <- z
+    lambda_opt <- lambda_opt
   } else{
     z <- NA
+    lambda_opt <- NA
   }
   if (exists("sse_summary")){
     lambda_report <- sse_summary
@@ -282,5 +271,6 @@ lasso.reconcile <- function(base_forecasts, S,
   }
   list(y_tilde = y_tilde, G = G,
        z = z,
-       lambda_report = lambda_report)
+       lambda_report = lambda_report,
+       lambda_opt = lambda_opt)
 }
