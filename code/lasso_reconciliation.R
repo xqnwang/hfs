@@ -12,11 +12,11 @@ data_label <- commandArgs(trailingOnly = TRUE)
 # data_label <- "tourism"
 nlambda <- 20
 MonARCH <- TRUE
-workers <- parallel::detectCores()
+workers <- parallelly::availableCores()
 source("R/lasso_reconcile.R")
 
 # Utility function
-reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
+reconcile_forecast <- function(index, fits, train, basefc, resids, test, S, nvalid,
                                method, method_name, nlambda,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
                                MonARCH, workers){
@@ -44,14 +44,14 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
     assign(paste0(method_name[i], "_lasso"),
            lasso.reconcile(base_forecasts = base_forecasts, S = S,
                            method = method[i], residuals = residuals,
-                           fitted_values = fitted_values, train_data = train_data,
+                           fitted_values = fitted_values, train_data = train_data, nvalid = nvalid,
                            lasso = "Lasso", nlambda = nlambda,
                            MonARCH = MonARCH, workers = workers))
     print(paste("===", method_name[i], "finished!"))
   }
   Elasso <- lasso.reconcile(base_forecasts = base_forecasts, S = S,
                             method = "ols", residuals = residuals,
-                            fitted_values = fitted_values, train_data = train_data,
+                            fitted_values = fitted_values, train_data = train_data, nvalid = nvalid,
                             lasso = "ELasso", nlambda = nlambda,
                             MonARCH = MonARCH, workers = workers)
   print(paste("=== Elasso finished!"))
@@ -68,6 +68,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
 if (data_label == "simulation"){
+  nvalid <- 16
   method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 }
@@ -83,6 +84,7 @@ if (data_label == "simulation"){
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 if (data_label == "tourism"){
+  nvalid = 12
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
 }
@@ -99,7 +101,7 @@ indices <- unique(fits$Index)
 # Reconcile forecasts
 #################################################
 reconsf <- indices |>
-  purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
+  purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
                                          method, method_name, nlambda,
                                          MonARCH = MonARCH, workers = workers))
 saveRDS(reconsf, file = paste0("data_new/", data_label, "_lasso_reconsf.rds"))
@@ -114,7 +116,7 @@ if (data_label == "simulation"){
   deteriorate_rate <- rep(1.5, 3)
   for (i in 1:3){
     reconsf_s <- indices |>
-      purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
+      purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
                                              method, method_name, nlambda,
                                              deteriorate = TRUE, 
                                              deteriorate_series = deteriorate_series[i],

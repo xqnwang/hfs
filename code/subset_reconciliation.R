@@ -12,7 +12,7 @@ data_label <- commandArgs(trailingOnly = TRUE)
 # data_label <- "tourism"
 nlambda <- 20
 MonARCH <- TRUE
-workers <- parallel::detectCores()
+workers <- parallelly::availableCores()
 source("R/subset_reconcile.R")
 
 # Utility function

@@ -12,11 +12,11 @@ data_label <- commandArgs(trailingOnly = TRUE)
 # data_label <- "tourism"
 nlambda <- 20
 MonARCH <- TRUE
-workers <- parallel::detectCores()
+workers <- parallelly::availableCores()
 source("R/intuitive_reconcile.R")
 
 # Utility function
-reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
+reconcile_forecast <- function(index, fits, train, basefc, resids, test, S, nvalid,
                                method, method_name, nlambda,
                                deteriorate = FALSE, deteriorate_series, deteriorate_rate,
                                MIPFocus, Cuts, TimeLimit,
@@ -44,7 +44,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
     assign(paste0(method_name[i], "_intuitive"), 
            intuitive.reconcile(base_forecasts = base_forecasts, S = S,
                                method = method[i], residuals = residuals,
-                               fitted_values = fitted_values, train_data = train_data,
+                               fitted_values = fitted_values, train_data = train_data, nvalid = nvalid,
                                subset = TRUE, nlambda = nlambda,
                                MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
                                MIPVerbose = MIPVerbose, MonARCH = MonARCH, workers = workers))
@@ -64,7 +64,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S,
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
 if (data_label == "simulation"){
-  MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE
+  nvalid <- 16; MIPFocus = 0; Cuts = -1; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 }
@@ -80,7 +80,7 @@ if (data_label == "simulation"){
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 if (data_label == "tourism"){
-  MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE
+  nvalid <- 12; MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
 }
@@ -97,7 +97,7 @@ indices <- unique(fits$Index)
 # Reconcile forecasts
 #################################################
 reconsf <- indices |>
-  purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, 
+  purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
                                          method, method_name, nlambda,
                                          deteriorate = FALSE, 
                                          MIPFocus = MIPFocus, Cuts = Cuts, TimeLimit = TimeLimit,
@@ -114,7 +114,7 @@ if (data_label == "simulation"){
   deteriorate_rate <- rep(1.5, 3)
   for (i in 1:3){
     reconsf_s <- indices |>
-      purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S,
+      purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
                                              method, method_name, nlambda,
                                              deteriorate = TRUE, 
                                              deteriorate_series = deteriorate_series[i],
