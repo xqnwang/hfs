@@ -208,6 +208,8 @@ lasso.reconcile <- function(base_forecasts, S,
       lambda <- c(sapply(0:(nlambda-1), function(j) lambda_max*(lambda_min/lambda_max)^(j/(nlambda-1))), 0)
 
       # Find the optimal lambda_1 by splitting training data
+      Y <- head(train_data, -nvalid)
+      Y_hat <- head(fitted_values, -nvalid)
       cl <- parallel::makeCluster(workers)
       doParallel::registerDoParallel(cl)
       socp.out <- foreach::foreach(l1 = lambda) %dopar% {
@@ -220,7 +222,7 @@ lasso.reconcile <- function(base_forecasts, S,
         reticulate::use_python(path, required = T)
         reticulate::source_python("Python/eglasso.py")
         
-        fit <- eglasso(Y = train_data, Y_hat = fitted_values, S = S, l1 = l1, weight = 1, 
+        fit <- eglasso(Y = Y, Y_hat = Y_hat, S = S, l1 = l1, weight = 1, 
                        TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
         names(fit) <- c("G", "Z", "obj")
         fit <- append(list(l1 = l1), fit)
@@ -247,8 +249,21 @@ lasso.reconcile <- function(base_forecasts, S,
       min.index <- purrr::map_dbl(socp.out, function(l) l$sse) |> round(2) |> which.min()
       lambda_opt <- socp.out[[min.index]]$l1
       names(lambda_opt) <- "l1"
-      z <- socp.out[[min.index]]$Z |> as.vector()
-      G <- socp.out[[min.index]]$G
+      
+      # Resolve model to get G matrix
+      if (MonARCH){
+        path <- "~/.local/share/r-miniconda/envs/r-reticulate/bin/python3.8"
+        setwd(Sys.glob(file.path("~/wm15/", "*", "hfs")))
+      } else{
+        path <- "~/Library/r-miniconda-arm64/bin/python3.10"
+      }
+      reticulate::use_python(path, required = T)
+      reticulate::source_python("Python/eglasso.py")
+      fit_opt <- eglasso(Y = train_data, Y_hat = fitted_values, S = S, l1 = lambda_opt, weight = 1, 
+                         TimeLimit = TimeLimit, LogToConsole = 0, OutputFlag = 0)
+      names(fit_opt) <- c("G", "Z", "obj")
+      z <- fit_opt$Z |> as.vector()
+      G <- fit_opt$G
     }
   }
   
