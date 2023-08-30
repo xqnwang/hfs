@@ -1,5 +1,6 @@
 # Load packages
 library(dplyr)
+library(reshape)
 library(ggplot2)
 library(tidyverse)
 library(knitr)
@@ -212,5 +213,55 @@ abserr_ts_horizon <- sapply(methods, function(lmethod){
 }, USE.NAMES = TRUE)
 nemenyi(abserr_ts_horizon, conf.level = 0.95, plottype = "vmcb", title = "Absolute error across all horizons - Tourism data")
 
+#----------------------------------------------------------------------
+# Plot: Average reconciliation errors in terms of RMSE (1- to 12-step-ahead) after forecast reconciliation, for a single series, between disaggregate and aggregate views of the data, for the different reconciliation methods. Time series are ordered in the horizontal axis.
+#----------------------------------------------------------------------
+RMSE_heatmap <- RMSE
+rownames(RMSE_heatmap) <- 1:NROW(RMSE_heatmap)
+RMSE_melt <- melt(RMSE_heatmap)  
+colnames(RMSE_melt) <- c("Series", "Method", "RMSE")
+
+# # Purples palette
+# ggplot(RMSE_melt, aes(x = Series, y = Method, fill = RMSE)) +
+#   geom_tile() +
+#   scale_fill_gradientn(colors = rev(hcl.colors(50, "Purples"))[c(seq(1, 20, 10), seq(21, 50, 1))]) +
+#   labs(x = "Time series", y = "") +
+#   scale_x_discrete(expand = c(0, 0),
+#                    breaks = seq(20, 100, 20)) +
+#   scale_y_discrete(limits=rev(c("Base","BU","OLS","OLS-subset", "WLSs", "WLSs-subset", "WLSv", "WLSv-subset", "MinTs", "MinTs-subset"))) +
+#   theme(
+#     legend.text = element_text(face = "bold"),
+#     plot.background = element_blank(),
+#     panel.border = element_blank()
+#   )
+
+# 10*4
+ggplot(RMSE_melt, aes(x = Series, y = Method, fill = RMSE)) +
+  geom_tile() +
+  geom_vline(xintercept = c(1.5, 8.5, 35.5), linetype = "dashed", size = 0.5) +
+  scale_fill_gradientn(colors = c("#f7d9a6", 
+                                  rev(hcl.colors(100, "Purples"))[c(seq(1, 50, 10), seq(51, 100, 1))])) +
+  labs(x = "Time series", y = "") +
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks =  seq(20, 100, 20),
+                     sec.axis = dup_axis(name = "",
+                                         breaks = c(4.5, 11.5, 39),
+                                         labels = c("States", "Zones", "Regions"))) +
+  scale_y_discrete(expand = c(0, 0), 
+                   limits = rev(c("Base", "BU", "OLS", "OLS-subset", 
+                                  "WLSs", "WLSs-subset", "WLSv", "WLSv-subset", 
+                                  "MinTs", "MinTs-subset"))) +
+  theme(
+    plot.background = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
+    axis.title.x = element_text(face = "bold", size = 12),
+    legend.title = element_text(face = "bold", size = 10),
+    legend.text = element_text(face = "bold", size = 10),
+    legend.position = "bottom",
+    axis.text = element_text(face = "bold", size = 10),
+    axis.ticks.x.top = element_blank()
+  ) +
+  guides(fill = guide_colourbar(barwidth = 10,
+                                barheight = 1.5))
 
 
