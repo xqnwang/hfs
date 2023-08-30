@@ -100,18 +100,10 @@ indices <- unique(fits$Index)
 #################################################
 # Reconcile forecasts
 #################################################
-if (data_label == "simulation"){
-  future::plan(multisession, workers = workers)
-  reconsf <- indices |>
-    furrr::future_map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
-                                                  method, method_name, nlambda,
-                                                  MonARCH = MonARCH, workers = 1))
-} else if (data_label == "tourism"){
-  reconsf <- indices |>
-    purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
-                                           method, method_name, nlambda,
-                                           MonARCH = MonARCH, workers = workers))
-}
+reconsf <- indices |>
+  purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
+                                         method, method_name, nlambda,
+                                         MonARCH = MonARCH, workers = workers))
 saveRDS(reconsf, file = paste0("data_new/", data_label, "_lasso_reconsf.rds"))
 rm(reconsf)
 print("Reconciliation finished!")
@@ -124,14 +116,13 @@ if (data_label == "simulation"){
   deteriorate_series <- c("AA", "A", "Total")
   deteriorate_rate <- rep(1.5, 3)
   for (i in 1:length(scenario)){
-    future::plan(multisession, workers = workers)
     reconsf_s <- indices |>
-      furrr::future_map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
-                                                    method, method_name, nlambda,
-                                                    deteriorate = TRUE, 
-                                                    deteriorate_series = deteriorate_series[i],
-                                                    deteriorate_rate = deteriorate_rate[i],
-                                                    MonARCH = MonARCH, workers = 1))
+      purrr::map(\(index) reconcile_forecast(index, fits, train, basefc, resids, test, S, nvalid,
+                                             method, method_name, nlambda,
+                                             deteriorate = TRUE, 
+                                             deteriorate_series = deteriorate_series[i],
+                                             deteriorate_rate = deteriorate_rate[i],
+                                             MonARCH = MonARCH, workers = workers))
     saveRDS(reconsf_s, file = paste0("data_new/", data_label, "_lasso_reconsf_", scenario[i], ".rds"))
     rm(reconsf_s)
     print(paste0("Scenario", i, " finished!"))
