@@ -86,13 +86,13 @@ RMSE <- sapply(methods, function(lmethod){
   assign(lmethod, calc_rmse(fc = get(tolower(lmethod)), test = test, h = h))
 }, USE.NAMES = TRUE) |> as.data.frame() |> data.matrix()
 colnames(RMSE) <- sub("_", "-", colnames(RMSE))
-nemenyi(RMSE, conf.level = 0.95, plottype = "vmcb", title = "RMSE - Tourism data")
+nemenyi(RMSE, conf.level = 0.95, plottype = "vmcb", Title = "RMSE - Tourism data", select = match("WLSs-subset", colnames(RMSE)))
 
 # Plot 2: Absolute error across all horizons (111*12 instances)
 abserr_ts_horizon <- sapply(methods, function(lmethod){
   assign(lmethod, calc_abserror(fc = get(tolower(lmethod)), test = test))
 }, USE.NAMES = TRUE)
-nemenyi(abserr_ts_horizon, conf.level = 0.95, plottype = "vmcb", title = "Absolute error across all horizons - Tourism data")
+nemenyi(abserr_ts_horizon, conf.level = 0.95, plottype = "vmcb", Title = "Absolute error across all horizons - Tourism data", select = match("OLS-subset", colnames(RMSE)))
 
 #----------------------------------------------------------------------
 # Plot: Average reconciliation errors in terms of RMSE (1- to 12-step-ahead) after forecast reconciliation, for a single series, between disaggregate and aggregate views of the tourism data, for the different reconciliation methods. Time series are ordered in the horizontal axis.
@@ -161,4 +161,60 @@ latex_sim_nos_table(simulation_info$out_s2$z,
                     simulation_info$out_s2$n)
 latex_sim_nos_table(simulation_info$out_s3$z,
                     simulation_info$out_s3$n)
+
+#----------------------------------------------------------------------
+# Figures: MCB test for the simulation data
+#----------------------------------------------------------------------
+data_label <- "simulation"
+methods <- c("subset", "intuitive", "lasso")
+scenarios <- c("s0", "s1", "s2", "s3")
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+h <- 16
+
+RMSE_sim_s0 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s0", h=16)
+RMSE_sim_s1 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s1", h=16)
+RMSE_sim_s2 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s2", h=16)
+RMSE_sim_s3 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s3", h=16)
+
+MASE_sim_s0 <- MASE_MCB_sim("simulation", methods=methods, scenario="s0", h=16)
+MASE_sim_s1 <- MASE_MCB_sim("simulation", methods=methods, scenario="s1", h=16)
+MASE_sim_s2 <- MASE_MCB_sim("simulation", methods=methods, scenario="s2", h=16)
+MASE_sim_s3 <- MASE_MCB_sim("simulation", methods=methods, scenario="s3", h=16)
+
+
+scenarios <- c("s0", "s1", "s2", "s3")
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+measure <- "MASE"
+
+par(mfrow=c(length(highlight), length(scenarios)),
+    mar=c(2,0.1,0.1,0.3)
+    #mar=c(5.1,2.1,4.1,2.1)
+    )
+
+# 10*6.5
+for(i in highlight){
+  for(j in scenarios){
+    char <- paste0(measure, "_sim_", j)
+    x <- get(char)
+    if (i == "MinT"){
+      x <- x[, grepl("MinT", colnames(x)) & !grepl("MinTs", colnames(x))]
+    } else{
+      x <- x[, grepl(i, colnames(x))]
+    }
+    if (j == "s0"){
+      title <- "Simulation"
+    } else if (j == "s1"){
+      title <- "Scenario I"
+    } else if (j == "s2"){
+      title <- "Scenario II"
+    } else if (j == "s3"){
+      title <- "Scenario III"
+    }
+    nemenyi(x, conf.level = 0.95, plottype = "vmcb",
+            sort = TRUE, select = match(i, colnames(x)),
+            Title = ifelse(i == "OLS", title, ""),
+            Xlab = "Mean ranks",
+            Ylab = ifelse(j == "s0", i, ""))
+  }
+}
 
