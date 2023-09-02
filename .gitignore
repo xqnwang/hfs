@@ -14,6 +14,7 @@ L0Group/
 .pyc
 __pycache__/
 *_files/
+_*/
 
 # User-specific files
 *.tex
