@@ -133,6 +133,98 @@ calc_abserror <- function(fc, test){
   abserr |> as.data.frame() |> data.matrix() |> as.vector()
 }
 
+# Combine z outputs from results of different methods
+combine_z <- function(data_label, methods, scenarios, series_name){
+  for (scenario in scenarios){
+    for(method_label in methods){
+      target <- paste0(data_label, "_", method_label, "_reconsf", 
+                       ifelse(scenario == "s0", "", paste0("_", scenario)))
+      
+      assign(target, 
+             readRDS(file = paste0("data_new/", target, ".rds")))
+      z_method <- lapply(get(target), function(lentry){
+        select_methods <- names(lentry)[grepl("_", names(lentry))]
+        z_index <- sapply(lentry[select_methods], function(len) c(len$z, sum(len$z))) |> t() |> round(0)
+        colnames(z_index) <- c(series_name, "Total")
+        return(z_index)
+      }) %>% do.call(rbind, .)
+      assign(paste0("z_", method_label), rowsum(subset(z_method, select = -Total), row.names(z_method)))
+      assign(paste0("n_", method_label), data.frame(Method = row.names(z_method), Total = subset(z_method, select = Total)))
+    }
+    z_scenario <- mget(paste0("z_", methods)) %>% do.call(rbind, .)
+    rownames(z_scenario) <- sub("_", "-", rownames(z_scenario))
+    n_scenario <- mget(paste0("n_", methods)) %>% do.call(rbind, .)
+    n_scenario$Method <- sub("_", "-", n_scenario$Method)
+    rownames(n_scenario) <- NULL
+    assign(paste0("out_", scenario),
+           list(z = assign(paste0("z_", scenario), z_scenario), 
+                n = assign(paste0("n_", scenario), n_scenario)))
+  }
+  mget(paste0("out_", scenarios))
+}
+
+# Output table latex for number of time series retained after subset selection for the simulation data
+latex_sim_nos_table <- function(z_out, n_out){
+  candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+  target <- sapply(candidates, function(len){
+    c(paste0(len, "-", c("subset", "intuitive", "lasso")))
+  }) |> as.vector()
+  z_out <- z_out[match(target, row.names(z_out)), ]/500
+  z_out <- data.frame(z_out, Summary = "")
+  n_img <- split(n_out$Total, n_out$Method)
+  n_img <- n_img[match(target, names(n_img))]
+  n_img <- lapply(n_img, function(N) data.frame(table(N), Method = "method"))
+  
+  colors_used <- hcl.colors(10, "Purples")[3:6]
+  names(colors_used) <- 7:4
+  # colors_used <- c("#B7B9A8", "#D1B5A3", "#E36858", "#962E2A")
+  # names(colors_used) <- 4:7
+  
+  inline_bars <-
+    n_img %>%
+    map(~ ggplot(.x, aes(x=Method, y=Freq, fill=N)) +
+          # ggplot(.x, aes(x=Method, y=Freq, fill=N, label=N)) +
+          geom_bar(position='stack', stat='identity', alpha=0.9) +
+          # geom_text(size = 20, position = position_stack(vjust = 0.5)) +
+          scale_fill_manual(values= colors_used) +
+          coord_cartesian(ylim = c(0, 500), clip = "off") +
+          coord_flip() +
+          theme(
+            plot.background = element_blank(),
+            panel.background = element_blank(),
+            panel.border = element_blank(),
+            legend.position = "none",
+            axis.title = element_blank(),
+            axis.text.x = element_blank(),
+            # axis.text.x = element_text(face = "bold", vjust = 5),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.ticks.x.top = element_blank()
+          ))
+  
+  map(1:length(n_img), function(i) {
+    ggsave(
+      filename = paste0(names(n_img)[i], ".png"),
+      path = "_figs/",
+      plot = inline_bars[[i]], height = 3.5, width = 10, dpi = 300
+    )
+  })
+  ls_inline_plots <- file.path(getwd(), paste0("_figs/", names(n_img), ".png"))
+  
+  z_out |>
+    kable(format = "latex",
+          booktabs = TRUE,
+          digits = 2,
+          align = c("l", rep("r", NCOL(z_out))),
+          escape = FALSE,
+          linesep = "") |>
+    kable_styling(latex_options = c("hold_position", "repeat_header",  "scale_down")) |>
+    row_spec(3*(1:(length(candidates)-1)), hline_after = TRUE) |>
+    column_spec(NCOL(z_out) + 1,
+                image = spec_image(ls_inline_plots, width = 200, height = 70)) 
+}
+
 #----------------------------------------------------------------------
 # Table: Out-of-sample forecast performance (average RMSE/MASE)
 #----------------------------------------------------------------------
@@ -146,7 +238,7 @@ out_all <- combine_table(data_label, methods, measure, scenario, horizons)
 latex_table(out_all)
 
 #----------------------------------------------------------------------
-# Table: Number of time series retained in the structure with different methods
+# Table: Number of time series retained in the structure with different methods for the tourism data
 #----------------------------------------------------------------------
 tourism_subset_reconsf <- readRDS(file = "data_new/tourism_subset_reconsf.rds")
 Top <- 1
@@ -214,7 +306,7 @@ abserr_ts_horizon <- sapply(methods, function(lmethod){
 nemenyi(abserr_ts_horizon, conf.level = 0.95, plottype = "vmcb", title = "Absolute error across all horizons - Tourism data")
 
 #----------------------------------------------------------------------
-# Plot: Average reconciliation errors in terms of RMSE (1- to 12-step-ahead) after forecast reconciliation, for a single series, between disaggregate and aggregate views of the data, for the different reconciliation methods. Time series are ordered in the horizontal axis.
+# Plot: Average reconciliation errors in terms of RMSE (1- to 12-step-ahead) after forecast reconciliation, for a single series, between disaggregate and aggregate views of the tourism data, for the different reconciliation methods. Time series are ordered in the horizontal axis.
 #----------------------------------------------------------------------
 RMSE_heatmap <- RMSE
 rownames(RMSE_heatmap) <- 1:NROW(RMSE_heatmap)
@@ -264,4 +356,20 @@ ggplot(RMSE_melt, aes(x = Series, y = Method, fill = RMSE)) +
   guides(fill = guide_colourbar(barwidth = 10,
                                 barheight = 1.5))
 
+#----------------------------------------------------------------------
+# Table: Number of time series retained in the structure with different methods for the simulation data
+#----------------------------------------------------------------------
+data_label <- "simulation"
+methods <- c("subset", "intuitive", "lasso")
+scenarios <- c("s0", "s1", "s2", "s3")
+series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
+simulation_info <- combine_z(data_label, methods, scenarios, series_name)
+latex_sim_nos_table(simulation_info$out_s0$z,
+                    simulation_info$out_s0$n)
+latex_sim_nos_table(simulation_info$out_s1$z,
+                    simulation_info$out_s1$n)
+latex_sim_nos_table(simulation_info$out_s2$z,
+                    simulation_info$out_s2$n)
+latex_sim_nos_table(simulation_info$out_s3$z,
+                    simulation_info$out_s3$n)
 
