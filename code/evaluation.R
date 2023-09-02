@@ -16,55 +16,7 @@ if(is.na(input[3])){
 } # NULL, "s1", "s2", "s3"
 
 # Utility functions
-extract_element <- function(data, index, method, element){
-  out <- data[[index]][[method]][[element]]
-  if(length(out) == 1){
-    if(is.na(out)){
-      out <- NULL 
-    }
-  } else{
-    if(is.vector(out)){
-      out <- cbind(matrix(out, nrow = 1), Index = index) 
-    }else{
-      out <- cbind(out, Index = index) 
-    }
-  }
-  out
-}
-
-calc_rmse <- function(fc, test, h){
-  err <- subset(test, select = -Index) - subset(fc, select = -Index)
-  err <- cbind(err, Index = subset(test, select = Index))
-  rmse <- err |> 
-    as_tibble() |> 
-    group_by(Index) |> 
-    mutate(Horizon = row_number()) |> 
-    filter(Horizon <= h) |>
-    summarise_at(1:NCOL(err), function(x) sqrt(mean(x^2))) |>
-    ungroup() |>
-    select(!c("Index", "Horizon")) |>
-    summarise_all(mean)
-  return(rmse)
-}
-
-calc_mase <- function(fc, train, test, freq, h){
-  x <- subset(train, select = -Index)
-  err <- subset(test, select = -Index) - subset(fc, select = -Index)
-  scaling <- apply(x, 2, function(s) mean(abs(diff(as.vector(s), freq))))
-  q <- cbind(t(t(err) /scaling), Index = subset(test, select = Index))
-  
-  mase <- q |> 
-    as_tibble() |> 
-    group_by(Index) |> 
-    mutate(Horizon = row_number()) |> 
-    filter(Horizon <= h) |>
-    summarise_at(1:NCOL(q), function(x) mean(abs(x))) |>
-    ungroup() |>
-    select(!c("Index", "Horizon")) |>
-    summarise_all(mean)
-  
-  return(mase)
-}
+source("R/analysis.R")
 
 #################################################
 # Import data
