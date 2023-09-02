@@ -138,270 +138,23 @@ and $\varrho_t, \zeta_t$, and $\omega_t$ are errors independent of each other an
 -   The bottom-level series were then appropriately summed to obtain the data for higher levels.
 -   This process was repeated 500 times.
 
-### Results
+### Scenarios:
 
-```{r}
-#| label: package
-#| echo: false
-#| message: false
-#| warning: false
+-   Scenario 0: ETS
 
-library(knitr)
-library(kableExtra)
-library(dplyr)
-library(ggplot2)
-library(tidyverse)
-library(latex2exp)
-```
+    -   ETS models are used to generate base forecasts. @tbl-rmse-s0, @tbl-mase-s0, and @fig-s0.
 
-```{r}
-#| label: fun-sim
-#| echo: false
+-   Scenario I: D-AA
 
-rmse_calc <- function(data_label, approach = "subset", scenario, horizon){
-  for(h in horizon){
-    assign(paste0("rmse_h", h), 
-           readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
-    )
-  }
-  levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
-  rmse <- NULL
-  for (l in levels){
-    rmse_l <- NULL
-    for (h in horizon){
-      rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
-    }
-    rmse <- cbind(rmse, rmse_l)
-  }
-  rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
-  colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
-  rmse$Method <- sub("_", "-", rmse$Method)
-  rmse[, 1] <- ifelse(grepl(approach, tolower(rmse[, 1])), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
-  rmse[, -1] <- lapply(rmse[, -1], function(x) {
-    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), color = "red"), format(round(x,2), nsmall = 2))
-  })
-  rmse |>
-    kable(format = "latex",
-          booktabs = TRUE,
-          digits = 2,
-          escape = FALSE,
-          linesep = "") |>
-    #kable_paper("striped", full_width = F) |>
-    kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
-    row_spec(0, align = "c") |>
-    row_spec(2+(1:5)*2, background = "#BBBBBB") |>
-    add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
-}
+    -   Base forecasts (and also fitted values) of **series AA** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s1, @tbl-mase-s1, and @fig-s1.
 
-mase_calc <- function(data_label, approach = "subset", scenario, horizon){
-  for(h in horizon){
-    assign(paste0("mase_h", h), 
-           readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_mase_", h, ".rds"))
-    )
-  }
-  levels <- colnames(get(paste0("mase_h", horizon[1])))[-1]
-  mase <- NULL
-  for (l in levels){
-    mase_l <- NULL
-    for (h in horizon){
-      mase_l <- cbind(mase_l, get(paste0("mase_h", h)) |> pull(l))
-    }
-    mase <- cbind(mase, mase_l)
-  }
-  mase <- data.frame(get(paste0("mase_h", h)) |> pull("Method"), mase)
-  colnames(mase) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(4))
-  mase$Method <- sub("_", "-", mase$Method)
-  mase[, 1] <- ifelse(grepl(approach, tolower(mase[, 1])), cell_spec(mase[, 1], bold = TRUE), mase[, 1])
-  mase[, -1] <- lapply(mase[, -1], function(x) {
-    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), color = "red"), format(round(x,2), nsmall = 2))
-  })
-  mase |>
-    kable(format = "latex",
-          booktabs = TRUE,
-          digits = 2,
-          escape = FALSE,
-          linesep = "") |>
-    #kable_paper("striped", full_width = F) |>
-    kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
-    row_spec(0, align = "c") |>
-    row_spec(2+(1:5)*2, background = "#BBBBBB") |>
-    add_header_above(c("", "Top" = 4, "Middle" = 4, "Bottom" = 4, "Average" = 4), align = "c")
-}
+-   Scenario II: D-A
 
-z_summary <- function(data_label, scenario){
-  z_summary <- readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_z_summary.rds"))
-  series_name <- colnames(z_summary)[1:(NCOL(z_summary)-2)]
-  
-  z_summary |>
-  as_tibble() |>
-  group_by(Method) |>
-  summarise_at(1:(NCOL(z_summary)-2), function(x) sum(x==0)) |>
-  pivot_longer(
-    cols = 2:(NCOL(z_summary)-1),
-    names_to = "Series",
-    values_to = "Frequency") |>
-  ggplot(aes(x = factor(Series, levels = series_name), y = Frequency)) +
-  geom_bar(stat = "identity") +
-  facet_grid(vars(Method), scales = "free_y") +
-  theme(strip.text = element_text(
-    size = 7)) +
-  labs(title = "Frequency of being zeroed out",
-       x = "",
-       y = "")
-}
-```
+    -   Base forecasts (and also fitted values) of **series A** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s2, @tbl-mase-s2, and @fig-s2.
 
-#### Scenario 0: ETS
+-   Scenario III: D-Total
 
--   ETS models are used to generate base forecasts. @tbl-rmse-s0, @tbl-mase-s0, and @fig-s0.
-
-```{r}
-#| label: tbl-rmse-s0
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 0."
-
-data_label <- "simulation"
-scenario <- NULL
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-mase-s0
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 0."
-
-data_label <- "simulation"
-scenario <- NULL
-horizon <- c(1,4,8,16)
-mase_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: fig-s0
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 0."
-#| fig-height: 4
-
-data_label <- "simulation"
-scenario <- NULL
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
-
-#### Scenario 1: D-AA
-
--   Base forecasts (and also fitted values) of **series AA** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s1, @tbl-mase-s1, and @fig-s1.
-
-```{r}
-#| label: tbl-rmse-s1
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 1."
-
-data_label <- "simulation"
-scenario <- "s1"
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-mase-s1
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 1."
-
-data_label <- "simulation"
-scenario <- "s1"
-horizon <- c(1,4,8,16)
-mase_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: fig-s1
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 1."
-#| fig-height: 4
-
-data_label <- "simulation"
-scenario <- "s1"
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
-
-#### Scenario 2: D-A
-
--   Base forecasts (and also fitted values) of **series A** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s2, @tbl-mase-s2, and @fig-s2.
-
-```{r}
-#| label: tbl-rmse-s2
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 2."
-
-data_label <- "simulation"
-scenario <- "s2"
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-mase-s2
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 2."
-
-data_label <- "simulation"
-scenario <- "s2"
-horizon <- c(1,4,8,16)
-mase_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: fig-s2
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 2."
-#| fig-height: 4
-
-data_label <- "simulation"
-scenario <- "s2"
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
-
-#### Scenario 3: D-Total
-
--   Base forecasts (and also fitted values) of **series Total** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s3, @tbl-mase-s3 and @fig-s3.
-
-```{r}
-#| label: tbl-rmse-s3
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 3."
-
-data_label <- "simulation"
-scenario <- "s3"
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-mase-s3
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 3."
-
-data_label <- "simulation"
-scenario <- "s3"
-horizon <- c(1,4,8,16)
-mase_calc(data_label, "subset", scenario, horizon)
-```
-
-```{r}
-#| label: fig-s3
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 3."
-#| fig-height: 4
-
-data_label <- "simulation"
-scenario <- "s3"
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
+    -   Base forecasts (and also fitted values) of **series Total** multiplied by 1.5 to achieve deterioration. @tbl-rmse-s3, @tbl-mase-s3 and @fig-s3.
 
 ## Tourism data results
 
@@ -414,64 +167,6 @@ Australian domestic tourism (only considering hierarchical structure)
 -   Hierarchy: Total/State/Zone/Region, 4 levels, n = 111 series in total.
 -   Training set: 1998 Jan-2016 Dec.
 -   Test set: 2017 Jan-2017 Dec.
-
-### Results
-
--   OLS_subset: $\lambda_0 = 0, \lambda_2 = 0.1, \sum z = 111$
--   WLSs_subset: $\lambda_0 = 10, \lambda_2 = 10, \sum z = 92$
--   WLSv_subset: $\lambda_0 = 0, \lambda_2 = 100, \sum z = 111$
--   MinTs_subset: $\lambda_0 = 0, \lambda_2 = 0, \sum z = 111$
-
-```{r}
-#| label: fun-tourism
-#| echo: false
-
-rmse_calc_tourism <- function(data_label, approach, scenario, horizon){
-  for(h in horizon){
-    assign(paste0("rmse_h", h), 
-           readRDS(file = paste0("../data_new/", data_label, "_reconsf", ifelse(is.null(scenario), "", paste0("_", scenario)), "_rmse_", h, ".rds"))
-    )
-  }
-  levels <- colnames(get(paste0("rmse_h", horizon[1])))[-1]
-  rmse <- NULL
-  for (l in levels){
-    rmse_l <- NULL
-    for (h in horizon){
-      rmse_l <- cbind(rmse_l, get(paste0("rmse_h", h)) |> pull(l))
-    }
-    rmse <- cbind(rmse, rmse_l)
-  }
-  rmse <- data.frame(get(paste0("rmse_h", h)) |> pull("Method"), rmse)
-  colnames(rmse) <- c("Method", c(ifelse(horizon == 1, paste0("h=", 1), paste0("1-", horizon))) |> rep(5))
-  rmse$Method <- sub("_", "-", rmse$Method)
-  rmse[, 1] <- ifelse(grepl(approach, rmse[, 1]), cell_spec(rmse[, 1], bold = TRUE), rmse[, 1])
-  rmse[, -1] <- lapply(rmse[, -1], function(x) {
-    ifelse(x == min(x), cell_spec(format(round(x,2), nsmall = 2), color = "red"), format(round(x,2), nsmall = 2))
-  })
-  rmse |>
-    kable(format = "latex",
-          booktabs = TRUE,
-          digits = 2,
-          escape = FALSE,
-          linesep = "") |>
-    #kable_paper("striped", full_width = F) |>
-    kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
-    row_spec(0, align = "c") |>
-    row_spec(2+(1:5)*2, background = "#BBBBBB") |>
-    add_header_above(c("", "Top" = 4, "Sate" = 4, "Zone" = 4, "Region" = 4, "Average" = 4), align = "c")
-}
-```
-
-```{r}
-#| label: tbl-tourism
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Tourism data."
-
-data_label <- "tourism"
-scenario <- NULL
-horizon <- c(1,4,8,12)
-rmse_calc_tourism(data_label, "subset", scenario, horizon)
-```
 
 ## Some issues
 
@@ -627,185 +322,6 @@ $$
 
 where $cj$ is the column indices of $(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}})$ corresponding to the $j$th column of $\boldsymbol{G}$.
 
-## Simulation results
-
-### Scenario 0: ETS
-
--   ETS models are used to generate base forecasts. @tbl-lasso-rmse-s0, @tbl-lasso-mase-s0, and @fig-lasso-s0.
-
-```{r}
-#| label: tbl-lasso-rmse-s0
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 0."
-
-data_label <- "simulation_lasso"
-scenario <- NULL
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, approach = "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-lasso-mase-s0
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 0."
-
-data_label <- "simulation_lasso"
-scenario <- NULL
-horizon <- c(1,4,8,16)
-mase_calc(data_label, approach = "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: fig-lasso-s0
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 0."
-#| fig-height: 4
-
-data_label <- "simulation_lasso"
-scenario <- NULL
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
-
-### Scenario 1: D-AA
-
--   Base forecasts (and also fitted values) of **series AA** multiplied by 1.5 to achieve deterioration. @tbl-lasso-rmse-s1, @tbl-lasso-mase-s1, and @fig-lasso-s1.
-
-```{r}
-#| label: tbl-lasso-rmse-s1
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 1."
-
-data_label <- "simulation_lasso"
-scenario <- "s1"
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-lasso-mase-s1
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 1."
-
-data_label <- "simulation_lasso"
-scenario <- "s1"
-horizon <- c(1,4,8,16)
-mase_calc(data_label, "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: fig-lasso-s1
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 1."
-#| fig-height: 4
-
-data_label <- "simulation_lasso"
-scenario <- "s1"
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
-
-### Scenario 2: D-A
-
--   Base forecasts (and also fitted values) of **series A** multiplied by 1.5 to achieve deterioration. @tbl-lasso-rmse-s2, @tbl-lasso-mase-s2, and @fig-lasso-s2.
-
-```{r}
-#| label: tbl-lasso-rmse-s2
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 2."
-
-data_label <- "simulation_lasso"
-scenario <- "s2"
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-lasso-mase-s2
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 2."
-
-data_label <- "simulation_lasso"
-scenario <- "s2"
-horizon <- c(1,4,8,16)
-mase_calc(data_label, "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: fig-lasso-s2
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 2."
-#| fig-height: 4
-
-data_label <- "simulation_lasso"
-scenario <- "s2"
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
-
-### Scenario 3: D-Total
-
--   Base forecasts (and also fitted values) of **series Total** multiplied by 1.5 to achieve deterioration. @tbl-lasso-rmse-s3, @tbl-lasso-mase-s3 and @fig-lasso-s3.
-
-```{r}
-#| label: tbl-lasso-rmse-s3
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Scenario 3."
-
-data_label <- "simulation_lasso"
-scenario <- "s3"
-horizon <- c(1,4,8,16)
-rmse_calc(data_label, "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: tbl-lasso-mase-s3
-#| echo: false
-#| tbl-cap: "Out-of-sample average MASE results in Scenario 3."
-
-data_label <- "simulation_lasso"
-scenario <- "s3"
-horizon <- c(1,4,8,16)
-mase_calc(data_label, "lasso", scenario, horizon)
-```
-
-```{r}
-#| label: fig-lasso-s3
-#| echo: false
-#| fig-cap: "Frequency of the base forecasts being removed from reconciliation in Scenario 3."
-#| fig-height: 4
-
-data_label <- "simulation_lasso"
-scenario <- "s3"
-horizon <- c(1,4,8,16)
-z_summary(data_label, scenario)
-```
-
-## Tourism data results
-
-Use the following parameters to speed up calculations:
-
--   `NumericFocus, OptimalityTol, FeasibilityTol, BarConvTol, BarQCPConvTol`
-
-Results:
-
--   OLS_Lasso: $\lambda_1 = 0, \sum z = 111$
--   WLSs_Lasso: $\lambda_1 = 0, \sum z = 111$
--   WLSv_Lasso: $\lambda_1 = 0, \sum z = 111$
--   MinTs_Lasso: $\lambda_1 = 0, \sum z = 111$
--   ELasso: $\lambda_1 = 0, \sum z = 111$
-
-```{r}
-#| label: tbl-lasso-tourism
-#| echo: false
-#| tbl-cap: "Out-of-sample average RMSE results in Tourism data."
-
-data_label <- "tourism_lasso"
-scenario <- NULL
-horizon <- c(1,4,8,12)
-rmse_calc_tourism(data_label, "lasso", scenario, horizon)
-```
-
 # Intuitive method
 
 ## Methodology
@@ -879,6 +395,363 @@ According to the unbiasedness constraint, we have
     Proof: If the set $\mathbb{S}$ involves the indices of non-zero columns of the estimated $\boldsymbol{G}$, then $\boldsymbol{G}\boldsymbol{S} = \boldsymbol{G}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot}$ and $\min (\operatorname{rank}\left(\boldsymbol{G}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I})=n_b$.
 
     Recall that $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b$ as $\boldsymbol{S}$ has $n_b$ columns. Hence, $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$.
+
+# Results
+
+```{r}
+#| label: setup
+#| include: false
+
+knitr::opts_knit$set(root.dir = '../')
+```
+
+```{r}
+#| label: package
+#| echo: false
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(reshape)
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(latex2exp)
+```
+
+```{r}
+#| label: function
+#| echo: false
+#| message: false
+#| warning: false
+
+## MCB test
+source("R/nemenyi.R")
+
+## Other functions used for analysis
+source("R/analysis.R")
+```
+
+## Simulation data
+
+```{r}
+#| label: tbl-s0-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Out-of-sample forecast performance (average RMSE) for the simulation data."
+
+measure <- "rmse"
+data_label <- "simulation"
+scenario <- NULL
+horizons <- c(1, 4, 8, 16)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+latex_table(out_all)
+```
+
+```{r}
+#| label: tbl-s1-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Out-of-sample forecast performance (average RMSE) for the  simulation data in Scenario I (Base forecasts and also fitted values of series AA are deteriorated)."
+
+measure <- "rmse"
+data_label <- "simulation"
+scenario <- "s1"
+horizons <- c(1, 4, 8, 16)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+latex_table(out_all)
+```
+
+```{r}
+#| label: tbl-s2-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Out-of-sample forecast performance (average RMSE) for the  simulation data in Scenario II (Base forecasts and also fitted values of series A are deteriorated)."
+
+measure <- "rmse"
+data_label <- "simulation"
+scenario <- "s2"
+horizons <- c(1, 4, 8, 16)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+latex_table(out_all)
+```
+
+```{r}
+#| label: tbl-s3-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Out-of-sample forecast performance (average RMSE) for the  simulation data in Scenario III (Base forecasts and also fitted values of series Total are deteriorated)."
+
+measure <- "rmse"
+data_label <- "simulation"
+scenario <- "s3"
+horizons <- c(1, 4, 8, 16)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+latex_table(out_all)
+```
+
+```{r}
+#| label: tbl-s0-info
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Ratio of being retained for each time series after subset selection in 500 simulation data instances."
+
+data_label <- "simulation"
+methods <- c("subset", "intuitive", "lasso")
+scenarios <- c("s0", "s1", "s2", "s3")
+series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
+simulation_info <- combine_z(data_label, methods, scenarios, series_name)
+latex_sim_nos_table(simulation_info$out_s0$z,
+                    simulation_info$out_s0$n)
+```
+
+```{r}
+#| label: tbl-s1-info
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Ratio of being retained for each time series after subset selection in 500 simulation data instances (Scenario I)."
+
+latex_sim_nos_table(simulation_info$out_s1$z,
+                    simulation_info$out_s1$n)
+```
+
+```{r}
+#| label: tbl-s2-info
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Ratio of being retained for each time series after subset selection in 500 simulation data instances (Scenario II)."
+
+latex_sim_nos_table(simulation_info$out_s2$z,
+                    simulation_info$out_s2$n)
+```
+
+```{r}
+#| label: tbl-s3-info
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Ratio of being retained for each time series after subset selection in 500 simulation data instances (Scenario III)."
+
+latex_sim_nos_table(simulation_info$out_s3$z,
+                    simulation_info$out_s3$n)
+```
+
+```{r}
+#| label: fig-sim-MCB
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig-width: 10
+#| fig-height: 6.5
+#| fig-cap: "MCB test conducted on the methods examined using the simulation data, the ranks are computed considering average accuracy for all the time series in 500 hierarchies, i.e. a total of 7 series × 500 hierarchies = 3500 instances."
+
+data_label <- "simulation"
+methods <- c("subset", "intuitive", "lasso")
+scenarios <- c("s0", "s1", "s2", "s3")
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+h <- 16
+
+RMSE_sim_s0 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s0", h=16)
+RMSE_sim_s1 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s1", h=16)
+RMSE_sim_s2 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s2", h=16)
+RMSE_sim_s3 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s3", h=16)
+
+scenarios <- c("s0", "s1", "s2", "s3")
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+measure <- "RMSE"
+
+par(mfrow=c(length(highlight), length(scenarios)),
+    mar=c(2,0.1,0.1,0.3)
+    #mar=c(5.1,2.1,4.1,2.1)
+    )
+
+# 10*6.5
+for(i in highlight){
+  for(j in scenarios){
+    char <- paste0(measure, "_sim_", j)
+    x <- get(char)
+    if (i == "MinT"){
+      x <- x[, grepl("MinT", colnames(x)) & !grepl("MinTs", colnames(x))]
+    } else{
+      x <- x[, grepl(i, colnames(x))]
+    }
+    if (j == "s0"){
+      title <- "Simulation"
+    } else if (j == "s1"){
+      title <- "Scenario I"
+    } else if (j == "s2"){
+      title <- "Scenario II"
+    } else if (j == "s3"){
+      title <- "Scenario III"
+    }
+    nemenyi(x, conf.level = 0.95, plottype = "vmcb",
+            sort = TRUE, select = match(i, colnames(x)),
+            Title = ifelse(i == "OLS", title, ""),
+            Xlab = "Mean ranks",
+            Ylab = ifelse(j == "s0", i, ""))
+  }
+}
+```
+
+## Tourism data
+
+```{r}
+#| label: tbl-tourism-rmse
+#| echo: false
+#| results: asis
+#| tbl-cap: "Out-of-sample forecast performance (average RMSE) for the tourism data."
+
+measure <- "rmse"
+data_label <- "tourism"
+scenario <- NULL
+horizons <- c(1, 4, 8, 12)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+latex_table(out_all)
+```
+
+```{r}
+#| label: tbl-tourism-info
+#| echo: false
+#| results: asis
+#| tbl-cap: "Number of time series retained after subset selection and the optimal hyperparameter values for the tourism data."
+
+tourism_subset_reconsf <- readRDS(file = "data_new/tourism_subset_reconsf.rds")
+Top <- 1
+State <- 2:8
+Zone <- 9:35
+Region <- 36:111
+Total <- 1:111
+
+tourism_subsetonly_reconsf <- tourism_subset_reconsf[[1]][grepl("_subset", names(tourism_subset_reconsf[[1]]))]
+tourism_subset_z <- sapply(tourism_subsetonly_reconsf, function(lentry) lentry$z) |> t()
+tourism_subset_lambda <- sapply(tourism_subsetonly_reconsf, function(lentry) lentry$lambda_opt) |> t()
+tourism_subset_info <- data.frame(tourism_subset_z, tourism_subset_lambda)
+
+None <- c(Top = length(Top), State = length(State), Zone = length(Zone), Region = length(Region),
+          Total = length(Total), "$\\lambda_0$" = 0, "$\\lambda_2$" = 0)
+tourism_subset_info <- apply(tourism_subset_info, 1, function(lentry){
+  c(Top = sum(lentry[Top]), State = sum(lentry[State]), 
+    Zone = sum(lentry[Zone]), Region = sum(lentry[Region]), 
+    Total = sum(lentry[Total]), 
+    "$\\lambda_0$" = round(tail(lentry, 2), 2)[1],
+    "$\\lambda_2$" = round(tail(lentry, 2), 2)[2])
+}) %>% t() %>% rbind(None, .)
+rownames(tourism_subset_info) <- sub("_", "-", rownames(tourism_subset_info))
+
+tourism_subset_info |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        align = rep("r", 7),
+        escape = FALSE,
+        linesep = "") |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  add_header_above(c("", "Number of time series retained" = 5, "Optimal parameters" = 2), align = "c")
+```
+
+```{r}
+#| label: fig-tourism-MCB-RMSE
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig-width: 7
+#| fig-height: 4
+#| fig-cap: "MCB test conducted on the methods examined using the tourism data, the ranks are computed considering all the time series of the hierarchy included in the data set, i.e. a total of 111 series in the hierarchy."
+data_label <- "tourism"
+method_label <- "subset"
+h <- 12
+
+test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf.rds"))
+methods <- names(reconsf[[1]])
+for(method in methods) {
+  out <- unique(test$Index) |> 
+    purrr::map(\(index) 
+               extract_element(data = reconsf, index = index, 
+                               method = method, element = "y_tilde")) %>% 
+    do.call(rbind, .)
+  assign(tolower(method), out)
+}
+
+# Plot 1: h=1-12 average RMSE (111 series)
+RMSE <- sapply(methods, function(lmethod){
+  assign(lmethod, calc_rmse(fc = get(tolower(lmethod)), test = test, h = h))
+}, USE.NAMES = TRUE) |> as.data.frame() |> data.matrix()
+colnames(RMSE) <- sub("_", "-", colnames(RMSE))
+nemenyi(RMSE, conf.level = 0.95, plottype = "vmcb", Title = "RMSE - Tourism data", select = match("WLSs-subset", colnames(RMSE)))
+```
+
+```{r}
+#| label: fig-tourism-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig-width: 10
+#| fig-height: 4.5
+#| fig-cap: "Average reconciliation errors in terms of RMSE (1- to 12-step-ahead) after forecast reconciliation, for a single series, between disaggregate and aggregate views of the tourism data, for the different reconciliation methods. Time series are ordered in the horizontal axis."
+
+RMSE_heatmap <- RMSE
+rownames(RMSE_heatmap) <- 1:NROW(RMSE_heatmap)
+RMSE_melt <- melt(RMSE_heatmap)  
+colnames(RMSE_melt) <- c("Series", "Method", "RMSE")
+
+ggplot(RMSE_melt, aes(x = Series, y = Method, fill = RMSE)) +
+  geom_tile() +
+  geom_vline(xintercept = c(1.5, 8.5, 35.5), linetype = "dashed", size = 0.5) +
+  scale_fill_gradientn(colors = c("#f7d9a6", 
+                                  rev(hcl.colors(100, "Purples"))[c(seq(1, 50, 10), seq(51, 100, 1))])) +
+  labs(x = "Time series", y = "") +
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks =  seq(20, 100, 20),
+                     sec.axis = dup_axis(name = "",
+                                         breaks = c(4.5, 11.5, 39),
+                                         labels = c("States", "Zones", "Regions"))) +
+  scale_y_discrete(expand = c(0, 0), 
+                   limits = rev(c("Base", "BU", "OLS", "OLS-subset", 
+                                  "WLSs", "WLSs-subset", "WLSv", "WLSv-subset", 
+                                  "MinTs", "MinTs-subset"))) +
+  theme(
+    plot.background = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
+    axis.title.x = element_text(face = "bold", size = 12),
+    legend.title = element_text(face = "bold", size = 10),
+    legend.text = element_text(face = "bold", size = 10),
+    legend.position = "bottom",
+    axis.text = element_text(face = "bold", size = 10),
+    axis.ticks.x.top = element_blank()
+  ) +
+  guides(fill = guide_colourbar(barwidth = 10,
+                                barheight = 1.5))
+```
 
 # Further issues
 
