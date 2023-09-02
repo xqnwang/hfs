@@ -105,7 +105,7 @@ extract_element <- function(data, index, method, element){
 }
 
 #--------------------------------------------------------------------
-# Calculate RMSE for each series
+# Calculate RMSE
 #--------------------------------------------------------------------
 calc_rmse <- function(fc, test, h){
   err <- subset(test, select = -Index) - subset(fc, select = -Index)
@@ -120,6 +120,64 @@ calc_rmse <- function(fc, test, h){
     select(!c("Index", "Horizon")) |>
     summarise_all(mean)
   return(rmse)
+}
+
+calc_rmse_series <- function(fc, test, h){
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  err <- cbind(err, Index = subset(test, select = Index))
+  rmse <- err |> 
+    as_tibble() |> 
+    group_by(Index) |> 
+    mutate(Horizon = row_number()) |> 
+    filter(Horizon <= h) |>
+    summarise_at(1:NCOL(err), function(x) sqrt(mean(x^2))) |>
+    ungroup() |>
+    select(!c("Index", "Horizon")) |>
+    data.matrix() |> 
+    as.vector()
+  return(rmse)
+}
+
+#--------------------------------------------------------------------
+# Calculate MASE
+#--------------------------------------------------------------------
+calc_mase <- function(fc, train, test, freq, h){
+  x <- subset(train, select = -Index)
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  scaling <- apply(x, 2, function(s) mean(abs(diff(as.vector(s), freq))))
+  q <- cbind(t(t(err) /scaling), Index = subset(test, select = Index))
+  
+  mase <- q |> 
+    as_tibble() |> 
+    group_by(Index) |> 
+    mutate(Horizon = row_number()) |> 
+    filter(Horizon <= h) |>
+    summarise_at(1:NCOL(q), function(x) mean(abs(x))) |>
+    ungroup() |>
+    select(!c("Index", "Horizon")) |>
+    summarise_all(mean)
+  
+  return(mase)
+}
+
+calc_mase_series <- function(fc, train, test, freq, h){
+  x <- subset(train, select = -Index)
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  scaling <- apply(x, 2, function(s) mean(abs(diff(as.vector(s), freq))))
+  q <- cbind(t(t(err) /scaling), Index = subset(test, select = Index))
+  
+  mase <- q |> 
+    as_tibble() |> 
+    group_by(Index) |> 
+    mutate(Horizon = row_number()) |> 
+    filter(Horizon <= h) |>
+    summarise_at(1:NCOL(q), function(x) mean(abs(x))) |>
+    ungroup() |>
+    select(!c("Index", "Horizon")) |>
+    data.matrix() |> 
+    as.vector()
+  
+  return(mase)
 }
 
 #--------------------------------------------------------------------
@@ -224,4 +282,64 @@ latex_sim_nos_table <- function(z_out, n_out){
     row_spec(3*(1:(length(candidates)-1)), hline_after = TRUE) |>
     column_spec(NCOL(z_out) + 1,
                 image = spec_image(ls_inline_plots, width = 200, height = 70)) 
+}
+
+#--------------------------------------------------------------------
+# MCB test for simulation data
+#--------------------------------------------------------------------
+RMSE_MCB_sim <- function(data_label = "simulation", methods, scenario, h){
+  RMSE_sim <- lapply(methods, function(method_label){
+    test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label,
+                                     "_reconsf", 
+                                     ifelse(scenario == "s0", "", paste0("_", scenario)), 
+                                     ".rds"))
+    for(method in names(reconsf[[1]])) {
+      out <- unique(test$Index) |> 
+        purrr::map(\(index) 
+                   extract_element(data = reconsf, index = index, 
+                                   method = method, element = "y_tilde")) %>% 
+        do.call(rbind, .)
+      assign(tolower(method), out)
+    }
+    RMSE <- sapply(names(reconsf[[1]]), function(lmethod){
+      assign(lmethod, calc_rmse_series(fc = get(tolower(lmethod)), test = test, h = h))
+    }, simplify = TRUE, USE.NAMES = TRUE) |>
+      as.data.frame() |> 
+      data.matrix()
+    assign(paste0("RMSE_", method_label), RMSE)
+  }) %>% 
+    do.call(cbind, .)
+  RMSE_sim <- RMSE_sim[, !duplicated(colnames(RMSE_sim))]
+  colnames(RMSE_sim) <- sub("_", "-", colnames(RMSE_sim))
+  return(subset(RMSE_sim, select = -Elasso))
+}
+
+MASE_MCB_sim <- function(data_label = "simulation", methods, scenario, h){
+  MASE_sim <- lapply(methods, function(method_label){
+    train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+    test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label,
+                                     "_reconsf", 
+                                     ifelse(scenario == "s0", "", paste0("_", scenario)), 
+                                     ".rds"))
+    for(method in names(reconsf[[1]])) {
+      out <- unique(test$Index) |> 
+        purrr::map(\(index) 
+                   extract_element(data = reconsf, index = index, 
+                                   method = method, element = "y_tilde")) %>% 
+        do.call(rbind, .)
+      assign(tolower(method), out)
+    }
+    MASE <- sapply(names(reconsf[[1]]), function(lmethod){
+      assign(lmethod, calc_mase_series(fc = get(tolower(lmethod)), train = train, test = test, freq = 4, h = h))
+    }, simplify = TRUE, USE.NAMES = TRUE) |>
+      as.data.frame() |> 
+      data.matrix()
+    assign(paste0("MASE_", method_label), MASE)
+  }) %>% 
+    do.call(cbind, .)
+  MASE_sim <- MASE_sim[, !duplicated(colnames(MASE_sim))]
+  colnames(MASE_sim) <- sub("_", "-", colnames(MASE_sim))
+  return(subset(MASE_sim, select = -Elasso))
 }
