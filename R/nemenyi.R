@@ -1,6 +1,6 @@
 nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE), 
           plottype = c("vline", "none", "mcb", "vmcb", "line", "matrix"), 
-          select = NULL, labels = NULL, title = NULL, ...){
+          select = NULL, labels = NULL, Title = NULL, Xlab = "Mean ranks", Ylab = "", ...){
   sort <- sort[1]
   plottype <- match.arg(plottype, c("vline", "none", "mcb", 
                                     "vmcb", "line", "matrix"))
@@ -56,8 +56,8 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
   if (plottype != "none") {
     args <- list(...)
     args.nms <- names(args)
-    if (!is.null(title)){
-      args$main <- title
+    if (!is.null(Title)){
+      # args$main <- Title
     } else {
       if (!("main" %in% args.nms)) {
         args$main <- paste0("Friedman: ", format(round(fried.pval, 
@@ -104,6 +104,9 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
     else {
       if (!("ylab" %in% names(args))) {
         args$ylab <- ""
+        # args$ylab <- Ylab #
+        # args$line <- 7 # adjust the position of the label
+        args$cex.lab <- 1.2
       }
       if (!("xlab" %in% names(args))) {
         args$xlab <- "Mean ranks"
@@ -121,7 +124,8 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
       parmar[1] <- nc + nr
     }
     if ((plottype == "vmcb") && (parmar[2] < (nc + nr))) {
-      parmar[2] <- nc + nr
+      # parmar[2] <- nc + nr
+      parmar[2] <- nc + nr - 2
       parmar[3] <- 1.5 # 
     }
     par(mar = parmar)
@@ -152,9 +156,10 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
                 c(1, 1, -1, -1), c(0, rep(cols.number + 1, 2), 
                                    0), col = "gray90", border = NA)
       points(ranks.means, 1:cols.number, pch = 20, lwd = 3)
-      axis(2, at = c(1:cols.number), labels = paste0(labels, 
-                                                     " - ", sprintf("%1.2f", round(ranks.means, 2))), 
-           las = 2)
+      axis(2, at = c(1:cols.number), labels = labels, las = 2)
+      # axis(2, at = c(1:cols.number), labels = paste0(labels, 
+      #                                                " - ", sprintf("%1.2f", round(ranks.means, 2))), 
+      #      las = 2)
       axis(1)
       for (i in 1:cols.number) {
         lines(ranks.means[i] + c(-1, 1) * 0.5 * r.stat, 
@@ -164,6 +169,8 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
       idx <- abs(ranks.means[select] - ranks.means) < r.stat
       points(ranks.means[idx], (1:cols.number)[idx], pch = 20, 
              lwd = 3, col = cmp[1])
+      title(Title, cex.main = 1.5) #
+      title(ylab = Ylab, line = 7, cex.lab = 1.5) #
     }
     box(which = "plot", col = "black")
   }
