@@ -54,7 +54,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
 # Output table latex
 #--------------------------------------------------------------------
 latex_table <- function(out_all){
-  out <- head(out_all$table_out, -1)
+  out <- out_all$table_out
   levels <- out_all$levels
   header <- c("", rep(as.character(length(horizons)), length(levels)))
   names(header) <- c("", levels)
@@ -66,8 +66,8 @@ latex_table <- function(out_all){
     x <- round(x, 1)
     origin_x <- x
     min_x <- min(origin_x)
-    comp_x <- c(origin_x[1:2], rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4))
-    out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "red"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
+    comp_x <- c(origin_x[1:2], rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), origin_x[length(origin_x)])
+    out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
   })
   
   out |>
@@ -77,10 +77,10 @@ latex_table <- function(out_all){
           align = c("l", rep("r", length(horizons)*length(levels))),
           escape = FALSE,
           linesep = "") |>
-    row_spec(2+4*(0:(length(candidates)-1)), hline_after = TRUE) |>
+    row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
     # kable_paper("striped", full_width = F) |>
     kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
-    row_spec(grepl("-", out$Method) |> which(), 
+    row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(), 
              background = "#e6e3e3") |>
     add_header_above(header, align = "c") |> print()
 }
@@ -200,7 +200,7 @@ combine_z <- function(data_label, methods, scenarios, series_name){
       assign(target, 
              readRDS(file = paste0("data_new/", target, ".rds")))
       z_method <- lapply(get(target), function(lentry){
-        select_methods <- names(lentry)[grepl("_", names(lentry))]
+        select_methods <- names(lentry)[grepl("_", names(lentry))|grepl("Elasso", names(lentry))]
         z_index <- sapply(lentry[select_methods], function(len) c(len$z, sum(len$z))) |> t() |> round(0)
         colnames(z_index) <- c(series_name, "Total")
         return(z_index)
@@ -228,6 +228,7 @@ latex_sim_nos_table <- function(z_out, n_out){
   target <- sapply(candidates, function(len){
     c(paste0(len, "-", c("subset", "intuitive", "lasso")))
   }) |> as.vector()
+  target <- c(target, "Elasso")
   z_out <- z_out[match(target, row.names(z_out)), ]/500
   z_out <- data.frame(z_out, Summary = "")
   n_img <- split(n_out$Total, n_out$Method)
@@ -279,7 +280,7 @@ latex_sim_nos_table <- function(z_out, n_out){
           escape = FALSE,
           linesep = "") |>
     kable_styling(latex_options = c("hold_position", "repeat_header",  "scale_down")) |>
-    row_spec(3*(1:(length(candidates)-1)), hline_after = TRUE) |>
+    row_spec(3*(1:length(candidates)), hline_after = TRUE) |>
     column_spec(NCOL(z_out) + 1,
                 image = spec_image(ls_inline_plots, width = 200, height = 70)) 
 }
@@ -312,7 +313,7 @@ RMSE_MCB_sim <- function(data_label = "simulation", methods, scenario, h){
     do.call(cbind, .)
   RMSE_sim <- RMSE_sim[, !duplicated(colnames(RMSE_sim))]
   colnames(RMSE_sim) <- sub("_", "-", colnames(RMSE_sim))
-  return(subset(RMSE_sim, select = -Elasso))
+  return(RMSE_sim)
 }
 
 MASE_MCB_sim <- function(data_label = "simulation", methods, scenario, h){
