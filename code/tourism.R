@@ -4,6 +4,7 @@ library(fabletools)
 library(magrittr)
 library(lubridate)
 library(fable)
+library(dplyr)
 library(hts)
 
 #----------------------------------------------------------------------
@@ -22,7 +23,7 @@ library(hts)
 tourism <- readr::read_csv("data/TourismData-asc2021.csv", skip = 3) |>
   select(-1) |>
   slice(-(1:2)) |>
-  rename(Year = ...2, Month = ...3) |>
+  dplyr::rename(Year = ...2, Month = ...3) |>
   fill(Year, .direction = "down") |>
   mutate(Month = str_sub(Month, 1, 3)) |>
   mutate(across(AAA:GBD, as.numeric)) |>
