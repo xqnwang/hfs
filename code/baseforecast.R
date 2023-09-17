@@ -82,6 +82,34 @@ fmethod <- "ets"
 # S matrix
 S <- readRDS("data/tourism_S.rds")
 
+#----------------------------------------------------------------------
+# Australian prison population
+##
+## Total number of prisoners in Australia over the period 2005Q1–2016Q4
+## Quarterly series: 48 quarters (12 years) for each series
+##
+## Gender * Legal * State: n = 81 series in total, nb = 32 series at the bottom level
+##
+## Training set:  2005Q1-2014Q4
+## Test set:      2015Q1-2016Q4
+#----------------------------------------------------------------------
+# Formalize data (Index, Time, Series1, ..., Seriesn)
+dat <- readRDS("data/prison_data.rds")
+
+# Data details
+data_label <- "prison" # used to name the saved results
+freq <- 4
+start_train <- c(2005, 1)
+end_train <- c(2014, 4)
+start_test <- c(2015, 1)
+end_test <- c(2016, 4)
+
+# Forecasting method
+fmethod <- "ets"
+
+# S matrix
+S <- readRDS("data/prison_S.rds")
+
 #################################################
 # Generate base forecasts
 #################################################
