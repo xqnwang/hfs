@@ -1,5 +1,6 @@
-nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE), 
+nemenyi <- function(data, conf.level = 0.95, sort = c(TRUE, FALSE), 
           plottype = c("vline", "none", "mcb", "vmcb", "line", "matrix"), 
+          group = NULL, shadow = TRUE,
           select = NULL, labels = NULL, Title = NULL, Xlab = "Mean ranks", Ylab = "", ...){
   sort <- sort[1]
   plottype <- match.arg(plottype, c("vline", "none", "mcb", 
@@ -14,9 +15,9 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
   if (!is.null(select) && (select > cols.number)) {
     select <- NULL
   }
-  if (plottype != "none") {
-    sort <- TRUE
-  }
+  # if (plottype != "none") {
+  #   sort <- TRUE
+  # }
   if (is.null(labels)) {
     labels <- colnames(data)
     if (is.null(labels)) {
@@ -152,10 +153,18 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
              lwd = 3, col = cmp[1])
     }
     else {
-      polygon(rep(ranks.means[select], 4) + r.stat/2 * 
-                c(1, 1, -1, -1), c(0, rep(cols.number + 1, 2), 
-                                   0), col = "gray90", border = NA)
-      points(ranks.means, 1:cols.number, pch = 20, lwd = 3)
+      if (shadow){
+        polygon(rep(ranks.means[select], 4) + r.stat/2 * 
+                  c(1, 1, -1, -1), c(0, rep(cols.number + 1, 2), 
+                                     0), col = "gray90", border = NA)
+      }
+      if (is.null(group)){
+        points(ranks.means, 1:cols.number, pch = 20, lwd = 3)
+      } else {
+        for (i in 1:length(group)){
+          points(ranks.means[group[[i]]], (1:cols.number)[group[[i]]], pch = i-1, lwd = 1)
+        }
+      }
       axis(2, at = c(1:cols.number), labels = labels, las = 2)
       # axis(2, at = c(1:cols.number), labels = paste0(labels, 
       #                                                " - ", sprintf("%1.2f", round(ranks.means, 2))), 
@@ -166,9 +175,14 @@ nemenyi <- function (data, conf.level = 0.95, sort = c(TRUE, FALSE),
               rep(i, times = 2), type = "o", lwd = 1, col = pcol, 
               pch = 20)
       }
-      idx <- abs(ranks.means[select] - ranks.means) < r.stat
-      points(ranks.means[idx], (1:cols.number)[idx], pch = 20, 
-             lwd = 3, col = cmp[1])
+      if (shadow){
+        idx <- abs(ranks.means[select] - ranks.means) < r.stat
+        points(ranks.means[idx], (1:cols.number)[idx], pch = 20, 
+               lwd = 3, col = cmp[1])
+      }
+      if (!is.null(group)){
+        abline(h=sapply(group[-length(group)], function(len) tail(len, 1) + 0.5), col="gray", lty=2, lwd=1)
+      }
       title(Title, cex.main = 1.5) #
       title(ylab = Ylab, line = 7, cex.lab = 1.5) #
     }
