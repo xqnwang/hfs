@@ -1,0 +1,109 @@
+---
+title: "Optimal forecast reconciliation with time series selection"
+author:
+- familyname: Wang
+  othernames: Xiaoqian
+  address:
+    - Monash University, VIC 3800, Australia
+  email: xiaoqian.wang@monash.edu
+  correspondingauthor: true
+- familyname: Hyndman
+  othernames: Rob J
+  address:
+    - Monash University, VIC 3800, Australia
+  email: rob.hyndman@monash.edu
+- familyname: Wickramasuriya
+  othernames: Shanika L
+  address:
+    - Monash University, VIC 3145, Australia
+  email: 
+abstract: "Abstract"
+keywords: "Keyword 1, Keyword 2"
+wpnumber: no/yr
+blind: false
+cover: true
+toc: false
+number-sections: true
+fig-height: 5
+fig-width: 8
+cite-method: biblatex
+bibliography: references.bib
+biblio-style: authoryear-comp
+keep-tex: true
+format:
+  wp-pdf:
+    knitr:
+      opts_chunk:
+        dev: "CairoPDF"
+execute:
+  echo: false
+  warning: false
+  message: false
+  cache: true
+---
+
+```{r}
+#| label: load
+#| cache: false
+# Load all required packages
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(latex2exp)
+
+theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
+```
+
+# Introduction {#sec-introduction}
+
+Hierarchical time series and forecast reconciliation.
+
+Single-level approaches, least squares-based reconciliation approaches, geometric intuition, other extensions with constraints.
+
+However... Two issues.
+
+In this paper, our focus will be on...
+
+The remainder of the paper is structured as follows.
+
+# Preliminaries {#sec-preliminaries}
+
+## Notation
+
+Hierarchical time series (balanced and unbalanced)
+
+Grouped time series
+
+Forecast reconciliation basics
+
+## Point forecast reconciliation
+
+### Minimum trace reconciliation
+
+### Reconciliation with regularization
+
+# Forecast reconciliation with time series selection {#sec-methodology}
+
+## Constrained reconciliation with selection
+
+Unbiasedness constraint
+
+## Unconstrained reconciliation with selection
+
+# Monte Carlo simulations {#sec-simulations}
+
+## Model misspecification in a hierarchy
+
+## Exploring the effect of correlation
+
+# Applications {#sec-applications}
+
+## Forecasting Australian domestic tourism
+
+## Forecasting Australian prison population
+
+# Conclusion {#sec-conclusion}
+
+\textbf{\large{Acknowledgement}}
