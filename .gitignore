@@ -20,6 +20,7 @@ __pycache__/
 *.DS_Store
 *.RData
 *.ipynb_checkpoints/
+*.pptx
 
 # Core latex/pdflatex auxiliary files
 *.xdv
