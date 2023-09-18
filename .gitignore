@@ -1,5 +1,3 @@
-# Draft files
-
 # Data
 *.rds
 *.csv
@@ -9,12 +7,12 @@ refs/
 L0Group/
 
 # History files
+_figs/
 .Rhistory
 .Rapp.history
 .pyc
 __pycache__/
 *_files/
-_*/
 
 # User-specific files
 *.tex
