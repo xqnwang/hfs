@@ -28,7 +28,7 @@ prison <- readr::read_csv("https://OTexts.com/fpp3/extrafiles/prison_population.
 
 # Only include bottom-level series
 prison_bts <- prison |>
-  aggregate_key(Gender * Legal * State, Count = sum(Count)) |>
+  aggregate_key(Gender * Legal * State, Count = sum(Count)/1e3) |>
   filter(!is_aggregated(Gender), !is_aggregated(Legal),
          !is_aggregated(State)) |>
   mutate(ID = paste0(substr(Gender, start = 1, stop = 1), 

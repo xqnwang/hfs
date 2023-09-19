@@ -1,85 +1,7 @@
-# Utility functions
-cumsum_matrix <- function(x) apply(x, 2, cumsum)
-brodcast_sum <- function(x, y){
-  t(apply(x, 1, function(row) row + y))
-}
-
-# Simulate seasonal time series using the basic structural time series (STS) model
-STSsim <- function(n, sigma2_varrho, sigma2_varsigma, sigma2_omega, eta_mat, m){
-  nseries <- dim(sigma2_omega)[1]
-  
-  # level
-  initial_level <- rnorm(nseries)
-  varrho <- MASS::mvrnorm(n-1, rep(0, nseries), sigma2_varrho)
-  level <- rbind(initial_level,
-                 brodcast_sum(cumsum_matrix(varrho), initial_level))
-  
-  # trend
-  initial_trend <- rnorm(nseries)
-  varsigma <- MASS::mvrnorm(n-1, rep(0, nseries), sigma2_varsigma)
-  trend <- rbind(initial_trend, 
-                 brodcast_sum(cumsum_matrix(varsigma), initial_trend))
-  
-  # seasonal
-  initial_seasonal <- MASS::mvrnorm(m-1, rep(0, nseries), diag(rep(1, nseries)))
-  omega <- MASS::mvrnorm(n-m+1, rep(0, nseries), sigma2_omega)
-  season <- initial_seasonal
-  for (i in m:n) {
-    season <- rbind(season, -apply(season[(i-m+1):(i-1),], 2, sum) + omega[i-m+1,])
-  }
-  
-  # eta
-  eta <- MTS::VARMAsim(n, sample(c(0, 1), 1, replace = TRUE), sample(c(0, 1), 1, replace = TRUE),
-                  phi = diag(runif(4, 0.5, 0.7)), theta = diag(runif(4, 0.5, 0.7)),
-                  sigma = eta_mat)$series
-  
-  bts <- level + trend + season + eta
-  bts
-}
-
-# Exploring the Smoothing Effect of Aggregation - noisy time series in disaggregated levels
-NOISYsim <- function(n, sigma2_varrho, sigma2_varsigma, sigma2_omega, eta_mat, error1, error2, m=1){
-  nseries <- dim(sigma2_omega)[1]
-  
-  # level
-  initial_level <- rnorm(nseries)
-  varrho <- MASS::mvrnorm(n-1, rep(0, nseries), sigma2_varrho)
-  level <- rbind(initial_level,
-                 brodcast_sum(cumsum_matrix(varrho), initial_level))
-  
-  # trend
-  initial_trend <- rnorm(nseries)
-  varsigma <- MASS::mvrnorm(n-1, rep(0, nseries), sigma2_varsigma)
-  trend <- rbind(initial_trend, 
-                 brodcast_sum(cumsum_matrix(varsigma), initial_trend))
-  
-  # seasonal
-  initial_seasonal <- MASS::mvrnorm(m-1, rep(0, nseries), diag(rep(1, nseries)))
-  omega <- MASS::mvrnorm(n-m+1, rep(0, nseries), sigma2_omega)
-  season <- initial_seasonal
-  for (i in m:n) {
-    season <- rbind(season, -apply(season[(i-m+1):(i-1),], 2, sum) + omega[i-m+1,])
-  }
-  
-  # eta
-  eta <- MTS::VARMAsim(n, sample(c(0, 1), 1, replace = TRUE), sample(c(0, 1), 1, replace = TRUE),
-                       phi = diag(runif(4, 0.5, 0.7)), theta = diag(runif(4, 0.5, 0.7)),
-                       sigma = eta_mat)$series
-  
-  bts <- level + trend + season + eta
-
-  e1 <- rnorm(n, 0, sqrt(error1))
-  e2 <- rnorm(n, 0, sqrt(error2))
-  bts[, 1] = bts[, 1] - e1 - 0.5*e2
-  bts[, 2] = bts[, 2] + e1 - 0.5*e2
-  bts[, 3] = bts[, 3] - e1 + 0.5*e2
-  bts[, 4] = bts[, 4] + e1 + 0.5*e2
-  bts
-}
-
 #################################################
 # Section 3.3-3.4 of Wickramasuriya et al. (2019)
 #################################################
+source("R/STSsim.R")
 # Setup parameters
 repeat_n = 500
 n = 180
@@ -112,46 +34,82 @@ colnames(simulated_set) <- c("AA", "AB", "BA", "BB", "Quarter", "Index")
 
 write.csv(simulated_set, file = 'data/simulation_data.csv', row.names = FALSE)
 
-# Data simulation - NOISY
-set.seed(123)
-simulated_set = data.frame()
-for (i in 1:repeat_n) {
-  ts = NOISYsim(n, sigma2_varrho, sigma2_varsigma, sigma2_varomega, eta_mat, error1, error2, freq)
-  ts = data.frame(ts, t=seq(as.Date("1978-01-01"), by="quarter", length.out = n),
-                  index=i, row.names = NULL)
-  simulated_set = rbind(simulated_set, ts)
-}
-
-colnames(simulated_set) <- c("AA", "AB", "BA", "BB", "Quarter", "Index")
-
-write.csv(simulated_set, file = 'data/simulation_data_noisy.csv', row.names = FALSE)
 
 #################################################
-# Negative error correlation
+# Generating data for bottom level from VAR(1) processes
 #################################################
-# Setup parameters
-repeat_n = 500
-n = 180
-h = 16
-freq = 4
-sigma2_varrho = diag(rep(2, 4))
-sigma2_varsigma = diag(rep(0.007, 4))
-sigma2_varomega = diag(rep(7, 4))
-eta_mat = diag(rep(3, 4))
-eta_mat[1, 2] = eta_mat[2, 1] = -2
-eta_mat[3, 4] = eta_mat[4, 3] = -1
+source("R/cov-shrink.R")
+library(MTS) # generating multivariate time series
+library(forecast) # for fitting models and forecasting
+library(hts) # For hierarchical forecasting
+library(Matrix)
 
-# Data simulation
+# Constructing A1 matrix
+########################################
+theta <- pi/3
+r1 <- 0.6
+z1 <- r1 * (cos(theta) + 1i * sin(theta))
+z2 <- Conj(z1)
+
+## Below A1 matrix is the same as putting real part of z1 along the diagonal and imaginary part along the off-diagonal with opposite signs i.e. [u v; -v w]
+a1 <- d1 <- r1 * cos(theta)
+b1 <- r1 * sin(theta)
+c1 <- -r1 * sin(theta)
+
+A1 <- matrix(c(a1, c1, b1, d1), 2, 2)
+
+# Constructing A2 matrix
+########################################
+alpha <- pi/6
+r2 <- 0.9
+z3 <- r2 * (cos(alpha) + 1i * sin(alpha))
+z4 <- Conj(z3)
+
+## Below A2 matrix is the same as putting real part of z3 along the diagonal and imaginary part along the off-diagonal with opposite signs i.e. [u v; -v w]
+a2 <- d2 <- r2 * cos(alpha)
+b2 <- r2 * sin(alpha)
+c2 <- -r2 * sin(alpha)
+
+A2 <- matrix(c(a2, c2, b2, d2), 2, 2)
+
+# Phi and Sigma
+########################################
+Phi <- as.matrix(bdiag(A1, A2))
+
+sig2.AA <- sig2.BA <- 2
+sig2.AB <- sig2.BB <- 3
+rho <- seq(-0.8, 0.8, by = 0.2)
+constant <- rep(1, 4)
+
+# Simulating data
+########################################
 set.seed(123)
-simulated_set = data.frame()
-for (i in 1:repeat_n) {
-  ts = STSsim(n, sigma2_varrho, sigma2_varsigma, sigma2_varomega, eta_mat, freq)
-  ts = data.frame(ts, t=seq(as.Date("1978-01-01"), by="quarter", length.out = n),
-                  index=i, row.names = NULL)
-  simulated_set = rbind(simulated_set, ts)
+nsim <- 500
+n <- 101
+h <- 1
+nfreq <- 1L
+
+nodes <- list(2, c(2, 2))
+gmat <- hts:::GmatrixH(nodes)
+gmat <- apply(gmat, 1, table)
+nt <- sum(unlist(nodes)) + 1
+nb <- sum(nodes[[length(nodes)]])
+
+for (k in 1:length(rho)){
+  sigmaA <- matrix(c(sig2.AA, sqrt(sig2.AA * sig2.AB) * rho[k], sqrt(sig2.AA * sig2.AB) * rho[k], sig2.AB), 2, 2)
+  sigma <- bdiag(sigmaA, sigmaA)
+  
+  j <- 1
+  simulated_set = data.frame()
+  while (j <= nsim) {
+    allB <- VARMAsim(nobs = n, arlags = 1, phi = Phi, cnst = constant,
+                     skip = 200, sigma = sigma)$series
+    allB <- data.frame(allB, Time = 1:n, Index = j)
+    simulated_set <- rbind(simulated_set, allB)
+    j <- j + 1
+  }
+  colnames(simulated_set) <- c("AA", "AB", "BA", "BB", "Time", "Index")
+  write.csv(simulated_set, file = paste0("data/corr_", k, "_data.csv"), row.names = FALSE)
 }
 
-colnames(simulated_set) <- c("AA", "AB", "BA", "BB", "Quarter", "Index")
-
-write.csv(simulated_set, file = 'data/simulation_data_negative.csv', row.names = FALSE)
 

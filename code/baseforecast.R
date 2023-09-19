@@ -4,15 +4,23 @@ library(future)
 library(forecast)
 
 # Utility function
-base_forecast <- function(hts, method, h){
+base_forecast <- function(hts, method, h, special = NULL){
   out <- list()
   for(i in 1:NCOL(hts)){
     series <- hts[, i]
+    seriesname <- colnames(hts)[i]
     if (method == 'arima'){
       model <- auto.arima(series)
     }
     if (method == 'ets'){
       model <- ets(series)
+    }
+    if (method == "ar"){
+      if (is.null(special)){
+        model <- auto.arima(series, allowmean = TRUE, stationary = TRUE, stepwise = FALSE)
+      } else{
+        model <- auto.arima(series, allowmean = !(seriesname %in% special), stationary = TRUE, stepwise = FALSE)
+      }
     }
     fc <- forecast(model, h)$mean
     resid <- residuals(model, type = 'response') # use regular residuals rather than innovation residuals
@@ -50,6 +58,34 @@ end_test <- c(2022, 4)
 
 # Forecasting method
 fmethod <- "ets"
+special <- NULL
+
+# S matrix
+S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
+           diag(rep(1, 4)))
+
+#----------------------------------------------------------------------
+# Simulation data - correlation
+## Total/Middle/Bottom: 3 levels, n = 7
+## Training set:  1-100
+## Test set:      1
+#----------------------------------------------------------------------
+k <- 1 # 1:9
+data_label <- paste0("corr_", k)
+freq <- 1
+start_train <- 1
+end_train <- 100
+start_test <- 101
+end_test <- 101
+dat <- readr::read_csv(paste0("data/corr_", k, "_data.csv")) |>
+  mutate(A = AA + AB,
+         B = BA + BB,
+         Total = AA + AB + BA + BB) |>
+  select(c(Index, Time, Total, A, B, AA, AB, BA, BB))
+
+# Forecasting method
+fmethod <- "ar"
+special <- c("A", "BA")
 
 # S matrix
 S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
@@ -78,6 +114,7 @@ end_test <- c(2017, 12)
 
 # Forecasting method
 fmethod <- "ets"
+special <- NULL
 
 # S matrix
 S <- readRDS("data/tourism_S.rds")
@@ -106,9 +143,39 @@ end_test <- c(2016, 4)
 
 # Forecasting method
 fmethod <- "ets"
+special <- NULL
 
 # S matrix
 S <- readRDS("data/prison_S.rds")
+
+#----------------------------------------------------------------------
+# ABS - Unemployed persons by Duration of job search, State and Territory
+##
+## 6291.0.55.001 - UM2 - Unemployed persons by Duration of job search, State and Territory, January 1991 onwards
+## 
+## Monthly series
+## Duration of job search (Duration, 6) * State and territory (STT, 8): n = 63 series in total, nb = 48 series at the bottom level
+##
+## Training set:  2010Jan-2022Jul
+## Test set:      2022Aug-2023Jul
+#----------------------------------------------------------------------
+# Formalize data (Index, Time, Series1, ..., Seriesn)
+dat <- readRDS("data/labour_data.rds")
+
+# Data details
+data_label <- "labour" # used to name the saved results
+freq <- 12
+start_train <- c(2010, 1)
+end_train <- c(2022, 7)
+start_test <- c(2022, 8)
+end_test <- c(2023, 7)
+
+# Forecasting method
+fmethod <- "ets"
+special <- NULL
+
+# S matrix
+S <- readRDS("data/labour_S.rds")
 
 #################################################
 # Generate base forecasts
@@ -129,7 +196,7 @@ for (index in indices){
   test_index <- window(data_index, start = start_test, end = end_test)
   
   # Base forecasts
-  basef <- base_forecast(train_index, method = fmethod, h = NROW(test_index))
+  basef <- base_forecast(train_index, method = fmethod, h = NROW(test_index), special = special)
   
   # Results
   fits <- rbind(fits, 

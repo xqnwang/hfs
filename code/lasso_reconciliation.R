@@ -74,6 +74,18 @@ if (data_label == "simulation"){
 }
 
 #----------------------------------------------------------------------
+# Simulation data - correlation
+## Total/Middle/Bottom: 3 levels, n = 7
+## Training set:  1-100
+## Test set:      1
+#----------------------------------------------------------------------
+if (grepl("corr", data_label)){
+  nvalid = NULL
+  method <- c("ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink")
+  method_name <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+}
+
+#----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
 ##
 ## Monthly series from 1998Jan-2017Dec: 240 months (20 years) for each series
@@ -102,6 +114,23 @@ if (data_label == "tourism"){
 #----------------------------------------------------------------------
 if (data_label == "prison"){
   nvalid = 8
+  method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
+  method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
+}
+
+#----------------------------------------------------------------------
+# ABS - Unemployed persons by Duration of job search, State and Territory
+##
+## 6291.0.55.001 - UM2 - Unemployed persons by Duration of job search, State and Territory, January 1991 onwards
+## 
+## Monthly series
+## Duration of job search (Duration, 6) * State and territory (STT, 8): n = 63 series in total, nb = 48 series at the bottom level
+##
+## Training set:  2010Jan-2022Jul
+## Test set:      2022Aug-2023Jul
+#----------------------------------------------------------------------
+if (data_label == "labour"){
+  nvalid = 12
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
 }

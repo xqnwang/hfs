@@ -25,7 +25,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
   out_com <- mget(paste0(data_label, "_", methods, "_", measure), inherits = TRUE) %>% do.call(rbind, .)
   rownames(out_com) <- NULL
   out_com <- out_com[!duplicated(out_com), ]
-  if(data_label == "tourism"){
+  if((data_label == "tourism") | (data_label == "prison")){
     candidates <- c("OLS", "WLSs", "WLSv", "MinTs")
   } else if (data_label == "simulation"){
     candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
