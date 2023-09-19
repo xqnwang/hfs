@@ -72,17 +72,67 @@ The remainder of the paper is structured as follows.
 
 ## Notation
 
-Hierarchical time series (balanced and unbalanced)
+We denote the set $\{1,\ldots,k\}$ by $[k]$ for any non-negative integer $k$. A *hierarchical time series* can be considered as an $n$-dimensional multivariate time series, $\{\boldsymbol{y}_t, t \in [T]\}$, that adheres to known linear constraints. Let $\boldsymbol{y}_t \in \mathbb{R}^n$ be a vector comprising observations of all time series in the hierarchy at time $t$, and $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ be a vector comprising observations of all bottom-level time series at time $t$. The full hierarchy at time $t$ can be written as
 
-Grouped time series
+$$
+\boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t,
+$$
 
-Forecast reconciliation basics
+where $\boldsymbol{S}$ is an $n \times n_b$ *summing matrix* that shows aggregation constraints present in the structure. We can write the summing matrix as $\boldsymbol{S} = \left[\begin{array}{c}\boldsymbol{A} \\ \boldsymbol{I}_{n_b}\end{array}\right]$, where $\boldsymbol{A}$ is an $n_a \times n_b$ *aggregation matrix* with $n = n_a + n_b$, and $\boldsymbol{I}_{n_b}$ is an $n_b$-dimensional identity matrix.
 
-## Point forecast reconciliation
+![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="50%"}
+
+To clarify these notations, consider the example of the hierarchy in @fig-hts. For this two-level hierarchy, $n = 7$, $n_b = 4$, $n_a = 3$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]'$, $\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]'$, and
+
+$$
+\boldsymbol{S} = \left[
+\begin{array}{cccc}
+1 & 1 & 1 & 1 \\
+1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 \\
+\multicolumn{4}{c}{\boldsymbol{I}_4}
+\end{array}\right].
+$$
+
+![An example of a two level grouped time series.](figs/gts_example.pdf){#fig-gts fig-align="center" width="100%"}
+
+When data structure does not naturally disaggregate in a unique hierarchical manner, we can combine these hierarchical structures to form a *grouped time series*. Thus, grouped time series can also be considered as hierarchical time series with more than one grouping structure. @fig-gts shows an example of a two level grouped time series with two alternative aggregation structures. For this example, $n = 9$, $n_b = 4$, $n_a = 5$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{X},t}, y_{\text{Y},t}, y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]'$, $\boldsymbol{b}_t = [y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]'$, and
+
+$$
+\boldsymbol{S} = \left[
+\begin{array}{cccc}
+1 & 1 & 1 & 1 \\
+1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 \\
+1 & 0 & 1 & 0 \\
+0 & 1 & 0 & 1 \\
+\multicolumn{4}{c}{\boldsymbol{I}_4}
+\end{array}\right].
+$$
+
+## Linear forecast reconciliation
+
+Let $\hat{\boldsymbol{y}}_{T+h | T} \in \mathbb{R}^n$ be a vector of $h$-step-ahead *base forecasts* for all time series in the hierarchy, given observations up to time $T$, and stacked in the same order as $\boldsymbol{y}_t$. We can use any method to generate these forecasts, but In general they will not add up especially when we forecast each series independently.
+
+When forecasting hierarchical time series, we expect the forecasts to be *coherent* (i.e., aggregation constraints are satisfied). Let $\tilde{\boldsymbol{y}}_{T+h | T} \in \mathbb{R}^n$ denote a vector of $h$-step-ahead **reconciled forecasts** which are coherent by construction, $\psi$ a mapping that reconciles base forecasts, $\hat{\boldsymbol{y}}_{T+h | T}$. Then we have *forecast reconciliation* $\tilde{\boldsymbol{y}}_{T+h | T}=\psi(\hat{\boldsymbol{y}}_{T+h | T})$, which is essentially a post-processing method. For the ease of exposition, we will use the subscript $h$ rather than $T+h | T$. In this paper, we focus on linear forecast reconciliation given by
+
+$$
+\tilde{\boldsymbol{y}}_{h} = \boldsymbol{S}\boldsymbol{G}_{h}\hat{\boldsymbol{y}}_{h},
+$$
+
+where
+
+-   $\boldsymbol{G}_h$ is an $n_b \times n$ weighting matrix that maps the base forecasts into the bottom level. In other words, it combines all base forecasts to form reconciled forecasts for bottom-level series.
+
+-   $\boldsymbol{S}$ is an $n \times n_b$ summing matrix that sums up bottom-level reconciled forecasts to produce coherent forecasts of all levels.
 
 ### Minimum trace reconciliation
 
 ### Reconciliation with regularization
+
+-   their drawbacks
+
+-   our contributions
 
 # Forecast reconciliation with time series selection {#sec-methodology}
 
