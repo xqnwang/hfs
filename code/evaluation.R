@@ -126,6 +126,41 @@ if (data_label == "prison"){
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
+#----------------------------------------------------------------------
+# ABS - Unemployed persons by Duration of job search, State and Territory
+##
+## 6291.0.55.001 - UM2 - Unemployed persons by Duration of job search, State and Territory, January 1991 onwards
+## 
+## Monthly series
+## Duration of job search (Duration, 6) * State and territory (STT, 8): n = 63 series in total, nb = 48 series at the bottom level
+##
+## Training set:  2010Jan-2022Jul
+## Test set:      2022Aug-2023Jul
+#----------------------------------------------------------------------
+if (data_label == "labour"){
+  # Import results
+  freq <- 12
+  scenario <- NULL
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf.rds"))
+  train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+  test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+  method <- c("OLS", "WLSs", "WLSv", "MinTs")
+  
+  # Structure information used to calculate RMSE across levels
+  top <- 1
+  duration <- 2:7
+  stt <- 8:15
+  duration_stt <- 16:63
+  avg <- 1:63
+  horizon <- c(1, 4, 8, 12)
+  
+  # Reconciliation methods considered
+  methods <- c("Base", "BU", 
+               sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso") methods <- c(methods, "Elasso")
+  reconcile_methods <- grep(method_label, methods, value = TRUE)
+}
+
 #################################################
 # Extract reconciled forecasts
 #################################################
@@ -179,6 +214,15 @@ for(h in horizon){
              Gender_Legal_State = mean(c_across(gender_legal_state + 1)),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, Gender, Legal, State, Gender_Legal, Gender_State, Legal_State, Gender_Legal_State, Average)
+  } else if (data_label == "labour"){
+    out <- bind_rows(rmse, .id = "Method") |>
+      rowwise() |>
+      mutate(Top = mean(c_across(top + 1)),
+             Duration = mean(c_across(duration + 1)),
+             STT = mean(c_across(stt + 1)),
+             Duration_STT = mean(c_across(duration_stt + 1)),
+             Average = mean(c_across(avg + 1))) |>
+      select(Method, Top, Duration, STT, Duration_STT, Average)
   }
   assign(paste0("rmse_h", h), out)
   
@@ -227,6 +271,15 @@ for(h in horizon){
              Gender_Legal_State = mean(c_across(gender_legal_state + 1)),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, Gender, Legal, State, Gender_Legal, Gender_State, Legal_State, Gender_Legal_State, Average)
+  } else if (data_label == "labour"){
+    out <- bind_rows(mase, .id = "Method") |>
+      rowwise() |>
+      mutate(Top = mean(c_across(top + 1)),
+             Duration = mean(c_across(duration + 1)),
+             STT = mean(c_across(stt + 1)),
+             Duration_STT = mean(c_across(duration_stt + 1)),
+             Average = mean(c_across(avg + 1))) |>
+      select(Method, Top, Duration, STT, Duration_STT, Average)
   }
   assign(paste0("mase_h", h), out)
   
