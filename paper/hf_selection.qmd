@@ -82,7 +82,7 @@ where $\boldsymbol{S}$ is an $n \times n_b$ *summing matrix* that shows aggregat
 
 ![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="50%"}
 
-To clarify these notations, consider the example of the hierarchy in @fig-hts. For this two-level hierarchy, $n = 7$, $n_b = 4$, $n_a = 3$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]'$, $\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]'$, and
+To clarify these notations, consider the example of the hierarchy in @fig-hts. For this two-level hierarchy, $n = 7$, $n_b = 4$, $n_a = 3$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, $\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, and
 
 $$
 \boldsymbol{S} = \left[
@@ -96,7 +96,7 @@ $$
 
 ![An example of a two level grouped time series.](figs/gts_example.pdf){#fig-gts fig-align="center" width="100%"}
 
-When data structure does not naturally disaggregate in a unique hierarchical manner, we can combine these hierarchical structures to form a *grouped time series*. Thus, grouped time series can also be considered as hierarchical time series with more than one grouping structure. @fig-gts shows an example of a two level grouped time series with two alternative aggregation structures. For this example, $n = 9$, $n_b = 4$, $n_a = 5$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{X},t}, y_{\text{Y},t}, y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]'$, $\boldsymbol{b}_t = [y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]'$, and
+When data structure does not naturally disaggregate in a unique hierarchical manner, we can combine these hierarchical structures to form a *grouped time series*. Thus, grouped time series can also be considered as hierarchical time series with more than one grouping structure. @fig-gts shows an example of a two level grouped time series with two alternative aggregation structures. For this example, $n = 9$, $n_b = 4$, $n_a = 5$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{X},t}, y_{\text{Y},t}, y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}$, $\boldsymbol{b}_t = [y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}$, and
 
 $$
 \boldsymbol{S} = \left[
@@ -114,19 +114,45 @@ $$
 
 Let $\hat{\boldsymbol{y}}_{T+h | T} \in \mathbb{R}^n$ be a vector of $h$-step-ahead *base forecasts* for all time series in the hierarchy, given observations up to time $T$, and stacked in the same order as $\boldsymbol{y}_t$. We can use any method to generate these forecasts, but In general they will not add up especially when we forecast each series independently.
 
-When forecasting hierarchical time series, we expect the forecasts to be *coherent* (i.e., aggregation constraints are satisfied). Let $\tilde{\boldsymbol{y}}_{T+h | T} \in \mathbb{R}^n$ denote a vector of $h$-step-ahead **reconciled forecasts** which are coherent by construction, $\psi$ a mapping that reconciles base forecasts, $\hat{\boldsymbol{y}}_{T+h | T}$. Then we have *forecast reconciliation* $\tilde{\boldsymbol{y}}_{T+h | T}=\psi(\hat{\boldsymbol{y}}_{T+h | T})$, which is essentially a post-processing method. For the ease of exposition, we will use the subscript $h$ rather than $T+h | T$. In this paper, we focus on linear forecast reconciliation given by
+When forecasting hierarchical time series, we expect the forecasts to be *coherent* (i.e., aggregation constraints are satisfied). Let $\tilde{\boldsymbol{y}}_{T+h | T} \in \mathbb{R}^n$ denote a vector of $h$-step-ahead *reconciled forecasts* which are coherent by construction, $\psi$ a mapping that reconciles base forecasts, $\hat{\boldsymbol{y}}_{T+h | T}$. Then we have *forecast reconciliation* $\tilde{\boldsymbol{y}}_{T+h | T}=\psi(\hat{\boldsymbol{y}}_{T+h | T})$, which is essentially a post-processing method. In this paper, we focus on linear forecast reconciliation given by
 
 $$
-\tilde{\boldsymbol{y}}_{h} = \boldsymbol{S}\boldsymbol{G}_{h}\hat{\boldsymbol{y}}_{h},
+\tilde{\boldsymbol{y}}_{T+h | T} = \boldsymbol{S}\boldsymbol{G}_h\hat{\boldsymbol{y}}_{T+h | T},
 $$
 
 where
 
 -   $\boldsymbol{G}_h$ is an $n_b \times n$ weighting matrix that maps the base forecasts into the bottom level. In other words, it combines all base forecasts to form reconciled forecasts for bottom-level series.
-
--   $\boldsymbol{S}$ is an $n \times n_b$ summing matrix that sums up bottom-level reconciled forecasts to produce coherent forecasts of all levels.
+-   $\boldsymbol{S}$ is an $n \times n_b$ summing matrix that sums up bottom-level reconciled forecasts to produce coherent forecasts of all levels. It identifies the linear constraints involved in the hierarchy.
 
 ### Minimum trace reconciliation
+
+Let the $h$-step-ahead *base forecast errors* be defined as $\hat{\boldsymbol{e}}_{T+h | T} = \boldsymbol{y}_{T+h} - \hat{\boldsymbol{y}}_{T+h | T}$, and the $h$-step-ahead *reconciled forecast errors* be defined as $\tilde{\boldsymbol{e}}_{T+h | T} = \boldsymbol{y}_{T+h} - \tilde{\boldsymbol{y}}_{T+h | T}$. @Wickramasuriya2019-fc formulated a linear reconciliation problem as minimizing the trace (MinT) of the $h$-step-ahead covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h | T})$. Under the assumption of unbiasedness, the unique solution of the minimization problem is given by
+
+$$
+\boldsymbol{G}_h=\left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1},
+$$ {#eq-mint} where $\boldsymbol{W}_h$ is the positive definite covariance matrix of the $h$-step-ahead base forecast errors, $\operatorname{Var}(\hat{\boldsymbol{e}}_{T+h | T})$.
+
+The trace minimization problem can be reformulated as a least squares problem with linear constraints given by
+
+$$
+\begin{aligned}
+& \underset{\tilde{\boldsymbol{y}}_{T+h | T}}{\min} \quad \frac{1}{2}(\hat{\boldsymbol{y}}_{T+h | T}-\tilde{\boldsymbol{y}}_{T+h | T})^{\prime} \boldsymbol{W}_{h}^{-1}(\hat{\boldsymbol{y}}_{T+h | T}-\tilde{\boldsymbol{y}}_{T+h | T}) \\
+& \text { s.t. } \quad \tilde{\boldsymbol{y}}_{T+h | T}=\boldsymbol{S}\tilde{\boldsymbol{b}}_{T+h | T},
+\end{aligned}
+$$
+
+where $\tilde{\boldsymbol{b}}_{T+h | T} \in \mathbb{R}^{n_b}$ is the vector comprising $h$-step-ahead bottom-level reconciled forecasts, made at time $T$. Focusing on $\boldsymbol{W}_h$, the intuitive behind the MinT reconciliation is that the larger the estimated variance of the base forecast errors, the larger the range of adjustments permitted for forecast reconciliation.
+
+It's challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assuming that $\boldsymbol{W}_h = k_h\boldsymbol{W}_1$, $\forall h$, where $k_h > 0$, the MinT solution of $\boldsymbol{G}$ does not change with the forecast horizon. Hence, we will drop the subscript $h$ for the ease of exposition. The most popularly used candidate estimators for $\boldsymbol{W}$ in the forecast reconciliation literature are listed as follows.
+
+1.  $\boldsymbol{W}_{\text{OLS}} = \boldsymbol{I}$ is the *OLS estimator* proposed by @Hyndman2011-sd, assuming that the base forecast errors are uncorrelated and equivariant.
+2.  $\boldsymbol{W}_{\text{WLSs}} = \operatorname{diag}(\boldsymbol{S} \mathbf{1})$ is the *WLS estimator applying structural scaling* proposed by @Athanasopoulos2017-jj. This estimator depends only on the aggregation structure of the hierarchy. It assumes that the variance of each bottom-level base forecast error is equivalent and uncorrelated between nodes.
+3.  $\boldsymbol{W}_{\text{WLSv}} = \operatorname{diag}(\hat{\boldsymbol{W}}_1)$ is the *WLS estimator applying variance scaling* proposed by @Hyndman2016-cz, where $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals).
+4.  $\boldsymbol{W}_{\text{MinT}} = \hat{\boldsymbol{W}}_1$ is referred to as the *MinT estimator* based on the sample covariance matrix proposed by @Wickramasuriya2019-fc.
+5.  $\boldsymbol{W}_{\text{MinTs}} = \lambda\operatorname{diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$ is the *MinT shrinkage estimator* suggested by @Wickramasuriya2019-fc, in which off-diagonal elements of $\hat{\boldsymbol{W}}_1$ are shrunk toward zero.
+
+It's hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the reconciliation weighting matrix as the summing matrix is fixed for a certain hierarchy. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconcliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the mean squared reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation.
 
 ### Reconciliation with regularization
 
@@ -135,6 +161,8 @@ where
 -   our contributions
 
 # Forecast reconciliation with time series selection {#sec-methodology}
+
+For the ease of exposition, we will use the subscript $h$ rather than $T+h | T$.
 
 ## Constrained reconciliation with selection
 
