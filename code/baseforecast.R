@@ -209,8 +209,11 @@ for (index in indices){
                  sapply(basef, function(l) l$train) |> 
                    data.frame(Index = index))
   basefc_index <- sapply(basef, function(l) l$forecast)
+  if (is.vector(basefc_index)){
+    basefc_index <- t(basefc_index)
+  }
   basefc <- rbind(basefc, 
-                  ifelse(is.vector(basefc_index), t(basefc_index), basefc_index) |> 
+                  basefc_index |> 
                     data.frame(Index = index))
   test <- rbind(test, 
                 test_index |> data.frame(Index = index))
