@@ -655,7 +655,7 @@ tourism_subset_lambda <- sapply(tourism_subsetonly_reconsf, function(lentry) len
 tourism_subset_info <- data.frame(tourism_subset_z, tourism_subset_lambda)
 
 None <- c(Top = length(Top), State = length(State), Zone = length(Zone), Region = length(Region),
-          Total = length(Total), "$\\lambda_0$" = 0, "$\\lambda_1$" = 0, "$\\lambda_2$" = 0)
+          Total = length(Total), "$\\lambda_0$" = NA, "$\\lambda_1$" = NA, "$\\lambda_2$" = NA)
 tourism_subset_info <- apply(tourism_subset_info, 1, function(lentry){
   c(Top = sum(lentry[Top]), State = sum(lentry[State]), 
     Zone = sum(lentry[Zone]), Region = sum(lentry[Region]), 
@@ -788,12 +788,70 @@ ggplot(RMSE_melt, aes(x = Series, y = Method, fill = RMSE)) +
                                 barheight = 1.5))
 ```
 
+## Labour data
+
+```{r}
+#| label: tbl-labour-rmse
+#| echo: false
+#| results: asis
+#| tbl-cap: "Out-of-sample forecast performance (average RMSE) for the labour data."
+
+measure <- "rmse"
+data_label <- "labour"
+scenario <- NULL
+horizons <- c(1, 4, 8, 12)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+latex_table(out_all)
+```
+
+```{r}
+#| label: tbl-labour-info
+#| echo: false
+#| results: asis
+#| tbl-cap: "Number of time series retained after subset selection and the optimal hyperparameter values for the labour data."
+
+labour_subset_reconsf <- readRDS(file = "data_new/labour_subset_reconsf.rds")
+labour_lasso_reconsf <- readRDS(file = "data_new/labour_lasso_reconsf.rds")
+Top <- 1
+Duration <- 2:7
+STT <- 8:15
+Duration_STT <- 16:63
+Total <- 1:63
+
+labour_subsetonly_reconsf <- c(labour_subset_reconsf[[1]][grepl("_subset", names(labour_subset_reconsf[[1]]))],
+                               Elasso = list(labour_lasso_reconsf[[1]]$Elasso))
+labour_subset_z <- sapply(labour_subsetonly_reconsf, function(lentry) lentry$z) |> t()
+labour_subset_lambda <- sapply(labour_subsetonly_reconsf, function(lentry) lentry$lambda_opt[c("l0", "l1", "l2")] |> unname()) |> t()
+labour_subset_info <- data.frame(labour_subset_z, labour_subset_lambda)
+
+None <- c(Top = length(Top), Duration = length(Duration), STT = length(STT), Duration_STT = length(Duration_STT),
+          Total = length(Total), "$\\lambda_0$" = NA, "$\\lambda_1$" = NA, "$\\lambda_2$" = NA)
+labour_subset_info <- apply(labour_subset_info, 1, function(lentry){
+  c(Top = sum(lentry[Top]), Duration = sum(lentry[Duration]), 
+    STT = sum(lentry[STT]), Duration_STT = sum(lentry[Duration_STT]), 
+    Total = sum(lentry[Total]), 
+    "$\\lambda_0$" = round(tail(lentry, 3), 2)[1],
+    "$\\lambda_1$" = round(tail(lentry, 3), 2)[2],
+    "$\\lambda_2$" = round(tail(lentry, 3), 2)[3])
+}) %>% t() %>% rbind(None, .)
+rownames(labour_subset_info) <- sub("_", "-", rownames(labour_subset_info))
+colnames(labour_subset_info) <- sub("Duration_STT", "Duration x STT", colnames(labour_subset_info))
+options(knitr.kable.NA = '-')
+labour_subset_info |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        align = rep("r", 8),
+        escape = FALSE,
+        linesep = "") |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  add_header_above(c("", "Number of time series retained" = 5, "Optimal parameters" = 3), align = "c")
+```
+
 # Further issues
 
--   Update all the results after using a new way to decide $\lambda$ sequence.
--   Simulation: using different base models across the hierarchy.
--   Result presentation: visualization aspect.
--   Grouped time series.
 -   More on large hierarchy:
     -   Sub hierarchy + Voting
 

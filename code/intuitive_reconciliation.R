@@ -98,23 +98,6 @@ if (data_label == "tourism"){
 }
 
 #----------------------------------------------------------------------
-# Australian prison population
-##
-## Total number of prisoners in Australia over the period 2005Q1–2016Q4
-## Quarterly series: 48 quarters (12 years) for each series
-##
-## Gender * Legal * State: n = 81 series in total, nb = 32 series at the bottom level
-##
-## Training set:  2005Q1-2014Q4
-## Test set:      2015Q1-2016Q4
-#----------------------------------------------------------------------
-if (data_label == "prison"){
-  nvalid <- 8; MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE
-  method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
-  method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
-}
-
-#----------------------------------------------------------------------
 # ABS - Unemployed persons by Duration of job search, State and Territory
 ##
 ## 6291.0.55.001 - UM2 - Unemployed persons by Duration of job search, State and Territory, January 1991 onwards

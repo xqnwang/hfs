@@ -25,7 +25,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
   out_com <- mget(paste0(data_label, "_", methods, "_", measure), inherits = TRUE) %>% do.call(rbind, .)
   rownames(out_com) <- NULL
   out_com <- out_com[!duplicated(out_com), ]
-  if((data_label == "tourism") | (data_label == "prison")){
+  if(data_label %in% c("tourism", "labour")){
     candidates <- c("OLS", "WLSs", "WLSv", "MinTs")
   } else if (data_label == "simulation"){
     candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
@@ -55,7 +55,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
 #--------------------------------------------------------------------
 latex_table <- function(out_all){
   out <- out_all$table_out
-  levels <- out_all$levels
+  levels <- sub("_", " x ", out_all$levels)
   header <- c("", rep(as.character(length(horizons)), length(levels)))
   names(header) <- c("", levels)
   candidates <- out_all$candidates

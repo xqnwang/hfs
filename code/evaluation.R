@@ -88,45 +88,6 @@ if (data_label == "tourism"){
 }
 
 #----------------------------------------------------------------------
-# Australian prison population
-##
-## Total number of prisoners in Australia over the period 2005Q1–2016Q4
-## Quarterly series: 48 quarters (12 years) for each series
-##
-## Gender * Legal * State: n = 81 series in total, nb = 32 series at the bottom level
-##
-## Training set:  2005Q1-2014Q4
-## Test set:      2015Q1-2016Q4
-#----------------------------------------------------------------------
-if (data_label == "prison"){
-  # Import results
-  freq <- 4
-  scenario <- NULL
-  reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf.rds"))
-  train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
-  test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
-  method <- c("OLS", "WLSs", "WLSv", "MinTs")
-  
-  # Structure information used to calculate RMSE across levels
-  top <- 1
-  gender <- 2:3
-  legal <- 4:5
-  state <- 6:13
-  gender_legal <- 14:17
-  gender_state <- 18:33
-  legal_state <- 34:49
-  gender_legal_state <- 50:81
-  avg <- 1:81
-  horizon <- c(1, 2, 4, 8)
-  
-  # Reconciliation methods considered
-  methods <- c("Base", "BU", 
-               sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
-  if (method_label == "lasso") methods <- c(methods, "Elasso")
-  reconcile_methods <- grep(method_label, methods, value = TRUE)
-}
-
-#----------------------------------------------------------------------
 # ABS - Unemployed persons by Duration of job search, State and Territory
 ##
 ## 6291.0.55.001 - UM2 - Unemployed persons by Duration of job search, State and Territory, January 1991 onwards
@@ -201,19 +162,6 @@ for(h in horizon){
              Region = mean(c_across(region + 1)),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, State, Zone, Region, Average)
-  } else if (data_label == "prison"){
-    out <- bind_rows(rmse, .id = "Method") |>
-      rowwise() |>
-      mutate(Top = mean(c_across(top + 1)),
-             Gender = mean(c_across(gender + 1)),
-             Legal = mean(c_across(legal + 1)),
-             State = mean(c_across(state + 1)),
-             Gender_Legal = mean(c_across(gender_legal + 1)),
-             Gender_State = mean(c_across(gender_state + 1)),
-             Legal_State = mean(c_across(legal_state + 1)),
-             Gender_Legal_State = mean(c_across(gender_legal_state + 1)),
-             Average = mean(c_across(avg + 1))) |>
-      select(Method, Top, Gender, Legal, State, Gender_Legal, Gender_State, Legal_State, Gender_Legal_State, Average)
   } else if (data_label == "labour"){
     out <- bind_rows(rmse, .id = "Method") |>
       rowwise() |>
@@ -258,19 +206,6 @@ for(h in horizon){
              Region = mean(c_across(region + 1)),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, State, Zone, Region, Average)
-  } else if (data_label == "prison"){
-    out <- bind_rows(mase, .id = "Method") |>
-      rowwise() |>
-      mutate(Top = mean(c_across(top + 1)),
-             Gender = mean(c_across(gender + 1)),
-             Legal = mean(c_across(legal + 1)),
-             State = mean(c_across(state + 1)),
-             Gender_Legal = mean(c_across(gender_legal + 1)),
-             Gender_State = mean(c_across(gender_state + 1)),
-             Legal_State = mean(c_across(legal_state + 1)),
-             Gender_Legal_State = mean(c_across(gender_legal_state + 1)),
-             Average = mean(c_across(avg + 1))) |>
-      select(Method, Top, Gender, Legal, State, Gender_Legal, Gender_State, Legal_State, Gender_Legal_State, Average)
   } else if (data_label == "labour"){
     out <- bind_rows(mase, .id = "Method") |>
       rowwise() |>
