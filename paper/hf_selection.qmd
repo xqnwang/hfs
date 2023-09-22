@@ -200,13 +200,53 @@ $$
 + \lambda\mathfrak{g}(\boldsymbol{G}) \\
 & \text { s.t. } \quad \boldsymbol{GS}=\boldsymbol{I},
 \end{aligned}
+$$ {#eq-op_u}
+
+where $\mathfrak{g}(\cdot)$ is defined as an exterior penalty function designed to penalize the columns of $\boldsymbol{G}$ towards zero, with $\lambda$ is the corresponding penalty coefficient. Thus, this can be considered as a grouped variable selection problem. The constraint $\boldsymbol{GS}=\boldsymbol{I}$ reflects the assumption that the base forecasts and reconciled forecasts are unbiased. When $\lambda = 0$, $\forall h$, the problem reduces to the MinT optimization problem in @eq-mint_op with a closed-form solution given by @eq-mint.
+
+**Proposition 1.** *Under the assumption of unbiasedness, the count of nonzero column entries of* $\boldsymbol{G}$ (*i.e., the number of time series selected for reconciliation*), *derived through solving @eq-op_u, is at least equal to the number of time series at the bottom level. In addition, we can restore the hierarchical structure by aggregating/disaggregating the selected time series.*
+
+*Proof*. According to the unbiasedness constraint $\boldsymbol{GS}=\boldsymbol{I}$, we have
+
+$$
+\min \left(\operatorname{rank}(\boldsymbol{G}), \operatorname{rank}(\boldsymbol{S})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b,
 $$
 
-where $\mathfrak{g}(\cdot)$ is defined as the exterior penaltyfunction designed to penalize the columns of $\boldsymbol{G}$ towards zero, with $\lambda$ is the corresponding penalty coefficient. The constraint reflects the assumption that the base forecasts and reconciled forecasts are unbiased. When $\lambda = 0$, $\forall h$, the problem reduces to the MinT optimization problem in @eq-mint_op with a closed-form solution given by @eq-mint.
+which indicates that the count of nonzero column entries of $\boldsymbol{G}$ is at least equal to $n_b$.
 
-Let
+Let $\boldsymbol{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{n_b \times |\mathbb{S}|}$ denote the submatrix of $\boldsymbol{X}$ with column indices forming a set $\mathbb{S}$ (and when $\mathbb{S} = \{j\}$, we simply use $\boldsymbol{X}_{\cdot j}$). Here, $|\mathbb{S}|$ denotes the size of the set $\mathbb{S}$. Similarly, let $\boldsymbol{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times n}$ denote the submatrix of $\boldsymbol{X}$ whose rows are indexed by a set $\mathbb{S}$ (and when $\mathbb{S} = \{i\}$, we simply use $\boldsymbol{G}_{i\cdot}$). Assuming the set $\mathbb{S}$ involves the indices of nonzero columns in the solution of @eq-op_u, the following equations hold:
 
--   The whole structure/framework
+$$
+\begin{aligned}
+& \boldsymbol{G}\boldsymbol{S} = \boldsymbol{G}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot} \text{ and } \\
+& \min \left(\operatorname{rank}(\boldsymbol{G}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b
+\end{aligned}
+$$
+
+Additionally, we have $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b$ as $\boldsymbol{S}$ has $n_b$ columns. Therefore, we can conclude that $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$, which implies that the hierarchical structure can be fully restored by aggregating/disaggregating the base forecasts of the selected time series, denoted as $(\hat{\boldsymbol{y}}_{T+h \mid T})_{\mathbb{S}}$.
+
+**Proposition 2.** *The optimization problem in @eq-op_u can be reformulated as*$$
+\begin{aligned}
+& \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\boldsymbol{G})\right) \\
+& \text { s.t. } \quad \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{nb}),
+\end{aligned}
+$$ {#eq-op_u_reg}
+
+*Proof.* Let $\operatorname{vec}(\boldsymbol{A})$ denote the vectorization of a matrix $\boldsymbol{A}$, which stacks the columns of $\boldsymbol{A}$ on top of one another. We have$$
+\begin{aligned}
+& \operatorname{vec}\left(\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \hat{\boldsymbol{y}}_{T+h \mid T}, \\
+& \operatorname{vec}\left(\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}), \\
+& \operatorname{vec}\left(\boldsymbol{GS}\right) = \operatorname{vec}\left(\boldsymbol{I}_{nb}\boldsymbol{GS}\right) = \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G}).
+\end{aligned}
+$$ Substituting the terms in @eq-op_u with these expressions, The pervious problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in @eq-op_u_reg.
+
+Next, we present three classes of regularizers we use to establish forecast reconciliation with series selection, resulting in the consideration of three optimization problems: (i) best-subset selection with ridge regularization, (ii) intuitive method, and (iii) group lasso.
+
+### Best-subset selection with ridge regularization
+
+### Intuitive method
+
+### Group lasso
 
 -   Optimization problems considered
 
@@ -215,8 +255,6 @@ Let
 -   HyperParameters
 
 -   Remark. limitations, computational issues
-
-More on unbiasedness constraint
 
 ## Series selection method without unbiasedness constraint {#sec-unconstrained}
 
