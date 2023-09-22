@@ -54,6 +54,38 @@ if (data_label == "simulation"){
 }
 
 #----------------------------------------------------------------------
+# Simulation data - correlation
+## Total/Middle/Bottom: 3 levels, n = 7
+## Training set:  1-100
+## Test set:      1
+#----------------------------------------------------------------------
+if (grepl("corr", data_label)){
+  # Import results
+  freq <- 1
+  if (is.null(scenario)){
+    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf.rds"))
+  } else{
+    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf_", scenario, ".rds"))
+  }
+  train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+  test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+  method <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+  
+  # Structure information used to calculate RMSE across levels
+  top <- 1
+  middle <- 2:3
+  bottom <- 4:7
+  avg <- 1:7
+  horizon <- 1
+  
+  # Reconciliation methods considered
+  methods <- c("Base", "BU", 
+               sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso") methods <- c(methods, "Elasso")
+  reconcile_methods <- grep(method_label, methods, value = TRUE)
+}
+
+#----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
 ##
 ## Monthly series from 1998Jan-2017Dec: 240 months (20 years) for each series
@@ -145,7 +177,7 @@ for(h in horizon){
   })
   names(rmse) <- methods
   
-  if (data_label == "simulation"){
+  if ((data_label == "simulation") | grepl("corr", data_label)){
     out <- bind_rows(rmse, .id = "Method") |>
       rowwise() |>
       mutate(Top = mean(c_across(top + 1)),
@@ -189,7 +221,7 @@ for(h in horizon){
   })
   names(mase) <- methods
   
-  if (data_label == "simulation"){
+  if ((data_label == "simulation") | grepl("corr", data_label)){
     out <- bind_rows(mase, .id = "Method") |>
       rowwise() |>
       mutate(Top = mean(c_across(top + 1)),

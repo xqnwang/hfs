@@ -129,14 +129,21 @@ def miqp_AS(y, S, W, l0 = 0, m = None, MIPGap = None, TimeLimit = 600, LogToCons
         model.params.TimeLimit = TimeLimit
     model.optimize()
     
-    G = G.X
-    Z = np.diag(A.X)
-    obj = model.objval
-    gap = model.MIPGap
-    if gap <= MIPGap or obj < obj_guess or abs(obj - obj_guess)/abs(obj_guess) < 0.01:
-        opt = 1
-    else:
-        opt = 0
+    try:
+      G = G.X
+      Z = np.diag(A.X)
+      obj = model.objval
+      gap = model.MIPGap
+      if gap <= MIPGap or obj < obj_guess or abs(obj - obj_guess)/abs(obj_guess) < 0.01:
+          opt = 1
+      else:
+          opt = 0
+    except:
+      G = G_mint
+      Z = np.repeat(1, n)
+      obj = 0
+      gap = 0
+      opt = 0
     
     return G, Z, obj, gap, opt
     
