@@ -16,7 +16,7 @@ author:
   othernames: Shanika L
   address:
     - Monash University, VIC 3145, Australia
-  email: 
+  email: shanika.wickramasuriya@monash.edu
 abstract: "Abstract"
 keywords: "Keyword 1, Keyword 2"
 wpnumber: no/yr
@@ -58,7 +58,7 @@ theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 
 # Introduction {#sec-introduction}
 
-Hierarchical time series and forecast reconciliation.
+Hierarchical time series and forecast reconciliation. Post-processing.
 
 Single-level approaches, least squares-based reconciliation approaches, geometric intuition, other extensions with constraints.
 
@@ -140,7 +140,7 @@ $$
 & \min _{\tilde{\boldsymbol{y}}_{T+h \mid T}} \quad \frac{1}{2}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T})^{\prime} \boldsymbol{W}_{h}^{-1}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}) \\
 & \text { s.t. } \quad \tilde{\boldsymbol{y}}_{T+h \mid T}=\boldsymbol{S}\tilde{\boldsymbol{b}}_{T+h \mid T},
 \end{aligned}
-$$
+$$ {#eq-mint_op}
 
 where $\tilde{\boldsymbol{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}$ is the vector comprising $h$-step-ahead bottom-level reconciled forecasts, made at time $T$. Focusing on $\boldsymbol{W}_h$, the intuitive behind the MinT reconciliation is that the larger the estimated variance of the base forecast errors, the larger the range of adjustments permitted for forecast reconciliation.
 
@@ -154,29 +154,71 @@ It's challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assumin
 
 It's hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the reconciliation weighting matrix as the summing matrix is fixed for a certain hierarchy. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconcliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the mean squared reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific hierarchical time series of interest, the targeted level or series, and the selected loss function.
 
-### Reconciliation with regularization
+### Relaxation of the unbiasedness assumptions
 
-@Ben_Taieb2019-be proposed a reconciliation method without posing unbiasedness assumption on the base or reconciled forecasts. They formulated the reconciliation problem as a regularized empirical risk minimization problem given by
+Both @Hyndman2011-sd and @Wickramasuriya2019-fc impose two unbiasedness conditions, i.e., the base forecasts and the reconciled forecasts are unbiased. @Ben_Taieb2019-be proposed a reconciliation method relaxing the assumption of unbiasedness. Specifically, by expanding the training window forward by one observation until $T-h$, they formulated the reconciliation problem as a regularized empirical risk minimization (RERM) problem given by
 
 $$
-\min _{\boldsymbol{G}} \frac{1}{(T-T_1-h+1)n}\left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \mathbf{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \boldsymbol{G})\|_1,
+\min _{\boldsymbol{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\boldsymbol{Y}_{h}^{*}-\hat{\boldsymbol{Y}}_{h}^{*} \mathbf{G}_{h}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \boldsymbol{G}_h)\|_1,
 $$
 
-where $T_1$ denotes the minimum number of observations used for model training, $\left\| \cdot \right\|_F$ is the Frobenius norm, $\boldsymbol{Y}=\left[\boldsymbol{y}_{T_1+h}, \ldots, \boldsymbol{y}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, $\hat{\boldsymbol{Y}}=\left[\hat{\boldsymbol{y}}_{T_1+h \mid T_1}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, and $\lambda \geq 0$ is a regularization parameter. Imposing such a $L_1$ penalty on $\boldsymbol{G}$ will introduce sparsity and reduce estimation variance, albeit at the cost of introducing some bias. In addition, they also proposed another strategy that penalizes the matrix $\boldsymbol{G}$ towards the solution obtained by bottom-up method, i.e., $\boldsymbol{G}_{\text{BU}} = \left[\boldsymbol{0}_{n_b \times n_a} \mid \boldsymbol{I}_{n_b}\right]$.
+where $T_1$ denotes the minimum number of observations used for model training, $\left\| \cdot \right\|_F$ is the Frobenius norm, $\boldsymbol{Y}_{h}^{*}=\left[\boldsymbol{y}_{T_1+h}, \ldots, \boldsymbol{y}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, $\hat{\boldsymbol{Y}}_{h}^{*}=\left[\hat{\boldsymbol{y}}_{T_1+h \mid T_1}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, and $\lambda \geq 0$ is a regularization parameter.
 
-In practice, a prevalent challenge in forecast reconciliation arises when the base forecasts of some time series within the hierarchical structure may perform poorly, especially for large hierarchies. This can be attributed to either the inherent complexity of forecasting these series or potential model misspecification. In such cases, the effectiveness of forecast reconciliation may diminish, as the role of the weighting matrix $\boldsymbol{G}$ is to assimilate *all* information of the base forecasts and map them into bottom-level disaggregated forecasts which are subsequently summed by $\boldsymbol{S}$. While the regularized empirical reconciliation method proposed by @Ben_Taieb2019-be introduces sparsity by shrinking some elements of $\boldsymbol{G}$ towards zero, it remains incapable of mitigating the adverse impact of underperforming base forecasts on the quality of the reconciled forecasts. Moreover, the method is time-consuming because it uses expanding windows to recursively generate out-of-sample base forecasts, which are then used in the minimization problem.
+When $\lambda = 0$, the problem reduces to an empirical risk minimization (ERM) problem without regularization. Assuming that the series in the hierarchy are jointly weakly stationary and $\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}$ is invertible, it has a closed-form solution given by
 
-We therefore propose two branches of innovative methods, constrained (out-of-sample-based) and unconstrained (in-sample-based) reconciliation with selection. These methods aim to identify and address the negative effect of some base forecasts of poor performance in a hierarchy on the overall performance of the reconciled forecasts. Additionally, through the incorporation of regularization in our objective function, our method can enhances reconciliation outcomes produced by using a "bad" choice of $\boldsymbol{W}$, thus reducing the risk of choosing estimator for $\boldsymbol{W}$. Moreover, our method generalizes to grouped hierarchies.
+$$
+\hat{\boldsymbol{G}}_h = \boldsymbol{B}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\left(\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\right)^{-1},
+$$
+
+where $\boldsymbol{B}_{h}^{*}=\left[\boldsymbol{b}_{T_1+h}, \ldots, \boldsymbol{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$. If $\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}$ is not invertible, they suggested using a generalized inverse.
+
+When $\lambda > 0$, imposing such a $L_1$ penalty on $\boldsymbol{G}_h$ will introduce sparsity and reduce estimation variance, albeit at the cost of introducing some bias. In addition, they also proposed another strategy that penalizes the matrix $\boldsymbol{G}_h$ towards the solution obtained by bottom-up method, i.e., $\boldsymbol{G}_{\text{BU}} = \left[\boldsymbol{0}_{n_b \times n_a} \mid \boldsymbol{I}_{n_b}\right]$.
+
+Following the work, @Wickramasuriya2021-am proposed an empirical MinT (EMinT) without the unbiasedness constraint by minimizing the trace of the covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})$. Assuming that the series are jointly weakly stationary, she derived the solution given by
+
+$$
+\hat{\boldsymbol{G}}_{h} = \boldsymbol{B}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\left(\hat{\boldsymbol{Y}}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\right)^{-1},
+$$
+
+where $\boldsymbol{B}_{h}=\left[\boldsymbol{b}_{h}, \ldots, \boldsymbol{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}$, and $\hat{\boldsymbol{Y}}_{h}=\left[\hat{\boldsymbol{y}}_{h \mid 0}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}$. The difference between EMinT and ERM lies in the data sources used, as EMinT uses in-sample observations and base forecasts, while ERM relies on observations and base forecasts from a holdout validation set. We note that both ERM and EMinT consider an estimate of $\boldsymbol{G}$ that changes over the forecast horizon, which is why we keep the subscript $h$ here.
+
+In practice, a prevalent challenge in forecast reconciliation arises when the base forecasts of some time series within the hierarchical structure may perform poorly, especially for large hierarchies. This can be attributed to either the inherent complexity of forecasting these series or potential model misspecification. In such cases, the effectiveness of forecast reconciliation may diminish, as the role of the weighting matrix $\boldsymbol{G}$ is to assimilate *all* base forecasts and map them into bottom-level disaggregated forecasts which are subsequently summed by $\boldsymbol{S}$. While the RERM method proposed by @Ben_Taieb2019-be introduces sparsity by shrinking some elements of $\boldsymbol{G}$ towards zero, it remains incapable of mitigating the adverse impact of underperforming base forecasts on the quality of the reconciled forecasts. Moreover, the method is time-consuming because it uses expanding windows to recursively generate out-of-sample base forecasts, which are then used in the minimization problem.
+
+We therefore propose two branches of innovative methods, constrained (out-of-sample-based) and unconstrained (in-sample-based) reconciliation with selection. These methods aim to identify and address the negative effect of some base forecasts of poor performance in a hierarchy on the overall performance of the reconciled forecasts. Additionally, through the incorporation of regularization in our objective function, our method has the potential to enhance reconciliation outcomes produced by using a "bad" choice of $\boldsymbol{W}$, thus reducing the risk of choosing estimator of $\boldsymbol{W}$. Moreover, our method generalizes to grouped hierarchies.
 
 # Forecast reconciliation with time series selection {#sec-methodology}
 
-For the ease of exposition, we will use the subscript $h$ rather than $T+h \mid T$.
+In this section, we introduce our methods for keeping forecasts of an automatically selected set of series, identified as harmful to reconciliation, unused in reconciliation, i.e., forecast reconciliation with series selection. @sec-constrained introduces constrained reconciliation methods with selection that formulate the problem based on out-of-sample base forecasts, while @sec-unconstrained presents an unconstrained reconciliation method with selection that formulates the problem based on in-sample observations and base forecasts.
 
-## Constrained reconciliation with selection
+## Series selection with unbiasedness constraint {#sec-constrained}
 
-Unbiasedness constraint
+As $\boldsymbol{S}$ is fixed and $\hat{\boldsymbol{y}}_{T+h \mid T}$ is given, the estimation of $\boldsymbol{G}$ carries the linear reconciliation performance, as shown in @eq-mint. (Subscript $h$ is dropped as we assume $\boldsymbol{W}$ and $\boldsymbol{G}$ do not change over the forecast horizon.) A natural way to keep forecasts of some series unused in reconciliation is through controlling the number of nonzero column entries in $\boldsymbol{G}$. This leads to a generalization of the MinT minimization problem by applying an additional penalty to the objective function. More precisely, we consider the optimization problem given by
 
-## Unconstrained reconciliation with selection
+$$
+\begin{aligned}
+& \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right)
++ \lambda\mathfrak{g}(\boldsymbol{G}) \\
+& \text { s.t. } \quad \boldsymbol{GS}=\boldsymbol{I},
+\end{aligned}
+$$
+
+where $\mathfrak{g}(\cdot)$ is defined as the exterior penaltyfunction designed to penalize the columns of $\boldsymbol{G}$ towards zero, with $\lambda$ is the corresponding penalty coefficient. The constraint reflects the assumption that the base forecasts and reconciled forecasts are unbiased. When $\lambda = 0$, $\forall h$, the problem reduces to the MinT optimization problem in @eq-mint_op with a closed-form solution given by @eq-mint.
+
+Let
+
+-   The whole structure/framework
+
+-   Optimization problems considered
+
+-   Mixed Integer Programming/MIP Formulations
+
+-   HyperParameters
+
+-   Remark. limitations, computational issues
+
+More on unbiasedness constraint
+
+## Series selection method without unbiasedness constraint {#sec-unconstrained}
 
 # Monte Carlo simulations {#sec-simulations}
 
@@ -188,7 +230,7 @@ Unbiasedness constraint
 
 ## Forecasting Australian domestic tourism
 
-## Forecasting Australian prison population
+## Forecasting Australian labour force
 
 # Conclusion {#sec-conclusion}
 
