@@ -111,7 +111,7 @@ def glasso(y, S, W, l1 = 0, m = None, M = None, weight = True, unbiased = True, 
     """ OPTIMIZE """
     model.Params.OutputFlag = OutputFlag
     model.Params.LogToConsole = LogToConsole
-    if n > 50:
+    if p > 1000:
         model.Params.NumericFocus = 1
         model.Params.OptimalityTol = 1e-4
         model.Params.FeasibilityTol = 1e-4

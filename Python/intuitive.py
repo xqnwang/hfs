@@ -62,7 +62,7 @@ def miqp_AS(y, S, W, l0 = 0, m = None, MIPGap = None, TimeLimit = 600, LogToCons
         m = np.amax(abs(G_mint)) + 1
         
     if MIPGap is None:
-        if n <= 50:
+        if p <= 1000:
             MIPGap = 0.0001
         else:
             MIPGap = 0.001

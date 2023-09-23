@@ -82,7 +82,7 @@ def miqp(y, S, W, l0 = 0, l2 = 0, m = None, M = None, MIPGap = None, TimeLimit =
         M = nb
     
     if MIPGap is None:
-        if n <= 50:
+        if p <= 1000:
             MIPGap = 0.0001
         else:
             MIPGap = 0.001
