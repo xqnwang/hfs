@@ -146,11 +146,11 @@ where $\tilde{\boldsymbol{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}$ is the vector c
 
 It's challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assuming that $\boldsymbol{W}_h = k_h\boldsymbol{W}_1$, $\forall h$, where $k_h > 0$, the MinT solution of $\boldsymbol{G}$ does not change with the forecast horizon. Hence, we will drop the subscript $h$ for the ease of exposition. The most popularly used candidate estimators for $\boldsymbol{W}$ in the forecast reconciliation literature are listed as follows.
 
-1.  $\boldsymbol{W}_{\text{OLS}} = \boldsymbol{I}$ is the *OLS estimator* proposed by @Hyndman2011-sd, assuming that the base forecast errors are uncorrelated and equivariant.
-2.  $\boldsymbol{W}_{\text{WLSs}} = \operatorname{diag}(\boldsymbol{S} \mathbf{1})$ is the *WLS estimator applying structural scaling* proposed by @Athanasopoulos2017-jj. This estimator depends only on the aggregation structure of the hierarchy. It assumes that the variance of each bottom-level base forecast error is equivalent and uncorrelated between nodes.
-3.  $\boldsymbol{W}_{\text{WLSv}} = \operatorname{diag}(\hat{\boldsymbol{W}}_1)$ is the *WLS estimator applying variance scaling* proposed by @Hyndman2016-cz, where $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals).
-4.  $\boldsymbol{W}_{\text{MinT}} = \hat{\boldsymbol{W}}_1$ is referred to as the *MinT estimator* based on the sample covariance matrix proposed by @Wickramasuriya2019-fc.
-5.  $\boldsymbol{W}_{\text{MinTs}} = \lambda\operatorname{diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$ is the *MinT shrinkage estimator* suggested by @Wickramasuriya2019-fc, in which off-diagonal elements of $\hat{\boldsymbol{W}}_1$ are shrunk toward zero.
+1.  $\boldsymbol{W}_{\text{OLS}} = \boldsymbol{I}$ is the *OLS estimator* proposed by @Hyndman2011-sd, assuming that the base forecast errors are uncorrelated and equivariant. In what follows, we denote this as **OLS**.
+2.  $\boldsymbol{W}_{\text{WLSs}} = \operatorname{diag}(\boldsymbol{S} \mathbf{1})$ is the *WLS estimator applying structural scaling* proposed by @Athanasopoulos2017-jj. This estimator depends only on the aggregation structure of the hierarchy. It assumes that the variance of each bottom-level base forecast error is equivalent and uncorrelated between nodes. We denote this method as **WLSs**.
+3.  $\boldsymbol{W}_{\text{WLSv}} = \operatorname{diag}(\hat{\boldsymbol{W}}_1)$ is the *WLS estimator applying variance scaling* proposed by @Hyndman2016-cz, where $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals). In the results that follow, we denote this as **WLSv**.
+4.  $\boldsymbol{W}_{\text{MinT}} = \hat{\boldsymbol{W}}_1$ is referred to as the *MinT estimator* based on the sample covariance matrix proposed by @Wickramasuriya2019-fc. We denote this method as **MinT** in the results that follow.
+5.  $\boldsymbol{W}_{\text{MinTs}} = \lambda\operatorname{diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$ is the *MinT shrinkage estimator* suggested by @Wickramasuriya2019-fc, in which off-diagonal elements of $\hat{\boldsymbol{W}}_1$ are shrunk toward zero. We refer to this method as **MinTs**.
 
 It's hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the reconciliation weighting matrix as the summing matrix is fixed for a certain hierarchy. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconcliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the mean squared reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific hierarchical time series of interest, the targeted level or series, and the selected loss function.
 
@@ -188,7 +188,7 @@ We therefore propose two branches of innovative methods, constrained (out-of-sam
 
 # Forecast reconciliation with time series selection {#sec-methodology}
 
-In this section, we introduce our methods for keeping forecasts of an automatically selected set of series, identified as harmful to reconciliation, unused in reconciliation, i.e., forecast reconciliation with series selection. @sec-constrained introduces constrained reconciliation methods with selection that formulate the problem based on out-of-sample base forecasts, while @sec-unconstrained presents an unconstrained reconciliation method with selection that formulates the problem based on in-sample observations and base forecasts.
+In this section, we introduce our methods for keeping forecasts of an automatically selected set of series, identified as harmful to reconciliation, unused in forming reconciled forecasts, i.e., forecast reconciliation with series selection. @sec-constrained introduces constrained reconciliation methods with selection that formulate the problem based on out-of-sample base forecasts, while @sec-unconstrained presents an unconstrained reconciliation method with selection that formulates the problem based on in-sample observations and base forecasts.
 
 ## Series selection with unbiasedness constraint {#sec-constrained}
 
@@ -202,9 +202,9 @@ $$
 \end{aligned}
 $$ {#eq-op_u}
 
-where $\mathfrak{g}(\cdot)$ is defined as an exterior penalty function designed to penalize the columns of $\boldsymbol{G}$ towards zero, with $\lambda$ is the corresponding penalty coefficient. Thus, this can be considered as a grouped variable selection problem. The constraint $\boldsymbol{GS}=\boldsymbol{I}$ reflects the assumption that the base forecasts and reconciled forecasts are unbiased. When $\lambda = 0$, $\forall h$, the problem reduces to the MinT optimization problem in @eq-mint_op with a closed-form solution given by @eq-mint.
+where $\mathfrak{g}(\cdot)$ is defined as an exterior penalty function designed to penalize the columns of $\boldsymbol{G}$ towards zero, with $\lambda$ is the corresponding penalty coefficient. Thus, this can be considered as a grouped variable selection problem, with each group corresponding to a column of $\boldsymbol{G}$. The constraint, $\boldsymbol{GS}=\boldsymbol{I}$, reflects the assumption that the base forecasts and reconciled forecasts are unbiased. When $\lambda = 0$, $\forall h$, the problem reduces to the MinT optimization problem in @eq-mint_op with a closed-form solution given by @eq-mint.
 
-**Proposition 1.** *Under the assumption of unbiasedness, the count of nonzero column entries of* $\boldsymbol{G}$ (*i.e., the number of time series selected for reconciliation*), *derived through solving @eq-op_u, is at least equal to the number of time series at the bottom level. In addition, we can restore the hierarchical structure by aggregating/disaggregating the selected time series.*
+**Proposition 1.** *Under the assumption of unbiasedness, the count of nonzero column entries of* $\boldsymbol{G}$ (*i.e., the number of time series selected for reconciliation*), *derived through solving @eq-op_u, is at least equal to the number of time series at the bottom level. In addition, we can restore the full hierarchical structure by aggregating/disaggregating the selected time series.*
 
 *Proof*. According to the unbiasedness constraint $\boldsymbol{GS}=\boldsymbol{I}$, we have
 
@@ -214,39 +214,89 @@ $$
 
 which indicates that the count of nonzero column entries of $\boldsymbol{G}$ is at least equal to $n_b$.
 
-Let $\boldsymbol{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{n_b \times |\mathbb{S}|}$ denote the submatrix of $\boldsymbol{X}$ with column indices forming a set $\mathbb{S}$ (and when $\mathbb{S} = \{j\}$, we simply use $\boldsymbol{X}_{\cdot j}$). Here, $|\mathbb{S}|$ denotes the size of the set $\mathbb{S}$. Similarly, let $\boldsymbol{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times n}$ denote the submatrix of $\boldsymbol{X}$ whose rows are indexed by a set $\mathbb{S}$ (and when $\mathbb{S} = \{i\}$, we simply use $\boldsymbol{G}_{i\cdot}$). Assuming the set $\mathbb{S}$ involves the indices of nonzero columns in the solution of @eq-op_u, the following equations hold:
+Let $\boldsymbol{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}$ denote the submatrix of the $r \times c$ matrix $\boldsymbol{X}$ with column indices forming a set $\mathbb{S}$ (and when $\mathbb{S} = \{j\}$, we simply use $\boldsymbol{X}_{\cdot j}$). Here, $|\mathbb{S}|$ denotes the size of the set $\mathbb{S}$. Similarly, let $\boldsymbol{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}$ denote the submatrix of $\boldsymbol{X}$ whose rows are indexed by a set $\mathbb{S}$ (and when $\mathbb{S} = \{i\}$, we simply use $\boldsymbol{X}_{i\cdot}$). Assuming that the set $\mathbb{S}$ involves the indices of nonzero columns in the solution of @eq-op_u, the following equations hold:
 
 $$
 \begin{aligned}
 & \boldsymbol{G}\boldsymbol{S} = \boldsymbol{G}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot} \text{ and } \\
-& \min \left(\operatorname{rank}(\boldsymbol{G}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b
+& \min \left(\operatorname{rank}(\boldsymbol{G}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b.
 \end{aligned}
 $$
 
-Additionally, we have $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b$ as $\boldsymbol{S}$ has $n_b$ columns. Therefore, we can conclude that $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$, which implies that the hierarchical structure can be fully restored by aggregating/disaggregating the base forecasts of the selected time series, denoted as $(\hat{\boldsymbol{y}}_{T+h \mid T})_{\mathbb{S}}$.
+Additionally, we have $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b$ as $\boldsymbol{S}$ has $n_b$ columns. Therefore, we can conclude that $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$, which implies that the hierarchical structure can be fully restored by aggregating/disaggregating the selected time series, $(\boldsymbol{y}_{t})_{\mathbb{S}}$.
 
-**Proposition 2.** *The optimization problem in @eq-op_u can be reformulated as*$$
+For example, consider the simple hierarchy shown in @fig-hts, it is not possible for our constrained reconciliation methods with selection to simultaneously zero out columns of $\boldsymbol{G}$ associated with series AA and AB. However, it is possible to zero out columns related to series AA and BA simultaneously.
+
+**Proposition 2.** *The optimization problem in @eq-op_u can be reformulated as*
+
+$$
 \begin{aligned}
 & \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\boldsymbol{G})\right) \\
 & \text { s.t. } \quad \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{nb}),
 \end{aligned}
 $$ {#eq-op_u_reg}
 
-*Proof.* Let $\operatorname{vec}(\boldsymbol{A})$ denote the vectorization of a matrix $\boldsymbol{A}$, which stacks the columns of $\boldsymbol{A}$ on top of one another. We have$$
+*Proof.* Let $\operatorname{vec}(\boldsymbol{A})$ denote the vectorization of a matrix $\boldsymbol{A}$, which stacks the columns of $\boldsymbol{A}$ on top of one another. We have
+
+$$
 \begin{aligned}
 & \operatorname{vec}\left(\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \hat{\boldsymbol{y}}_{T+h \mid T}, \\
 & \operatorname{vec}\left(\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}), \\
 & \operatorname{vec}\left(\boldsymbol{GS}\right) = \operatorname{vec}\left(\boldsymbol{I}_{nb}\boldsymbol{GS}\right) = \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G}).
 \end{aligned}
-$$ Substituting the terms in @eq-op_u with these expressions, The pervious problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in @eq-op_u_reg.
+$$ Substituting the terms in @eq-op_u with these expressions, the previous problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in @eq-op_u_reg.
 
-Next, we present three classes of regularizers we use to establish forecast reconciliation with series selection, resulting in the consideration of three optimization problems: (i) best-subset selection with ridge regularization, (ii) intuitive method, and (iii) group lasso.
+Moving forward, we present three classes of regularizations we use to establish forecast reconciliation with series selection, resulting in the consideration of three optimization problems: (i) group best-subset selection with ridge regularization, (ii) intuitive method with $L_0$ regularization, and (iii) group lasso method.
 
-### Best-subset selection with ridge regularization
+### Group best-subset selection with ridge regularization
 
-### Intuitive method
+We propose to apply a combination of $L_0$ and $L_2$ regularization as the exterior penalty function to control the nonzero column entries in $\boldsymbol{G}$:
 
-### Group lasso
+$$
+\begin{aligned}
+\min _{\operatorname{vec}(\boldsymbol{G})} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
+& + \lambda_0 \sum_{j=1}^n \mathbf{1}\left(\boldsymbol{G}_{\cdot j} \neq \mathbf{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\boldsymbol{G}\right)\right\|_2^2 \\
+\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{nb}),
+\end{aligned}
+$$ {#eq-subset}
+
+where $\mathbf{1}(\cdot)$ is the indicator function, $\lambda_0 \geq 0$ controls the number of nonzero groups selected (each group corresponds to a column of $\boldsymbol{G}$), and $\lambda_2 \geq 0$ controls the strength of the ridge regularization. In a hierarchical time series context, the parameter of interest in @eq-subset, $\operatorname{vec}(\boldsymbol{G})$, has an inherent non-overlapping group structure, wherein each group corresponds to a single column of $\boldsymbol{G}$, each with a size of $n_b$. Therefore, we refer to this reconciliation method as *group best-subset selection with ridge regularization*. In the results that follow, we label the method differently based on various estimators for $\boldsymbol{W}$, referring to them as **OLS-subset**, **WLSs-subset**, **WLSv-subset**, **MinT-subset**, and **MinTs-subset**, respectively.
+
+The inclusion of the ridge term in @eq-subset is motivated by earlier work on best-subset selection [@Hazimeh2020-xd; @Mazumder2022-hx], which suggest that additional ridge regularization can mitigate the poor predictive performance of best-subset selection in the low signal-to-noise ratio (SNR) regimes.
+
+We present a Big-M based mixed integer programming (MIP) formulation for problem in @eq-subset given by
+
+$$
+\begin{aligned}
+\min _{\operatorname{vec}(\boldsymbol{G}), \boldsymbol{z}, \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \boldsymbol{g}^{+\prime}\boldsymbol{g}^{+} \\
+\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
+& \hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
+& \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \\
+& \boldsymbol{g}^{+} \geqslant \operatorname{vec}(\boldsymbol{G}) \\
+& \boldsymbol{g}^{+} \geqslant-\operatorname{vec}(\boldsymbol{G}) \\
+& z_j \in\{0,1\}, \quad j \in[n]
+\end{aligned}
+$$ {#eq-subset_mip}
+
+where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficiently large such that some optimal solution, say $\boldsymbol{g}^{+*}$, to @eq-subset_mip satisfies $\max _{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$, the binary variable $z_j$ controls whether all the regression coefficients $\operatorname{vec}(\boldsymbol{G})$ in group $j$ are zero or not, i.e., $z_j=0$ implies that $\boldsymbol{G}_{\cdot j}=\mathbf{0}$, and $z_j=1$ implies that $\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$. Such Big-M formulations are commonly used in MIP problems to model relations between discrete and continuous variables, and have been recently explored in regression with $L_0$ regularization. The problem is a mixed integer quadratic program (MIQP) that can be solved using commercial MIP solvers, e.g., Gurobi and CPLEX.
+
+**Parameter tuning.** $\lambda_0 \geq 0$ and $\lambda_2 \geq 0$ are tuning parameters. To avoid computationally-expensive cross-validation, we tune the parameters to minimize the sum of squared reconciled forecast errors on the training set. Let $\lambda_{0,1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)$ that captures the scale of first term in the objective, where $\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}$ is a vector of reconciled forecasts obtained using @eq-mint with same estimator of $\boldsymbol{W}$, and define $\lambda_{0,k} = 0.0001\lambda_{0,1}$. For the parameter $\lambda_0$, we consider a grid of $k+1$ values, $\{\lambda_{0,1},...,\lambda_{0,k}, 0\}$, where $\lambda_{0, j} = \lambda_{0,1}\left(\lambda_{0,k} / \lambda_{0,1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$. So $\lambda_{0,1},...,\lambda_{0,k}$ is a sequence decreasing from $\lambda_{0,1}$ to $\lambda_{0,k}$ on the log scale. We use a grid of six values for the parameter $\lambda_2$, i.e., $\{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}$. Therefore, we tune over a two-dimensional grid of $(k+1) \times 6$ values to find the optimal combination of $\lambda_0$ and $\lambda_2$.
+
+**Computation details.** The MIQP problem in @eq-subset_mip is NP-Hard and computationally intensive. @Bertsimas2016-ig showed that commercial MIP solvers are capable of tackling problem instances for $p$ (number of features, i.e., $p = n_b \times n$ in our problem) up to a thousand. To address larger instances, there has been impressive work on developing MIP-based approches for solving $L_0$-regularized regression problem, e.g., @Bertsimas2016-ig, @Hazimeh2020-xd, and @Hazimeh2022-hc. However, it is challenging to extend their approaches to accommodate additional constraints within the optimization problem. Despite the potential sluggishness of handling large instances with commercial MIP solvers, in our experiments, we use Gurobi to solve our problem in @eq-subset_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds. So we can stop the solver before reaching the global optimum and obtain a suboptimal solution. This strategy is motivated by our need to consider numerous parameter candidates, with the final solution being validated against the training set, thus preventing the utilization of bad estimates of $\boldsymbol{G}$.
+
+### Intuitive method with $L_0$ regularization
+
+optimization problems considered
+
+MIP
+
+disadvantage?
+
+**Parameter tuning.**
+
+**Computation details.**
+
+### Group lasso method
 
 -   Optimization problems considered
 
