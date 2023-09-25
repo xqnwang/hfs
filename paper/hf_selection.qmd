@@ -288,7 +288,7 @@ where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficient
 
 **Computation details.** The MIQP problem in @eq-subset_mip is NP-Hard and computationally intensive. @Bertsimas2016-ig showed that commercial MIP solvers are capable of tackling problem instances for $p$ up to a thousand. To address larger instances, there has been impressive work on developing MIP-based approches for solving $L_0$-regularized regression problem, e.g., @Bertsimas2016-ig, @Hazimeh2020-xd, and @Hazimeh2022-hc. However, it is challenging to extend their approaches to accommodate additional constraints within the optimization problem. Despite the potential sluggishness of handling large instances with commercial MIP solvers, in our experiments, we use Gurobi to solve our problem in @eq-subset_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds for cases with $p > 1000$. So we can stop the solver before reaching the global optimum and obtain a suboptimal solution. This strategy is motivated by our need to consider numerous parameter candidates, with the final solution being validated against the training set, thus preventing the utilization of bad estimates of $\boldsymbol{G}$.
 
-### Intuitive method with $L_0$ regularization
+### Intuitive method with $L_0$ regularization {#sec-intuitive}
 
 Instead of estimating the entire matrix $\boldsymbol{G}$ in @sec-subset, we leverage the MinT solution in @eq-mint to streamline the optimization under consideration. Specifically, we define $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \operatorname{diag}(\boldsymbol{z})$ is an $n \times n$ diagonal matrix, and $\boldsymbol{z}$ is an $n$-dimensional vector with elements either equal to 0 or 1. Taking the MinT solution in @eq-mint, we have $\bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}$. Given fixed $\boldsymbol{S}$ and estimation of $\boldsymbol{W}$, $\bar{\boldsymbol{G}}$ is entirely determined by $\boldsymbol{A}$. By this way, when the $j$th diagnal element of $\boldsymbol{A}$ equals zero, the $j$th column of $\bar{\boldsymbol{G}}$ becomes entirely composed of zeros. Therefore, the optimization problem can be reduced to an integer quadratic programming (IQP) problem in which all of the variables are restricted to be integers:
 
@@ -317,11 +317,11 @@ $$
 \end{aligned}
 $$ {#eq-intuitive_mip}
 
-**Parameter tuning.** Similarly to the setup in @sec-subset, we select the tuning parameter, $\lambda_0$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $h$ observations occurred prior to the forecast origin.. Let $\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)$, and $\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}$, the collection of candidate values for $\lambda_0$ is $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
+**Parameter tuning.** Similarly to the setup in @sec-subset, we select the tuning parameter, $\lambda_0$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $h$ observations occurred prior to the forecast origin. Let $\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)$, and $\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}$, the collection of candidate values for $\lambda_0$ is $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
 
 **Computation details.** Following a setup akin to that in @sec-subset, we employ Gurobi to solve @eq-intuitive_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds for problems with $p > 1000$.
 
-### Group lasso method
+### Group lasso method {#sec-lasso}
 
 Lasso are another popular methods for selection and estimation of parameters in the context of linear regression. @Yuan2006-mw introduced the group lasso method that can be used when there are grouped structure among the variables. Here, we consider *a group lasso problem under the unbiasedness assumption* given by
 
@@ -352,32 +352,48 @@ Compared to the previous two methods we proposed, the group lasso method is comp
 
 **Penalty weights and parameter tuning.** In the context of group lasso, the default choice for the penalty weight, $w_j$, is $\sqrt{p_j}$, where $p_j$ is the size of each group (in our case, $p_j = n_b$). In our experiment, we allocate different penalty weights to each group by considering $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$, which allows us to account for variations in scale across different levels in the hierarchy.
 
-We compute the group lasso over $k+1$ values of the tuning parameter $\lambda$, and select the tuning parameter by optimizing the sum of squared reconciled forecast errors on a truncated training set, consisting only of $h$ observations occurred prior to the forecast origin. Denote $\boldsymbol{\beta} = \operatorname{vec}(\boldsymbol{G})$, and the first term in the objective of @eq-lasso as $L\left(\boldsymbol{\beta} \mid \boldsymbol{D}\right)$, where $\boldsymbol{D}$ is the working data $\{\hat{\boldsymbol{y}}_{T+h \mid T} , \hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\}$. Ignoring the unbiasedness constraint, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\boldsymbol{\beta}}^{1}=\boldsymbol{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have
+We compute the group lasso over $k+1$ values of the tuning parameter $\lambda$, and select the tuning parameter by optimizing the sum of squared reconciled forecast errors on a truncated training set, consisting only of $h$ observations occurred prior to the forecast origin. The collection of candidate values for $\lambda$ under consideration is $\{\lambda^{1},...,\lambda^{k}, 0\}$, where $\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j$, $\lambda^{k} = 0.0001\lambda^{1}$, and $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
+
+**Proposition 3.** *Ignoring the unbiasedness constraint, we define* $\lambda^{1}$ *as the smallest* $\lambda$ *value such that all predictors in the group lasso problem have zero coefficients. Then we have*
+
+$$
+\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j,
+$$
+
+*where* $j^{*}$ *denotes the column index of* $\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}$ *that corresponds to the* $j$*th column of* $\boldsymbol{G}$*.*
+
+*Proof.* Denote $\boldsymbol{\beta} = \operatorname{vec}(\boldsymbol{G})$, and the first term in the objective of @eq-lasso as $L\left(\boldsymbol{\beta} \mid \boldsymbol{D}\right)$, where $\boldsymbol{D}$ is the working data $\{\hat{\boldsymbol{y}}_{T+h \mid T} , \hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\}$. Ignoring the unbiasedness constraint, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\boldsymbol{\beta}}^{1}=\boldsymbol{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have
 
 $$
 \begin{aligned}
 \lambda^{1} & = \max _{j=1, \ldots, n}\left\|\left[\nabla L\left(\hat{\boldsymbol{\beta}}^{1} \mid \mathbf{D}\right)\right]^{(j)}\right\|_2 / w_j \\
-& = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j,
+& = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j.
 \end{aligned}
 $$
 
-where $j^{*}$ denotes the column index of $\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}$ that corresponds to the $j$th column of $\boldsymbol{G}$. Let $\lambda^{k} = 0.0001\lambda^{1}$, the collection of candidate values for $\lambda$ under consideration is $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
-
-**Computation details.** Due to the incorporation of the unbiasedness constraint, we cannot directly use some open-source packages designed for group lasso. Consequently, we employ Gurobi to solve the SOCP problem in @eq-lasso_socp, configuring it with setting OptimalityTol = $0.0001$.
+**Computation details.** Due to the incorporation of the unbiasedness constraint, we can not directly use some open-source packages designed for group lasso. Consequently, we employ Gurobi to solve the SOCP problem in @eq-lasso_socp, configuring it with setting OptimalityTol = $0.0001$.
 
 ## Series selection method without unbiasedness constraint {#sec-unconstrained}
 
-In-sample based, Empirical group lasso, Elasso
+In this section, we relax the unbiasedness constraint, $\boldsymbol{GS} = \boldsymbol{I}$, and introduce a reconciliation method with selection that relies on in-sample observations and fitted values. Let $\boldsymbol{Y} \in \mathbb{R}^{T \times n}$ denote a matrix comprising observations from all time series on the training set in the structure, and $\hat{\boldsymbol{Y}} \in \mathbb{R}^{T \times n}$ denote a matrix of in-sample one-step-ahead forecasts (i.e., fitted values) for all time series, where $T$ is the length of the training set. The proposed *empirical group lasso* method considers the optimization problem given by
 
-A standard group lasso problem, SOCP formulation is similar to @eq-lasso_socp but no W and constraint
+$$
+\min _{\boldsymbol{G}} \quad \frac{1}{2 T} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
+$$
 
-subset and intuitive, try packages...
+where $\left\| \cdot \right\|_F$ is the Frobenius norm, and $\lambda \geq 0$ is a tuning parameter, $w_j \neq 0$ is the penalty weight assigned in $\boldsymbol{G}_{\cdot j}$ to make a more flexible model. Following the work by @Ben_Taieb2019-be, using the fact that $\|\boldsymbol{X}\|_F^2 = \|\operatorname{vec}(X)\|_2^2$ and the useful formulation that $\operatorname{vec}(\boldsymbol{ABC}) = (\boldsymbol{C}^{\prime} \otimes \boldsymbol{A})\operatorname{vec}(\boldsymbol{B})$, we rewrite the problem as
 
-**Penalty weights and parameter tuning.**
+$$
+\min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2 N} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
+$$
 
-**Computation details.** gglasso but too slow, so gurobi. OptimalityTol = 1e-4
+which transforms into a standard group lasso problem, with $\operatorname{vec}(\boldsymbol{Y})$ serving as the dependent variable and $\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}$ as the covariate matrix. We denote this as **Elasso** in the results that follow.
 
-write code and get results for EMinT
+We also explored the empirical version of group best-subset selection with ridge regularization and Intuitive method with $L_0$ regularization in which we do not impose the unbiasedness constraint. It is worth mentioning that @Hazimeh2023-ie presented a new algorithmic framework for formulating the group $L_0$ problem with ridge regularization and provided an open-source implementation of the algorithm available on github at <https://github.com/hazimehh/L0Group>. However, our experiments showed that this algorithm can not terminate within five hours for typical instances with $p \sim 10^4$. Therefore, in this paper, we only present the empirical group lasso method for series selection method without unbiasedness constraint.
+
+**Penalty weights and parameter tuning.** Similarly to the setup in @sec-lasso, we assign different penalty weights to each group by setting $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$. We select the tuning parameter, $\lambda$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $h$ observations closest to the forecast origin. Specifically, we form the set of candidate values for $\lambda$ as $\{\lambda^{1},...,\lambda^{k}, 0\}$, where $\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\boldsymbol{Y})\right\|_2 / w_j$ is the smallest $\lambda$ value such that all predictors in the empirical group lasso problem have zero coefficients, i.e., $\boldsymbol{G} = \boldsymbol{O}$., $\lambda^{k} = 0.0001\lambda^{1}$, and $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
+
+**Computation details.** While there are open-source packages available for solving a group lasso problem, they are still relatively slow when applied to large instances for practical usage. For example, given a specific value for tuning parameter, our experiments observed that we can not obtain a solution within two hours for typical instances with $p \sim 10^4$ when using the gglasso R package. Instead, we use Gurobi to solve the problem based on the SOCP formulation for the empirical group lasso. The formulation aligns with @eq-lasso_socp but omits the unbiasedness constraint.
 
 # Monte Carlo simulations {#sec-simulations}
 
