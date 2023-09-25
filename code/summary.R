@@ -99,14 +99,14 @@ highlight <- c("OLS", "WLSs", "WLSv", "MinTs")
 target <- sapply(highlight, function(len){
   c(paste0(len, c("", "-subset")))
 }) |> as.vector()
-target <- c("Base", "BU", target, "Elasso") |> rev()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
 par(mfrow=c(1, 1),
     mar=c(5,0.1,0.1,0.3)
 )
 nemenyi(RMSE[,target], conf.level = 0.95, plottype = "vmcb",
         sort = FALSE,
         shadow = FALSE,
-        group = list(1, 2:3, 4:5, 6:7, 8:9, 10:11),
+        group = list(1:2, 3:4, 5:6, 7:8, 9:10, 11:12),
         Title = "",
         Xlab = "Mean ranks",
         Ylab = "")
@@ -154,7 +154,7 @@ ggplot(RMSE_melt, aes(x = Series, y = Method, fill = RMSE)) +
   scale_y_discrete(expand = c(0, 0), 
                    limits = rev(c("Base", "BU", "OLS", "OLS-subset", 
                                   "WLSs", "WLSs-subset", "WLSv", "WLSv-subset", 
-                                  "MinTs", "MinTs-subset", "Elasso"))) +
+                                  "MinTs", "MinTs-subset", "EMinT", "Elasso"))) +
   theme(
     plot.background = element_blank(),
     panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
@@ -195,7 +195,7 @@ highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
 target <- sapply(highlight, function(len){
   c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
 }) |> as.vector()
-target <- c("Base", "BU", target, "Elasso") |> rev()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
 h <- 16
 
 RMSE_sim_s0 <- RMSE_MCB_sim("simulation", methods=methods, scenario="s0", h=16)[,target]
@@ -232,10 +232,61 @@ for(j in scenarios){
   nemenyi(x, conf.level = 0.95, plottype = "vmcb",
           sort = FALSE, 
           shadow = FALSE,
-          group = list(1, 2:5, 6:9, 10:13, 14:17, 18:21, 22:23),
+          group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
           Title = title,
           Xlab = "Mean ranks",
           Ylab = "")
 }
 
+#----------------------------------------------------------------------
+# Table: Out-of-sample forecast performance (average RMSE/MASE) for corr_p simulation data
+#----------------------------------------------------------------------
+measure <- "rmse"
+data_label <- "corr"
+corr <- seq(-0.8, 0.8, 0.2)
+index <- c(1, 3, 5, 7, 9)
+methods <- c("subset", "intuitive", "lasso")
 
+out_all <- combine_corr_table(data_label, methods, corr, index, measure)
+latex_corr_table(out_all)
+
+#----------------------------------------------------------------------
+# Plot: MCB for corr_p simulation data
+#----------------------------------------------------------------------
+data_label <- "corr"
+corr <- c(-0.8, -0.4, 0, 0.8, 0.4)
+index <- c(1, 3, 5, 9, 7)
+methods <- c("subset", "intuitive", "lasso")
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+target <- sapply(highlight, function(len){
+  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
+}) |> as.vector()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
+
+par(mfrow=c(2, 3),
+    mar=c(5,0,0.1,0.5)
+    #mar=c(5.1,2.1,4.1,2.1)
+)
+
+for(i in 1:length(index)){
+  x <- RMSE_MCB_corr(paste0("corr_", index[i]), methods=methods, h=1)[,target]
+  title <- paste0("r = ", corr[i])
+  
+  nemenyi(x, conf.level = 0.95, plottype = "vmcb",
+          sort = FALSE, 
+          shadow = FALSE,
+          group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+          Title = title,
+          Xlab = "Mean ranks",
+          Ylab = "")
+}
+
+#----------------------------------------------------------------------
+# Table: Number of time series retained in the structure with different methods for the corr simulation data
+#----------------------------------------------------------------------
+data_label <- "corr_1"
+methods <- c("subset", "intuitive", "lasso")
+series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
+corr_info <- combine_z(data_label, methods, scenarios = "s0", series_name)
+latex_sim_nos_table(corr_info$out_s0$z,
+                    corr_info$out_s0$n)

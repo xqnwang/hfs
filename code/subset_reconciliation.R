@@ -37,6 +37,8 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S, nval
   Base <- list(y_tilde = base_forecasts, G = NA, z = NA, lambda_report = NA)
   BU <- subset.reconcile(base_forecasts = base_forecasts, S = S, method = "bu",
                          MonARCH = MonARCH, workers = workers)
+  EMinT <- subset.reconcile(base_forecasts = base_forecasts, S = S, method = "emint",
+                            MonARCH = MonARCH, workers = workers)
   for(i in 1:length(method)){
     assign(method_name[i], 
            subset.reconcile(base_forecasts = base_forecasts, S = S, method = method[i], 
@@ -51,7 +53,7 @@ reconcile_forecast <- function(index, fits, train, basefc, resids, test, S, nval
     print(paste("===", method_name[i], "finished!"))
   }
   
-  mget(c("Base", "BU", method_name, paste0(method_name, "_subset")))
+  mget(c("Base", "BU", "EMinT", method_name, paste0(method_name, "_subset")))
 }
 
 #################################################

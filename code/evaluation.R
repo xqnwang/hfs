@@ -8,7 +8,7 @@ library(latex2exp)
 input <- commandArgs(trailingOnly = TRUE)
 
 method_label <- input[1] # "subset", "lasso", "intuitive"
-data_label <- input[2] # "simulation", "tourism"
+data_label <- input[2] # "simulation", "corr_i", "tourism", "labour"
 if(is.na(input[3])){
   scenario <- NULL
 } else{
@@ -50,6 +50,8 @@ if (data_label == "simulation"){
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   if (method_label == "lasso") methods <- c(methods, "Elasso")
+  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
+                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
@@ -82,6 +84,8 @@ if (grepl("corr", data_label)){
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   if (method_label == "lasso") methods <- c(methods, "Elasso")
+  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
+                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
@@ -116,6 +120,8 @@ if (data_label == "tourism"){
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   if (method_label == "lasso") methods <- c(methods, "Elasso")
+  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
+                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
@@ -151,6 +157,8 @@ if (data_label == "labour"){
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   if (method_label == "lasso") methods <- c(methods, "Elasso")
+  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
+                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 

@@ -33,7 +33,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
   target <- c("Base", "BU", 
               sapply(candidates, 
                      function(len) c(len, paste0(len, "-", c("subset", "intuitive", "lasso")))) |> as.vector(), 
-              "Elasso")
+              "EMinT", "Elasso")
   out_com <- out_com[match(target, out_com$Method), ]
   colnames_out <- colnames(out_com)
   table_out <- sapply(1:NROW(out_com), function(i){
@@ -56,7 +56,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
 latex_table <- function(out_all){
   out <- out_all$table_out
   levels <- sub("_", " x ", out_all$levels)
-  header <- c("", rep(as.character(length(horizons)), length(levels)))
+  header <- c("", rep(as.character((ncol(out)-1)/length(levels)), length(levels)))
   names(header) <- c("", levels)
   candidates <- out_all$candidates
   
@@ -66,7 +66,7 @@ latex_table <- function(out_all){
     x <- round(x, 1)
     origin_x <- x
     min_x <- min(origin_x)
-    comp_x <- c(origin_x[1:2], rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), origin_x[length(origin_x)])
+    comp_x <- c(origin_x[1:2], rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), rep(origin_x[length(origin_x)-1], each = 2))
     out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
   })
   
@@ -342,5 +342,121 @@ MASE_MCB_sim <- function(data_label = "simulation", methods, scenario, h){
     do.call(cbind, .)
   MASE_sim <- MASE_sim[, !duplicated(colnames(MASE_sim))]
   colnames(MASE_sim) <- sub("_", "-", colnames(MASE_sim))
-  return(subset(MASE_sim, select = -Elasso))
+  return(MASE_sim)
+}
+
+#--------------------------------------------------------------------
+# Combine results of different methods and correlation coefficients for corr sumulation data
+#--------------------------------------------------------------------
+combine_corr_table <- function(data_label, methods, corr, index, measure){
+  for(method_label in methods){
+    for(i in index){
+      data_method <- paste0(data_label, "_", i, "_", method_label)
+      assign(data_method, 
+             readRDS(file = paste0("data_new/", data_method, "_reconsf", 
+                                   "_", measure, "_1.rds"))
+      )
+    }
+    example <- get(paste0(data_label, "_", index[1], "_", method_label))
+    levels <- colnames(example)[-1]
+    method <- sub("_", "-", example$Method)
+    out <- lapply(levels, function(level){
+      mget(paste0(data_label, "_", index, "_", method_label), inherits = TRUE) |> 
+        sapply(function(lentry) as.numeric(lentry[[level]]))
+    })
+    out <- data.frame(method, do.call(cbind, out))
+    colnames(out) <- c("Method", corr[index] |> rep(length(levels)))
+    assign(paste0(data_label, "_", method_label), out)
+  }
+  
+  out_com <- mget(paste0(data_label, "_", methods), inherits = TRUE) %>% do.call(rbind, .)
+  rownames(out_com) <- NULL
+  out_com <- out_com[!duplicated(out_com), ]
+  if(data_label %in% c("tourism", "labour")){
+    candidates <- c("OLS", "WLSs", "WLSv", "MinTs")
+  } else if (data_label %in% c("simulation", "corr")){
+    candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+  }
+  target <- c("Base", "BU", 
+              sapply(candidates, 
+                     function(len) c(len, paste0(len, "-", c("subset", "intuitive", "lasso")))) |> as.vector(), 
+              "EMinT", "Elasso")
+  out_com <- out_com[match(target, out_com$Method), ]
+  colnames_out <- colnames(out_com)
+  table_out <- sapply(1:NROW(out_com), function(i){
+    r1 <- out_com[1, -1] |> as.numeric()
+    rt <- out_com[i, -1] |> as.numeric()
+    if (i==1){
+      return(r1)
+    } else{
+      return(100*(rt - r1)/r1)
+    }
+  }) |> t()
+  table_out <- data.frame(out_com[, 1], table_out)
+  colnames(table_out) <- colnames_out
+  return(list(table_out = table_out, levels = levels, candidates = candidates))
+}
+
+#--------------------------------------------------------------------
+# Output table latex for corr sumulation data
+#--------------------------------------------------------------------
+latex_corr_table <- function(out_all){
+  out <- out_all$table_out
+  levels <- sub("_", " x ", out_all$levels)
+  header <- c("", rep(as.character((ncol(out)-1)/length(levels)), length(levels)))
+  names(header) <- c("", levels)
+  candidates <- out_all$candidates
+  
+  # Red entries identify the best performing approaches
+  # Bold entries identify methods that perform better than the corresponding benchmark method
+  out[, -1] <- lapply(out[, -1], function(x) {
+    x <- round(x, 1)
+    origin_x <- x
+    min_x <- min(origin_x)
+    comp_x <- c(origin_x[1:2], rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), rep(origin_x[length(origin_x)-1], each = 2))
+    out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
+  })
+  
+  out |>
+    kable(format = "latex",
+          booktabs = TRUE,
+          digits = 1,
+          align = c("l", rep("r", length(horizons)*length(levels))),
+          escape = FALSE,
+          linesep = "") |>
+    row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
+    # kable_paper("striped", full_width = F) |>
+    kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+    row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(), 
+             background = "#e6e3e3") |>
+    add_header_above(header, align = "c") |> print()
+}
+
+#--------------------------------------------------------------------
+# MCB for corr sumulation data
+#--------------------------------------------------------------------
+RMSE_MCB_corr <- function(data_label = "corr_1", methods, h){
+  RMSE_sim <- lapply(methods, function(method_label){
+    test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label,
+                                     "_reconsf.rds"))
+    for(method in names(reconsf[[1]])) {
+      out <- unique(test$Index) |> 
+        purrr::map(\(index) 
+                   extract_element(data = reconsf, index = index, 
+                                   method = method, element = "y_tilde")) %>% 
+        do.call(rbind, .)
+      assign(tolower(method), out)
+    }
+    RMSE <- sapply(names(reconsf[[1]]), function(lmethod){
+      assign(lmethod, calc_rmse_series(fc = get(tolower(lmethod)), test = test, h = h))
+    }, simplify = TRUE, USE.NAMES = TRUE) |>
+      as.data.frame() |> 
+      data.matrix()
+    assign(paste0("RMSE_", method_label), RMSE)
+  }) %>% 
+    do.call(cbind, .)
+  RMSE_sim <- RMSE_sim[, !duplicated(colnames(RMSE_sim))]
+  colnames(RMSE_sim) <- sub("_", "-", colnames(RMSE_sim))
+  return(RMSE_sim)
 }

@@ -23,7 +23,8 @@
 #' 
 #' @export
 subset.reconcile <- function(base_forecasts, S, 
-                             method = c("bu", "ols", "wls_struct", "wls_var", "mint_cov", "mint_shrink"), 
+                             method = c("bu", "ols", "wls_struct", "wls_var",
+                                        "mint_cov", "mint_shrink", "emint"), 
                              residuals = NULL, fitted_values = NULL, train_data = NULL, nvalid = NULL,
                              subset = FALSE, ridge = FALSE,
                              lambda_0 = NULL, lambda_2 = NULL, nlambda = 20,
@@ -48,6 +49,25 @@ subset.reconcile <- function(base_forecasts, S,
     # Buttom-up
     subset <- FALSE
     G <- cbind(matrix(0, nb, n-nb), diag(nb))
+  } else if (method == "emint"){
+    if (is.null(train_data) | is.null(fitted_values)){
+      stop("Training data and fitted values are required to use EMinT")
+    }
+    if (NROW(train_data) != NROW(fitted_values)){
+      stop("The dimensions of the fitted_values do not match train_data")
+    }
+    # (assumes that G-matrix for h = 1 holds for h > 1)
+    G <- tryCatch(
+      {
+        bmat <- train_data[, (n - nb + 1):n]
+        t(bmat) %*% fitted_values %*% solve(t(fitted_values) %*% fitted_values) 
+      }, error = function(e) {
+        svd.yhat <- svd(fitted_values)
+        pos.d <- svd.yhat$d[abs(svd.yhat$d) > sqrt(.Machine$double.eps)]
+        tmp.inv <- svd.yhat$u[, 1:length(pos.d)] %*% diag(1 / pos.d) %*% t(svd.yhat$v[, 1:length(pos.d)])
+        t(bmat) %*% tmp.inv
+      }
+    )
   } else{
     # W matrix
     if (method == "ols"){
