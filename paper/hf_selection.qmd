@@ -53,6 +53,9 @@ library(knitr)
 library(kableExtra)
 library(latex2exp)
 
+source("../R/nemenyi.R") # MCB test
+source("../R/analysis.R") # Other functions used for analysis
+
 theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 ```
 
@@ -391,7 +394,7 @@ which becomes a standard group lasso problem, with $\operatorname{vec}(\boldsymb
 
 Upon relaxing the unbiasedness constraint, the number of non-zero column entries in the solution for $\boldsymbol{G}$ may be less than the number of time series at the bottom level. This differs from the series selection methods with an unbiasedness constraint that we introduced in @sec-constrained. In an extreme scenario, the solution may take the form of a top-down $\boldsymbol{G}_{TD}=[\boldsymbol{p} \mid \boldsymbol{O}_{n_b \times (n-1)}]$, where only the column corresponding to the top level (most aggregated level) retains non-zero values, and $\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})$ is a proportionality vector obtained based on in-sample reconcilied forecast errors such that $\sum_{i=1}^{n_b} p_i=1$.
 
-We also explored the empirical version of group best-subset selection with ridge regularization and intuitive method with $L_0$ regularization in which we do not impose the unbiasedness constraint. It is worth mentioning that @Hazimeh2023-ie presented a new algorithmic framework for formulating the group $L_0$ problem with ridge regularization and provided the L0Group Python package[^1] for implementation. However, our experiments showed that this algorithm can not terminate within five hours for typical instances with $p \sim 10^4$. Therefore, in this paper, we only present the empirical group lasso method for series selection without unbiasedness constraint.
+We also explored the empirical version of group best-subset selection with ridge regularization and intuitive method with $L_0$ regularization in which we do not impose the unbiasedness constraint. It is worth mentioning that @Hazimeh2023-ie presented a new algorithmic framework for formulating the group $L_0$ problem with ridge regularization and provided the **L0Group** Python package[^1] for implementation. However, our experiments showed that this algorithm can not terminate within five hours for typical instances with $p \sim 10^4$. Therefore, in this paper, we only present the empirical group lasso method for series selection without unbiasedness constraint.
 
 [^1]: The L0Group Python package is available on github at <https://github.com/hazimehh/L0Group>.
 
@@ -401,15 +404,161 @@ We also explored the empirical version of group best-subset selection with ridge
 
 # Monte Carlo simulations {#sec-simulations}
 
-## Model misspecification in a hierarchy
+To evaluate the performance of various reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. In both simulations, we consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. Specifically, the structure has four time series at the bottom level, and seven time series in total, i.e., $n_b = 4$, and $n = 7$. In addition, the bottom-level series are first generated and then summed appropriately to obtain aggregated time series at higher levels.
 
-## Exploring the effect of correlation
+In particular, @sec-sim1 delves into a setup where the bottom-level series are generated using a structural time series model, but model misspecification exists for some series within the hierarchical structure. In @sec-sim2, we explore the impact of correlation between series on the performance of reconciled forecasts.
+
+## Setup 1: Exploring the effect of model misspecification {#sec-sim1}
+
+In this simulation design, we follow a simulation setup similar to @Wickramasuriya2019-fc, assuming that the bottom-level time series are generated using the basic structural time series model
+
+$$
+\boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t,
+$$
+
+where $\boldsymbol{\mu}_t$, $\boldsymbol{\gamma}_t$, and $\boldsymbol{\eta}_t$ are trend, seasonality, and error components, respectively. The trend and seasonality components are defined by
+
+$$
+\begin{aligned}
+\boldsymbol{\mu}_t & =\boldsymbol{\mu}_{t-1}+\boldsymbol{v}_t+\boldsymbol{\varrho}_t, & \boldsymbol{\varrho}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_{\varrho}^2 \boldsymbol{I}_4\right), \\
+\boldsymbol{v}_t & =\boldsymbol{v}_{t-1}+\boldsymbol{\zeta}_t, & \boldsymbol{\zeta}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_\zeta^2 \boldsymbol{I}_4\right), \\
+\boldsymbol{\gamma}_t & =-\sum_{i=1}^{s-1} \boldsymbol{\gamma}_{t-i}+\boldsymbol{\omega}_t, & \boldsymbol{\omega}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_\omega^2 \boldsymbol{I}_4\right),
+\end{aligned}
+$$
+
+where $\boldsymbol{\varrho}_t$, $\boldsymbol{\zeta}_t$, and $\boldsymbol{\omega}_t$ are error terms independent of each other and over time. The error term $\boldsymbol{\eta}_t$ is generated independently from an $\text{ARIMA}(p,0,q)$ process, where $p$ and $q$ take values of $0$ or $1$ with equal probability. The coefficients for the AR and MA components in the ARIMA process are sampled randomly from a uniform distribution within the range $[0.5, 0.7]$, and the contemporaneous error covariance matrix is given by
+
+$$
+\left[\begin{array}{llll}
+5 & 3 & 2 & 1 \\
+3 & 4 & 2 & 1 \\
+2 & 2 & 5 & 3 \\
+1 & 1 & 3 & 4
+\end{array}\right],
+$$
+
+which enables correlations among time series in a hierarchical structure.
+
+We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $\sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$, respectively. The initial values for $\boldsymbol{\mu}_0$, $\boldsymbol{v}_0$, $\boldsymbol{\gamma}_0$, $\boldsymbol{\gamma}_1$, and $\boldsymbol{\gamma}_2$ are generated independently from a multivariate normal distribution with zero mean and identity covariance matrix. For each series at the bottom level, we generate a total of $T+h = 180$ observations, with the last $h = 16$ observations serving as the test set. Recall that the bottom-level series are aggregated to obtain the data for the aggregated levels. This process is repeated $500$ times.
+
+We use ETS models to generate base forecasts for all time series in the hierarchy, using the default settings as implemented in the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification into our experiment, we deliberately undermine the quality of in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for some specific time series. Specifically, we investigate three scenarios characterized by artificial model misspecification, where a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for one series, i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenario I, Scenario II, and Scenario III, respectively.
+
+The results for Scenario I, II, and III are presented in @tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse, respectively. Each table reports the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as "Average"). In addition, we report the proportion of time series being selected from the application of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario.
+
+Results analysis.
+
+```{r}
+#| label: tbl-s1-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario I (model misspecification introduced in series AA). "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+
+rmse_s1 <- readRDS("results/sim_rmse_s1.rds")
+latex_table(rmse_s1)
+```
+
+```{r}
+#| label: tbl-s2-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario II (model misspecification introduced in series A). "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+
+rmse_s2 <- readRDS("results/sim_rmse_s2.rds")
+latex_table(rmse_s2)
+```
+
+```{r}
+#| label: tbl-s3-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario III (model misspecification introduced in series Total). "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+
+rmse_s3 <- readRDS("results/sim_rmse_s3.rds")
+latex_table(rmse_s3)
+```
+
+```{r}
+#| label: tbl-s1-selection
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario I. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+
+selection_sim <- readRDS("results/sim_selection.rds")
+latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n)
+```
+
+```{r}
+#| label: tbl-s2-selection
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario II. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+
+latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n)
+```
+
+```{r}
+#| label: tbl-s3-selection
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario III. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+
+latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n)
+```
+
+## Setup 2: Exploring the effect of correlation {#sec-sim2}
+
+We now consider to simulate a hierarchical structure with correlated series. We assume the data generating process for the time series at the bottom level follows a first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by
+
+$$
+\boldsymbol{b}_t= \boldsymbol{c} + \left[\begin{array}{cc}
+\boldsymbol{A}_1 & \boldsymbol{0} \\
+\boldsymbol{0} & \boldsymbol{A}_2
+\end{array}\right] \boldsymbol{b}_{t-1} + \boldsymbol{\varepsilon}_t,
+$$
+
+where $\boldsymbol{c}$ is a constant vector with all entries set to $1$, $\boldsymbol{A}_1$ and $\boldsymbol{A}_2$ are $2 \times 2$ matrices with eigenvalues $z_{1,2}=0.6[\cos (\pi / 3) \pm i \sin (\pi / 3)]$ and $z_{3,4}=0.9[\cos (\pi / 6) \pm i \sin (\pi / 6)]$, respectively, and $\boldsymbol{\varepsilon}_t \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{\Sigma})$, where
+
+$$
+\boldsymbol{\Sigma}=\left[\begin{array}{cc}
+\boldsymbol{\Sigma}_1 & 0 \\0 & \boldsymbol{\Sigma}_2
+\end{array}\right], \text { and } \boldsymbol{\Sigma}_1=\boldsymbol{\Sigma}_2=\left[\begin{array}{cc}2 & \sqrt{6} \rho \\\sqrt{6} \rho & 3\end{array}\right],
+$$
+
+and $\rho \in \{0, \pm 0.2, \pm 0.4, \pm 0.6, \pm 0.8\}$ controls the error correlation in the simulated hierarchy.
+
+For each time series at the bottom level, we generate a total of $101$ observations, with the last one observation serving as the test set, i.e., $T=100$ and $h=1$. The process is repeated $500$ times for each candidate correlation, $\rho$.
+
+Consider ARMA model, while no constant for series A and BA.
 
 # Applications {#sec-applications}
 
 ## Forecasting Australian domestic tourism
 
 ## Forecasting Australian labour force
+
+Data from Australian Bureau of Statistics: Unemployed persons by Duration of job search, State and Territory, January 1991 onwards available at <https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/latest-release>.
+
+Grouped time series
+
+-   Monthly time series
+
+-   Duration of job search (Duration, 6) \* State and territory (STT, 8)
+
+-   $n = 63$ series in total, $n_b = 48$ series at the bottom level
+
+-   Training set: 2010 Jan-2022 Jul, Test set: 2022 Aug-2023 Jul
 
 # Conclusion {#sec-conclusion}
 

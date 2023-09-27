@@ -56,7 +56,8 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
 latex_table <- function(out_all){
   out <- out_all$table_out
   levels <- sub("_", " x ", out_all$levels)
-  header <- c("", rep(as.character((ncol(out)-1)/length(levels)), length(levels)))
+  horizons <- (ncol(out)-1)/length(levels)
+  header <- c("", rep(as.character(horizons), length(levels)))
   names(header) <- c("", levels)
   candidates <- out_all$candidates
   
@@ -267,7 +268,7 @@ latex_sim_nos_table <- function(z_out, n_out){
     ggsave(
       filename = paste0(names(n_img)[i], ".png"),
       path = "_figs/",
-      plot = inline_bars[[i]], height = 3.5, width = 10, dpi = 300
+      plot = inline_bars[[i]], height = 2, width = 10, dpi = 300
     )
   })
   ls_inline_plots <- file.path(getwd(), paste0("_figs/", names(n_img), ".png"))

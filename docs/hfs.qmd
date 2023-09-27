@@ -681,7 +681,7 @@ for(i in 1:length(index)){
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: !expr sprintf("Ratio of being retained for each time series after subset selection in 500 VAR simulation data instances (A and BA, $r = -0.8$).")
+#| tbl-cap: Ratio of being retained for each time series after subset selection in 500 VAR simulation data instances (A and BA, $\\rho = -0.8$).
 
 data_label <- "corr_1"
 methods <- c("subset", "intuitive", "lasso")
