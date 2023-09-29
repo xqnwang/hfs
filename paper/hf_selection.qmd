@@ -49,6 +49,7 @@ execute:
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+library(fabletools)
 library(knitr)
 library(kableExtra)
 library(latex2exp)
@@ -443,7 +444,7 @@ We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $
 
 We use ETS models to generate base forecasts for all time series in the hierarchy, using the default settings as implemented in the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification into our experiment, we deliberately undermine the quality of in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for some specific time series. Specifically, we investigate three scenarios characterized by artificial model misspecification, where a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for one series, i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenario I, Scenario II, and Scenario III, respectively.
 
-The results for Scenario I, II, and III are presented in @tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse, respectively. Each table reports the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as "Average"). In addition, we report the proportion of time series being selected from the application of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario.
+The results for Scenario I, II, and III are presented in @tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse, respectively. Each table reports the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as *Average*). In addition, we report the proportion of time series being selected from the application of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario.
 
 Results analysis.
 
@@ -519,7 +520,7 @@ latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n)
 
 ## Setup 2: Exploring the effect of correlation {#sec-sim2}
 
-We now consider to simulate a hierarchical structure with correlated series. We assume the data generating process for the time series at the bottom level follows a first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by
+We now consider to simulate a hierarchical structure with correlated series. A simular simulation to @Wickramasuriya2021-am is implemented in this section. Using the same hierarchical sturcture as shown in @fig-hts, we assume the data generating process for the time series at the bottom level follows a stationary first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by
 
 $$
 \boldsymbol{b}_t= \boldsymbol{c} + \left[\begin{array}{cc}
@@ -538,15 +539,126 @@ $$
 
 and $\rho \in \{0, \pm 0.2, \pm 0.4, \pm 0.6, \pm 0.8\}$ controls the error correlation in the simulated hierarchy.
 
-For each time series at the bottom level, we generate a total of $101$ observations, with the last one observation serving as the test set, i.e., $T=100$ and $h=1$. The process is repeated $500$ times for each candidate correlation, $\rho$.
+For each time series at the bottom level, we generate a total of $101$ observations, with the last one observation serving as the test set, i.e., $T=100$ and $h=1$. Once again, the data at the higher levels are obtained by aggreating the bottom-level series. The process is repeated $500$ times for each candidate correlation, $\rho$.
 
-Consider ARMA model, while no constant for series A and BA.
+For each series in the hierarchy, base forecasts are generated from ARMA models based on a training data comprising $100$ observations. Specifically, we identify the best ARMA model with the minimum AICc (corrected Akaike information criterion) value for each series by using the automated algorithm implemented in the **forecast** R package. Additionally, when fitting ARMA models for series AA and BA, we introduce bias by omitting the constant term, which is a common scenario in practice where forecasting bottom-level series is challenging and therefore prone to model misspecification.
 
 # Applications {#sec-applications}
 
-## Forecasting Australian domestic tourism
+In this section we perform two empirical applications to investigate the performance of our proposed methods and compare them with state-of-the-art reconciliation approaches. @sec-tourism considers Australian domestic tourism flows with a natural geographical hierarchy, while @sec-labour focuses on a grouped hierarchy built using the Australian labour force survey data released by the Australian Bureau of Statistics.
 
-## Forecasting Australian labour force
+## Forecasting Australian domestic tourism {#sec-tourism}
+
+We consider Australian domestic tourism flows, measured as the number of overnight trips Australians spend away from home, and create a hierarchical structure using geographic divisions. The data are sourced from the National Visitor Survey and collected through computer-assisted telephone interviews involving approximately $120,000$ Australian residents aged $15$ years and older. The hierarchical structure starts with the national total tourism flow as the top-level aggregation, then disaggregates it into seven states and territories (referred to as *state* hereafter), further divides them into $27$ zones, and finally, into $76$ regions, thus forming a natural geographical hierarchy.
+
+Therefore, the hierarchy under consideration involves $76$ monthly time series at the bottom level and $111$ monthly series in total, i.e., $n_b=76$ and $n=111$. Each series in the hierarchy spans the period from January 1998 to December 2017, with a total of $240$ observations.
+
+@fig-tourism-data shows the aggregate tourism flows for Australia as well as individual states, revealing pronounced seasonal patterns across the national total and states, albeit with varying seasonal patterns among the series. Notably, there is a significant growth starting from around 2010 for the national total flow and some states such as NSW (New South Wales), VIC (Victoria), QLD (Queensland), and WA (Western Australia). While flows are relatively flat for SA (South Australia), TAS (Tasmania), and NT (Northern Territory). Moreover, the time plot displays that there is a large decrease in tourism flows for WA occurred in 2016.
+
+```{r}
+#| label: fig-tourism-data
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig-width: 9
+#| fig-height: 10
+#| fig-cap: "Domestic tourism flows from January 1998 to December 2017 for the whole of Australia as well as the states."
+tourism_ts <- readRDS("results/tourism_hts.rds")
+tourism_ts |>
+  autoplot(Value) +
+  facet_wrap(vars(Series), scales = "free_y", ncol = 2) +
+  xlab("Time") +
+  ylab("Australian domestic tourism flows ('000)") +
+  theme(legend.position = "none",
+        plot.background = element_blank(),
+        axis.title.y = element_text(face = "bold", size = 14),
+        axis.title.x = element_text(face = "bold", size = 12),
+        axis.text = element_text(face = "bold", size = 10),
+        axis.ticks.x.top = element_blank())
+```
+
+Our objective is to forecast tourism flows for each series in the geographical hierarchy while ensuring the coherence of forecasts across all levels. We split the data into a training set comprising $228$ observations and test set with $12$ observations (i.e., $h=12$). To generate base forecasts, we select an optimal ETS model for each series using the automatic algorithm implemented in the **forecast** package for R. The base forecasts are then reconciled using our proposed methods and some state-of-the-art reconciliation methods.
+
+Results analysis
+
+```{r}
+#| label: tbl-tourism-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for Australian domestic tourism data. "Base" shows the average RMSE of the base forecasts, while entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+
+rmse_tourism <- readRDS("results/tourism_rmse.rds")
+latex_table(rmse_tourism)
+```
+
+```{r}
+#| label: tbl-tourism-info
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: "Number of time series selected using different proposed methods and the optimal parameter values identified in the tourism application."
+
+tourism_info <- readRDS("results/tourism_info.rds")
+
+options(knitr.kable.NA = '-')
+tourism_info |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        align = rep("r", 8),
+        escape = FALSE,
+        linesep = "") |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  add_header_above(c("", "Number of time series retained" = 5, 
+                     "Optimal parameters" = 3), 
+                   align = "c")
+```
+
+```{r}
+#| label: fig-tourism-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig-width: 10
+#| fig-height: 4.5
+#| fig-cap: " Average out-of-sample forecasting performance, measured in terms of RMSE (from 1- to 12-step-ahead), for each series across different reconciliation methods. Time series are arranged along the horizontal axis."
+
+tourism_heatmap <- readRDS("results/tourism_heatmap.rds")
+ggplot(tourism_heatmap, aes(x = Series, y = Method, fill = RMSE)) +
+  geom_tile() +
+  geom_vline(xintercept = c(1.5, 8.5, 35.5), linetype = "dashed", linewidth = 0.5) +
+  scale_fill_gradientn(colors = c("#f7d9a6", 
+                                  rev(hcl.colors(100, "Purples"))[c(seq(1, 50, 10), seq(51, 100, 1))])) +
+  labs(x = "Time series", y = "") +
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks =  seq(20, 100, 20),
+                     sec.axis = dup_axis(name = "",
+                                         breaks = c(4.5, 11.5, 39),
+                                         labels = c("States", "Zones", "Regions"))) +
+  scale_y_discrete(expand = c(0, 0), 
+                   limits = rev(c("Base", "BU", "OLS", "OLS-subset", 
+                                  "WLSs", "WLSs-subset", "WLSv", "WLSv-subset", 
+                                  "MinTs", "MinTs-subset", "EMinT", "Elasso"))) +
+  theme(
+    plot.background = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
+    axis.title.x = element_text(face = "bold", size = 12),
+    legend.title = element_text(face = "bold", size = 10),
+    legend.text = element_text(face = "bold", size = 10),
+    legend.position = "bottom",
+    axis.text = element_text(face = "bold", size = 10),
+    axis.ticks.x.top = element_blank()
+  ) +
+  guides(fill = guide_colourbar(barwidth = 10,
+                                barheight = 1.5))
+```
+
+## Forecasting Australian labour force {#sec-labour}
 
 Data from Australian Bureau of Statistics: Unemployed persons by Duration of job search, State and Territory, January 1991 onwards available at <https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/latest-release>.
 
