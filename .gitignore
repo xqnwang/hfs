@@ -1,6 +1,7 @@
 # Data
 *.rds
 *.csv
+!paper/results/*.rds
 
 # References
 refs/
