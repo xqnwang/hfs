@@ -65,9 +65,9 @@ theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 
 Hierarchical time series and forecast reconciliation. Post-processing.
 
-Single-level approaches, least squares-based reconciliation approaches, geometric intuition, other extensions with constraints.
+Single-level approaches, least squares-based reconciliation approaches, geometric intuition, other extensions with constraints. Forecast combinations.
 
-However... Two issues. The choice of W can have significant effect on the quality of the reconciled forecasts. Some time series perform poorly.
+However... Two issues. The choice of W can have significant effect on the quality of the reconciled forecasts. Some time series perform poorly. Forecast trimming.
 
 In this paper, our focus will be on... selection. Other entries will be adjusted accordingly.
 
@@ -445,9 +445,7 @@ We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $
 
 We use ETS models to generate base forecasts for all time series in the hierarchy, using the default settings as implemented in the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification into our experiment, we deliberately undermine the quality of in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for some specific time series. Specifically, we investigate three scenarios characterized by artificial model misspecification, where a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for one series, i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenario I, Scenario II, and Scenario III, respectively.
 
-The results for Scenario I, II, and III are presented in @tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse, respectively. Each table reports the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as *Average*). In addition, we report the proportion of time series being selected from the application of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario.
-
-Results analysis.
+The results for Scenario I, II, and III are presented in @tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse, respectively. Each table reports the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as *Average*). The *Base* row shows the average RMSE of the base forecasts, while entries below this row reporting the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts.
 
 ```{r}
 #| label: tbl-s1-rmse
@@ -518,6 +516,12 @@ latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n)
 
 latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n)
 ```
+
+Focusing on the results of the benchmark reconciliation methods, we find that the bottom-up (BU) approach performs the best in both Scenario II and III but ranks as the worst overall in Scenario I. This is not surprising, as bottom-level base forecasts are deteriorated in Scenario I, while higher-level base forecasts are deteriorated in Scenario II and III. Moreover, the WLSv, MinT, and MinTs approaches perform especially well, benefiting from their ability to consider the in-sample covariance of base forecast errors, allowing for larger range of adjustments for reconciliation. EMinT also provides accurate reconciled forecasts in our setup, where the in-sample forecasts for specific series are intentionally undermined, a situation that can be detected by the in-sample information based EMinT method. However, OLS and WLSs perform much worse than other benchmark methods in this simulation setup.
+
+In all three scenarios, our proposed methods consistently produce either improved or comparable reconciled forecasts compared to the benchmark methods. The improvements are particularly pronounced when using OLS and WLSs estimators of $\boldsymbol{W}$, which do not take into account the in-sample covariance of base forecast errors. One advantage of using the forecast reconciliation methods with selection proposed in this paper is that it reduces the difference introduced by using different estimates of $\boldsymbol{W}$, thereby mitigating the risk of estimator selection. In some cases, such as Scenarios II and III, we can align the forecasting accuracy achieved with different methods to match the best results we can obtain through time series selection in forecast reconciliation.
+
+In addition, we report the proportion of time series being selected from the application of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario. Clearly, our proposed methods select fewer time series from the hierarchy for forecast reconciliation, and generally improve forecast accuracy over the benchmark methods. Furthermore, we observe that the subset method tends to return fewer time series compared to the intuitive and lasso methods, which aligns with our expectations. As discussed in @sec-methodology, the intuitive and lasso methods tends to produce dense estimates.
 
 ## Setup 2: Exploring the effect of correlation {#sec-sim2}
 
