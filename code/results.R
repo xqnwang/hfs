@@ -1,6 +1,7 @@
 library(dplyr)
 library(reshape)
 library(ggplot2)
+library(fabletools)
 library(tidyverse)
 library(knitr)
 library(kableExtra)
@@ -86,13 +87,13 @@ tourism_subset_lambda <- sapply(tourism_subsetonly_reconsf, function(lentry) len
 tourism_subset_info <- data.frame(tourism_subset_z, tourism_subset_lambda)
 
 None <- c(Top = length(Top), State = length(State), Zone = length(Zone), Region = length(Region),
-          Total = length(Total), "$\\lambda_0$" = NA, "$\\lambda_1$" = NA, "$\\lambda_2$" = NA)
+          Total = length(Total), "$\\lambda$" = NA, "$\\lambda_0$" = NA, "$\\lambda_2$" = NA)
 tourism_subset_info <- apply(tourism_subset_info, 1, function(lentry){
   c(Top = sum(lentry[Top]), State = sum(lentry[State]), 
     Zone = sum(lentry[Zone]), Region = sum(lentry[Region]), 
     Total = sum(lentry[Total]), 
+    "$\\lambda$" = round(tail(lentry, 3), 2)[2],
     "$\\lambda_0$" = round(tail(lentry, 3), 2)[1],
-    "$\\lambda_1$" = round(tail(lentry, 3), 2)[2],
     "$\\lambda_2$" = round(tail(lentry, 3), 2)[3])
 }) %>% t() %>% rbind(None, .)
 rownames(tourism_subset_info) <- sub("_", "-", rownames(tourism_subset_info))
@@ -156,3 +157,81 @@ ggplot(RMSE_melt, aes(x = Series, y = Method, fill = RMSE)) +
   ) +
   guides(fill = guide_colourbar(barwidth = 10,
                                 barheight = 1.5))
+
+#----------------------------------------------------------------------
+# Labour application
+#----------------------------------------------------------------------
+labour_data <- readRDS("data/labour_data.rds")
+
+# Time series plot
+labour_ts <- labour_data |>
+  select(-1) |>
+  as_tibble() |>
+  pivot_longer(cols = Total:D6WAS, names_to = "Series", values_to = "Value") |>
+  mutate(Time = yearmonth(Time))
+labour_ts <- labour_ts |>
+  filter(grepl("Duration", Series)|grepl("Total", Series)|grepl("STT", Series)) |>
+  mutate(Series = recode(Series,
+                         `Duration/D1` = "Under 1 month",
+                         `Duration/D2` = "1-3 months",
+                         `Duration/D3` = "3-6 months",
+                         `Duration/D4` = "6-12 months",
+                         `Duration/D5` = "1-2 years",
+                         `Duration/D6` = "2 years and over",
+                         `STT/NSW` = "NSW",
+                         `STT/VIC` = "VIC",
+                         `STT/QLD` = "QLD",
+                         `STT/SAS` = "SA",
+                         `STT/WAS` = "WA",
+                         `STT/TAS` = "TAS",
+                         `STT/NTT` = "NT",
+                         `STT/ACT` = "ACT"
+  )) |>
+  mutate(Series = factor(Series, 
+                         levels = c("Total", 
+                                    "NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT",
+                                    "Under 1 month", "1-3 months", "3-6 months", "6-12 months", 
+                                    "1-2 years", "2 years and over"))) |>
+  as_tsibble(index = Time, key = Series)
+
+saveRDS(labour_ts, "paper/results/labour_gts.rds")
+
+# RMSE table
+measure <- "rmse"
+data_label <- "labour"
+scenario <- NULL
+horizons <- c(1, 4, 8, 12)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+saveRDS(out_all, file = paste0("paper/results/labour_rmse.rds"))
+
+# Series retained table
+labour_subset_reconsf <- readRDS(file = "data_new/labour_subset_reconsf.rds")
+labour_lasso_reconsf <- readRDS(file = "data_new/labour_lasso_reconsf.rds")
+Top <- 1
+Duration <- 2:7
+STT <- 8:15
+Duration_STT <- 16:63
+Total <- 1:63
+
+labour_subsetonly_reconsf <- c(labour_subset_reconsf[[1]][grepl("_subset", names(labour_subset_reconsf[[1]]))],
+                               Elasso = list(labour_lasso_reconsf[[1]]$Elasso))
+labour_subset_z <- sapply(labour_subsetonly_reconsf, function(lentry) lentry$z) |> t()
+labour_subset_lambda <- sapply(labour_subsetonly_reconsf, function(lentry) lentry$lambda_opt[c("l0", "l1", "l2")] |> unname()) |> t()
+labour_subset_info <- data.frame(labour_subset_z, labour_subset_lambda)
+
+None <- c(Top = length(Top), Duration = length(Duration), STT = length(STT), Duration_STT = length(Duration_STT),
+          Total = length(Total), "$\\lambda$" = NA, "$\\lambda_0$" = NA, "$\\lambda_2$" = NA)
+labour_subset_info <- apply(labour_subset_info, 1, function(lentry){
+  c(Top = sum(lentry[Top]), Duration = sum(lentry[Duration]), 
+    STT = sum(lentry[STT]), Duration_STT = sum(lentry[Duration_STT]), 
+    Total = sum(lentry[Total]), 
+    "$\\lambda$" = round(tail(lentry, 3), 2)[2],
+    "$\\lambda_0$" = round(tail(lentry, 3), 2)[1],
+    "$\\lambda_2$" = round(tail(lentry, 3), 2)[3])
+}) %>% t() %>% rbind(None, .)
+rownames(labour_subset_info) <- sub("_", "-", rownames(labour_subset_info))
+colnames(labour_subset_info) <- sub("Duration_STT", "Duration x STT", colnames(labour_subset_info))
+saveRDS(labour_subset_info, "paper/results/labour_info.rds")
+
