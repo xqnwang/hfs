@@ -366,7 +366,8 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
         sapply(function(lentry) as.numeric(lentry[[level]]))
     })
     out <- data.frame(method, do.call(cbind, out))
-    colnames(out) <- c("Method", corr[index] |> rep(length(levels)))
+    colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, paste0("$\\rho$=", -0.8), corr[index])) |> rep(length(levels)))
+    # colnames(out) <- c("Method", corr[index] |> rep(length(levels)))
     assign(paste0(data_label, "_", method_label), out)
   }
   
@@ -403,6 +404,7 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
 #--------------------------------------------------------------------
 latex_corr_table <- function(out_all){
   out <- out_all$table_out
+  correlations <- (ncol(out)-1)/length(levels)
   levels <- sub("_", " x ", out_all$levels)
   header <- c("", rep(as.character((ncol(out)-1)/length(levels)), length(levels)))
   names(header) <- c("", levels)
@@ -422,7 +424,7 @@ latex_corr_table <- function(out_all){
     kable(format = "latex",
           booktabs = TRUE,
           digits = 1,
-          align = c("l", rep("r", length(horizons)*length(levels))),
+          align = c("l", rep("r", length(correlations)*length(levels))),
           escape = FALSE,
           linesep = "") |>
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>

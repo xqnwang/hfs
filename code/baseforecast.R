@@ -85,7 +85,7 @@ dat <- readr::read_csv(paste0("data/corr_", k, "_data.csv")) |>
 
 # Forecasting method
 fmethod <- "ar"
-special <- c("A", "BA")
+special <- c("Total", "A", "BA")
 
 # S matrix
 S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),

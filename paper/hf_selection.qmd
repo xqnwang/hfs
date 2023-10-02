@@ -548,7 +548,45 @@ and $\rho \in \{0, \pm 0.2, \pm 0.4, \pm 0.6, \pm 0.8\}$ controls the error corr
 
 For each time series at the bottom level, we generate a total of $101$ observations, with the last one observation serving as the test set, i.e., $T=100$ and $h=1$. Once again, the data at the higher levels are obtained by aggreating the bottom-level series. The process is repeated $500$ times for each candidate correlation, $\rho$.
 
-For each series in the hierarchy, base forecasts are generated from ARMA models based on a training data comprising $100$ observations. Specifically, we identify the best ARMA model with the minimum AICc (corrected Akaike information criterion) value for each series by using the automated algorithm implemented in the **forecast** R package. Additionally, when fitting ARMA models for series AA and BA, we introduce bias by omitting the constant term, which is a common scenario in practice where forecasting bottom-level series is challenging and therefore prone to model misspecification.
+For each series in the hierarchy, base forecasts are generated from ARMA models based on a training data comprising $100$ observations. Specifically, we identify the best ARMA model with the minimum AICc (corrected Akaike information criterion) value for each series by using the automated algorithm implemented in the **forecast** R package. Additionally, when fitting ARMA models for series Total, A, and BA, we introduce bias by omitting the constant term.
+
+```{r}
+#| label: tbl-corr-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Setup 2. "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+
+rmse_corr <- readRDS("results/corr_rmse.rds")
+latex_corr_table(rmse_corr)
+```
+
+```{r}
+#| label: tbl-corr-selection-neg
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2 with the error correlation being -0.8. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+
+selection_corr_neg <- readRDS("results/corr_selection_neg.rds")
+latex_sim_nos_table(selection_corr_neg$out_s0$z,
+                    selection_corr_neg$out_s0$n)
+```
+
+```{r}
+#| label: tbl-corr-selection-pos
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2 with the error correlation being 0.8. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+
+selection_corr_pos <- readRDS("results/corr_selection_pos.rds")
+latex_sim_nos_table(selection_corr_pos$out_s0$z,
+                    selection_corr_pos$out_s0$n)
+```
 
 # Applications {#sec-applications}
 

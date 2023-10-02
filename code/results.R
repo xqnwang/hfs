@@ -35,6 +35,29 @@ simulation_info <- combine_z(data_label, methods, scenarios, series_name)
 saveRDS(simulation_info, file = "paper/results/sim_selection.rds")
 
 #----------------------------------------------------------------------
+# Simulation setup 2
+# Exploring the effect of correlation
+#----------------------------------------------------------------------
+# RMSE table
+measure <- "rmse"
+data_label <- "corr"
+corr <- seq(-0.8, 0.8, 0.2)
+index <- c(1, 3, 5, 7, 9)
+methods <- c("subset", "intuitive", "lasso")
+
+out_all <- combine_corr_table(data_label, methods, corr, index, measure)
+saveRDS(out_all, file = "paper/results/corr_rmse.rds")
+
+# Selection ratio table
+methods <- c("subset", "intuitive", "lasso")
+series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
+corr_info_neg <- combine_z("corr_1", methods, scenarios = "s0", series_name)
+corr_info_pos <- combine_z("corr_9", methods, scenarios = "s0", series_name)
+
+saveRDS(corr_info_neg, file = "paper/results/corr_selection_neg.rds")
+saveRDS(corr_info_pos, file = "paper/results/corr_selection_pos.rds")
+
+#----------------------------------------------------------------------
 # Tourism application
 #----------------------------------------------------------------------
 tourism_data <- readRDS("data/tourism_data.rds")
