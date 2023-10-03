@@ -6,6 +6,9 @@ library(tidyverse)
 library(knitr)
 library(kableExtra)
 library(latex2exp)
+library(lubridate)
+library(fable)
+library(patchwork)
 
 ## MCB test
 source("R/nemenyi.R")
@@ -38,6 +41,50 @@ saveRDS(simulation_info, file = "paper/results/sim_selection.rds")
 # Simulation setup 2
 # Exploring the effect of correlation
 #----------------------------------------------------------------------
+# Time plot
+dat <- readr::read_csv("data/corr_1_data.csv")
+data <- dat |>
+  filter(Index == 1) |>
+  select(!Index) |>
+  mutate(A = AA+AB,
+         B = BA+BB,
+         Total = A+B) |>
+  pivot_longer(cols = !Time, names_to = "Series", values_to = "Value") |>
+  as_tsibble(index = Time, key = Series) |>
+  mutate(Series = factor(Series, 
+                         levels = c("Total", "A", "B", "AA", "AB", "BA", "BB")))
+fc <- readRDS("data/corr_1_basefc.rds")
+fit <- readRDS("data/corr_1_fits.rds")
+resid <- readRDS("data/corr_1_resids.rds")
+fc <- fc[fc$Index == 1, ]
+fit <- fit[fit$Index == 1, ]
+resid <- resid[resid$Index == 1, ]
+resid <- resid |>
+  as_tibble() |>
+  select(!Index) |>
+  mutate(Time = 1:100) |>
+  pivot_longer(cols = !Time, names_to = "Series", values_to = "Value") |> 
+  as_tsibble(index = Time, key = Series) |>
+  mutate(Series = factor(Series, 
+                         levels = c("Total", "A", "B", "AA", "AB", "BA", "BB")))
+
+saveRDS(data, file = "paper/results/corr_data_neg.rds")
+saveRDS(resid, file = "paper/results/corr_resid_neg.rds")
+
+
+# data |>
+#   autoplot(Value) +
+#   facet_wrap(vars(Series), scales = "free_y", ncol = 2) +
+#   xlab("Time") +
+#   ylab("") +
+#   theme(legend.position = "none",
+#         plot.background = element_blank(),
+#         axis.title.y = element_text(face = "bold", size = 14),
+#         axis.title.x = element_text(face = "bold", size = 12),
+#         axis.text = element_text(face = "bold", size = 10),
+#         axis.ticks.x.top = element_blank()) +
+#   theme_bw()
+
 # RMSE table
 measure <- "rmse"
 data_label <- "corr"
