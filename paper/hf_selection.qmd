@@ -548,7 +548,7 @@ and $\rho \in \{0, \pm 0.2, \pm 0.4, \pm 0.6, \pm 0.8\}$ controls the error corr
 
 For each time series at the bottom level, we generate a total of $101$ observations, with the last one observation serving as the test set, i.e., $T=100$ and $h=1$. Once again, the data at the higher levels are obtained by aggreating the bottom-level series. The process is repeated $500$ times for each candidate correlation, $\rho$.
 
-For each series in the hierarchy, base forecasts are generated from ARMA models based on a training data comprising $100$ observations. Specifically, we identify the best ARMA model with the minimum AICc (corrected Akaike information criterion) value for each series by using the automated algorithm implemented in the **forecast** R package. Additionally, when fitting ARMA models for series Total, A, and BA, we introduce a slight bias by omitting the constant term.
+For each series in the hierarchy, base forecasts are generated from ARMA models based on a training data comprising $100$ observations. Specifically, we identify the best ARMA model with the minimum AICc (corrected Akaike information criterion) value for each series by using the automated algorithm implemented in the **forecast** R package. Additionally, when fitting ARMA models for time series Total, A, and BA, we introduce a slight bias by omitting the constant term, which is a common scenario in practice. @fig-corr-data presents an illustrative example of a hierarchical time series generated. The left panels depict time plots for each series at different levels of structure, while right panels show the residuals obtained form forecasting each series using the ARMA model. Notably, despite our omission of the constant term when fitting ARMA models to the Total, A, and BA series, the residuals derived from the identified optimal ARMA models still exhibit fluctuations around zero and do not display significant deviations in comparison to the residuals from the other series. This is because the influence of the constant term is minimal in relation to the data variability. Thus, it may be challenging to identify the underperforming base forecasts of some series and exclude them from reconciliation.
 
 ```{r}
 #| label: fig-corr-data
@@ -647,17 +647,25 @@ p23 <- resid |>
 (p11 + p21) / (p12 + p22) / (p13 + p23)
 ```
 
+@tbl-corr-rmse summarizes the average RMSE of the base forecasts across various error correlations and the percentage relative improvements in RMSE achieved by reconciliation methods relative to the base forecasts. The metrics are reported for each level and the whole structure.
+
+The results show that, for OLS, WLSs, WLSv estimators, our proposed methods consistently dominate their respective benchmark methods at all levels when the error correlation is $-0.8$. In general, as the error correlation ranges from $-0.8$ to $0.8$, the overall improvements in our methods over the benchmark methods show a slight decrease. Similar pattern is observed in the overall improvements of all benchmark reconciliation compared to the base forecasts. Of the methods we propose, the Subset methods display more consistently stable improvements overall. We should highlight the challenge of identifying the underperforming base forecasts in this simulation design, given that the omission of the constant term has minimal impact relative to the data variability. In addition, We observe that the MinT and MinTs methods perform especially well and our methods provide results on par with benchmark methods. This is attributed to the use of in-sample covariance by MinT and MinTs, which allows for large adjustments in reconciliation for base forecasts with high estimated error variance. Elasso forecasts are slightly worse than EMinT, possibly due to the difficulty of identifying underperforming base forecasts in this simulation setup.
+
+We have also considered alternative error correlation values, $\rho = -0.6, -0.2, 0.2, 0.4$, for this simulation setting, but to save space, we do not present all results. The omitted results follow a similar pattern and are available upon request.
+
 ```{r}
 #| label: tbl-corr-rmse
 #| echo: false
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Setup 2. "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+#| tbl-cap: Out-of-sample forecast results across various error correlations for the simulated data in Setup 2. "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
 
 rmse_corr <- readRDS("results/corr_rmse.rds")
 latex_corr_table(rmse_corr)
 ```
+
+We present the proportion of time series being selected by applying our proposed methods in $500$ simulation instances for error correlation coefficients of $-0.8$ and $0.8$ in @tbl-corr-selection-neg and @tbl-corr-selection-pos, respectively. One again, we note that it is difficult to exclude poor-performing base forecasts in this simulation design as the constant term omitted is very small compared to the data variability. As observed in @tbl-corr-selection-neg, for the OLS, WLSs, and WLS estimators, the Subset and Intuitive methods are still able to exclude the series Total, A, and BA in some instances, in which small biases are introduced in model fitting, while essentially retaining the rest series in the hierarchy. The Subset methods perform superior to the Intuitive method in selection.The Lasso methods typically select all bottom-level series since they tend to yield dense estimates. When dealing with a high positive error correlation, @tbl-corr-selection-pos shows that it becomes somewhat challenging to identify and exclude the series that should be omitted in reconciliation. Hence, our methods are preferred, particularly when the error correlation within the hierarchical structure is negative.
 
 ```{r}
 #| label: tbl-corr-selection-neg
