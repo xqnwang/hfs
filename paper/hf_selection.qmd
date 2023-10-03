@@ -608,7 +608,7 @@ p21 <- resid |>
   autoplot(Value) +
   labs(y = "",
        x = "Time",
-       title = "Top level: forecasts") +
+       title = "Top level: residuals") +
   theme_bw() +
   theme(plot.background = element_blank(),
         axis.title.y = element_text(face = "bold"),
@@ -621,7 +621,7 @@ p22 <- resid |>
   autoplot(Value) +
   labs(y = "",
        x = "Time",
-       title = "Middle level: forecasts") +
+       title = "Middle level: residuals") +
   theme_bw() +
   theme(legend.position="bottom",
         plot.background = element_blank(),
@@ -635,7 +635,7 @@ p23 <- resid |>
   autoplot(Value) +
   labs(y = "",
        x = "Time",
-       title = "Bottom level: forecasts") +
+       title = "Bottom level: residuals") +
   theme_bw() +
   theme(legend.position="bottom",
         plot.background = element_blank(),
