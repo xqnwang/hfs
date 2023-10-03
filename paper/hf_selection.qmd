@@ -17,7 +17,7 @@ author:
   address:
     - Monash University, VIC 3145, Australia
   email: shanika.wickramasuriya@monash.edu
-abstract: Forecast reconciliation ensures forecasts of time series in a hierarchy adhere to aggregation constraints, enabling aligned decision making. While forecast reconciliation can improve overall forecast accuracy in hierarchical structures, the most substantial improvements occur in series with initially poor base forecasts, and some series may still experience a deterioration in reconciled forecasts. In practice, some series in a hierarchy often have poor base forecasts due to inherent challenges that are hard to overcome. To address this, we propose two categories of forecast reconciliation methods that incorporate time series selection based on out-of-sample and in-sample information, respectively. Our methods keep "bad" base forecasts of some series unused in forming reconciled forecasts, preventing their negative influence on the reconciled forecasts. Additionally, this process adjusts the weights allocated to the remaining series when generating bottom-level reconciled forecasts. Moreover, our methods can reduce disparities arising from using different estimates of the base forecast error covariance matrix, thus alleviating the challenge of estimator selection. We evaluate the proposed methods through two simulation studies and two empirical applications using Australian domestic tourism data and labour force data, showing improved accuracy compared to alternative methods, particularly when addressing model misspecification.
+abstract: Forecast reconciliation ensures forecasts of time series in a hierarchy adhere to aggregation constraints, enabling aligned decision making. While forecast reconciliation can improve overall forecast accuracy in hierarchical structures, the most substantial improvements occur in series with initially poor base forecasts, and some series may still experience a deterioration in reconciled forecasts. In practice, some series in a hierarchy often have poor base forecasts due to inherent challenges that are hard to overcome. To address this, we propose two categories of forecast reconciliation methods that incorporate time series selection based on out-of-sample and in-sample information, respectively. Our methods keep "bad" base forecasts of some series unused in forming reconciled forecasts, preventing their negative influence on the reconciled forecasts. Additionally, this process adjusts the weights allocated to the remaining series when generating bottom-level reconciled forecasts. Moreover, our methods can reduce disparities arising from using different estimates of the base forecast error covariance matrix, thus alleviating the challenge of estimator selection. We evaluate the proposed methods through two simulation studies and two empirical applications using Australian labour force data and domestic tourism data, showing improved accuracy compared to alternative methods, particularly when addressing model misspecification.
 keywords: "Hierarchical time series, Grouped time series, Linear forecast reconciliation, Optimization problem, Time series selection"
 wpnumber: no/yr
 blind: false
@@ -695,7 +695,116 @@ latex_sim_nos_table(selection_corr_pos$out_s0$z,
 
 # Applications {#sec-applications}
 
-In this section we perform two empirical applications to investigate the performance of our proposed methods and compare them with state-of-the-art reconciliation approaches. @sec-tourism considers Australian domestic tourism flows with a natural geographical hierarchy, while @sec-labour focuses on a grouped hierarchy built using the Australian labour force survey data released by the Australian Bureau of Statistics.
+In this section we perform two empirical applications to investigate the performance of our proposed methods and compare them with state-of-the-art reconciliation approaches. @sec-labour focuses on a grouped hierarchy built using the Australian labour force survey data released by the Australian Bureau of Statistics, while @sec-tourism considers Australian domestic tourism flows with a natural geographical hierarchy
+
+## Forecasting Australian labour force {#sec-labour}
+
+This section evaluates the performance of the proposed methods using a grouped hierarchy built using the Australian labour force dataset. The dataset from the Labour Force Survey are released by the Australian Bureau of Statistics, consisting of monthly data on the number of unemployed persons in Australia for the period from January 2010 to July 2023[^2].
+
+[^2]: The Labour Force Survey data is publicly available at <https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023>.
+
+There are a few missing values in the Australian labour force data. To deal with the missing observations, we use a random walk to give linear interpolation between points.
+
+We construct a grouped hierarchy by disaggregating the number of unemployed persons over two independent attributes, duration of job search (referred to as *Duration* level), and State and Territory (referred to as *STT* level). The two attributes are crossed, but none are nested within the others. At the bottom level, the data are disaggregated by both attributes. We refer to the bottom level as *Duration* $\times$ *STT* level. Specifically, there are six different groups of job search duration, under 1 month, 1-3 months, 3-6 months, 6-12 months, 1-2 years, and 2 years and over. Additionally, the number of unemployed persons in Australia can be disaggregated by eight states and territories, NSW, VIC, QLD, SA, WA, TAS, NT, ACT (Australian Capital Territory). So the final grouped hierarchy consists of the top series, $6$ series at the Duration level, $8$ series at the STT level, $48$ series at the Duration $\times$ STT level, giving $63$ time series in total, each of length $163$ observations.
+
+The top panel in @fig-labour-data shows the total number of unemployed persons in Australia from January 2010 to July 2023, representing the top-level series in the grouped hierarchical structure. The monthly series shows strong seasonality within each year, marked by large peaks occuring every February. In addition, lower peaks occur in July, August, September, and October. There was a substantial increase in the number of unemployed persons during April, May, June, July of 2020, followed by a subsequent downward trend. The bottom-left panel displays the breakdown of unemployed individuals by state and territory, while the bottom-right panel presents the breakdown by the duration of job search. The plots display diverse and rich dynamics both within and between different levels of hierarchy. For example, there was noticeable growth observed during 2020 for some states such as NSW, VIC, and QLD, whereas other states did not experience such such significant growth. Additionally, there is a resemblance in the seasonal patterns between NSW and QLD, while the seasonal pattern in VIC appears relatively heterogeneous. When comparing the series at the STT level and Duration level, we notice that the seasonal patterns in the Duration level series is more consistent and potentially easier to forecast.
+
+```{r}
+#| label: fig-labour-data
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig-width: 10
+#| fig-height: 6.5
+#| fig-cap: Australia unemployed persons, disaggregated by state and territor, and by duration of job search.
+
+labour_ts <- readRDS("results/labour_gts.rds")
+
+p1 <- labour_ts |>
+  filter(Series == "Total") |>
+  autoplot(Value) +
+  labs(y = "Number of unemployed persons ('000)",
+       x = "Time",
+       title = "Total unemployed persons") +
+  theme_bw() +
+  theme(plot.background = element_blank(),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        axis.text = element_text(face = "bold"),
+        axis.ticks.x.top = element_blank())
+
+p2 <- labour_ts |>
+  filter(Series %in% c("NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT")) |>
+  autoplot(Value) +
+  labs(y = "Number of unemployed persons ('000)",
+       x = "Time",
+       title = "State and territory") +
+  theme_bw() +
+  theme(plot.background = element_blank(),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        axis.text = element_text(face = "bold"),
+        axis.ticks.x.top = element_blank())
+
+p3 <- labour_ts |>
+  filter(Series %in% c("Under 1 month", "1-3 months", "3-6 months", "6-12 months", 
+                       "1-2 years", "2 years and over")) |>
+  autoplot(Value) +
+  labs(y = "Number of unemployed persons ('000)",
+       x = "Time",
+       title = "Duration of job search") +
+  theme_bw() +
+  theme(plot.background = element_blank(),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        axis.text = element_text(face = "bold"),
+        axis.ticks.x.top = element_blank())
+
+p1 / (p2 + p3)
+```
+
+For each series in the grouped hierarchy, we use the data spanning from January 2010 to July 2022 as the training set to select an optimal ETS model with the automatic algorithm implemented in the **forecast** package for R. Using these fitted ETS models, base forecasts are generated for $h=1$ to $12$-steps ahead. Subsequently, these base forecasts are used to perform forecast reconciliation, using the proposed methods and other state-of-the-art reconciliation approaches.
+
+@tbl-labour-rmse presents the RMSE values for base forecasts generated by ETS models, as well as the percentage relative improvements obtained by each reconciliation method compared to the base forecasts. The results indicate that all Subset methods using different estimators of $\boldsymbol{G}$, i.e., OLS-subset, WLSs-subset, WLSv-subset, and MinTs-subset, produce improved or comparable reconciled forecasts compared to their respective benchmark methods. The improvements in forecast accuracy become more noticeable for longer forecast horizons. Similar to the tourism application results, the Intuitive and Lasso methods yield results identical to the corresponding benchmark methods. This is because they tend to provide dense estimates, and ETS models typically do not result in extremely poor forecasts. The only exception is OLS-intuitive, which shows improved forecast accuracy at the top level but deterioration at other levels. Surprisingly, considering relaxing the unbiasedness constraint, the Elasso method demonstrates significant improvement compared to the EMinT method, and outperforms other methods across almost all levels except for the top level.
+
+```{r}
+#| label: tbl-labour-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for Australian labour force data. "Base" shows the average RMSE of the base forecasts, while entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+
+rmse_labour <- readRDS("results/labour_rmse.rds")
+latex_table(rmse_labour)
+```
+
+```{r}
+#| label: tbl-labour-info
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the labour application.
+
+labour_info <- readRDS("results/labour_info.rds")
+
+options(knitr.kable.NA = '-')
+labour_info |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        digits = 2,
+        align = rep("r", 8),
+        escape = FALSE,
+        linesep = "") |>
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
+  add_header_above(c("", "Number of time series retained" = 5, 
+                     "Optimal parameters" = 3), 
+                   align = "c")
+```
+
+We provide the number of series selected at each level and the optimal tuning parameter values obtained using different proposed methods, as shown in @tbl-labour-info. Here, we only showcase results from the Subset and Elasso methods, as they prove to be valuable in the labour force application. The results show that all Subset methods exclude some series when performing forecast reconciliation. Remarkably, the Elasso method consistently outperforms the others overall, even though it uses only $11$ series for forecast reconciliation. Additionally, it is worth noting that most of the series at the STT level are removed, while the majority of series at the Duration level are retained. This aligns with our data description, highlighting that the seasonal patterns in the Duration level series is more consistent and potentially easier to forecast compared to those at the STT level.
 
 ## Forecasting Australian domestic tourism {#sec-tourism}
 
@@ -812,115 +921,6 @@ tourism_info |>
                      "Optimal parameters" = 3), 
                    align = "c")
 ```
-
-## Forecasting Australian labour force {#sec-labour}
-
-This section evaluates the performance of the proposed methods using a grouped hierarchy built using the Australian labour force dataset. The dataset from the Labour Force Survey are released by the Australian Bureau of Statistics, consisting of monthly data on the number of unemployed persons in Australia for the period from January 2010 to July 2023[^2].
-
-[^2]: The Labour Force Survey data is publicly available at <https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023>.
-
-There are a few missing values in the Australian labour force data. To deal with the missing observations, we use a random walk to give linear interpolation between points.
-
-We construct a grouped hierarchy by disaggregating the number of unemployed persons over two independent attributes, duration of job search (referred to as *Duration* level), and State and Territory (referred to as *STT* level). The two attributes are crossed, but none are nested within the others. At the bottom level, the data are disaggregated by both attributes. We refer to the bottom level as *Duration* $\times$ *STT* level. Specifically, there are six different groups of job search duration, under 1 month, 1-3 months, 3-6 months, 6-12 months, 1-2 years, and 2 years and over. Additionally, the number of unemployed persons in Australia can be disaggregated by eight states and territories, NSW, VIC, QLD, SA, WA, TAS, NT, ACT (Australian Capital Territory). So the final grouped hierarchy consists of the top series, $6$ series at the Duration level, $8$ series at the STT level, $48$ series at the Duration $\times$ STT level, giving $63$ time series in total, each of length $163$ observations.
-
-The top panel in @fig-labour-data shows the total number of unemployed persons in Australia from January 2010 to July 2023, representing the top-level series in the grouped hierarchical structure. The monthly series shows strong seasonality within each year, marked by large peaks occuring every February. In addition, lower peaks occur in July, August, September, and October. There was a substantial increase in the number of unemployed persons during April, May, June, July of 2020, followed by a subsequent downward trend. The bottom-left panel displays the breakdown of unemployed individuals by state and territory, while the bottom-right panel presents the breakdown by the duration of job search. The plots display diverse and rich dynamics both within and between different levels of hierarchy. For example, there was noticeable growth observed during 2020 for some states such as NSW, VIC, and QLD, whereas other states did not experience such such significant growth. Additionally, there is a resemblance in the seasonal patterns between NSW and QLD, while the seasonal pattern in VIC appears relatively heterogeneous. When comparing the series at the STT level and Duration level, we notice that the seasonal patterns in the Duration level series is more consistent and potentially easier to forecast.
-
-```{r}
-#| label: fig-labour-data
-#| echo: false
-#| message: false
-#| warning: false
-#| results: hide
-#| fig-width: 10
-#| fig-height: 6.5
-#| fig-cap: Australia unemployed persons, disaggregated by state and territor, and by duration of job search.
-
-labour_ts <- readRDS("results/labour_gts.rds")
-
-p1 <- labour_ts |>
-  filter(Series == "Total") |>
-  autoplot(Value) +
-  labs(y = "Number of unemployed persons ('000)",
-       x = "Time",
-       title = "Total unemployed persons") +
-  theme_bw() +
-  theme(plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
-
-p2 <- labour_ts |>
-  filter(Series %in% c("NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT")) |>
-  autoplot(Value) +
-  labs(y = "Number of unemployed persons ('000)",
-       x = "Time",
-       title = "State and territory") +
-  theme_bw() +
-  theme(plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
-
-p3 <- labour_ts |>
-  filter(Series %in% c("Under 1 month", "1-3 months", "3-6 months", "6-12 months", 
-                       "1-2 years", "2 years and over")) |>
-  autoplot(Value) +
-  labs(y = "Number of unemployed persons ('000)",
-       x = "Time",
-       title = "Duration of job search") +
-  theme_bw() +
-  theme(plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
-
-p1 / (p2 + p3)
-```
-
-For each series in the grouped hierarchy, we use the data spanning from January 2010 to July 2022 as the training set to select an optimal ETS model with the automatic algorithm implemented in the **forecast** package for R. Using these fitted ETS models, base forecasts are generated for $h=1$ to $12$-steps ahead. Subsequently, these base forecasts are used to perform forecast reconciliation, using the proposed methods and other state-of-the-art reconciliation approaches.
-
-@tbl-labour-rmse presents the RMSE values for base forecasts generated by ETS models, as well as the percentage relative improvements obtained by each reconciliation method compared to the base forecasts. The results indicate that all Subset methods using different estimators of $\boldsymbol{G}$, i.e., OLS-subset, WLSs-subset, WLSv-subset, and MinTs-subset, produce improved or comparable reconciled forecasts compared to their respective benchmark methods. The improvements in forecast accuracy become more noticeable for longer forecast horizons. Similar to the tourism application results, the Intuitive and Lasso methods yield results identical to the corresponding benchmark methods. This is because they tend to provide dense estimates, and ETS models typically do not result in extremely poor forecasts. The only exception is OLS-intuitive, which shows improved forecast accuracy at the top level but deterioration at other levels. Surprisingly, considering relaxing the unbiasedness constraint, the Elasso method demonstrates significant improvement compared to the EMinT method, and outperforms other methods across almost all levels except for the top level.
-
-```{r}
-#| label: tbl-labour-rmse
-#| echo: false
-#| message: false
-#| warning: false
-#| results: asis
-#| tbl-cap: Out-of-sample forecast results for Australian labour force data. "Base" shows the average RMSE of the base forecasts, while entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
-
-rmse_labour <- readRDS("results/labour_rmse.rds")
-latex_table(rmse_labour)
-```
-
-```{r}
-#| label: tbl-labour-info
-#| echo: false
-#| message: false
-#| warning: false
-#| results: asis
-#| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the labour application.
-
-labour_info <- readRDS("results/labour_info.rds")
-
-options(knitr.kable.NA = '-')
-labour_info |>
-  kable(format = "latex",
-        booktabs = TRUE,
-        digits = 2,
-        align = rep("r", 8),
-        escape = FALSE,
-        linesep = "") |>
-  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
-  add_header_above(c("", "Number of time series retained" = 5, 
-                     "Optimal parameters" = 3), 
-                   align = "c")
-```
-
-We provide the number of series selected at each level and the optimal tuning parameter values obtained using different proposed methods, as shown in @tbl-labour-info. Here, we only showcase results from the Subset and Elasso methods, as they prove to be valuable in the labour force application. The results show that all Subset methods exclude some series when performing forecast reconciliation. Remarkably, the Elasso method consistently outperforms the others overall, even though it uses only $11$ series for forecast reconciliation. Additionally, it is worth noting that most of the series at the STT level are removed, while the majority of series at the Duration level are retained. This aligns with our data description, highlighting that the seasonal patterns in the Duration level series is more consistent and potentially easier to forecast compared to those at the STT level.
 
 # Conclusion {#sec-conclusion}
 
