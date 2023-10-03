@@ -558,7 +558,7 @@ For each series in the hierarchy, base forecasts are generated from ARMA models 
 #| results: hide
 #| fig-width: 9
 #| fig-height: 10
-#| fig-cap: An example hierarchical time series and its in-sample and out-of-sample forecasts in Setup2.
+#| fig-cap: An example hierarchical time series and its in-sample residuals in Setup2.
 
 data <- readRDS("results/corr_data_neg.rds")
 resid <- readRDS("results/corr_resid_neg.rds")
