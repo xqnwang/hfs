@@ -17,7 +17,6 @@ __pycache__/
 *_cache/
 
 # User-specific files
-*.tex
 *.Ruserdata
 *.DS_Store
 *.RData
