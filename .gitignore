@@ -25,7 +25,7 @@ __pycache__/
 inst/
 docs/
 data/*
-!data/TourismData-asc2021.csv
+!data/tourism.csv
 !data/labour.csv
 
 # Core latex/pdflatex auxiliary files

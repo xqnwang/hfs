@@ -10,8 +10,6 @@ library(hts)
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
 ##
-## Spiliotis et al. (2021) on ASC
-##
 ## Monthly series from 1998Jan-2017Dec: 240 months (20 years) for each series
 ##
 ## Total/State/Zone/Region: 4 levels, n = 111 series in total
@@ -20,7 +18,7 @@ library(hts)
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
 # Import data, only include bottom-level series
-tourism <- readr::read_csv("data/TourismData-asc2021.csv", skip = 3) |>
+tourism <- readr::read_csv("data/tourism.csv", skip = 3) |>
   select(-1) |>
   slice(-(1:2)) |>
   dplyr::rename(Year = ...2, Month = ...3) |>
