@@ -7,9 +7,7 @@ library(foreach)
 library(parallel)
 
 # Setup
-data_label <- commandArgs(trailingOnly = TRUE)
-# data_label <- "simulation"
-# data_label <- "tourism"
+data_label <- commandArgs(trailingOnly = TRUE) # "simulation", "corr_i", "tourism_i", or "labour_i"
 nlambda <- 20
 MonARCH <- TRUE
 workers <- parallelly::availableCores()

@@ -8,7 +8,7 @@ library(latex2exp)
 input <- commandArgs(trailingOnly = TRUE)
 
 method_label <- input[1] # "subset", "lasso", "intuitive"
-data_label <- input[2] # "simulation", "corr_i", "tourism", "labour"
+data_label <- input[2] # "simulation", "corr_i", "tourism_i", "labour_i"
 if(is.na(input[3])){
   scenario <- NULL
 } else{

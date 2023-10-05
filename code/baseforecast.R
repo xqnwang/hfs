@@ -3,6 +3,8 @@ library(magrittr)
 library(future)
 library(forecast)
 
+data_label <- commandArgs(trailingOnly = TRUE) # "simulation", "corr_i", "tourism_i", or "labour_i"
+
 # Utility function
 base_forecast <- function(hts, method, h, special = NULL){
   out <- list()
@@ -40,29 +42,30 @@ base_forecast <- function(hts, method, h, special = NULL){
 ## Training set:  1978Q1-2018Q4
 ## Test set:      2019Q1-2022Q4
 #----------------------------------------------------------------------
-# Formalize data (Index, Time, Series1, ..., Seriesn)
-dat <- readr::read_csv("data/simulation_data.csv") |>
-  mutate(Time = tsibble::yearquarter(Quarter),
-         A = AA + AB,
-         B = BA + BB,
-         Total = AA + AB + BA + BB) |>
-  select(c(Index, Time, Total, A, B, AA, AB, BA, BB)) 
-
-# Data details
-data_label <- "simulation" # used to name the saved results
-freq <- 4
-start_train <- c(1978, 1)
-end_train <- c(2018, 4)
-start_test <- c(2019, 1)
-end_test <- c(2022, 4)
-
-# Forecasting method
-fmethod <- "ets"
-special <- NULL
-
-# S matrix
-S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
-           diag(rep(1, 4)))
+if (data_label == "simulation"){
+  # Formalize data (Index, Time, Series1, ..., Seriesn)
+  dat <- readr::read_csv(paste0("data/", data_label, "_data.csv")) |>
+    mutate(Time = tsibble::yearquarter(Quarter),
+           A = AA + AB,
+           B = BA + BB,
+           Total = AA + AB + BA + BB) |>
+    select(c(Index, Time, Total, A, B, AA, AB, BA, BB)) 
+  
+  # Data details
+  freq <- 4
+  start_train <- c(1978, 1)
+  end_train <- c(2018, 4)
+  start_test <- c(2019, 1)
+  end_test <- c(2022, 4)
+  
+  # Forecasting method
+  fmethod <- "ets"
+  special <- NULL
+  
+  # S matrix
+  S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
+             diag(rep(1, 4)))
+}
 
 #----------------------------------------------------------------------
 # Simulation data - correlation
@@ -70,26 +73,26 @@ S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
 ## Training set:  1-100
 ## Test set:      1
 #----------------------------------------------------------------------
-k <- 1 # 1:9
-data_label <- paste0("corr_", k)
-freq <- 1
-start_train <- 1
-end_train <- 100
-start_test <- 101
-end_test <- 101
-dat <- readr::read_csv(paste0("data/corr_", k, "_data.csv")) |>
-  mutate(A = AA + AB,
-         B = BA + BB,
-         Total = AA + AB + BA + BB) |>
-  select(c(Index, Time, Total, A, B, AA, AB, BA, BB))
-
-# Forecasting method
-fmethod <- "ar"
-special <- c("Total", "A", "BA")
-
-# S matrix
-S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
-           diag(rep(1, 4)))
+if (grepl("corr", data_label)){
+  freq <- 1
+  start_train <- 1
+  end_train <- 100
+  start_test <- 101
+  end_test <- 101
+  dat <- readr::read_csv(paste0("data/", data_label, "_data.csv")) |>
+    mutate(A = AA + AB,
+           B = BA + BB,
+           Total = AA + AB + BA + BB) |>
+    select(c(Index, Time, Total, A, B, AA, AB, BA, BB))
+  
+  # Forecasting method
+  fmethod <- "ar"
+  special <- c("Total", "A", "BA")
+  
+  # S matrix
+  S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
+             diag(rep(1, 4)))
+}
 
 #----------------------------------------------------------------------
 # Australian domestic tourism (only considering hierarchical structure)
@@ -101,24 +104,25 @@ S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
 ## Training set:  1998Jan-2016Dec
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
-# Formalize data (Index, Time, Series1, ..., Seriesn)
-dat <- readRDS("data/tourism_data.rds")
-
-# Data details
-k <- 1 # 1:3
-data_label <- paste0("tourism_", k)
-freq <- 12
-start_train <- c(1998, 1)
-end_train <- c(2014 + k -1, 12)
-start_test <- c(2014 + k, 1)
-end_test <- c(2014 + k, 12)
-
-# Forecasting method
-fmethod <- "ets"
-special <- NULL
-
-# S matrix
-S <- readRDS("data/tourism_S.rds")
+if (grepl("tourism", data_label)){
+  # Formalize data (Index, Time, Series1, ..., Seriesn)
+  dat <- readRDS("data/tourism_data.rds")
+  
+  # Data details
+  k <- sub('.*_', '', data_label) |> as.numeric() # 1:3
+  freq <- 12
+  start_train <- c(1998, 1)
+  end_train <- c(2014 + k -1, 12)
+  start_test <- c(2014 + k, 1)
+  end_test <- c(2014 + k, 12)
+  
+  # Forecasting method
+  fmethod <- "ets"
+  special <- NULL
+  
+  # S matrix
+  S <- readRDS("data/tourism_S.rds")
+}
 
 #----------------------------------------------------------------------
 # ABS - Unemployed persons by Duration of job search, State and Territory
@@ -131,24 +135,25 @@ S <- readRDS("data/tourism_S.rds")
 ## Training set:  2010Jan-2022Jul
 ## Test set:      2022Aug-2023Jul
 #----------------------------------------------------------------------
-# Formalize data (Index, Time, Series1, ..., Seriesn)
-dat <- readRDS("data/labour_data.rds")
-
-# Data details
-k <- 1 # 1:3
-data_label <- paste0("labour_", k)
-freq <- 12
-start_train <- c(2010, 1)
-end_train <- c(2020 + k - 1, 7)
-start_test <- c(2020 + k - 1, 8)
-end_test <- c(2020 + k, 7)
-
-# Forecasting method
-fmethod <- "ets"
-special <- NULL
-
-# S matrix
-S <- readRDS("data/labour_S.rds")
+if (grepl("labour", data_label)){
+  # Formalize data (Index, Time, Series1, ..., Seriesn)
+  dat <- readRDS("data/labour_data.rds")
+  
+  # Data details
+  k <- sub('.*_', '', data_label) |> as.numeric() # 1:3
+  freq <- 12
+  start_train <- c(2010, 1)
+  end_train <- c(2020 + k - 1, 7)
+  start_test <- c(2020 + k - 1, 8)
+  end_test <- c(2020 + k, 7)
+  
+  # Forecasting method
+  fmethod <- "ets"
+  special <- NULL
+  
+  # S matrix
+  S <- readRDS("data/labour_S.rds")
+}
 
 #################################################
 # Generate base forecasts
