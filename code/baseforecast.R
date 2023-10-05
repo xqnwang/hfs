@@ -105,12 +105,13 @@ S <- rbind(matrix(c(1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1), 3, 4),
 dat <- readRDS("data/tourism_data.rds")
 
 # Data details
-data_label <- "tourism" # used to name the saved results
+k <- 1 # 1:3
+data_label <- paste0("tourism_", k)
 freq <- 12
 start_train <- c(1998, 1)
-end_train <- c(2016, 12)
-start_test <- c(2017, 1)
-end_test <- c(2017, 12)
+end_train <- c(2014 + k -1, 12)
+start_test <- c(2014 + k, 1)
+end_test <- c(2014 + k, 12)
 
 # Forecasting method
 fmethod <- "ets"
@@ -134,12 +135,13 @@ S <- readRDS("data/tourism_S.rds")
 dat <- readRDS("data/labour_data.rds")
 
 # Data details
-data_label <- "labour" # used to name the saved results
+k <- 1 # 1:3
+data_label <- paste0("labour_", k)
 freq <- 12
 start_train <- c(2010, 1)
-end_train <- c(2022, 7)
-start_test <- c(2022, 8)
-end_test <- c(2023, 7)
+end_train <- c(2020 + k - 1, 7)
+start_test <- c(2020 + k - 1, 8)
+end_test <- c(2020 + k, 7)
 
 # Forecasting method
 fmethod <- "ets"

@@ -91,7 +91,7 @@ if (grepl("corr", data_label)){
 ## Training set:  1998Jan-2016Dec
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
-if (data_label == "tourism"){
+if (grepl("tourism", data_label)){
   nvalid <- 12; MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")
@@ -108,7 +108,7 @@ if (data_label == "tourism"){
 ## Training set:  2010Jan-2022Jul
 ## Test set:      2022Aug-2023Jul
 #----------------------------------------------------------------------
-if (data_label == "labour"){
+if (grepl("labour", data_label)){
   nvalid = 12; MIPFocus = 3; Cuts = 2; TimeLimit = 600; MIPVerbose = FALSE
   method <- c("ols", "wls_struct", "wls_var", "mint_shrink")
   method_name <- c("OLS", "WLSs", "WLSv", "MinTs")

@@ -22,6 +22,11 @@ __pycache__/
 *.RData
 *.ipynb_checkpoints/
 *.pptx
+inst/
+docs/
+data/*
+!data/TourismData-asc2021.csv
+!data/labour.csv
 
 # Core latex/pdflatex auxiliary files
 *.xdv
