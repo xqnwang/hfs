@@ -159,7 +159,7 @@ It is challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assumi
 4.  $\boldsymbol{W}_{\text{MinT}} = \hat{\boldsymbol{W}}_1$ is referred to as the *MinT estimator* based on the sample covariance matrix proposed by @Wickramasuriya2019-fc. We denote this method as **MinT** in the results that follow.
 5.  $\boldsymbol{W}_{\text{MinTs}} = \lambda\operatorname{diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$ is the *MinT shrinkage estimator* suggested by @Wickramasuriya2019-fc, in which off-diagonal elements of $\hat{\boldsymbol{W}}_1$ are shrunk towards zero. We refer to this method as **MinTs**.
 
-It is hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the weighting matrix as the summing matrix is fixed for a given hierarchy. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconcliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the mean squared reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific hierarchical time series of interest, the targeted level or series, and the selected loss function.
+It is hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the weighting matrix as the summing matrix is fixed for a given hierarchy. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconciliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the mean squared reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific hierarchical time series of interest, the targeted level or series, and the selected loss function.
 
 ### Relaxation of the unbiasedness assumptions
 
@@ -289,7 +289,7 @@ $$
 \end{aligned}
 $$ {#eq-subset_mip}
 
-where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficiently large such that some optimal solution, say $\boldsymbol{g}^{+*}$, to @eq-subset_mip satisfies $\max _{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$, the binary variable $z_j$ controls whether all the regression coefficients, $\operatorname{vec}(\boldsymbol{G})$, in group $j$ are zero or not, i.e., $z_j=0$ implies that $\boldsymbol{G}_{\cdot j}=\mathbf{0}$, and $z_j=1$ implies that $\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$. Such Big-M formulations are commonly used in MIP problems to model relations between discrete and continuous variables, and have been recently explored in regression with $L_0$ regularization, see @Bertsimas2016-ig for more dicussion. The problem is a mixed integer quadratic program (MIQP) that can be solved using commercial MIP solvers, e.g., Gurobi and CPLEX.
+where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficiently large such that some optimal solution, say $\boldsymbol{g}^{+*}$, to @eq-subset_mip satisfies $\max _{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$, the binary variable $z_j$ controls whether all the regression coefficients, $\operatorname{vec}(\boldsymbol{G})$, in group $j$ are zero or not, i.e., $z_j=0$ implies that $\boldsymbol{G}_{\cdot j}=\mathbf{0}$, and $z_j=1$ implies that $\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$. Such Big-M formulations are commonly used in MIP problems to model relations between discrete and continuous variables, and have been recently explored in regression with $L_0$ regularization, see @Bertsimas2016-ig for more discussion. The problem is a mixed integer quadratic program (MIQP) that can be solved using commercial MIP solvers, e.g., Gurobi and CPLEX.
 
 **Parameter tuning.** $\lambda_0 \geq 0$ and $\lambda_2 \geq 0$ are tuning parameters. To avoid computationally-expensive cross-validation, we tune the parameters to minimize the sum of squared reconciled forecast errors on the truncated training set, comprising only the $\max\{h, s\}$ observations closest to the forecast origin, where $s$ is the seasonal period for seasonal data and $s=T$ for non-seasonal data. Let $\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)$ that captures the scale of first term in the objective, where $\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}$ is a vector of reconciled forecasts obtained using @eq-mint with same estimator of $\boldsymbol{W}$, and define $\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}$. For the parameter $\lambda_0$, we consider a grid of $k+1$ values, $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$. So $\lambda_{0}^{1},...,\lambda_{0}^{k}$ is a sequence decreasing on the log scale. We use a grid of six values for the parameter $\lambda_2$, $\{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}$. Therefore, we tune over a two-dimensional grid of $(k+1) \times 6$ values to find the optimal combination of $\lambda_0$ and $\lambda_2$.
 
@@ -297,7 +297,7 @@ where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficient
 
 ### Intuitive method with $L_0$ regularization {#sec-intuitive}
 
-Instead of estimating the entire matrix $\boldsymbol{G}$ in @sec-subset, we leverage the MinT solution in @eq-mint to streamline the optimization problem under consideration. Specifically, we define $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \operatorname{diag}(\boldsymbol{z})$ is an $n \times n$ diagonal matrix, and $\boldsymbol{z}$ is an $n$-dimensional vector with elements either equal to 0 or 1. Taking the MinT solution in @eq-mint, we have $\bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}$. Given fixed $\boldsymbol{S}$ and estimation of $\boldsymbol{W}$, $\bar{\boldsymbol{G}}$ is entirely determined by $\boldsymbol{A}$. By this way, when the $j$th diagnal element of $\boldsymbol{A}$ equals zero, the $j$th column of $\bar{\boldsymbol{G}}$ becomes entirely composed of zeros. Therefore, the optimization problem can be reduced to an integer quadratic programming (IQP) problem in which all of the variables are restricted to be integers:
+Instead of estimating the entire matrix $\boldsymbol{G}$ in @sec-subset, we leverage the MinT solution in @eq-mint to streamline the optimization problem under consideration. Specifically, we define $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \operatorname{diag}(\boldsymbol{z})$ is an $n \times n$ diagonal matrix, and $\boldsymbol{z}$ is an $n$-dimensional vector with elements either equal to 0 or 1. Taking the MinT solution in @eq-mint, we have $\bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}$. Given fixed $\boldsymbol{S}$ and estimation of $\boldsymbol{W}$, $\bar{\boldsymbol{G}}$ is entirely determined by $\boldsymbol{A}$. By this way, when the $j$th diagonal element of $\boldsymbol{A}$ equals zero, the $j$th column of $\bar{\boldsymbol{G}}$ becomes entirely composed of zeros. Therefore, the optimization problem can be reduced to an integer quadratic programming (IQP) problem in which all of the variables are restricted to be integers:
 
 $$
 \begin{aligned}
@@ -396,7 +396,7 @@ $$
 
 which becomes a standard group lasso problem, with $\operatorname{vec}(\boldsymbol{Y})$ serving as the dependent variable and $\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}$ as the covariate matrix. We denote this as **Elasso** in the results that follow.
 
-Upon relaxing the unbiasedness constraint, the number of non-zero column entries in the solution for $\boldsymbol{G}$ may be less than the number of time series at the bottom level. This differs from the series selection methods with an unbiasedness constraint that we introduced in @sec-constrained. In an extreme scenario, it can happen that the solution takes the form of a top-down $\boldsymbol{G}_{TD}=[\boldsymbol{p} \mid \boldsymbol{O}_{n_b \times (n-1)}]$, where only the column corresponding to the top level (most aggregated level) retains non-zero values, and $\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})$ is a proportionality vector obtained based on in-sample reconcilied forecast errors such that $\sum_{i=1}^{n_b} p_i=1$.
+Upon relaxing the unbiasedness constraint, the number of non-zero column entries in the solution for $\boldsymbol{G}$ may be less than the number of time series at the bottom level. This differs from the series selection methods with an unbiasedness constraint that we introduced in @sec-constrained. In an extreme scenario, it can happen that the solution takes the form of a top-down $\boldsymbol{G}_{TD}=[\boldsymbol{p} \mid \boldsymbol{O}_{n_b \times (n-1)}]$, where only the column corresponding to the top level (most aggregated level) retains non-zero values, and $\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})$ is a proportionality vector obtained based on in-sample reconciled forecast errors such that $\sum_{i=1}^{n_b} p_i=1$.
 
 We also explored the empirical version of group best-subset selection with ridge regularization and intuitive method with $L_0$ regularization in which we do not impose the unbiasedness constraint. It is worth mentioning that @Hazimeh2023-ie presented a new algorithmic framework for formulating the group $L_0$ problem with ridge regularization and provided the **L0Group** Python package[^1] for implementation. However, our experiments showed that this algorithm can not terminate within five hours for typical instances with $p \sim 10^4$. Therefore, in this paper, we only present the empirical group lasso method for series selection without unbiasedness constraint.
 
@@ -445,7 +445,7 @@ which enables correlations among time series in a hierarchical structure.
 
 We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $\sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$, respectively. The initial values for $\boldsymbol{\mu}_0$, $\boldsymbol{v}_0$, $\boldsymbol{\gamma}_0$, $\boldsymbol{\gamma}_1$, and $\boldsymbol{\gamma}_2$ are generated independently from a multivariate normal distribution with zero mean and identity covariance matrix. For each series at the bottom level, we generate a total of $T+h = 180$ observations, with the last $h = 16$ observations serving as the test set. Recall that the bottom-level series are aggregated to obtain the data for the aggregated levels. This process is repeated $500$ times.
 
-We use ETS models to generate base forecasts for all time series in the hierarchy, using the default settings as implemented in the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification into our experiment, we deliberately undermine the quality of in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for some specific time series. Specifically, we investigate three scenarios characterized by artificial model misspecification, where a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for one series, i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenario I, Scenario II, and Scenario III, respectively.
+We use ETS models to generate base forecasts for all time series in the hierarchy, using the default settings as implemented in the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification into our experiment, we deliberately undermine the quality of in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for some specific time series. Specifically, we investigate three scenarios characterized by artificial model misspecifications, where a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for a single series in each scenario, i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenario I, Scenario II, and Scenario III, respectively.
 
 The results for Scenario I, II, and III are presented in @tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse, respectively. Each table reports the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as *Average*). The *Base* row shows the average RMSE of the base forecasts, while entries below this row reporting the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts.
 
@@ -455,7 +455,7 @@ The results for Scenario I, II, and III are presented in @tbl-s1-rmse, @tbl-s2-r
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario I (model misspecification introduced in series AA). "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold.
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario I, Setup 1.
 
 rmse_s1 <- readRDS("results/sim_rmse_s1.rds")
 latex_table(rmse_s1)
@@ -467,7 +467,7 @@ latex_table(rmse_s1)
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario II (model misspecification introduced in series A). "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario II, Setup 1.
 
 rmse_s2 <- readRDS("results/sim_rmse_s2.rds")
 latex_table(rmse_s2)
@@ -479,7 +479,7 @@ latex_table(rmse_s2)
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario III (model misspecification introduced in series Total). "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario III, Setup 1.
 
 rmse_s3 <- readRDS("results/sim_rmse_s3.rds")
 latex_table(rmse_s3)
@@ -491,7 +491,7 @@ latex_table(rmse_s3)
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario I. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario I.
 
 selection_sim <- readRDS("results/sim_selection.rds")
 latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n)
@@ -503,7 +503,7 @@ latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n)
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario II. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario II.
 
 latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n)
 ```
@@ -514,20 +514,20 @@ latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n)
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario III. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario III.
 
 latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n)
 ```
 
-Focusing on the results of the benchmark reconciliation methods, we find that the BU approach performs the best in both Scenario II and III but ranks as the worst overall in Scenario I. This is not surprising, as bottom-level base forecasts are deteriorated in Scenario I, while higher-level base forecasts are deteriorated in Scenario II and III. Moreover, the WLSv, MinT, and MinTs approaches perform especially well, benefiting from their ability to consider the in-sample covariance of base forecast errors, allowing for larger range of adjustments for reconciliation. EMinT also provides accurate reconciled forecasts in our setup, where the in-sample forecasts for specific series are intentionally undermined, a situation that can be detected by the in-sample information based EMinT method. However, OLS and WLSs perform much worse than other benchmark methods in this simulation design.
+Focusing on the results of the benchmark reconciliation methods, we find that the BU approach performs the best in both Scenario II and III but ranks as the worst overall in Scenario I. This is not surprising, as bottom-level base forecasts are deteriorated in Scenario I, while higher-level base forecasts are deteriorated in Scenario II and III. Moreover, the WLSv, MinT, and MinTs approaches perform especially well in this simulation design, benefiting from their ability to consider the in-sample covariance of base forecast errors, allowing for larger range of adjustments in reconciliation for base forecasts with higher estimated error variance. EMinT also provides accurate reconciled forecasts in our setup, where the in-sample forecasts for specific series are intentionally undermined, a situation that can be detected by the in-sample information based EMinT method. However, OLS and WLSs perform much worse than other benchmark methods in this simulation design.
 
-In all three scenarios, our proposed methods consistently produce either improved or comparable reconciled forecasts compared to the benchmark methods. The improvements are particularly pronounced when using OLS and WLSs estimators of $\boldsymbol{W}$, which do not take into account the in-sample covariance of base forecast errors. One advantage of using the forecast reconciliation methods with selection proposed in this paper is that they can reduce the difference introduced by using different estimates of $\boldsymbol{W}$, thereby mitigating the risk of estimator selection. In some cases, such as Scenarios II and III, we can align the forecast accuracy achieved with different methods to match the best results we can obtain through time series selection in forecast reconciliation.
+In all three scenarios, our proposed methods consistently produce either improved or comparable reconciled forecasts compared to their respective benchmark methods. The improvements are particularly pronounced when using OLS and WLSs estimators of $\boldsymbol{W}$, which do not take into account the in-sample covariance of base forecast errors. One advantage of using the forecast reconciliation methods with selection proposed in this paper is that they can reduce the difference introduced by using different estimates of $\boldsymbol{W}$, thereby mitigating the risk of estimator selection. In some cases, such as Scenarios II and III, we can align the forecast accuracy achieved using different estimators, and make them close to the best results we can obtain. When we drop the unbiasedness assumption, Elasso delivers results on par with EMinT overall, while achieving improvements at the top level, which is typically the aspect of greatest concern to practitioners.
 
-In addition, we report the proportion of time series being selected from the application of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario. Clearly, our proposed methods select fewer time series from the hierarchy for forecast reconciliation, and generally improve forecast accuracy over the benchmark methods. Furthermore, we observe that the Subset methods tend to return fewer time series compared to the Intuitive and Lasso methods, which aligns with our expectations. As discussed in @sec-methodology, the Intuitive and Lasso methods tend to produce dense estimates.
+In addition, we report the proportion of time series being selected from the implementation of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario. Clearly, our proposed methods select fewer time series from the hierarchy for forecast reconciliation, and generally improve forecast accuracy over the benchmark methods. Furthermore, we observe that the Subset methods tend to return fewer time series compared to the Intuitive and Lasso methods, which aligns with our expectations. As discussed in @sec-methodology, the Intuitive and Lasso methods tend to produce dense estimates.
 
 ## Setup 2: Exploring the effect of correlation {#sec-sim2}
 
-We now consider to simulate a hierarchical structure with correlated series. A simular simulation to @Wickramasuriya2021-am is implemented in this section. Using the same hierarchical sturcture as shown in @fig-hts, we assume the data generating process for the time series at the bottom level follows a stationary first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by
+We now consider to simulate a hierarchical structure with correlated series. A similar simulation to @Wickramasuriya2021-am is implemented in this section. Using the same hierarchical structure as shown in @fig-hts, we assume the data generating process for the time series at the bottom level follows a stationary first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by
 
 $$
 \boldsymbol{b}_t= \boldsymbol{c} + \left[\begin{array}{cc}
@@ -659,7 +659,7 @@ We have also considered alternative error correlation values, $\rho = -0.6, -0.2
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results across various error correlations for the simulated data in Setup 2. "Base" shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+#| tbl-cap: Out-of-sample forecast results across various error correlations for the simulated data in Setup 2.
 
 rmse_corr <- readRDS("results/corr_rmse.rds")
 latex_corr_table(rmse_corr)
@@ -673,7 +673,7 @@ We present the proportion of time series being selected by applying our proposed
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2 with the error correlation being -0.8. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2 with the error correlation being -0.8.
 
 selection_corr_neg <- readRDS("results/corr_selection_neg.rds")
 latex_sim_nos_table(selection_corr_neg$out_s0$z,
@@ -686,7 +686,7 @@ latex_sim_nos_table(selection_corr_neg$out_s0$z,
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2 with the error correlation being 0.8. The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2 with the error correlation being 0.8.
 
 selection_corr_pos <- readRDS("results/corr_selection_pos.rds")
 latex_sim_nos_table(selection_corr_pos$out_s0$z,
@@ -774,7 +774,7 @@ For each series in the grouped hierarchy, we use the data spanning from January 
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Average out-of-sample forecast results for Australian labour force data. "Base" shows the average RMSE of the base forecasts, while entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+#| tbl-cap: Average out-of-sample forecast results for Australian labour force data.
 
 rmse_labour_avg <- readRDS("results/labour_rmse.rds")
 latex_table(rmse_labour_avg)
@@ -786,7 +786,7 @@ latex_table(rmse_labour_avg)
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for Australian labour force data. "Base" shows the average RMSE of the base forecasts, while entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+#| tbl-cap: Out-of-sample forecast results for Australian labour force data.
 
 rmse_labour <- readRDS("results/labour_1_rmse.rds")
 latex_table(rmse_labour)
@@ -862,7 +862,7 @@ Overall, all Subset methods with different estimators of $\boldsymbol{G}$, i.e.,
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Average out-of-sample forecast results for Australian domestic tourism data. "Base" shows the average RMSE of the base forecasts, while entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+#| tbl-cap: Average out-of-sample forecast results for Australian domestic tourism data.
 
 rmse_tourism_avg <- readRDS("results/tourism_rmse.rds")
 latex_table(rmse_tourism_avg)
@@ -874,7 +874,7 @@ latex_table(rmse_tourism_avg)
 #| message: false
 #| warning: false
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for Australian domestic tourism data. "Base" shows the average RMSE of the base forecasts, while entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+#| tbl-cap: Out-of-sample forecast results for Australian domestic tourism data.
 
 rmse_tourism <- readRDS("results/tourism_1_rmse.rds")
 latex_table(rmse_tourism)
@@ -920,7 +920,7 @@ ggplot(tourism_heatmap, aes(x = Series, y = Method, fill = RMSE)) +
                                 barheight = 1.5))
 ```
 
-@tbl-tourism-info presents a summary of the number of series selected using different proposed methods for each level as well as the optimal tuning parameter values identified. Here we only give the results of the Subset and Elasso methods since they are useful in the tourism application. Note that the variation in the scale of the optimal parameters for different methods comes from the difference in the scales of objective. We observe that the OLS-subset and WLSs-subset methods exclude some series at the Satate and Zone levels for forecast reconciliation. In contrast, the WLSv and MinTs methods retain all series, which is reasonable because they take into account the in-sample covariance, making themselves allow for larger adjustments made to series with large in-sample forecast error variances in forecast reconciliation. Nonetheless, the WLSv and MinTs methods can still enhance the quality of reconciled forecasts due to the inclusion of shrinkage through additional ridge regularization. It is surprising that Elasso performs exceptionally well despite using only $13$ series for reconciliation.
+@tbl-tourism-info presents a summary of the number of series selected using different proposed methods for each level as well as the optimal tuning parameter values identified. Here we only give the results of the Subset and Elasso methods since they are useful in the tourism application. Note that the variation in the scale of the optimal parameters for different methods comes from the difference in the scales of objective. We observe that the OLS-subset and WLSs-subset methods exclude some series at the State and Zone levels for forecast reconciliation. In contrast, the WLSv and MinTs methods retain all series, which is reasonable because they take into account the in-sample covariance, making themselves allow for larger adjustments made to series with large in-sample forecast error variances in forecast reconciliation. Nonetheless, the WLSv and MinTs methods can still enhance the quality of reconciled forecasts due to the inclusion of shrinkage through additional ridge regularization. It is surprising that Elasso performs exceptionally well despite using only $13$ series for reconciliation.
 
 ```{r}
 #| label: tbl-tourism-info

@@ -83,10 +83,16 @@ latex_table <- function(out_all){
           escape = FALSE,
           linesep = "") |>
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
+    kable_paper(full_width = F) |>
     kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
     row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(), 
              background = "#e6e3e3") |>
-    add_header_above(header, align = "c") |> print()
+    add_header_above(header, align = "c") |>
+    footnote(general = "The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.",
+             general_title = "NOTE:",
+             footnote_as_chunk = T, title_format = c("italic", "underline"),
+             threeparttable = T) |>
+    print()
 }
 
 #--------------------------------------------------------------------
@@ -126,22 +132,6 @@ calc_rmse <- function(fc, test, h){
   return(rmse)
 }
 
-calc_rmse_series <- function(fc, test, h){
-  err <- subset(test, select = -Index) - subset(fc, select = -Index)
-  err <- cbind(err, Index = subset(test, select = Index))
-  rmse <- err |> 
-    as_tibble() |> 
-    group_by(Index) |> 
-    mutate(Horizon = row_number()) |> 
-    filter(Horizon <= h) |>
-    summarise_at(1:NCOL(err), function(x) sqrt(mean(x^2))) |>
-    ungroup() |>
-    select(!c("Index", "Horizon")) |>
-    data.matrix() |> 
-    as.vector()
-  return(rmse)
-}
-
 #--------------------------------------------------------------------
 # Calculate MASE
 #--------------------------------------------------------------------
@@ -162,34 +152,6 @@ calc_mase <- function(fc, train, test, freq, h){
     summarise_all(mean)
   
   return(mase)
-}
-
-calc_mase_series <- function(fc, train, test, freq, h){
-  x <- subset(train, select = -Index)
-  err <- subset(test, select = -Index) - subset(fc, select = -Index)
-  scaling <- apply(x, 2, function(s) mean(abs(diff(as.vector(s), freq))))
-  q <- cbind(t(t(err) /scaling), Index = subset(test, select = Index))
-  
-  mase <- q |> 
-    as_tibble() |> 
-    group_by(Index) |> 
-    mutate(Horizon = row_number()) |> 
-    filter(Horizon <= h) |>
-    summarise_at(1:NCOL(q), function(x) mean(abs(x))) |>
-    ungroup() |>
-    select(!c("Index", "Horizon")) |>
-    data.matrix() |> 
-    as.vector()
-  
-  return(mase)
-}
-
-#--------------------------------------------------------------------
-# Calculate absolute errors for each series across different horizons
-#--------------------------------------------------------------------
-calc_abserror <- function(fc, test){
-  abserr <- abs(subset(test, select = -Index) - subset(fc, select = -Index))
-  abserr |> as.data.frame() |> data.matrix() |> as.vector()
 }
 
 #--------------------------------------------------------------------
@@ -266,7 +228,7 @@ latex_sim_nos_table <- function(z_out, n_out){
     ggsave(
       filename = paste0(names(n_img)[i], ".png"),
       path = "_figs/",
-      plot = inline_bars[[i]], height = 2, width = 10, dpi = 300
+      plot = inline_bars[[i]], height = 1.5, width = 7, dpi = 300
     )
   })
   ls_inline_plots <- file.path(getwd(), paste0("_figs/", names(n_img), ".png"))
@@ -278,70 +240,16 @@ latex_sim_nos_table <- function(z_out, n_out){
           align = c("l", rep("r", NCOL(z_out))),
           escape = FALSE,
           linesep = "") |>
-    kable_styling(latex_options = c("hold_position", "repeat_header",  "scale_down")) |>
+    kable_styling(latex_options = c("hold_position", "repeat_header",  "scale_down"),
+                  font_size = 7) |>
+    kable_paper(full_width = F) |>
     row_spec(3*(1:length(candidates)), hline_after = TRUE) |>
+    footnote(general = "The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.",
+             general_title = "NOTE:",
+             footnote_as_chunk = T, title_format = c("italic", "underline"),
+             threeparttable = T) |>
     column_spec(NCOL(z_out) + 1,
-                image = spec_image(ls_inline_plots, width = 200, height = 70)) 
-}
-
-#--------------------------------------------------------------------
-# MCB test for simulation data
-#--------------------------------------------------------------------
-RMSE_MCB_sim <- function(data_label = "simulation", methods, scenario, h){
-  RMSE_sim <- lapply(methods, function(method_label){
-    test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
-    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label,
-                                     "_reconsf", 
-                                     ifelse(scenario == "s0", "", paste0("_", scenario)), 
-                                     ".rds"))
-    for(method in names(reconsf[[1]])) {
-      out <- unique(test$Index) |> 
-        purrr::map(\(index) 
-                   extract_element(data = reconsf, index = index, 
-                                   method = method, element = "y_tilde")) %>% 
-        do.call(rbind, .)
-      assign(tolower(method), out)
-    }
-    RMSE <- sapply(names(reconsf[[1]]), function(lmethod){
-      assign(lmethod, calc_rmse_series(fc = get(tolower(lmethod)), test = test, h = h))
-    }, simplify = TRUE, USE.NAMES = TRUE) |>
-      as.data.frame() |> 
-      data.matrix()
-    assign(paste0("RMSE_", method_label), RMSE)
-  }) %>% 
-    do.call(cbind, .)
-  RMSE_sim <- RMSE_sim[, !duplicated(colnames(RMSE_sim))]
-  colnames(RMSE_sim) <- sub("_", "-", colnames(RMSE_sim))
-  return(RMSE_sim)
-}
-
-MASE_MCB_sim <- function(data_label = "simulation", methods, scenario, h){
-  MASE_sim <- lapply(methods, function(method_label){
-    train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
-    test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
-    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label,
-                                     "_reconsf", 
-                                     ifelse(scenario == "s0", "", paste0("_", scenario)), 
-                                     ".rds"))
-    for(method in names(reconsf[[1]])) {
-      out <- unique(test$Index) |> 
-        purrr::map(\(index) 
-                   extract_element(data = reconsf, index = index, 
-                                   method = method, element = "y_tilde")) %>% 
-        do.call(rbind, .)
-      assign(tolower(method), out)
-    }
-    MASE <- sapply(names(reconsf[[1]]), function(lmethod){
-      assign(lmethod, calc_mase_series(fc = get(tolower(lmethod)), train = train, test = test, freq = 4, h = h))
-    }, simplify = TRUE, USE.NAMES = TRUE) |>
-      as.data.frame() |> 
-      data.matrix()
-    assign(paste0("MASE_", method_label), MASE)
-  }) %>% 
-    do.call(cbind, .)
-  MASE_sim <- MASE_sim[, !duplicated(colnames(MASE_sim))]
-  colnames(MASE_sim) <- sub("_", "-", colnames(MASE_sim))
-  return(MASE_sim)
+                image = spec_image(ls_inline_plots, width = 140, height = 30)) 
 }
 
 #--------------------------------------------------------------------
@@ -427,38 +335,14 @@ latex_corr_table <- function(out_all){
           escape = FALSE,
           linesep = "") |>
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
-    # kable_paper("striped", full_width = F) |>
+    kable_paper(full_width = F) |>
     kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
     row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(), 
              background = "#e6e3e3") |>
-    add_header_above(header, align = "c") |> print()
-}
-
-#--------------------------------------------------------------------
-# MCB for corr sumulation data
-#--------------------------------------------------------------------
-RMSE_MCB_corr <- function(data_label = "corr_1", methods, h){
-  RMSE_sim <- lapply(methods, function(method_label){
-    test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
-    reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label,
-                                     "_reconsf.rds"))
-    for(method in names(reconsf[[1]])) {
-      out <- unique(test$Index) |> 
-        purrr::map(\(index) 
-                   extract_element(data = reconsf, index = index, 
-                                   method = method, element = "y_tilde")) %>% 
-        do.call(rbind, .)
-      assign(tolower(method), out)
-    }
-    RMSE <- sapply(names(reconsf[[1]]), function(lmethod){
-      assign(lmethod, calc_rmse_series(fc = get(tolower(lmethod)), test = test, h = h))
-    }, simplify = TRUE, USE.NAMES = TRUE) |>
-      as.data.frame() |> 
-      data.matrix()
-    assign(paste0("RMSE_", method_label), RMSE)
-  }) %>% 
-    do.call(cbind, .)
-  RMSE_sim <- RMSE_sim[, !duplicated(colnames(RMSE_sim))]
-  colnames(RMSE_sim) <- sub("_", "-", colnames(RMSE_sim))
-  return(RMSE_sim)
+    add_header_above(header, align = "c") |> 
+    footnote(general = "The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.",
+             general_title = "NOTE:",
+             footnote_as_chunk = T, title_format = c("italic", "underline"),
+             threeparttable = T) |>
+    print()
 }
