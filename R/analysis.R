@@ -25,7 +25,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
   out_com <- mget(paste0(data_label, "_", methods, "_", measure), inherits = TRUE) %>% do.call(rbind, .)
   rownames(out_com) <- NULL
   out_com <- out_com[!duplicated(out_com), ]
-  if(data_label %in% c("tourism", "labour")){
+  if(grepl("tourism", data_label) | grepl("labour", data_label)){
     candidates <- c("OLS", "WLSs", "WLSv", "MinTs")
   } else if (data_label == "simulation"){
     candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
@@ -67,8 +67,12 @@ latex_table <- function(out_all){
     x <- round(x, 1)
     origin_x <- x
     min_x <- min(origin_x)
-    comp_x <- c(origin_x[1:2], rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), rep(origin_x[length(origin_x)-1], each = 2))
-    out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
+    comp_x <- c(origin_x[1:2],
+                rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4),
+                rep(origin_x[length(origin_x)-1], each = 2))
+    out_x <- ifelse(x == min(x), 
+                    cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), 
+                    ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
   })
   
   out |>
@@ -79,7 +83,6 @@ latex_table <- function(out_all){
           escape = FALSE,
           linesep = "") |>
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
-    # kable_paper("striped", full_width = F) |>
     kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
     row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(), 
              background = "#e6e3e3") |>
@@ -238,15 +241,11 @@ latex_sim_nos_table <- function(z_out, n_out){
   
   colors_used <- hcl.colors(10, "Purples")[3:6]
   names(colors_used) <- 7:4
-  # colors_used <- c("#B7B9A8", "#D1B5A3", "#E36858", "#962E2A")
-  # names(colors_used) <- 4:7
   
   inline_bars <-
     n_img %>%
     map(~ ggplot(.x, aes(x=Method, y=Freq, fill=N)) +
-          # ggplot(.x, aes(x=Method, y=Freq, fill=N, label=N)) +
           geom_bar(position='stack', stat='identity', alpha=0.9) +
-          # geom_text(size = 20, position = position_stack(vjust = 0.5)) +
           scale_fill_manual(values= colors_used) +
           coord_cartesian(ylim = c(0, 500), clip = "off") +
           coord_flip() +
@@ -257,7 +256,6 @@ latex_sim_nos_table <- function(z_out, n_out){
             legend.position = "none",
             axis.title = element_blank(),
             axis.text.x = element_blank(),
-            # axis.text.x = element_text(face = "bold", vjust = 5),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
             axis.ticks.y = element_blank(),
@@ -367,7 +365,6 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
     })
     out <- data.frame(method, do.call(cbind, out))
     colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, paste0("$\\rho$=", -0.8), corr[index])) |> rep(length(levels)))
-    # colnames(out) <- c("Method", corr[index] |> rep(length(levels)))
     assign(paste0(data_label, "_", method_label), out)
   }
   
@@ -400,7 +397,7 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
 }
 
 #--------------------------------------------------------------------
-# Output table latex for corr sumulation data
+# Output table latex for corr simulation data
 #--------------------------------------------------------------------
 latex_corr_table <- function(out_all){
   out <- out_all$table_out
@@ -416,7 +413,9 @@ latex_corr_table <- function(out_all){
     x <- round(x, 1)
     origin_x <- x
     min_x <- min(origin_x)
-    comp_x <- c(origin_x[1:2], rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), rep(origin_x[length(origin_x)-1], each = 2))
+    comp_x <- c(origin_x[1:2], 
+                rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), 
+                rep(origin_x[length(origin_x)-1], each = 2))
     out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
   })
   

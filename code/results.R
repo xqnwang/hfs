@@ -8,6 +8,7 @@ library(kableExtra)
 library(latex2exp)
 library(lubridate)
 library(fable)
+library(tsibble)
 library(patchwork)
 
 ## MCB test
@@ -71,7 +72,6 @@ resid <- resid |>
 saveRDS(data, file = "paper/results/corr_data_neg.rds")
 saveRDS(resid, file = "paper/results/corr_resid_neg.rds")
 
-
 # data |>
 #   autoplot(Value) +
 #   facet_wrap(vars(Series), scales = "free_y", ncol = 2) +
@@ -131,19 +131,46 @@ tourism_ts <- tourism_ts |>
                          levels = c("Total", "NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT")))
 saveRDS(tourism_ts, "paper/results/tourism_hts.rds")
 
-# RMSE table
+# RMSE table - average results for rolling windows
 measure <- "rmse"
 data_label <- "tourism"
 scenario <- NULL
 horizons <- c(1, 4, 8, 12)
 methods <- c("subset", "intuitive", "lasso")
+test_indices <- 1:12
+
+for (method_label in methods){
+  for (h in horizons){
+    for (test_lable in test_indices){
+      assign(paste0(data_label, "_", test_lable, "_", method_label, "_", measure, "_h", h), 
+             readRDS(file = paste0("data_new/", data_label, "_", test_lable, "_", method_label, "_reconsf", 
+                                   "_", measure, "_", h, ".rds"))
+      )
+    }
+    Method <- get(paste0(data_label, "_", test_lable, "_", method_label, "_", measure, "_h", h))[,1]
+    out <- mget(paste0(data_label, "_", test_indices, "_", method_label, "_", measure, "_h", h), inherits = TRUE) |> 
+      lapply(function(lentry) lentry[, -1])
+    out_h <- data.frame(Method = Method, Reduce('+', out)/length(out))
+    saveRDS(out_h, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_rmse_", h, ".rds"))
+  }
+}
 
 out_all <- combine_table(data_label, methods, measure, scenario, horizons)
 saveRDS(out_all, file = paste0("paper/results/tourism_rmse.rds"))
 
+# RMSE table - the last window
+measure <- "rmse"
+data_label <- "tourism_1"
+scenario <- NULL
+horizons <- c(1, 4, 8, 12)
+methods <- c("subset", "intuitive", "lasso")
+
+out_1_all <- combine_table(data_label, methods, measure, scenario, horizons)
+saveRDS(out_1_all, file = "paper/results/tourism_1_rmse.rds")
+
 # Series retained table
-tourism_subset_reconsf <- readRDS(file = "data_new/tourism_subset_reconsf.rds")
-tourism_lasso_reconsf <- readRDS(file = "data_new/tourism_lasso_reconsf.rds")
+tourism_subset_reconsf <- readRDS(file = "data_new/tourism_1_subset_reconsf.rds")
+tourism_lasso_reconsf <- readRDS(file = "data_new/tourism_1_lasso_reconsf.rds")
 Top <- 1
 State <- 2:8
 Zone <- 9:35
@@ -170,13 +197,13 @@ rownames(tourism_subset_info) <- sub("_", "-", rownames(tourism_subset_info))
 saveRDS(tourism_subset_info, "paper/results/tourism_info.rds")
 
 # Heatmap
-data_label <- "tourism"
+data_label <- "tourism_1"
 method_label <- "subset"
 h <- 12
 
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
 reconsf <- readRDS(file = paste0("data_new/", data_label, "_", method_label, "_reconsf.rds"))
-lasso_reconsf <- readRDS(file = "data_new/tourism_lasso_reconsf.rds")
+lasso_reconsf <- readRDS(file = paste0("data_new/", data_label, "_lasso", "_reconsf.rds"))
 reconsf[[1]] <- c(reconsf[[1]], Elasso = list(lasso_reconsf[[1]]$Elasso))
 
 methods <- names(reconsf[[1]])
@@ -266,19 +293,47 @@ labour_ts <- labour_ts |>
 
 saveRDS(labour_ts, "paper/results/labour_gts.rds")
 
-# RMSE table
+# RMSE table - average results for rolling windows
 measure <- "rmse"
 data_label <- "labour"
 scenario <- NULL
 horizons <- c(1, 4, 8, 12)
 methods <- c("subset", "intuitive", "lasso")
+test_indices <- 1:12
+
+for (method_label in methods){
+  for (h in horizons){
+    for (test_lable in test_indices){
+      assign(paste0(data_label, "_", test_lable, "_", method_label, "_", measure, "_h", h), 
+             readRDS(file = paste0("data_new/", data_label, "_", test_lable, "_", method_label, "_reconsf", 
+                                   "_", measure, "_", h, ".rds"))
+      )
+    }
+    Method <- get(paste0(data_label, "_", test_lable, "_", method_label, "_", measure, "_h", h))[,1]
+    out <- mget(paste0(data_label, "_", test_indices, "_", method_label, "_", measure, "_h", h), inherits = TRUE) |> 
+      lapply(function(lentry) lentry[, -1])
+    out_h <- data.frame(Method = Method, Reduce('+', out)/length(out))
+    saveRDS(out_h, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_rmse_", h, ".rds"))
+  }
+}
 
 out_all <- combine_table(data_label, methods, measure, scenario, horizons)
 saveRDS(out_all, file = paste0("paper/results/labour_rmse.rds"))
 
+# RMSE table - the last window
+measure <- "rmse"
+data_label <- "labour_1"
+scenario <- NULL
+horizons <- c(1, 4, 8, 12)
+methods <- c("subset", "intuitive", "lasso")
+
+out_1_all <- combine_table(data_label, methods, measure, scenario, horizons)
+saveRDS(out_1_all, file = "paper/results/labour_1_rmse.rds")
+
 # Series retained table
-labour_subset_reconsf <- readRDS(file = "data_new/labour_subset_reconsf.rds")
-labour_lasso_reconsf <- readRDS(file = "data_new/labour_lasso_reconsf.rds")
+data_label <- "labour_1"
+labour_subset_reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf.rds"))
+labour_lasso_reconsf <- readRDS(file = paste0("data_new/", data_label, "_lasso_reconsf.rds"))
 Top <- 1
 Duration <- 2:7
 STT <- 8:15

@@ -99,7 +99,7 @@ if (grepl("corr", data_label)){
 ## Training set:  1998Jan-2016Dec
 ## Test set:      2017Jan-2017Dec
 #----------------------------------------------------------------------
-if (data_label == "tourism"){
+if (grepl("tourism", data_label)){
   # Import results
   freq <- 12
   scenario <- NULL
@@ -136,7 +136,7 @@ if (data_label == "tourism"){
 ## Training set:  2010Jan-2022Jul
 ## Test set:      2022Aug-2023Jul
 #----------------------------------------------------------------------
-if (data_label == "labour"){
+if (grepl("labour", data_label)){
   # Import results
   freq <- 12
   scenario <- NULL
@@ -193,7 +193,7 @@ for(h in horizon){
              Bottom = mean(c_across((bottom + 1))),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, Middle, Bottom, Average)
-  } else if (data_label == "tourism"){
+  } else if (grepl("tourism", data_label)){
     out <- bind_rows(rmse, .id = "Method") |>
       rowwise() |>
       mutate(Top = mean(c_across(top + 1)),
@@ -202,7 +202,7 @@ for(h in horizon){
              Region = mean(c_across(region + 1)),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, State, Zone, Region, Average)
-  } else if (data_label == "labour"){
+  } else if (grepl("labour", data_label)){
     out <- bind_rows(rmse, .id = "Method") |>
       rowwise() |>
       mutate(Top = mean(c_across(top + 1)),
@@ -237,7 +237,7 @@ for(h in horizon){
              Bottom = mean(c_across((bottom + 1))),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, Middle, Bottom, Average)
-  } else if (data_label == "tourism"){
+  } else if (grepl("tourism", data_label)){
     out <- bind_rows(mase, .id = "Method") |>
       rowwise() |>
       mutate(Top = mean(c_across(top + 1)),
@@ -246,7 +246,7 @@ for(h in horizon){
              Region = mean(c_across(region + 1)),
              Average = mean(c_across(avg + 1))) |>
       select(Method, Top, State, Zone, Region, Average)
-  } else if (data_label == "labour"){
+  } else if (grepl("labour", data_label)){
     out <- bind_rows(mase, .id = "Method") |>
       rowwise() |>
       mutate(Top = mean(c_across(top + 1)),

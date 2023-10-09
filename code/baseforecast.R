@@ -107,14 +107,21 @@ if (grepl("corr", data_label)){
 if (grepl("tourism", data_label)){
   # Formalize data (Index, Time, Series1, ..., Seriesn)
   dat <- readRDS("data/tourism_data.rds")
+  h <- 12
   
   # Data details
-  k <- sub('.*_', '', data_label) |> as.numeric() # 1:3
+  k <- sub('.*_', '', data_label) |> as.numeric() # 1:12
   freq <- 12
   start_train <- c(1998, 1)
-  end_train <- c(2014 + k -1, 12)
-  start_test <- c(2014 + k, 1)
-  end_test <- c(2014 + k, 12)
+  data_eg <- dat |>
+    filter(Index == 1) |>
+    select(!c(Index, Time)) |>
+    ts(frequency = freq, start = start_train)
+  
+  length_train <- 240 - h - k + 1
+  end_train <- time(data_eg)[length_train]
+  start_test <- time(data_eg)[length_train + 1]
+  end_test <- time(data_eg)[length_train + h]
   
   # Forecasting method
   fmethod <- "ets"
@@ -138,14 +145,21 @@ if (grepl("tourism", data_label)){
 if (grepl("labour", data_label)){
   # Formalize data (Index, Time, Series1, ..., Seriesn)
   dat <- readRDS("data/labour_data.rds")
+  h <- 12
   
   # Data details
-  k <- sub('.*_', '', data_label) |> as.numeric() # 1:3
+  k <- sub('.*_', '', data_label) |> as.numeric() # 1:12
   freq <- 12
   start_train <- c(2010, 1)
-  end_train <- c(2020 + k - 1, 7)
-  start_test <- c(2020 + k - 1, 8)
-  end_test <- c(2020 + k, 7)
+  data_eg <- dat |>
+    filter(Index == 1) |>
+    select(!c(Index, Time)) |>
+    ts(frequency = freq, start = start_train)
+  
+  length_train <- 163  - h - k + 1
+  end_train <- time(data_eg)[length_train]
+  start_test <- time(data_eg)[length_train + 1]
+  end_test <- time(data_eg)[length_train + h]
   
   # Forecasting method
   fmethod <- "ets"
