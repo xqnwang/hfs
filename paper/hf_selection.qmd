@@ -87,7 +87,7 @@ $$
 
 where $\boldsymbol{S}$ is an $n \times n_b$ *summing matrix* that shows aggregation constraints present in the structure. We can write the summing matrix as $\boldsymbol{S} = \left[\begin{array}{c}\boldsymbol{A} \\ \boldsymbol{I}_{n_b}\end{array}\right]$, where $\boldsymbol{A}$ is an $n_a \times n_b$ *aggregation matrix* with $n = n_a + n_b$, and $\boldsymbol{I}_{n_b}$ is an $n_b$-dimensional identity matrix.
 
-![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="50%"}
+![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="40%"}
 
 To clarify these notations, consider the example of a simple hierarchy in @fig-hts. For this two-level hierarchy, we have $n = 7$, $n_b = 4$, $n_a = 3$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, $\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, and
 
@@ -101,7 +101,7 @@ $$
 \end{array}\right].
 $$
 
-![An example of a two level grouped time series.](figs/gts_example.pdf){#fig-gts fig-align="center" width="100%"}
+![An example of a two level grouped time series.](figs/gts_example.pdf){#fig-gts fig-align="center" width="80%"}
 
 When data structure does not naturally disaggregate in a unique hierarchical manner, we can combine these hierarchical structures to form a *grouped time series*. Thus, grouped time series can also be considered as hierarchical time series with more than one grouping structure. @fig-gts shows an example of a two-level grouped time series with two alternative aggregation structures. For this example, $n = 9$, $n_b = 4$, $n_a = 5$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{X},t}, y_{\text{Y},t}, y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}$, $\boldsymbol{b}_t = [y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}$, and
 
@@ -398,9 +398,7 @@ which becomes a standard group lasso problem, with $\operatorname{vec}(\boldsymb
 
 Upon relaxing the unbiasedness constraint, the number of non-zero column entries in the solution for $\boldsymbol{G}$ may be less than the number of time series at the bottom level. This differs from the series selection methods with an unbiasedness constraint that we introduced in @sec-constrained. In an extreme scenario, it can happen that the solution takes the form of a top-down $\boldsymbol{G}_{TD}=[\boldsymbol{p} \mid \boldsymbol{O}_{n_b \times (n-1)}]$, where only the column corresponding to the top level (most aggregated level) retains non-zero values, and $\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})$ is a proportionality vector obtained based on in-sample reconciled forecast errors such that $\sum_{i=1}^{n_b} p_i=1$.
 
-We also explored the empirical version of group best-subset selection with ridge regularization and intuitive method with $L_0$ regularization in which we do not impose the unbiasedness constraint. It is worth mentioning that @Hazimeh2023-ie presented a new algorithmic framework for formulating the group $L_0$ problem with ridge regularization and provided the **L0Group** Python package[^1] for implementation. However, our experiments showed that this algorithm can not terminate within five hours for typical instances with $p \sim 10^4$. Therefore, in this paper, we only present the empirical group lasso method for series selection without unbiasedness constraint.
-
-[^1]: The L0Group Python package is available on github at <https://github.com/hazimehh/L0Group>.
+We also explored the empirical version of group best-subset selection with ridge regularization and intuitive method with $L_0$ regularization in which we do not impose the unbiasedness constraint. It is worth mentioning that @Hazimeh2023-ie presented a new algorithmic framework for formulating the group $L_0$ problem with ridge regularization and provided the **L0Group** Python package for implementation. However, our experiments showed that this algorithm can not terminate within five hours for typical instances with $p \sim 10^4$. Therefore, in this paper, we only present the empirical group lasso method for series selection without unbiasedness constraint.
 
 **Penalty weights and parameter tuning.** Similarly to the setup in @sec-lasso, we assign different penalty weights to each group by setting $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2$, where $\boldsymbol{G}^{\text{OLS}}$ is the solution obtained by the OLS estimator of $\boldsymbol{W}$. We select the tuning parameter, $\lambda$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $\max\{h, s\}$ observations closest to the forecast origin. Specifically, we form the set of candidate values for $\lambda$ as $\{\lambda^{1},...,\lambda^{k}, 0\}$, where $\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\boldsymbol{Y})\right\|_2 / w_j$, $\lambda^{k} = 0.0001\lambda^{1}$, and $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$. Following the same derivation as in the proof of **Proposition 3**, $\lambda^{1}$ is the smallest $\lambda$ value such that all predictors in the empirical group lasso problem have zero coefficients, i.e., $\boldsymbol{G} = \boldsymbol{O}$.
 
@@ -557,7 +555,7 @@ For each series in the hierarchy, base forecasts are generated from ARMA models 
 #| warning: false
 #| results: hide
 #| fig-width: 9
-#| fig-height: 10
+#| fig-height: 9
 #| fig-cap: An example hierarchical time series and its in-sample residuals in Setup 2.
 
 data <- readRDS("results/corr_data_neg.rds")
@@ -699,9 +697,9 @@ In this section we perform two empirical applications to investigate the perform
 
 ## Forecasting Australian labour force {#sec-labour}
 
-This section evaluates the performance of the proposed methods using a grouped hierarchy built using the Australian labour force dataset. The dataset from the Labour Force Survey are released by the Australian Bureau of Statistics, consisting of monthly data on the number of unemployed persons in Australia for the period from January 2010 to July 2023[^2]. There are a few missing values in the dataset. To deal with the missing observations, we use a random walk to give linear interpolation between points. Analysis of unemployment data in a country by labor market region and duration of job search can provide valuable insights into regional disparities, and the structural nuances underlying unemployment. Forecast reconciliation is crucial in such a case to ensure aligned decision making.
+This section evaluates the performance of the proposed methods using a grouped hierarchy built using the Australian labour force dataset. The dataset from the Labour Force Survey are released by the Australian Bureau of Statistics, consisting of monthly data on the number of unemployed persons in Australia for the period from January 2010 to July 2023[^1]. There are a few missing values in the dataset. To deal with the missing observations, we use a random walk to give linear interpolation between points. Analysis of unemployment data in a country by labor market region and duration of job search can provide valuable insights into regional disparities, and the structural nuances underlying unemployment. Forecast reconciliation is crucial in such a case to ensure aligned decision making.
 
-[^2]: The Labour Force Survey data is publicly available at <https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023>.
+[^1]: The Labour Force Survey data is publicly available at <https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023>.
 
 We construct a grouped hierarchy by disaggregating the number of unemployed persons over two independent attributes, duration of job search (referred to as *Duration*), and State and Territory (referred to as *STT* ). The two attributes are crossed, but none are nested within the others. At the bottom level, the data are disaggregated by both attributes. We refer to the bottom level as the *Duration* $\times$ *STT* level. Specifically, there are six different groups of job search duration, under 1 month, 1-3 months, 3-6 months, 6-12 months, 1-2 years, and 2 years and over. Additionally, the number of unemployed persons in Australia can be disaggregated by eight states and territories, i.e., NSW (New South Wales), VIC (Victoria), QLD (Queensland), SA (South Australia), WA (Western Australia), TAS (Tasmania), NT (Northern Territory), and ACT (Australian Capital Territory). So the final grouped hierarchy consists of the top series, six series at the Duration level, eight series at the STT level, and $48$ series at the Duration $\times$ STT level, giving $63$ time series in total, each of length $163$ observations.
 
@@ -833,7 +831,7 @@ Therefore, the hierarchy under consideration involves $76$ monthly time series a
 #| warning: false
 #| results: hide
 #| fig-width: 9
-#| fig-height: 10
+#| fig-height: 8
 #| fig-cap: Domestic tourism flows from January 1998 to December 2017 for the whole of Australia as well as the states.
 tourism_ts <- readRDS("results/tourism_hts.rds")
 tourism_ts |>
@@ -889,7 +887,7 @@ latex_table(rmse_tourism)
 #| warning: false
 #| results: hide
 #| fig-width: 10
-#| fig-height: 4.5
+#| fig-height: 4
 #| fig-cap: Average out-of-sample forecasting performance, measured in terms of RMSE (from 1- to 12-step-ahead), for each series across different reconciliation methods. Time series are arranged along the horizontal axis.
 
 tourism_heatmap <- readRDS("results/tourism_heatmap.rds")

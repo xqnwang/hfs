@@ -395,7 +395,7 @@ Coherent, Hierarchical time series, Grouped time series, Linear forecast
 reconciliation, Optimization problem
 \end{keywords}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, breakable, interior hidden, boxrule=0pt, frame hidden]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, interior hidden, frame hidden, sharp corners, breakable]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -538,7 +538,7 @@ matrix} with \(n = n_a + n_b\), and \(\boldsymbol{I}_{n_b}\) is an
 
 \begin{figure}
 
-{\centering \includegraphics[width=0.5\textwidth,height=\textheight]{figs/hts_example.pdf}
+{\centering \includegraphics[width=0.4\textwidth,height=\textheight]{figs/hts_example.pdf}
 
 }
 
@@ -566,7 +566,7 @@ and
 
 \begin{figure}
 
-{\centering \includegraphics[width=1\textwidth,height=\textheight]{figs/gts_example.pdf}
+{\centering \includegraphics[width=0.8\textwidth,height=\textheight]{figs/gts_example.pdf}
 
 }
 
@@ -1346,13 +1346,11 @@ with ridge regularization and intuitive method with \(L_0\)
 regularization in which we do not impose the unbiasedness constraint. It
 is worth mentioning that \textcite{Hazimeh2023-ie} presented a new
 algorithmic framework for formulating the group \(L_0\) problem with
-ridge regularization and provided the \textbf{L0Group} Python
-package\footnote{The L0Group Python package is available on github at
-  \url{https://github.com/hazimehh/L0Group}.} for implementation.
-However, our experiments showed that this algorithm can not terminate
-within five hours for typical instances with \(p \sim 10^4\). Therefore,
-in this paper, we only present the empirical group lasso method for
-series selection without unbiasedness constraint.
+ridge regularization and provided the \textbf{L0Group} Python package
+for implementation. However, our experiments showed that this algorithm
+can not terminate within five hours for typical instances with
+\(p \sim 10^4\). Therefore, in this paper, we only present the empirical
+group lasso method for series selection without unbiasedness constraint.
 
 \textbf{Penalty weights and parameter tuning.} Similarly to the setup in
 Section~\ref{sec-lasso}, we assign different penalty weights to each
