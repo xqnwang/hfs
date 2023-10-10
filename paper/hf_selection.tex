@@ -395,7 +395,7 @@ Coherent, Hierarchical time series, Grouped time series, Linear forecast
 reconciliation, Optimization problem
 \end{keywords}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, enhanced, breakable, borderline west={3pt}{0pt}{shadecolor}, sharp corners, frame hidden, boxrule=0pt]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, interior hidden, breakable, frame hidden, boxrule=0pt, enhanced, sharp corners]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -1531,7 +1531,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & -31.9 & -32.3 & -27.5 & 
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1584,7 +1584,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & -46.2 & -48.1 & -42.4 & -35.3 & 3.6 & 2.9 & 2.0 
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1637,7 +1637,7 @@ EMinT & -60.7 & -63.5 & -58.2 & -51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 2.0 
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1645,7 +1645,7 @@ EMinT & -60.7 & -63.5 & -58.2 & -51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 2.0 
 \hypertarget{tbl-s1-selection}{}
 \begin{table}[!h]
 \caption{\label{tbl-s1-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario I. }\tabularnewline
+reconciliation methods with selection in Scenario I, Setup 1. }\tabularnewline
 
 \centering\begingroup\fontsize{7}{9}\selectfont
 
@@ -1655,27 +1655,27 @@ reconciliation methods with selection in Scenario I. }\tabularnewline
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-subset.png}\\
-OLS-intuitive & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-intuitive.png}\\
-OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-lasso.png}\\
+OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
+OLS-intuitive & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-intuitive.png}\\
+OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-subset.png}\\
-WLSs-intuitive & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-intuitive.png}\\
-WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-lasso.png}\\
+WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-subset.png}\\
+WLSs-intuitive & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-intuitive.png}\\
+WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-subset.png}\\
-WLSv-intuitive & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-intuitive.png}\\
-WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-lasso.png}\\
+WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-subset.png}\\
+WLSv-intuitive & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-intuitive.png}\\
+WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-intuitive.png}\\
-MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-lasso.png}\\
+MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-intuitive.png}\\
+MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-intuitive.png}\\
-MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-lasso.png}\\
+MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-intuitive.png}\\
+MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/Elasso.png}\\
+Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
@@ -1689,7 +1689,7 @@ Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \hypertarget{tbl-s2-selection}{}
 \begin{table}[!h]
 \caption{\label{tbl-s2-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario II. }\tabularnewline
+reconciliation methods with selection in Scenario II, Setup 1. }\tabularnewline
 
 \centering\begingroup\fontsize{7}{9}\selectfont
 
@@ -1699,27 +1699,27 @@ reconciliation methods with selection in Scenario II. }\tabularnewline
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-subset.png}\\
-OLS-intuitive & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-intuitive.png}\\
-OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-lasso.png}\\
+OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
+OLS-intuitive & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-intuitive.png}\\
+OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-subset.png}\\
-WLSs-intuitive & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-intuitive.png}\\
-WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-lasso.png}\\
+WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
+WLSs-intuitive & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-intuitive.png}\\
+WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-subset.png}\\
-WLSv-intuitive & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-intuitive.png}\\
-WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-lasso.png}\\
+WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
+WLSv-intuitive & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-intuitive.png}\\
+WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-intuitive.png}\\
-MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-lasso.png}\\
+MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-intuitive.png}\\
+MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-intuitive.png}\\
-MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-lasso.png}\\
+MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-intuitive.png}\\
+MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/Elasso.png}\\
+Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
@@ -1733,7 +1733,7 @@ Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \hypertarget{tbl-s3-selection}{}
 \begin{table}[!h]
 \caption{\label{tbl-s3-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario III. }\tabularnewline
+reconciliation methods with selection in Scenario III, Setup 1. }\tabularnewline
 
 \centering\begingroup\fontsize{7}{9}\selectfont
 
@@ -1743,27 +1743,27 @@ reconciliation methods with selection in Scenario III. }\tabularnewline
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-subset.png}\\
-OLS-intuitive & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-intuitive.png}\\
-OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-lasso.png}\\
+OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
+OLS-intuitive & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-intuitive.png}\\
+OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-subset.png}\\
-WLSs-intuitive & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-intuitive.png}\\
-WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-lasso.png}\\
+WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-subset.png}\\
+WLSs-intuitive & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-intuitive.png}\\
+WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-subset.png}\\
-WLSv-intuitive & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-intuitive.png}\\
-WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-lasso.png}\\
+WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-subset.png}\\
+WLSv-intuitive & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-intuitive.png}\\
+WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-intuitive.png}\\
-MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-lasso.png}\\
+MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-intuitive.png}\\
+MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-intuitive.png}\\
-MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-lasso.png}\\
+MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-intuitive.png}\\
+MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/Elasso.png}\\
+Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
@@ -1867,17 +1867,17 @@ Additionally, when fitting ARMA models for time series Total, A, and BA,
 we introduce a slight bias by omitting the constant term, which is a
 common scenario in practice. Figure~\ref{fig-corr-data} presents an
 illustrative example of a hierarchical time series simulated. The left
-panels depict time plots for each series at different levels of
-structure, while right panels show the residuals obtained form
-forecasting each series using the ARMA model. Notably, despite our
-omission of the constant term when fitting ARMA models to the Total, A,
-and BA series, the residuals derived from the identified optimal ARMA
+panels depict time plots for each series at different levels of the
+structure, while right panels show the residuals obtained from
+forecasting each series using the fitted ARMA model. Notably, despite
+our omission of the constant term when fitting ARMA models to series
+Total, A, and BA, the residuals derived from the identified optimal
 models still exhibit fluctuations around zero and do not display
-significant deviations in comparison to the residuals from the other
-series. This is because the influence of the constant term is minimal as
-it is much smaller compared to the data variability. Thus, it may be
-challenging to identify the underperforming base forecasts of some
-series and exclude them from reconciliation in this simulation design.
+significant deviations in comparison to the residuals from other series.
+This is because the influence of the constant term is minimal, i.e., it
+is much smaller compared to the data variability. Thus, it may be
+challenging to identify the ``bad'' base forecasts and exclude them from
+reconciliation in this setup.
 
 \begin{figure}
 
@@ -1893,22 +1893,19 @@ its in-sample residuals in Setup 2.}
 Table~\ref{tbl-corr-rmse} summarizes the average RMSE of the base
 forecasts across various error correlations and the percentage relative
 improvements in RMSE achieved by reconciliation methods relative to the
-base forecasts. The metrics are reported for each level as well as the
-whole structure.
-
-The results show that, for OLS, WLSs, WLSv estimators, our proposed
-methods consistently dominate their respective benchmark methods at all
-levels when the error correlation is \(-0.8\). In general, as the error
-correlation ranges from \(-0.8\) to \(0.8\), the overall improvements in
-our methods over the benchmark methods show a slight decrease. Similar
-pattern is observed in the overall improvements of all benchmark
-reconciliation methods compared to the base forecasts. Of the methods we
-propose, the Subset methods display more consistently stable
-improvements overall. We should highlight the challenge of identifying
-the underperforming base forecasts in this simulation design, given that
-the omission of the constant term has minimal impact relative to the
-data variability. In addition, we observe that the MinT and MinTs
-methods perform especially well and our methods provide results on par
+base forecasts. The results show that, for OLS, WLSs, WLSv estimators,
+our proposed methods consistently dominate their respective benchmark
+methods at all levels when the error correlation is \(-0.8\). In
+general, as the error correlation ranges from \(-0.8\) to \(0.8\), the
+overall improvements in our methods over the benchmark methods show a
+slight decrease. Similar pattern is observed in the overall improvements
+of all benchmark reconciliation methods compared to the base forecasts.
+Of the methods we propose, the Subset methods display more consistently
+stable improvements overall. We should highlight the challenge of
+identifying the ``bad'' base forecasts in this simulation design, given
+that the omission of the constant term has minimal impact relative to
+the data variability. In addition, we observe that the MinT and MinTs
+methods perform especially well and our methods provide results same
 with benchmark methods. This is attributed to the use of in-sample
 covariance by MinT and MinTs, which allows for large adjustments in
 reconciliation for base forecasts with high estimated error variance.
@@ -1923,8 +1920,8 @@ similar pattern and are available upon request.
 
 \hypertarget{tbl-corr-rmse}{}
 \begin{table}[!h]
-\caption{\label{tbl-corr-rmse}Out-of-sample forecast results across various error correlations for the
-simulated data in Setup 2. }\tabularnewline
+\caption{\label{tbl-corr-rmse}Out-of-sample forecast results across various error correlations for
+simulation in Setup 2. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -1969,7 +1966,7 @@ EMinT & \textcolor{blue}{\textbf{-31.2}} & \textcolor{blue}{\textbf{-19.8}} & \t
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1982,23 +1979,24 @@ Table~\ref{tbl-corr-selection-pos}, respectively. Once again, we note
 that it is difficult to exclude poor-performing base forecasts in this
 simulation design as the constant term omitted is very small compared to
 the data variability. As observed in Table~\ref{tbl-corr-selection-neg},
-for the OLS, WLSs, and WLS estimators, the Subset and Intuitive methods
-are still able to exclude the series Total, A, and BA in some instances,
-in which small biases are introduced in model fitting, while essentially
+for OLS, WLSs, and WLS estimators, the Subset and Intuitive methods are
+still able to exclude the series Total, A, and BA in some instances, in
+which small biases are introduced in model fitting, while essentially
 retaining the rest series in the hierarchy. The Subset methods perform
 superior to the Intuitive method in selection.The Lasso methods
 typically select all bottom-level series since they tend to yield dense
-estimates. When dealing with a high positive error correlation,
-Table~\ref{tbl-corr-selection-pos} shows that our methods still have the
-ability to do some selection but it becomes somewhat challenging to
-identify and exclude the series that should be omitted in
-reconciliation. Hence, our methods are preferred, particularly when the
-error correlation within the hierarchical structure is negative.
+estimates. Elasso also select all bottom-level series. When dealing with
+a high positive error correlation, Table~\ref{tbl-corr-selection-pos}
+shows that our methods still have the potential to do some selection but
+it becomes somewhat challenging to identify and exclude the series that
+should be omitted in reconciliation. Hence, our methods are preferred,
+particularly when the error correlation within the hierarchical
+structure is negative.
 
 \hypertarget{tbl-corr-selection-neg}{}
 \begin{table}[!h]
 \caption{\label{tbl-corr-selection-neg}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Setup 2 with the error
+reconciliation methods with selection in Setup 2, with the error
 correlation being -0.8. }\tabularnewline
 
 \centering\begingroup\fontsize{7}{9}\selectfont
@@ -2009,27 +2007,27 @@ correlation being -0.8. }\tabularnewline
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-subset.png}\\
-OLS-intuitive & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-intuitive.png}\\
-OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-lasso.png}\\
+OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-subset.png}\\
+OLS-intuitive & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-intuitive.png}\\
+OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-subset.png}\\
-WLSs-intuitive & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-intuitive.png}\\
-WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-lasso.png}\\
+WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-subset.png}\\
+WLSs-intuitive & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-intuitive.png}\\
+WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-subset.png}\\
-WLSv-intuitive & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-intuitive.png}\\
-WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-lasso.png}\\
+WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-subset.png}\\
+WLSv-intuitive & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-intuitive.png}\\
+WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-intuitive.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-lasso.png}\\
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-intuitive.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-intuitive.png}\\
-MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-lasso.png}\\
+MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-intuitive.png}\\
+MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/Elasso.png}\\
+Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
@@ -2043,7 +2041,7 @@ Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \hypertarget{tbl-corr-selection-pos}{}
 \begin{table}[!h]
 \caption{\label{tbl-corr-selection-pos}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Setup 2 with the error
+reconciliation methods with selection in Setup 2, with the error
 correlation being 0.8. }\tabularnewline
 
 \centering\begingroup\fontsize{7}{9}\selectfont
@@ -2054,27 +2052,27 @@ correlation being 0.8. }\tabularnewline
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-subset.png}\\
-OLS-intuitive & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-intuitive.png}\\
-OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/OLS-lasso.png}\\
+OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-subset.png}\\
+OLS-intuitive & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-intuitive.png}\\
+OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-subset.png}\\
-WLSs-intuitive & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-intuitive.png}\\
-WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSs-lasso.png}\\
+WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-subset.png}\\
+WLSs-intuitive & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-intuitive.png}\\
+WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-subset.png}\\
-WLSv-intuitive & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-intuitive.png}\\
-WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/WLSv-lasso.png}\\
+WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-subset.png}\\
+WLSv-intuitive & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-intuitive.png}\\
+WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-intuitive.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinT-lasso.png}\\
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-intuitive.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-intuitive.png}\\
-MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/MinTs-lasso.png}\\
+MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-intuitive.png}\\
+MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/Elasso.png}\\
+Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
@@ -2106,31 +2104,31 @@ Bureau of Statistics, consisting of monthly data on the number of
 unemployed persons in Australia for the period from January 2010 to July
 2023\footnote{The Labour Force Survey data is publicly available at
   \url{https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023}.}.
-Analysis of unemployment data in a country by labor market region and
-duration of job search can provide valuable insights into regional
-disparities, and the structural nuances underlying unemployment.
-Forecast reconciliation is crucial in such a case to ensure aligned
-decision making.
-
-There are a few missing values in the Australian labour force data. To
-deal with the missing observations, we use a random walk to give linear
-interpolation between points.
+There are a few missing values in the dataset. To deal with the missing
+observations, we use a random walk to give linear interpolation between
+points. Analysis of unemployment data in a country by labor market
+region and duration of job search can provide valuable insights into
+regional disparities, and the structural nuances underlying
+unemployment. Forecast reconciliation is crucial in such a case to
+ensure aligned decision making.
 
 We construct a grouped hierarchy by disaggregating the number of
 unemployed persons over two independent attributes, duration of job
-search (referred to as \emph{Duration} level), and State and Territory
-(referred to as \emph{STT} level). The two attributes are crossed, but
-none are nested within the others. At the bottom level, the data are
-disaggregated by both attributes. We refer to the bottom level as
+search (referred to as \emph{Duration}), and State and Territory
+(referred to as \emph{STT} ). The two attributes are crossed, but none
+are nested within the others. At the bottom level, the data are
+disaggregated by both attributes. We refer to the bottom level as the
 \emph{Duration} \(\times\) \emph{STT} level. Specifically, there are six
 different groups of job search duration, under 1 month, 1-3 months, 3-6
 months, 6-12 months, 1-2 years, and 2 years and over. Additionally, the
 number of unemployed persons in Australia can be disaggregated by eight
-states and territories, NSW, VIC, QLD, SA, WA, TAS, NT, and ACT
-(Australian Capital Territory). So the final grouped hierarchy consists
-of the top series, six series at the Duration level, eight series at the
-STT level, \(48\) series at the Duration \(\times\) STT level, giving
-\(63\) time series in total, each of length \(163\) observations.
+states and territories, i.e., NSW (New South Wales), VIC (Victoria), QLD
+(Queensland), SA (South Australia), WA (Western Australia), TAS
+(Tasmania), NT (Northern Territory), and ACT (Australian Capital
+Territory). So the final grouped hierarchy consists of the top series,
+six series at the Duration level, eight series at the STT level, and
+\(48\) series at the Duration \(\times\) STT level, giving \(63\) time
+series in total, each of length \(163\) observations.
 
 The top panel in Figure~\ref{fig-labour-data} shows the total number of
 unemployed persons in Australia from January 2010 to July 2023,
@@ -2143,19 +2141,18 @@ COVID-19's non-essential service shutdowns and trading restrictions,
 March and April of 2020 saw a notable surge in unemployment. However, as
 coronavirus cases dwindled significantly and restrictions eased in the
 aftermath, employment made a remarkable recovery, leading to a
-subsequent decline in the number of unemployed individuals. The
-bottom-left panel displays the breakdown of unemployed individuals by
-state and territory, while the bottom-right panel presents the breakdown
-by the duration of job search. The plots display diverse and rich
-dynamics both within and between different levels of hierarchy. For
-example, there was noticeable growth observed during 2020 for some
-states such as NSW, VIC, and QLD, whereas other states did not
-experience such significant growth. Additionally, there is a resemblance
-in the seasonal patterns between NSW and QLD, while the seasonal pattern
-in VIC appears relatively heterogeneous. When comparing the series at
-the STT level and Duration level, we notice that the seasonal patterns
-in the Duration level series is more consistent and potentially easier
-to forecast.
+subsequent decline in unemployment. The bottom-left panel displays the
+breakdown of unemployed individuals by state and territory, while the
+bottom-right panel presents the breakdown by the duration of job search.
+The plots display diverse and rich dynamics both within and between
+different levels of the hierarchy. For example, there was noticeable
+growth observed during 2020 for some states such as NSW, VIC, and QLD,
+whereas other states did not experience such significant growth.
+Additionally, there is a resemblance in the seasonal patterns between
+NSW and QLD, while the seasonal pattern in VIC appears relatively
+different. When comparing the series at the STT level and Duration
+level, we notice that the seasonal patterns in the Duration-level series
+is more consistent and potentially easier to forecast.
 
 \begin{figure}
 
@@ -2164,36 +2161,43 @@ to forecast.
 }
 
 \caption{\label{fig-labour-data}Australia unemployed persons,
-disaggregated by state and territor, and by duration of job search.}
+disaggregated by state and territory, and by duration of job search.}
 
 \end{figure}
 
-For each series in the grouped hierarchy, we use the data spanning from
-January 2010 to July 2022 as the training set to select an optimal ETS
-model with the automatic algorithm implemented in the \textbf{forecast}
-package for R. Using these fitted ETS models, base forecasts are
-generated for \(h=1\) to \(12\)-steps ahead. Subsequently, these base
-forecasts are used to perform forecast reconciliation, using the
-proposed methods and other state-of-the-art reconciliation approaches.
+We assess the forecast accuracy of base forecasts and various
+reconciliation methods through a rolling forecast origin approach. Our
+aim is to generate \(1\)- to \(12\)-steps-ahead forecasts for each of
+the \(63\) series while ensuring coherence. Given the limited data
+compared to the forecast horizon, we initiate the process with a
+training set of \(139\) observations for each series. The training set
+is used to select the optimal ETS model with the automatic algorithm
+implemented in the \textbf{forecast} package for R. Using these fitted
+ETS models, we generate base forecasts, and then perform diverse
+forecast reconciliation methods. Following this, we roll the forecast
+origin forward by one month and repeat the process until July 2022. We
+note that it may be challenging to identify the series with ``bad''
+forecasts due to structural changes in the data caused by the COVID-19
+pandemic, which affect the accuracy of forecasts across all time series.
 
-Table~\ref{tbl-labour-rmse} presents the RMSE values for base forecasts
-generated by ETS models, as well as the percentage relative improvements
-obtained by each reconciliation method compared to the base forecasts.
-The results indicate that all Subset methods using different estimators
-of \(\boldsymbol{G}\), i.e., OLS-subset, WLSs-subset, WLSv-subset, and
-MinTs-subset, produce improved or comparable reconciled forecasts
-compared to their respective benchmark methods. The improvements in
-forecast accuracy become more noticeable for longer forecast horizons.
-Similar to the tourism application results, the Intuitive and Lasso
-methods yield results identical to the corresponding benchmark methods.
-This is because they tend to provide dense estimates, and ETS models
-typically do not result in extremely poor forecasts. The only exception
-is OLS-intuitive, which shows improved forecast accuracy at the top
-level but deterioration at other levels. Surprisingly, considering
-relaxing the unbiasedness constraint, the Elasso method ranks the best
-and demonstrates significant improvement compared to the EMinT method,
-and outperforms other methods across almost all levels except for the
-top level.
+The average results are presented in Table~\ref{tbl-labour-rmse-avg}.
+The Subset methods using different estimators of \(\boldsymbol{G}\)
+generally improve forecast accuracy over their respective benchmark
+methods overall, particularly when focusing on aggregation levels, which
+are typically of paramount concern to practitioners. The only one
+exception is the WLSs-subset method, which returns reduced accuracy for
+longer horizons overall. However, it still demonstrates improvements in
+top-level forecasts, and other levels remains within a reasonable range.
+Moreover, the Intuitive and Lasso methods almost always yield results
+identical to the corresponding benchmark methods. This is because they
+tend to provide dense estimates, and ETS models typically do not result
+in extremely poor forecasts. The only exception is OLS-intuitive, which
+shows improved forecast accuracy at the top level but deterioration at
+other levels. When we drop the unbiasedness assumption, Elasso
+significantly improves the quality of forecasts over EMinT, with the
+most accurate coherent forecasts observed at the top level and STT
+level. Overall, Elasso performs well for longer forecast horizons, but
+it is less effective for one-step-ahead forecasts.
 
 \hypertarget{tbl-labour-rmse-avg}{}
 \begin{table}[!h]
@@ -2237,14 +2241,30 @@ EMinT & 43.1 & 17.6 & 9.9 & 10.2 & 36.8 & 25.2 & 27.9 & 24.1 & 16.8 & 15.1 & 6.2
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
 
+We also provide the results based on the final test set spanning from
+August 2022 to July 2023 in Table~\ref{tbl-labour-rmse}. The results
+indicate that all Subset methods using different estimators of
+\(\boldsymbol{G}\), i.e., OLS-subset, WLSs-subset, WLSv-subset, and
+MinTs-subset, produce improved or comparable reconciled forecasts
+compared to their respective benchmark methods. The improvements in
+forecast accuracy become more noticeable for longer forecast horizons.
+Similar to the average results in Table~\ref{tbl-labour-rmse-avg}, the
+Intuitive and Lasso methods yield results identical to the benchmark
+methods due to their tendency to offer dense estimates. Surprisingly,
+when relaxing the unbiasedness constraint, the Elasso method ranks the
+best and demonstrates significant improvement compared to the EMinT
+method, and outperforms other methods across almost all levels except
+for the top level.
+
 \hypertarget{tbl-labour-rmse}{}
 \begin{table}[!h]
-\caption{\label{tbl-labour-rmse}Out-of-sample forecast results for Australian labour force data. }\tabularnewline
+\caption{\label{tbl-labour-rmse}Out-of-sample forecast results on a single test set (from August 2022 to
+July 2023) for Australian labour force data. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -2284,15 +2304,32 @@ EMinT & -60.4 & -14.0 & 1.4 & -29.9 & -6.0 & 12.0 & 10.7 & -6.7 & 16.7 & -0.9 & 
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
 
+Furthermore, based on the final test set, we present the number of
+series selected at each level and the optimal tuning parameter values
+obtained using different proposed methods, as shown in
+Table~\ref{tbl-labour-info}. Here, we only showcase results from the
+Subset and Elasso methods, as they prove to be valuable in the labour
+force application in terms of the RMSE results.
+Table~\ref{tbl-labour-info} shows that all Subset methods exclude some
+series when performing forecast reconciliation. Remarkably, the Elasso
+method consistently outperforms the others overall, even though it uses
+only \(11\) series for forecast reconciliation. Additionally, it is
+worth noting that most of the series at the STT level are removed, while
+the majority of series at the Duration level are retained. This aligns
+with our data description, highlighting that the seasonal patterns in
+the Duration level series is more consistent and potentially easier to
+forecast compared to those at the STT level.
+
 \hypertarget{tbl-labour-info}{}
 \begin{table}[!h]
 \caption{\label{tbl-labour-info}Number of time series selected using different proposed methods and the
-optimal parameter values identified in the labour application. }\tabularnewline
+optimal parameter values identified in the labour application, condering
+a single test set (from August 2022 to July 2023). }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -2311,21 +2348,6 @@ Elasso & 1 & 5 & 2 & 3 & 11 & 213.59 & - & -\\
 \bottomrule
 \end{tabular}}
 \end{table}
-
-We provide the number of series selected at each level and the optimal
-tuning parameter values obtained using different proposed methods, as
-shown in Table~\ref{tbl-labour-info}. Here, we only showcase results
-from the Subset and Elasso methods, as they prove to be valuable in the
-labour force application based on the RMSE results.
-Table~\ref{tbl-labour-info} show that all Subset methods exclude some
-series when performing forecast reconciliation. Remarkably, the Elasso
-method consistently outperforms the others overall, even though it uses
-only \(11\) series for forecast reconciliation. Additionally, it is
-worth noting that most of the series at the STT level are removed, while
-the majority of series at the Duration level are retained. This aligns
-with our data description, highlighting that the seasonal patterns in
-the Duration level series is more consistent and potentially easier to
-forecast compared to those at the STT level.
 
 \hypertarget{sec-tourism}{%
 \subsection{Forecasting Australian domestic tourism}\label{sec-tourism}}
@@ -2353,11 +2375,9 @@ Australia as well as individual states, revealing pronounced seasonal
 patterns across the national total and states, albeit with varying
 seasonal patterns among the series. Notably, there was a significant
 growth starting from around 2010 for the national total flow and some
-states such as NSW (New South Wales), VIC (Victoria), QLD (Queensland),
-and WA (Western Australia). While flows are relatively flat for SA
-(South Australia), TAS (Tasmania), and NT (Northern Territory).
-Moreover, the time plot displays that there was a large decrease in
-tourism flows for WA occurred in 2016.
+states such as NSW, VIC, QLD, and WA. While flows are relatively flat
+for SA, TAS, and NT. Moreover, the time plot displays that there was a
+large decrease in tourism flows for WA occurred in 2016.
 
 \begin{figure}
 
@@ -2450,7 +2470,7 @@ EMinT & -2.3 & 24.3 & 58.8 & 59.7 & 36.9 & 56.0 & 68.4 & 70.4 & 51.4 & 64.6 & 75
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -2497,7 +2517,7 @@ EMinT & 116.5 & 97.8 & -15.8 & -13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 68.
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, methods that outperform the benchmark method are marked in bold. The proposed methods are indicated with a gray background.
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}

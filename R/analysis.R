@@ -189,7 +189,7 @@ combine_z <- function(data_label, methods, scenarios, series_name){
 #--------------------------------------------------------------------
 # Output table latex for number of time series retained after subset selection for the simulation data
 #--------------------------------------------------------------------
-latex_sim_nos_table <- function(z_out, n_out){
+latex_sim_nos_table <- function(z_out, n_out, label_out){
   candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
   target <- sapply(candidates, function(len){
     c(paste0(len, "-", c("subset", "intuitive", "lasso")))
@@ -226,12 +226,12 @@ latex_sim_nos_table <- function(z_out, n_out){
   
   map(1:length(n_img), function(i) {
     ggsave(
-      filename = paste0(names(n_img)[i], ".png"),
+      filename = paste0(label_out, "_", names(n_img)[i], ".png"),
       path = "_figs/",
       plot = inline_bars[[i]], height = 1.5, width = 7, dpi = 300
     )
   })
-  ls_inline_plots <- file.path(getwd(), paste0("_figs/", names(n_img), ".png"))
+  ls_inline_plots <- file.path(getwd(), paste0("_figs/", label_out, "_", names(n_img), ".png"))
   
   z_out |>
     kable(format = "latex",
@@ -247,7 +247,8 @@ latex_sim_nos_table <- function(z_out, n_out){
     footnote(general = "The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.",
              general_title = "NOTE:",
              footnote_as_chunk = T, title_format = c("italic", "underline"),
-             threeparttable = T) |>
+             threeparttable = T,
+             fixed_small_size = F) |>
     column_spec(NCOL(z_out) + 1,
                 image = spec_image(ls_inline_plots, width = 140, height = 30)) 
 }
