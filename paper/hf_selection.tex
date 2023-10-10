@@ -387,15 +387,15 @@ error covariance matrix, thus alleviating the challenge of estimator
 selection. We evaluate the proposed methods through two simulation
 studies and two empirical applications using Australian labour force
 data and domestic tourism data, showing improved accuracy compared to
-alternative methods, particularly when addressing model
-misspecification.
+alternative methods, especially for aggregation levels, longer forecast
+horizons, and under model misspecification.
 \end{abstract}
 \begin{keywords}
 Coherent, Hierarchical time series, Grouped time series, Linear forecast
 reconciliation, Optimization problem
 \end{keywords}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, interior hidden, breakable, frame hidden, boxrule=0pt, enhanced, sharp corners]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, breakable, interior hidden, boxrule=0pt, frame hidden]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -489,10 +489,12 @@ purposes. In this case, it may happen that less than the number of
 series at the bottom level are used for reconciliation. Third, we carry
 out simulation experiments and two empirical applications, showing that
 our proposed methods guarantee coherent forecasts that outperform or, at
-the very least, match their respective benchmark methods. Finally, a
-remarkable feature of the proposed methods is their ability to reduce
-the disparities arising from using different estimates of the base
-forecast error covariance matrix, thereby mitigating the challenges
+the very least, match their respective benchmark methods. The
+improvements are particularly pronounced when focusing on aggregation
+levels, longer forecast horizons, and addressing model misspecification.
+Finally, a remarkable feature of the proposed methods is their ability
+to reduce the disparities arising from using different estimates of the
+base forecast error covariance matrix, thereby mitigating the challenges
 associated with estimator selection, which is a prominent issue in the
 field of forecast reconciliation research.
 
@@ -502,7 +504,7 @@ linear forecast reconciliation methods. Section~\ref{sec-methodology}
 introduces our proposed methods to achieve time series selection in
 reconciliation, and provides some theoretical insights.
 Section~\ref{sec-simulations} and Section~\ref{sec-applications} show
-the results from simulations and real-world datasets, respectively,
+the results from simulations and two real-world datasets, respectively,
 followed by concluding remarks in Section~\ref{sec-conclusion}. The R
 code for reproducing the results is available at LINK.
 
@@ -2193,7 +2195,10 @@ identical to the corresponding benchmark methods. This is because they
 tend to provide dense estimates, and ETS models typically do not result
 in extremely poor forecasts. The only exception is OLS-intuitive, which
 shows improved forecast accuracy at the top level but deterioration at
-other levels. When we drop the unbiasedness assumption, Elasso
+other levels. When we drop the unbiasedness assumption, EMinT is the
+worst performing method across all levels because it relies on the
+assumption that the series in the hierarchy are jointly weakly
+stationary, which is evidently not the case in the application. Elasso
 significantly improves the quality of forecasts over EMinT, with the
 most accurate coherent forecasts observed at the top level and STT
 level. Overall, Elasso performs well for longer forecast horizons, but
@@ -2314,22 +2319,24 @@ series selected at each level and the optimal tuning parameter values
 obtained using different proposed methods, as shown in
 Table~\ref{tbl-labour-info}. Here, we only showcase results from the
 Subset and Elasso methods, as they prove to be valuable in the labour
-force application in terms of the RMSE results.
-Table~\ref{tbl-labour-info} shows that all Subset methods exclude some
-series when performing forecast reconciliation. Remarkably, the Elasso
-method consistently outperforms the others overall, even though it uses
-only \(11\) series for forecast reconciliation. Additionally, it is
-worth noting that most of the series at the STT level are removed, while
-the majority of series at the Duration level are retained. This aligns
-with our data description, highlighting that the seasonal patterns in
-the Duration level series is more consistent and potentially easier to
-forecast compared to those at the STT level.
+force application in terms of the RMSE results. Note that the variation
+in the scale of the optimal parameters for different methods comes from
+the difference in the scales of objective. Table~\ref{tbl-labour-info}
+shows that all Subset methods exclude some series when performing
+forecast reconciliation. Remarkably, the Elasso method consistently
+outperforms the others overall, even though it uses only \(11\) series
+for forecast reconciliation. Additionally, it is worth noting that most
+of the series at the STT level are removed, while the majority of series
+at the Duration level are retained. This aligns with our data
+description, highlighting that the seasonal patterns in the Duration
+level series is more consistent and potentially easier to forecast
+compared to those at the STT level.
 
 \hypertarget{tbl-labour-info}{}
 \begin{table}[!h]
 \caption{\label{tbl-labour-info}Number of time series selected using different proposed methods and the
-optimal parameter values identified in the labour application, condering
-a single test set (from August 2022 to July 2023). }\tabularnewline
+optimal parameter values identified in the labour application,
+considering a single test set (from August 2022 to July 2023). }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -2392,40 +2399,37 @@ large decrease in tourism flows for WA occurred in 2016.
 
 Our objective is to forecast tourism flows for each series in the
 geographical hierarchy while ensuring the coherence of forecasts across
-all levels. We split the data into a training set comprising \(228\)
-observations and test set with \(12\) observations, i.e., \(T=228\) and
-\(h=12\). To generate base forecasts, we select an optimal ETS model for
-each series using the automatic algorithm implemented in the
-\textbf{forecast} package for R. The base forecasts are then reconciled
-using our proposed methods and some state-of-the-art reconciliation
-methods.
+all levels. We adopt the rolling forecast origin approach to evaluate
+the forecast accuracy of different methods. We start with a training set
+of \(216\) months for each series to generate base forecasts by fitting
+the optimal ETS model. Following this, we roll the forecast origin
+forward by one month and repeat the process until December 2016. The
+base forecasts are reconciled using our proposed methods and some
+state-of-the-art reconciliation methods.
 
-Table~\ref{tbl-tourism-rmse} reports the RMSE values for base forecasts
-generated by ETS models, along with the percentage relative improvements
-in average RMSE obtained by a particular reconciliation method relative
-to the base forecasts. We also show the reconciliation errors across
-each of the \(111\) series across the four levels in the hierarchy in
-Figure~\ref{fig-tourism-rmse}. The results show that, in the tourism
-application, the OLS method stands out as a strong performer when
-comparing to other benchmark methods such as WLSv and MinTs, which
-account for the in-sample covariance of base forecast errors. This
-highlights the effectiveness of the OLS method despite its simplicity.
+Table~\ref{tbl-tourism-rmse-avg} reports the average RMSE values for
+base forecasts generated by ETS models, along with the percentage
+relative improvements in average RMSE obtained by a particular
+reconciliation method relative to the base forecasts. The results show
+that the OLS method outperforms other benchmark methods like WLSs, WLSv
+and MinTs, despite the fact that WLSv and MinTs account for the
+in-sample covariance of base forecast errors. This highlights the
+effectiveness of the OLS method despite its simplicity.
 
-Overall, all Subset methods with different estimators of
-\(\boldsymbol{G}\), i.e., OLS-subset, WLSs-subset, WLSv-subset, and
-MinTs-subset, give the same level of accuracy as their respective
-benchmark methods for one-step ahead forecasts, while showing gains for
-longer forecast horizons. The Intuitive and Lasso methods produce
-results identical to the corresponding benchmark methods, which is not
+Overall, the Subset methods outperform their respective benchmark
+methods, especially for aggregation levels and for longer forecast
+horizons. The only exception is the OLS-subset method, which slightly
+reduces overall accuracy while still improving top-level forecasts.
+Moreover, the Intuitive and Lasso methods produce results almost
+identical to the corresponding benchmark methods, which is not
 surprising as ETS models typically do not yield extremely poor
 forecasts, making them challenging to be selected out using methods that
 tend to return dense estimates. When we relax the unbiasedness
-constraint, EMinT is the worst performing method across all levels. This
-is attributed to its assumption that the series in the hierarchy are
-jointly weakly stationary, which is evidently not the case in the
-tourism application. The Elasso method presents significant improvement
-compared to the EMinT method, and it also outperforms other methods
-across almost all levels except for the bottom level.
+constraint, EMinT consistently performs the worst across all levels due
+to the evident lack of joint weak stationarity among the series in the
+hierarchy. The Elasso method presents significant improvement compared
+to the EMinT method, and it also outperforms other methods across almost
+all levels except for the bottom level.
 
 \hypertarget{tbl-tourism-rmse-avg}{}
 \begin{table}[!h]
@@ -2475,9 +2479,18 @@ EMinT & -2.3 & 24.3 & 58.8 & 59.7 & 36.9 & 56.0 & 68.4 & 70.4 & 51.4 & 64.6 & 75
 \end{threeparttable}}
 \end{table}
 
+We also present the results based on the last one training set spanning
+from January 2017 to December 2017 in Table~\ref{tbl-tourism-rmse}. The
+results shows a similar performance to the average results described
+above, indicating relatively high-quality forecasts from the Subset and
+Elasso methods. The reconciliation errors across each of the \(111\)
+series and across the four levels in the hierarchy are displayed in
+Figure~\ref{fig-tourism-rmse}.
+
 \hypertarget{tbl-tourism-rmse}{}
 \begin{table}[!h]
-\caption{\label{tbl-tourism-rmse}Out-of-sample forecast results for Australian domestic tourism data. }\tabularnewline
+\caption{\label{tbl-tourism-rmse}Out-of-sample forecast results on a single test set (from January 2017
+to December 2017) for Australian domestic tourism data. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -2535,18 +2548,18 @@ arranged along the horizontal axis.}
 
 \end{figure}
 
-Table~\ref{tbl-tourism-info} presents a summary of the number of series
-selected using different proposed methods for each level as well as the
-optimal tuning parameter values identified. Here we only give the
-results of the Subset and Elasso methods since they are useful in the
-tourism application. Note that the variation in the scale of the optimal
-parameters for different methods comes from the difference in the scales
-of objective. We observe that the OLS-subset and WLSs-subset methods
-exclude some series at the State and Zone levels for forecast
-reconciliation. In contrast, the WLSv and MinTs methods retain all
-series, which is reasonable because they take into account the in-sample
-covariance, making themselves allow for larger adjustments made to
-series with large in-sample forecast error variances in forecast
+Additionally, Table~\ref{tbl-tourism-info} presents a summary of the
+number of series selected using different proposed methods for each
+level as well as the optimal tuning parameter values identified. Here we
+only give the results of the Subset and Elasso methods since they are
+useful in the tourism application. Note that the variation in the scale
+of the optimal parameters for different methods comes from the
+difference in the scales of objective. We observe that the OLS-subset
+and WLSs-subset methods exclude some series at the State and Zone levels
+for forecast reconciliation. In contrast, the WLSv and MinTs methods
+retain all series, which is reasonable because they take into account
+the in-sample covariance, making themselves allow for larger adjustments
+made to series with large in-sample forecast error variances in forecast
 reconciliation. Nonetheless, the WLSv and MinTs methods can still
 enhance the quality of reconciled forecasts due to the inclusion of
 shrinkage through additional ridge regularization. It is surprising that
@@ -2556,7 +2569,8 @@ reconciliation.
 \hypertarget{tbl-tourism-info}{}
 \begin{table}[!h]
 \caption{\label{tbl-tourism-info}Number of time series selected using different proposed methods and the
-optimal parameter values identified in the tourism application. }\tabularnewline
+optimal parameter values identified in the tourism application,
+considering a single test set (from January 2017 to December 2017). }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -2590,7 +2604,7 @@ perform poorly, especially in the context of large hierarchies. This may
 reduce the overall effectiveness of forecast reconciliation methods. In
 this paper, we aimed to address this issue by introducing a selection
 mechanism in forecast reconciliation, i.e., involving time series
-selection when reconciling forecasts for hierarchical time series while
+selection when reconciling forecasts for hierarchical time series, while
 ensuring the generation of coherent forecasts for all series.
 
 Under the unbiasedness constraint, we developed three reconciliation
@@ -2616,7 +2630,8 @@ proposed methods guaranteed coherent forecasts that outperformed or, at
 the very least, matched their respective benchmark methods in the
 minimum trace reconciliation framework. In both empirical applications,
 where no apparent model misspecification was present, the Subset and
-Elasso methods were always preferred, while the Intuitive and Lasso
+Elasso methods were always preferred, particularly for aggregation
+levels and longer forecast horizons, while the Intuitive and Lasso
 methods yield results identical to the corresponding benchmark methods,
 as they tend to provide dense estimates.
 
