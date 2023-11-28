@@ -17,7 +17,7 @@ author:
   address:
     - Monash University, VIC 3145, Australia
   email: shanika.wickramasuriya@monash.edu
-abstract: Forecast reconciliation ensures forecasts of time series in a hierarchy adhere to aggregation constraints, enabling aligned decision making. While forecast reconciliation can improve overall forecast accuracy in hierarchical structures, the most substantial improvements occur in series with initially poor base forecasts, and some series may still experience a deterioration in reconciled forecasts. However, in practice, some series in a hierarchy often have poor base forecasts due to model misspecification or low forecastability. To address this, we propose two categories of forecast reconciliation methods that incorporate time series selection based on out-of-sample and in-sample information, respectively. Our methods keep "bad" base forecasts of some series unused in forming reconciled forecasts, preventing their negative influence on the reconciled forecasts. This process adjusts the weights allocated to the remaining series accordingly when generating bottom-level reconciled forecasts. Additionally, our methods can reduce disparities arising from using different estimates of the base forecast error covariance matrix, thus alleviating the challenge of estimator selection. We evaluate the proposed methods through two simulation studies and two empirical applications using Australian labour force data and domestic tourism data, showing improved accuracy compared to alternative methods, especially for aggregation levels, longer forecast horizons, and under model misspecification.
+abstract: Forecast reconciliation ensures forecasts of time series in a hierarchy adhere to aggregation constraints, enabling aligned decision making. While forecast reconciliation can improve overall forecast accuracy in hierarchical or grouped structures, the most substantial improvements occur in series with initially poor base forecasts, and some series may still experience a deterioration in reconciled forecasts. However, in practice, some series in a structure often have poor base forecasts due to model misspecification or low forecastability. To address this, we propose two categories of forecast reconciliation methods that incorporate time series selection based on out-of-sample and in-sample information, respectively. Our methods keep "poor" base forecasts of some series unused in forming reconciled forecasts, preventing their negative influence on the reconciled forecasts. This process adjusts the weights allocated to the remaining series accordingly when generating bottom-level reconciled forecasts. Additionally, our methods can reduce disparities arising from using different estimates of the base forecast error covariance matrix, thus alleviating the challenge of estimator selection. We evaluate the proposed methods through two simulation studies and two empirical applications using Australian labour force data and domestic tourism data, showing improved accuracy compared to alternative methods, especially for aggregation levels, longer forecast horizons, and under model misspecification.
 keywords: "Coherent, Hierarchical time series, Grouped time series, Linear forecast reconciliation, Optimization problem"
 wpnumber: no/yr
 blind: false
@@ -63,15 +63,15 @@ theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 
 # Introduction {#sec-introduction}
 
-Hierarchical time series are characterized as a set of time series organized in a hierarchical aggregation structure, while grouped time series arise when attributes of interest are crossed rather than nested in the aggregation structure [@Hyndman2016-cz]. For example, unemployment data is a crucial social and economic indicator. The analysis of the number of unemployment persons in a country is crucial for informed policymaking and economic research. It is also valuable to examine attributes such as labour market region and the length of time that unemployed people have been looking for work. Such a disaggregation allows us to identify regional disparities, and comprehend the structural nuances underlying unemployment. Forecasts of time series in such a hierarchical structure should adhere to some known aggregation constraints to maintain coherence, which is a vital aspect for aligned decision making.
+Hierarchical time series are characterized as a set of time series organized in a unique hierarchical aggregation structure, while grouped time series arise when attributes of interest are crossed rather than nested in the aggregation structure [@Hyndman2016-cz]. For example, unemployment data is a crucial social and economic indicator and is a natural example of a grouped time series. The analysis of the number of unemployment persons in a country is crucial for informed policymaking and economic research. It is also valuable to examine attributes such as labour market region and the length of time that unemployed people have been looking for work. Such a disaggregation allows us to identify regional disparities, and comprehend the structural nuances underlying unemployment. Forecasts of time series in such a hierarchical or grouped structure should adhere to some known aggregation constraints to maintain coherence, which is a vital aspect for aligned decision making.
 
-Earlier studies perform forecast reconciliation by focusing only on a single hierarchy level, subsequently aggregating or disaggregating their forecasts to produce coherent forecasts for other levels of the structure. These single-level methods typically fall into three categories, namely bottom-up [@Dunn1976-op], top-down [@Gross1990-lg], and middle-out [@Athanasopoulos2009-ps]. However, these methods only use information from a single level while overlooking valuable insights available at other levels and the intricate relationships in the structure.
+Earlier studies perform forecast reconciliation by focusing only on a single level of the structure, subsequently aggregating or disaggregating their forecasts to produce coherent forecasts for other levels of the structure. These single-level methods typically fall into three categories, namely bottom-up [@Dunn1976-op], top-down [@Gross1990-lg], and middle-out [@Athanasopoulos2009-ps]. However, these methods only use information from a single level while overlooking valuable insights available at other levels and the intricate relationships in the structure.
 
-To overcome these limitations, @Hyndman2011-sd introduced a reconciliation approach using a linear regression model based on forecasts from all series within a hierarchy, resulting in a generalized least squares (GLS) solution. This method initially generates independent base forecasts for all series in a hierarchical structure and subsequently adjusts these forecasts to make them coherent. Following this work, further research has led to the modifications of the least squares-based reconciliation method in various frameworks, including cross-sectional hierarchy [@Hyndman2016-cz; @Wickramasuriya2019-fc; @Panagiotelis2021-mf], temporal hierarchy [@Athanasopoulos2017-jj; @Nystrup2020-di], and cross-temporal hierarchy [@Di_Fonzo2023-vo]. In particular, assuming unbiased base forecasts, @Wickramasuriya2019-fc proposed the minimum trace method, which formulates the reconciliation problem as minimizing the trace of the covariance matrix of reconciled forecast error. These reconciliation approaches have been demonstrated to produce coherent and potentially more accurate forecasts compared to traditional single-level methods in various empirical applications [see, for example, @Taieb2021-tc; @Panagiotelis2021-mf; @Wickramasuriya2023-hn]. Additionally, @Van_Erven2015-ir, @Wickramasuriya2019-fc, and @Panagiotelis2021-mf provided theoretical insights into the performance of forecast reconciliation methods. For a comprehensive introduction of various forecast reconciliation methods, refer to a recent review by @Athanasopoulos2023-sm.
+To overcome these limitations, @Hyndman2011-sd introduced a reconciliation approach using a linear regression model based on forecasts from all series within a given structure, resulting in a generalized least squares (GLS) solution. This method initially generates independent base forecasts for all series in the structure and subsequently adjusts these forecasts to make them coherent. Following this work, further research has led to the modifications of the least squares-based reconciliation method in various frameworks, including cross-sectional data [@Hyndman2016-cz; @Wickramasuriya2019-fc; @Panagiotelis2021-mf], temporal data [@Athanasopoulos2017-jj; @Nystrup2020-di], and cross-temporal data [@Di_Fonzo2023-vo]. In particular, assuming unbiased base forecasts, @Wickramasuriya2019-fc proposed the minimum trace method, which formulates the reconciliation problem as minimizing the trace of the covariance matrix of reconciled forecast errors. These reconciliation approaches have been demonstrated to produce coherent and potentially more accurate forecasts compared to traditional single-level methods in various empirical applications [see, for example, @Taieb2021-tc; @Panagiotelis2021-mf; @Wickramasuriya2023-hn]. Additionally, @Van_Erven2015-ir, @Wickramasuriya2019-fc, @Panagiotelis2021-mf, and @Wickramasuriya2021-am provided theoretical insights into the performance of forecast reconciliation methods. Please refer to @Athanasopoulos2023-sm for a comprehensive introduction of various forecast reconciliation methods.
 
-Although reconciliation is well recognized for its ability to improve overall forecast accuracy in hierarchical structures, it is important to acknowledge that reconciled forecasts for some series in the hierarchy may experience deterioration. As demonstrated by @Athanasopoulos2017-jj, most of the improvements attributed to reconciliation are observed in series with initially poor-performing base forecasts. Thus, they suggested that the ideal solution would be to combine the most accurate aspects of base forecasts from each level, aiming to avoid a myopic view from a single level. In practice, it is not uncommon for some series in a hierarchy to exhibit poor performance in their base forecasts due to inherent challenges that are difficult to completely mitigate in real-world situations. These challenges may include model misspecification or low forecastability resulting from the absence of discernible patterns. In such cases, it becomes crucial to exclude "bad" base forecasts of some series in a hierarchy when performing reconciliation, thereby preventing their negative influence on the reconciled forecasts. This forms the primary objective of this paper.
+Reconciliation is well recognized for its ability to improve overall forecast accuracy in structures with aggregation constraints. Theoretically, the mean squared reconciled forecast error from the minimum trace (MinT) reconciliation method for each series in the structure is lower than that of OLS and base forecasts [@Wickramasuriya2021-am]. However, it is important to acknowledge that reconciled forecasts for some series in the structure may experience deterioration in its forecasting performance. As demonstrated by @Athanasopoulos2017-jj, most of the improvements attributed to reconciliation are observed in series with initially poor-performing base forecasts. Thus, they suggested that the ideal solution would be to combine the most accurate aspects of base forecasts from each level, aiming to avoid a myopic view from a single level. In practice, it is not uncommon for some series in a structure to exhibit poor performance in their base forecasts due to inherent challenges that are difficult to completely mitigate in real-world situations. These challenges may include model misspecification or low forecastability resulting from the absence of discernible patterns (low signal-to-noise ratio). In such cases, it becomes crucial to exclude "poor" base forecasts of some series in a hierarchy when performing reconciliation, thereby preventing their negative influence on the reconciled forecasts. This forms the primary objective of this paper.
 
-This paper addresses a few gaps in the field of forecast reconciliation. First, we propose forecast reconciliation methods that incorporate time series selection based on out-of-sample information, assuming unbiased base forecasts. We formulate this as an optimization problem, using different penalty functions designed to control the number of nonzero column entries in the weighting matrix for linear forecast reconciliation. We theoretically show that the number of selected time series is at least equal to the number of series at the bottom level, and we can reconstruct the full hierarchical structure by aggregating/disaggregating the selected series. Second, we relax the unbiasedness assumption and introduce another reconciliation method with selection, utilizing in-sample observations and fitted values. This allows us to use the in-sample reconciliation performance for selection purposes. In this case, it may happen that less than the number of series at the bottom level are used for reconciliation. Third, we carry out simulation experiments and two empirical applications, showing that our proposed methods guarantee coherent forecasts that outperform or, at the very least, match their respective benchmark methods. The improvements are particularly pronounced when focusing on aggregation levels, longer forecast horizons, and addressing model misspecification. Finally, a remarkable feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue in the field of forecast reconciliation research.
+This paper addresses a few gaps in the field of forecast reconciliation. First, we propose forecast reconciliation methods that incorporate time series selection based on out-of-sample information, assuming unbiased base forecasts. We formulate this as an optimization problem, using different penalty functions designed to control the number of nonzero column entries in the weighting matrix for linear forecast reconciliation. We theoretically show that the number of selected time series is at least equal to the number of series at the bottom level, and we can reconstruct the full hierarchical structure by aggregating/disaggregating the selected series. Second, we relax the unbiasedness assumption and introduce another reconciliation method with selection, utilizing in-sample observations and their fitted values. This allows us to use the in-sample reconciliation performance for selection purposes. In this case, it may happen that less than the number of series at the bottom level are used for reconciliation. We carry out simulation experiments and two empirical applications, showing that our proposed methods guarantee coherent forecasts that outperform or, at the very least, match their respective benchmark methods. The improvements are particularly pronounced when focusing on aggregation levels, longer forecast horizons, and model misspecification. A remarkable feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue in the field of forecast reconciliation research.
 
 The remainder of the paper is structured as follows. @sec-preliminaries presents the notations and a review of linear forecast reconciliation methods. @sec-methodology introduces our proposed methods to achieve time series selection in reconciliation, and provides some theoretical insights. @sec-simulations and @sec-applications show the results from simulations and two real-world datasets, respectively, followed by concluding remarks in @sec-conclusion. The R code for reproducing the results is available at LINK.
 
@@ -79,19 +79,15 @@ The remainder of the paper is structured as follows. @sec-preliminaries presents
 
 ## Notation
 
-We denote the set $\{1,\ldots,k\}$ by $[k]$ for any non-negative integer $k$. A *hierarchical time series* can be considered as an $n$-dimensional multivariate time series, $\{\boldsymbol{y}_t, t \in [T]\}$, that adheres to known linear constraints. Let $\boldsymbol{y}_t \in \mathbb{R}^n$ be a vector comprising observations of all time series in the hierarchy at time $t$, and $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ be a vector comprising observations of all bottom-level time series at time $t$. The full hierarchy at time $t$ can be written as
-
-$$
+We denote the set $\{1,\ldots,k\}$ by $[k]$ for any positive integer $k$. A *hierarchical time series* can be considered as an $n$-dimensional multivariate time series that adheres to known linear constraints. Let $\boldsymbol{y}_t \in \mathbb{R}^n$ be a vector comprising observations of all time series in the hierarchy at time $t$, and $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ be a vector comprising observations of all bottom-level time series at time $t$. The full hierarchy at time $t$ can be written as $$
 \boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t,
 $$
 
-where $\boldsymbol{S}$ is an $n \times n_b$ *summing matrix* that shows aggregation constraints present in the structure. We can write the summing matrix as $\boldsymbol{S} = \left[\begin{array}{c}\boldsymbol{A} \\ \boldsymbol{I}_{n_b}\end{array}\right]$, where $\boldsymbol{A}$ is an $n_a \times n_b$ *aggregation matrix* with $n = n_a + n_b$, and $\boldsymbol{I}_{n_b}$ is an $n_b$-dimensional identity matrix.
+for $t=1,2,\ldots,T$, where $T$ is the length of the time series, and $\boldsymbol{S}$ is an $n \times n_b$ *summing matrix* that shows aggregation constraints present in the structure. We can write the summing matrix as $\boldsymbol{S} = \left[\begin{array}{c}\boldsymbol{A} \\ \boldsymbol{I}_{n_b}\end{array}\right]$, where $\boldsymbol{A}$ is an $n_a \times n_b$ *aggregation matrix* with $n = n_a + n_b$, and $\boldsymbol{I}_{n_b}$ is an $n_b$-dimensional identity matrix.
 
 ![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="40%"}
 
-To clarify these notations, consider the example of a simple hierarchy in @fig-hts. For this two-level hierarchy, we have $n = 7$, $n_b = 4$, $n_a = 3$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, $\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, and
-
-$$
+To clarify these notations, consider the example of a simple hierarchy in @fig-hts. For this two-level hierarchy, we have $n = 7$, $n_b = 4$, $n_a = 3$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, $\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, and $$
 \boldsymbol{S} = \left[
 \begin{array}{cccc}
 1 & 1 & 1 & 1 \\
@@ -101,79 +97,55 @@ $$
 \end{array}\right].
 $$
 
-![An example of a two level grouped time series.](figs/gts_example.pdf){#fig-gts fig-align="center" width="80%"}
-
-When data structure does not naturally disaggregate in a unique hierarchical manner, we can combine these hierarchical structures to form a *grouped time series*. Thus, grouped time series can also be considered as hierarchical time series with more than one grouping structure. @fig-gts shows an example of a two-level grouped time series with two alternative aggregation structures. For this example, $n = 9$, $n_b = 4$, $n_a = 5$, $\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{X},t}, y_{\text{Y},t}, y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}$, $\boldsymbol{b}_t = [y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}$, and
-
-$$
-\boldsymbol{S} = \left[
-\begin{array}{cccc}
-1 & 1 & 1 & 1 \\
-1 & 1 & 0 & 0 \\
-0 & 0 & 1 & 1 \\
-1 & 0 & 1 & 0 \\
-0 & 1 & 0 & 1 \\
-\multicolumn{4}{c}{\boldsymbol{I}_4}
-\end{array}\right].
-$$
+When data structure does not naturally disaggregate in a unique hierarchical manner, we can combine these hierarchical structures to form a *grouped time series*. Thus, grouped time series can also be considered as hierarchical time series with more than one grouping structure. Please refer to @Hyndman2021-fo on further details.
 
 ## Linear forecast reconciliation
 
-Let $\hat{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n$ be a vector of $h$-step-ahead *base forecasts* for all time series in the hierarchy, given observations up to time $T$, and stacked in the same order as $\boldsymbol{y}_t$. We can use any method to generate these forecasts, but in general they will not add up especially when we forecast each series independently.
+Let $\hat{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n$ be a vector of $h$-step-ahead *base forecasts* for all time series in the structure, given observations up to and including time $T$, and stacked in the same order as $\boldsymbol{y}_t$. We can use any method to generate these forecasts, but in general they will not add up especially when we forecast each series independently.
 
-When forecasting hierarchical time series, we expect the forecasts to be *coherent* (i.e., aggregation constraints are satisfied). Let $\tilde{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n$ denote a vector of $h$-step-ahead *reconciled forecasts* which are coherent by construction, $\psi$ a *mapping* that reconciles base forecasts, $\hat{\boldsymbol{y}}_{T+h \mid T}$. Then we have *forecast reconciliation* $\tilde{\boldsymbol{y}}_{T+h \mid T}=\psi(\hat{\boldsymbol{y}}_{T+h \mid T})$, which is essentially a post-processing method. In this paper, we focus on linear forecast reconciliation given by
-
-$$
+When forecasting these time series structure, we expect the forecasts to be *coherent* (i.e., aggregation constraints of the data are satisfied). Let $\tilde{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n$ denote a vector of $h$-step-ahead *reconciled forecasts* which are coherent by construction, $\psi$ a *mapping* that reconciles base forecasts, $\hat{\boldsymbol{y}}_{T+h \mid T}$. Then we have *forecast reconciliation* $\tilde{\boldsymbol{y}}_{T+h \mid T}=\psi(\hat{\boldsymbol{y}}_{T+h \mid T})$, which is essentially a post-processing method. In this paper, we focus on linear forecast reconciliation given by $$
 \tilde{\boldsymbol{y}}_{T+h \mid T} = \boldsymbol{S}\boldsymbol{G}_h\hat{\boldsymbol{y}}_{T+h \mid T},
-$$
+$$ {#eq-lr}
 
 where
 
--   $\boldsymbol{G}_h$ is an $n_b \times n$ weighting matrix that maps the base forecasts into the bottom level. In other words, it combines all base forecasts to form reconciled forecasts for bottom-level series.
--   $\boldsymbol{S}$ is an $n \times n_b$ summing matrix that sums up bottom-level reconciled forecasts to produce coherent forecasts of all levels. It identifies the linear constraints involved in a given hierarchy.
+-   $\boldsymbol{G}_h$ is an $n_b \times n$ weighting matrix that maps base forecasts into the bottom level. In other words, it combines all base forecasts to form reconciled forecasts for bottom-level series.
+-   $\boldsymbol{S}$ is an $n \times n_b$ summing matrix that sums up bottom-level reconciled forecasts to produce coherent forecasts of all levels. It identifies the linear constraints in a given structure.
 
 ### Minimum trace reconciliation
 
-Let the $h$-step-ahead *base forecast errors* be defined as $\hat{\boldsymbol{e}}_{T+h \mid T} = \boldsymbol{y}_{T+h} - \hat{\boldsymbol{y}}_{T+h \mid T}$, and the $h$-step-ahead *reconciled forecast errors* be defined as $\tilde{\boldsymbol{e}}_{T+h \mid T} = \boldsymbol{y}_{T+h} - \tilde{\boldsymbol{y}}_{T+h \mid T}$. @Wickramasuriya2019-fc formulated a linear reconciliation problem as minimizing the trace (MinT) of the $h$-step-ahead covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})$. Under the assumption of unbiased base forecasts, the unique solution of the minimization problem is given by
-
-$$
+Let the $h$-step-ahead in-sample *base forecast errors* be defined as $\hat{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h \mid t}$, and the $h$-step-ahead *reconciled forecast errors* be defined as $\tilde{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{t+h \mid t}$ for $t = 1,2,\ldots,T-h$. @Wickramasuriya2019-fc formulated a linear reconciliation problem as minimizing the trace (MinT) of the $h$-step-ahead covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\boldsymbol{e}}_{t+h \mid t})$. Under the assumption of unbiasedness of base forecasts and reconciled forecasts, the unique solution of the minimization problem is given by $$
 \boldsymbol{G}_h=\left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1},
-$$ {#eq-mint} where $\boldsymbol{W}_h$ is the positive definite covariance matrix of the $h$-step-ahead base forecast errors, $\operatorname{Var}(\hat{\boldsymbol{e}}_{T+h \mid T})$.
+$$ {#eq-mint} where $\boldsymbol{W}_h$ is the positive definite covariance matrix of the $h$-step-ahead base forecast errors.
 
-The trace minimization problem can be reformulated as a least squares problem with linear constraints given by
-
-$$
+The trace minimization problem can be reformulated as a least squares problem with linear constraints given by $$
 \begin{aligned}
 & \min _{\tilde{\boldsymbol{y}}_{T+h \mid T}} \quad \frac{1}{2}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T})^{\prime} \boldsymbol{W}_{h}^{-1}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}) \\
 & \text { s.t. } \quad \tilde{\boldsymbol{y}}_{T+h \mid T}=\boldsymbol{S}\tilde{\boldsymbol{b}}_{T+h \mid T},
 \end{aligned}
 $$ {#eq-mint_op}
 
-where $\tilde{\boldsymbol{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}$ is the vector comprising $h$-step-ahead bottom-level reconciled forecasts, made at time $T$. Focusing on $\boldsymbol{W}_h$, the intuitive behind the MinT reconciliation is that **the larger the estimated variance of the base forecast errors, the larger the range of adjustments permitted for forecast reconciliation**.
+where $\tilde{\boldsymbol{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}$ is the vector comprising $h$-step-ahead bottom-level reconciled forecasts, made at time $T$. Focusing on $\boldsymbol{W}_h$, the intuition behind the MinT reconciliation is that **the larger the estimated variance of the base forecast errors, the larger the range of adjustments permitted for forecast reconciliation**.
 
 It is challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assuming that $\boldsymbol{W}_h = k_h\boldsymbol{W}_1$, $\forall h$, where $k_h > 0$, the MinT solution of $\boldsymbol{G}$ does not change with the forecast horizon, $h$. Hence, we will drop the subscript $h$ for the ease of exposition. The most popularly used candidate estimators for $\boldsymbol{W}$ in the forecast reconciliation literature are listed as follows.
 
-1.  $\boldsymbol{W}_{\text{OLS}} = \boldsymbol{I}$ is the *OLS estimator* proposed by @Hyndman2011-sd, assuming that the base forecast errors are uncorrelated and equivariant. In what follows, we denote this as **OLS**.
-2.  $\boldsymbol{W}_{\text{WLSs}} = \operatorname{diag}(\boldsymbol{S} \mathbf{1})$ is the *WLS estimator applying structural scaling* proposed by @Athanasopoulos2017-jj. This estimator depends only on the aggregation structure of the hierarchy. It assumes that the variance of each bottom-level base forecast error is equivalent and uncorrelated between nodes. We denote this method as **WLSs**.
-3.  $\boldsymbol{W}_{\text{WLSv}} = \operatorname{diag}(\hat{\boldsymbol{W}}_1)$ is the *WLS estimator applying variance scaling* proposed by @Hyndman2016-cz, where $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals). In the results that follow, we denote this as **WLSv**.
-4.  $\boldsymbol{W}_{\text{MinT}} = \hat{\boldsymbol{W}}_1$ is referred to as the *MinT estimator* based on the sample covariance matrix proposed by @Wickramasuriya2019-fc. We denote this method as **MinT** in the results that follow.
-5.  $\boldsymbol{W}_{\text{MinTs}} = \lambda\operatorname{diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$ is the *MinT shrinkage estimator* suggested by @Wickramasuriya2019-fc, in which off-diagonal elements of $\hat{\boldsymbol{W}}_1$ are shrunk towards zero. We refer to this method as **MinTs**.
+1.  $\boldsymbol{W}_{\text{OLS}} \propto \boldsymbol{I}$, is the *OLS estimator* proposed by @Hyndman2011-sd, and assumes that the base forecast errors are uncorrelated and equivariant. We denote this as **OLS**.
+2.  $\boldsymbol{W}_{\text{WLSs}} \propto \operatorname{diag}(\boldsymbol{S} \mathbf{1})$, is the *WLS estimator applying structural scaling* proposed by @Athanasopoulos2017-jj, where $\mathbf{1}$ is a vector of 1s of size $n_b$, and $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector. This estimator depends only on the aggregation structure of the hierarchy. It assumes that the variance of each bottom-level base forecast error is equivalent and uncorrelated between nodes. We denote this method as **WLSs**.
+3.  $\boldsymbol{W}_{\text{WLSv}} \propto \operatorname{Diag}(\hat{\boldsymbol{W}}_1)$, is the *WLS estimator applying variance scaling* proposed by @Hyndman2016-cz, where $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix. We denote this as **WLSv**.
+4.  $\boldsymbol{W}_{\text{MinT}} \propto \hat{\boldsymbol{W}}_1$, is referred to as the *MinT estimator* based on the sample covariance matrix proposed by @Wickramasuriya2019-fc. We denote this method as **MinT** in the results that follow.
+5.  $\boldsymbol{W}_{\text{MinTs}} \propto \lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$, is the *MinT shrinkage estimator* suggested by @Wickramasuriya2019-fc, in which off-diagonal elements of $\hat{\boldsymbol{W}}_1$ are shrunk towards zero. We refer to this method as **MinTs**.
 
-It is hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the weighting matrix as the summing matrix is fixed for a given hierarchy. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconciliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the mean squared reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific hierarchical time series of interest, the targeted level or series, and the selected loss function.
+In practice, it is hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the weighting matrix as the summing matrix is fixed for a given structure. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconciliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the expected Euclidean distance of the reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific time series structure of interest, the targeted level or series, and the selected loss function.
 
 ### Relaxation of the unbiasedness assumptions
 
-Both @Hyndman2011-sd and @Wickramasuriya2019-fc impose two unbiasedness conditions, i.e., the base forecasts and the reconciled forecasts are unbiased. @Ben_Taieb2019-be proposed a reconciliation method relaxing the assumption of unbiasedness. Specifically, by expanding the training window forward by one observation until $T-h$, they formulated the reconciliation problem as a regularized empirical risk minimization (RERM) problem given by
-
-$$
+Both @Hyndman2011-sd and @Wickramasuriya2019-fc impose two unbiasedness conditions, i.e., the base forecasts and the reconciled forecasts are unbiased. @Ben_Taieb2019-be proposed a reconciliation method relaxing the assumption of unbiasedness. Specifically, by expanding the training window forward by one observation until $T-h$, they formulated the reconciliation problem as a regularized empirical risk minimization (RERM) problem given by $$
 \min _{\boldsymbol{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\boldsymbol{Y}_{h}^{*}-\hat{\boldsymbol{Y}}_{h}^{*} \mathbf{G}_{h}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \boldsymbol{G}_h)\|_1,
 $$
 
-where $T_1$ denotes the minimum number of observations used for model training, $\left\| \cdot \right\|_F$ is the Frobenius norm, $\boldsymbol{Y}_{h}^{*}=\left[\boldsymbol{y}_{T_1+h}, \ldots, \boldsymbol{y}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, $\hat{\boldsymbol{Y}}_{h}^{*}=\left[\hat{\boldsymbol{y}}_{T_1+h \mid T_1}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, and $\lambda \geq 0$ is a regularization parameter.
+where $T_1$ denotes the minimum number of observations used for model training, $\left\| \cdot \right\|_F$ is the Frobenius norm, $\|\cdot\|_1$ is the $L_1$ norm, $\operatorname{vec}(\cdot)$ denotes the vectorization of a matrix, which stacks the columns of the matrix on top of one another, $\boldsymbol{Y}_{h}^{*}=\left[\boldsymbol{y}_{T_1+h}, \ldots, \boldsymbol{y}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, $\hat{\boldsymbol{Y}}_{h}^{*}=\left[\hat{\boldsymbol{y}}_{T_1+h \mid T_1}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}$, and $\lambda \geq 0$ is a regularization parameter.
 
-When $\lambda = 0$, the problem reduces to an empirical risk minimization (ERM) problem without regularization. Assuming that the series in the hierarchy are jointly weakly stationary and $\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}$ is invertible, it has a closed-form solution given by
-
-$$
+When $\lambda = 0$, the problem reduces to an empirical risk minimization (ERM) problem without regularization. Assuming that the series in the structure are jointly weakly stationary and $\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}$ is invertible, it has a closed-form solution given by $$
 \hat{\boldsymbol{G}}_h = \boldsymbol{B}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\left(\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\right)^{-1},
 $$
 
@@ -181,29 +153,25 @@ where $\boldsymbol{B}_{h}^{*}=\left[\boldsymbol{b}_{T_1+h}, \ldots, \boldsymbol{
 
 When $\lambda > 0$, imposing such a $L_1$ penalty on $\boldsymbol{G}_h$ will introduce sparsity and reduce estimation variance, albeit at the cost of introducing some bias. In addition, they also proposed another strategy that penalizes the matrix $\boldsymbol{G}_h$ towards the solution obtained by bottom-up (**BU**) method, i.e., $\boldsymbol{G}_{\text{BU}} = \left[\boldsymbol{0}_{n_b \times n_a} \mid \boldsymbol{I}_{n_b}\right]$.
 
-Following the work, @Wickramasuriya2021-am proposed an empirical MinT (**EMinT**) without the unbiasedness constraint by minimizing the trace of the covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})$. Assuming that the series are jointly weakly stationary, she derived the solution given by
-
-$$
+Following the work, @Wickramasuriya2021-am proposed an empirical MinT (**EMinT**) without the unbiasedness constraint by minimizing the trace of the covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})$. Assuming that the series are jointly weakly stationary, she derived the solution given by $$
 \hat{\boldsymbol{G}}_{h} = \boldsymbol{B}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\left(\hat{\boldsymbol{Y}}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\right)^{-1},
 $$
 
-where $\boldsymbol{B}_{h}=\left[\boldsymbol{b}_{h}, \ldots, \boldsymbol{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}$, and $\hat{\boldsymbol{Y}}_{h}=\left[\hat{\boldsymbol{y}}_{h \mid 0}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}$. The difference between EMinT and ERM lies in the data sources used, as EMinT uses in-sample observations and base forecasts, while ERM relies on observations and base forecasts from a holdout validation set. We note that both ERM and EMinT consider an estimate of $\boldsymbol{G}$ that changes over the forecast horizon, which is why we keep the subscript $h$ here. EMinT results that follow assume the weighting matrix $\boldsymbol{G}$ for $h=1$ holds for $h>1$.
+where $\boldsymbol{B}_{h}=\left[\boldsymbol{b}_{h}, \ldots, \boldsymbol{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}$, and $\hat{\boldsymbol{Y}}_{h}=\left[\hat{\boldsymbol{y}}_{h \mid 0}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}$. The difference between EMinT and ERM lies in the data sources used, as EMinT uses in-sample observations and base forecasts, while ERM relies on observations and base forecasts from a holdout validation set. We note that both ERM and EMinT consider an estimate of $\boldsymbol{G}$ that changes over the forecast horizon, which is why we keep the subscript $h$ here. When reporting the EMinT results in following sections, we assume the weighting matrix $\boldsymbol{G}$ for $h=1$ holds for $h>1$.
 
-In practice, a prevalent challenge in forecast reconciliation arises when the base forecasts of some time series within the hierarchical structure may perform poorly, especially for large hierarchies. This can be attributed to either the inherent complexity of forecasting these series or potential model misspecification. In such cases, the effectiveness of forecast reconciliation may diminish, as the role of the weighting matrix $\boldsymbol{G}$ is to assimilate *all* base forecasts and map them into bottom-level disaggregated forecasts which are subsequently summed by $\boldsymbol{S}$. While the RERM method proposed by @Ben_Taieb2019-be introduces sparsity by shrinking some elements of $\boldsymbol{G}$ towards zero, it remains incapable of mitigating the adverse impact of underperforming base forecasts on the quality of the reconciled forecasts. Moreover, the method is time-consuming because it uses expanding windows to recursively generate out-of-sample base forecasts, which are then used in the minimization problem.
+In practice, a prevalent challenge in forecast reconciliation arises when the base forecasts of some time series within the structure may perform poorly, especially for large hierarchies. This can be attributed to either the inherent complexity of forecasting these series or potential model misspecification. In such cases, the effectiveness of forecast reconciliation may diminish, as the role of the weighting matrix $\boldsymbol{G}$ is to assimilate *all* base forecasts and map them into bottom-level disaggregated forecasts which are subsequently summed by $\boldsymbol{S}$. While the RERM method proposed by @Ben_Taieb2019-be introduces sparsity by shrinking some elements of $\boldsymbol{G}$ towards zero, it remains incapable of mitigating the adverse impact of underperforming base forecasts on the quality of the reconciled forecasts. Moreover, the method is time-consuming and might be problematic when there are limited number of observations because it uses expanding windows to recursively generate out-of-sample base forecasts, which are then used in the minimization problem.
 
-We therefore propose two categories of innovative methods, constrained (under the unbiasedness assumption) and unconstrained (without unbiasedness assumption) forecast reconciliation with time series selection. These methods aim to identify and address the negative effect of some base forecasts of poor performance in a hierarchy on the overall performance of the reconciled forecasts. Additionally, through the incorporation of regularization in our objective function, our method has the potential to enhance reconciliation outcomes produced by using a "bad" choice of $\boldsymbol{W}$, thus reducing the risk of choosing estimator of $\boldsymbol{W}$. Moreover, our method generalizes to grouped hierarchies.
+We therefore propose two categories of innovative methods, constrained out-of-sample (under the unbiasedness assumption) and unconstrained in-sample (without unbiasedness assumption) forecast reconciliation with time series selection. These methods aim to identify and address the negative effect of some base forecasts of poor performance in a structure on the overall performance of the reconciled forecasts. Additionally, through the incorporation of regularization in our objective function, our method has the potential to enhance reconciliation outcomes produced by using a "poor" choice of $\boldsymbol{W}$, thus reducing the risk of choosing estimator of $\boldsymbol{W}$.
 
 # Forecast reconciliation with time series selection {#sec-methodology}
 
-In this section, we introduce our methods for keeping forecasts of an automatically selected set of series, identified as harmful to reconciliation, unused in forming reconciled forecasts, i.e., forecast reconciliation with time series selection. @sec-constrained introduces constrained reconciliation methods with selection that formulate the problem based on out-of-sample base forecasts, while @sec-unconstrained presents an unconstrained reconciliation method with selection where we formulate the problem based on in-sample observations and base forecasts.
+In this section, we introduce our methods for keeping forecasts of an automatically selected set of series, identified as harmful to reconciliation, unused in forming reconciled forecasts, i.e., forecast reconciliation with time series selection. @sec-constrained introduces constrained reconciliation methods with selection that formulate the problem based on out-of-sample base forecasts, while @sec-unconstrained presents an unconstrained reconciliation method with selection, where we formulate the problem based on in-sample observations and base forecasts.
 
 ## Series selection with unbiasedness constraint {#sec-constrained}
 
-As $\boldsymbol{S}$ is fixed and $\hat{\boldsymbol{y}}_{T+h \mid T}$ is given, the estimation of $\boldsymbol{G}$ carries the linear reconciliation performance, as shown in @eq-mint. (Subscript $h$ is dropped as we assume $\boldsymbol{W}$ and $\boldsymbol{G}$ do not change over the forecast horizon.) A natural way to keep forecasts of some series unused in reconciliation is through controlling the number of nonzero column entries in $\boldsymbol{G}$. This leads to a generalization of the MinT optimization problem by applying an additional penalty to the objective function. More precisely, we consider the optimization problem given by
-
-$$
+As $\boldsymbol{S}$ is fixed and $\hat{\boldsymbol{y}}_{T+h \mid T}$ is given, once we get the estimation of $\boldsymbol{G}$, the linear reconciliation performance is determined, as shown in @eq-lr. In this section, the subscript $h$ is dropped as we assume $\boldsymbol{W}$ and $\boldsymbol{G}$ do not vary with the forecast horizon. A natural way to keep forecasts of some series unused in reconciliation is through controlling the number of nonzero column entries in $\boldsymbol{G}$. This leads to a generalization of the MinT optimization problem by applying an additional penalty to the objective function. More precisely, let $\hat{\boldsymbol{y}}:=\hat{\boldsymbol{y}}_{T+1 \mid T}$, we consider the optimization problem given by $$
 \begin{aligned}
-& \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right)
+& \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}-\boldsymbol{SG}\hat{\boldsymbol{y}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\boldsymbol{SG}\hat{\boldsymbol{y}}\right)
 + \lambda\mathfrak{g}(\boldsymbol{G}) \\
 & \text { s.t. } \quad \boldsymbol{GS}=\boldsymbol{I},
 \end{aligned}
@@ -213,45 +181,41 @@ where $\mathfrak{g}(\cdot)$ is defined as an exterior penalty function designed 
 
 **Proposition 1.** *Under the assumption of unbiasedness, the count of nonzero column entries of* $\boldsymbol{G}$ (*i.e., the number of time series selected for reconciliation*), *derived through solving @eq-op_u, is at least equal to the number of time series at the bottom level. In addition, we can restore the full hierarchical structure by aggregating/disaggregating the selected time series.*
 
-*Proof*. According to the unbiasedness constraint $\boldsymbol{GS}=\boldsymbol{I}$, we have
-
-$$
+*Proof*. According to the unbiasedness constraint $\boldsymbol{GS}=\boldsymbol{I}$, we have $$
 \min \left(\operatorname{rank}(\boldsymbol{G}), \operatorname{rank}(\boldsymbol{S})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b,
 $$
 
 which indicates that the count of nonzero column entries of $\boldsymbol{G}$ is at least equal to $n_b$.
 
-Let $\boldsymbol{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}$ denote the submatrix of the $r \times c$ matrix $\boldsymbol{X}$ with column indices forming a set $\mathbb{S}$ (and when $\mathbb{S} = \{j\}$, we simply use $\boldsymbol{X}_{\cdot j}$). Here, $|\mathbb{S}|$ denotes the size of the set $\mathbb{S}$. Similarly, let $\boldsymbol{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}$ denote the submatrix of $\boldsymbol{X}$ whose rows are indexed by a set $\mathbb{S}$ (and when $\mathbb{S} = \{i\}$, we simply use $\boldsymbol{X}_{i\cdot}$). Assuming that the set $\mathbb{S}$ consists of the indices of nonzero columns in the solution of @eq-op_u, the following equations hold:
-
-$$
+Let $\boldsymbol{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}$ denote the submatrix of the $r \times c$ matrix $\boldsymbol{X}$ with column indices forming a set $\mathbb{S}$ (and when $\mathbb{S} = \{j\}$, we simply use $\boldsymbol{X}_{\cdot j}$), where $|\mathbb{S}|$ denotes the size of the set $\mathbb{S}$. Similarly, let $\boldsymbol{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}$ denote the submatrix of $\boldsymbol{X}$ whose rows are indexed by a set $\mathbb{S}$ (and when $\mathbb{S} = \{i\}$, we simply use $\boldsymbol{X}_{i\cdot}$). Assuming that the set $\mathbb{S}$ consists of the indices of nonzero columns in the solution of @eq-op_u, $\hat{\boldsymbol{G}}$, the following equations hold: $$
 \begin{aligned}
-& \boldsymbol{G}\boldsymbol{S} = \boldsymbol{G}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot} \text{ and } \\
-& \min \left(\operatorname{rank}(\boldsymbol{G}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b.
+& \boldsymbol{G}\boldsymbol{S} = \hat{\boldsymbol{G}}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot} = \boldsymbol{I} \text{, and } \\
+& \min \left(\operatorname{rank}(\hat{\boldsymbol{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b.
 \end{aligned}
 $$
 
-Additionally, we have $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b$ as $\boldsymbol{S}$ has $n_b$ columns. Therefore, we can conclude that $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$, which implies that the hierarchical structure can be fully restored by aggregating/disaggregating the selected time series, $(\boldsymbol{y}_{t})_{\mathbb{S}}$.
+Additionally, we have $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b$ as $\boldsymbol{S}$ has $n_b$ columns. Therefore, we can conclude that $\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b$. Moreover, we have $$
+\boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t = \boldsymbol{S}\boldsymbol{G}\boldsymbol{S}\boldsymbol{b}_t=\boldsymbol{S}\hat{\boldsymbol{G}}_{\cdot\mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot}\boldsymbol{b}_t=\boldsymbol{S}\hat{\boldsymbol{G}}_{\cdot \mathbb{S}}(\boldsymbol{y}_t)_{\mathbb{S}},
+$$
+
+which implies that the hierarchical structure can be fully restored by aggregating/disaggregating the selected time series denoted by $(\boldsymbol{y}_{t})_{\mathbb{S}}$.
 
 For example, consider the simple hierarchy shown in @fig-hts, it is not possible for our constrained reconciliation methods with selection to simultaneously zero out columns of $\boldsymbol{G}$ associated with series AA and AB. However, it is possible to zero out columns related to series AA and BA simultaneously.
 
-**Proposition 2.** *The optimization problem in @eq-op_u can be reformulated as a least squares problem with regularization and linear equality constraint as follows:*
-
-$$
+**Proposition 2.** *The optimization problem in @eq-op_u can be reformulated as a least squares problem with regularization and linear equality constraint as follows:* $$
 \begin{aligned}
-& \min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\boldsymbol{G})\right) \\
-& \text { s.t. } \quad \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{nb}),
+& \min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\boldsymbol{G})\right) \\
+& \text { s.t. } \quad \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{n_b}),
 \end{aligned}
 $$ {#eq-op_u_reg}
 
 *which is characterized as a high-dimensional problem in which the number of features, denoted as* $p = n_b \times n$*, is much larger than the number of observations,* $n$*.*
 
-*Proof.* Let $\operatorname{vec}(\boldsymbol{A})$ denote the vectorization of a matrix $\boldsymbol{A}$, which stacks the columns of $\boldsymbol{A}$ on top of one another. We have
-
-$$
+*Proof.* We have $$
 \begin{aligned}
-& \operatorname{vec}\left(\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \hat{\boldsymbol{y}}_{T+h \mid T}, \\
-& \operatorname{vec}\left(\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}), \\
-& \operatorname{vec}\left(\boldsymbol{GS}\right) = \operatorname{vec}\left(\boldsymbol{I}_{nb}\boldsymbol{GS}\right) = \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G}).
+& \operatorname{vec}\left(\hat{\boldsymbol{y}}\right) = \hat{\boldsymbol{y}}, \\
+& \operatorname{vec}\left(\boldsymbol{SG}\hat{\boldsymbol{y}}\right) = \left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}), \\
+& \operatorname{vec}\left(\boldsymbol{GS}\right) = \operatorname{vec}\left(\boldsymbol{I}_{n_b}\boldsymbol{GS}\right) = \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G}).
 \end{aligned}
 $$
 
@@ -261,27 +225,22 @@ Moving forward, we present three classes of regularizations we use to establish 
 
 ### Group best-subset selection with ridge regularization {#sec-subset}
 
-In high-dimensional regime with $p \gg n$, a common desiderata is to assume that the true regression coefficient (i.e., $\operatorname{vec}(\boldsymbol{G})$ in our problem) is sparse. We propose to apply a combination of $L_0$ and $L_2$ regularization as the exterior penalty function to control the nonzero column entries in $\boldsymbol{G}$:
-
-$$
+In high-dimensional regime with $p \gg n$, a common desiderata is to assume that the true regression coefficient (i.e., $\operatorname{vec}(\boldsymbol{G})$ in our problem) is sparse. We propose to apply a combination of $L_0$ and $L_2$ regularization as the exterior penalty function to control the nonzero column entries in $\boldsymbol{G}$: $$
 \begin{aligned}
-\min _{\operatorname{vec}(\boldsymbol{G})} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
-& + \lambda_0 \sum_{j=1}^n \mathbf{1}\left(\boldsymbol{G}_{\cdot j} \neq \mathbf{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\boldsymbol{G}\right)\right\|_2^2 \\
-\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{nb}),
+\min _{\operatorname{vec}(\boldsymbol{G})} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda_0 \sum_{j=1}^n 1\left(\boldsymbol{G}_{\cdot j} \neq \mathbf{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\boldsymbol{G}\right)\right\|_2^2 \\
+\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{n_b}),
 \end{aligned}
 $$ {#eq-subset}
 
-where $\mathbf{1}(\cdot)$ is the indicator function, $\lambda_0 \geq 0$ controls the number of nonzero columns of $\boldsymbol{G}$ selected, and $\lambda_2 \geq 0$ controls the strength of the ridge regularization. In a hierarchical time series context, the parameter of interest in @eq-subset, $\operatorname{vec}(\boldsymbol{G})$, has an inherent non-overlapping group structure, wherein each group corresponds to a single column of $\boldsymbol{G}$, each with a size of $n_b$. Therefore, we refer to this reconciliation method as *group best-subset selection with ridge regularization*. In the results that follow, we label the **Subset** method differently based on various estimators for $\boldsymbol{W}$, referring to them as **OLS-subset**, **WLSs-subset**, **WLSv-subset**, **MinT-subset**, and **MinTs-subset**, respectively.
+where $1(\cdot)$ is the indicator function, $\lambda_0 \geq 0$ controls the number of nonzero columns of $\boldsymbol{G}$ selected, $\lambda_2 \geq 0$ controls the strength of the ridge regularization, and $\|\cdot\|_2$ is the $L_2$ norm. In a hierarchical or grouped time series context, the parameter of interest in @eq-subset, $\operatorname{vec}(\boldsymbol{G})$, has an inherent non-overlapping grouping structure, wherein each group corresponds to a single column of $\boldsymbol{G}$, each with a size of $n_b$. Therefore, we refer to this reconciliation method as *group best-subset selection with ridge regularization*. In the results that follow, we label the **Subset** method differently based on various estimators for $\boldsymbol{W}$, referring to them as **OLS-subset**, **WLSs-subset**, **WLSv-subset**, **MinT-subset**, and **MinTs-subset**, respectively.
 
 The inclusion of the ridge term in @eq-subset is motivated by earlier work on best-subset selection [e.g., @Hazimeh2020-xd; @Mazumder2022-hx], which suggests that additional ridge regularization can mitigate the poor predictive performance of best-subset selection method in the low signal-to-noise ratio (SNR) regimes.
 
-We present a Big-M based mixed integer programming (MIP) formulation for problem in @eq-subset given by
-
-$$
+We present a Big-M based mixed integer programming (MIP) formulation for problem in @eq-subset given by $$
 \begin{aligned}
 \min _{\operatorname{vec}(\boldsymbol{G}), \boldsymbol{z}, \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \boldsymbol{g}^{+\prime}\boldsymbol{g}^{+} \\
 \text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
-& \hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
+& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
 & \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \\
 & \boldsymbol{g}^{+} \geqslant \operatorname{vec}(\boldsymbol{G}) \\
 & \boldsymbol{g}^{+} \geqslant-\operatorname{vec}(\boldsymbol{G}) \\
@@ -289,19 +248,17 @@ $$
 \end{aligned}
 $$ {#eq-subset_mip}
 
-where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficiently large such that some optimal solution, say $\boldsymbol{g}^{+*}$, to @eq-subset_mip satisfies $\max _{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$, the binary variable $z_j$ controls whether all the regression coefficients, $\operatorname{vec}(\boldsymbol{G})$, in group $j$ are zero or not, i.e., $z_j=0$ implies that $\boldsymbol{G}_{\cdot j}=\mathbf{0}$, and $z_j=1$ implies that $\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$. Such Big-M formulations are commonly used in MIP problems to model relations between discrete and continuous variables, and have been recently explored in regression with $L_0$ regularization, see @Bertsimas2016-ig for more discussion. The problem is a mixed integer quadratic program (MIQP) that can be solved using commercial MIP solvers, e.g., Gurobi and CPLEX.
+where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficiently large such that some optimal solution, say $\boldsymbol{g}^{+*}$, to @eq-subset_mip satisfies $\max _{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$, the binary variable $z_j$ controls whether all the regression coefficients, $\operatorname{vec}(\boldsymbol{G})$, in group $j$ are zero or not, i.e., $z_j=0$ implies that $\boldsymbol{G}_{\cdot j}=\mathbf{0}$, and $z_j=1$ implies that $\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}$. Such Big-M formulations are commonly used in MIP problems to model relations between discrete and continuous variables, and have been recently explored in regression with $L_0$ regularization [@Bertsimas2016-ig]. The problem is a mixed integer quadratic program (MIQP) that can be solved using commercial MIP solvers, e.g., Gurobi and CPLEX.
 
-**Parameter tuning.** $\lambda_0 \geq 0$ and $\lambda_2 \geq 0$ are tuning parameters. To avoid computationally-expensive cross-validation, we tune the parameters to minimize the sum of squared reconciled forecast errors on the truncated training set, comprising only the $\max\{h, s\}$ observations closest to the forecast origin, where $s$ is the seasonal period for seasonal data and $s=T$ for non-seasonal data. Let $\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)$ that captures the scale of first term in the objective, where $\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}$ is a vector of reconciled forecasts obtained using @eq-mint with same estimator of $\boldsymbol{W}$, and define $\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}$. For the parameter $\lambda_0$, we consider a grid of $k+1$ values, $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$. So $\lambda_{0}^{1},...,\lambda_{0}^{k}$ is a sequence decreasing on the log scale. We use a grid of six values for the parameter $\lambda_2$, $\{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}$. Therefore, we tune over a two-dimensional grid of $(k+1) \times 6$ values to find the optimal combination of $\lambda_0$ and $\lambda_2$.
+**Parameter tuning.** To avoid computationally-expensive cross-validation, we tune the parameters to minimize the sum of squared reconciled forecast errors on the truncated training set, comprising only the $\max\{h, s\}$ observations closest to the forecast origin, where $s$ is the seasonal period for seasonal data and $s=T$ for non-seasonal data. Let $\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)$ that captures the scale of first term in the objective function, where $\tilde{\boldsymbol{y}}^{\text{bench}}$ is a vector of reconciled forecasts obtained using @eq-mint with same estimator of $\boldsymbol{W}$, and define $\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}$. For the parameter $\lambda_0$, we consider a grid of $k+1$ values, $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$. So $\lambda_{0}^{1},...,\lambda_{0}^{k}$ is a sequence decreasing on the log scale. We use a grid of six values for the parameter $\lambda_2$, $\{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}$. Therefore, we tune over a two-dimensional grid of $(k+1) \times 6$ values to find the optimal combination of $\lambda_0$ and $\lambda_2$.
 
-**Computation details.** The MIQP problem in @eq-subset_mip is NP-Hard and computationally intensive. @Bertsimas2016-ig showed that commercial MIP solvers are capable of tackling problem instances for $p$ up to a thousand. To address larger instances, there has been impressive work on developing MIP-based approches for solving $L_0$-regularized regression problem, e.g., @Bertsimas2016-ig, @Hazimeh2020-xd, and @Hazimeh2022-hc. However, it is challenging to extend their approaches to accommodate additional constraints within the optimization problem. Despite the potential sluggishness of handling large instances with commercial MIP solvers, in our experiments, we use Gurobi to solve our problem in @eq-subset_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds for cases with $p > 1000$. This enables us to terminate the solver before reaching the global optimum and return a suboptimal solution instead. This strategy is motivated by our need to consider numerous parameter candidates, and the final solution will be validated against the training set, which helps prevent the utilization of a very poor estimate of $\boldsymbol{G}$.
+**Computation details.** The MIQP problem in @eq-subset_mip is NP-Hard and computationally intensive. @Bertsimas2016-ig showed that commercial MIP solvers are capable of tackling problem instances for $p$ up to a thousand. To address larger instances, there has been impressive work on developing MIP-based approches for solving $L_0$-regularized regression problem, e.g., @Bertsimas2016-ig, @Hazimeh2020-xd, and @Hazimeh2022-hc. However, it is challenging to extend their approaches to accommodate additional constraints within the optimization problem. Despite the potential sluggishness of handling large instances with commercial MIP solvers, in our experiments, we use Gurobi to solve our problem in @eq-subset_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds for cases with $p > 1000$. This enables us to terminate the solver before reaching the global optimum and return a suboptimal solution instead. This strategy is motivated by our need to consider numerous parameter candidates, and the final solution will be validated against the training set, which prevents the utilization of a very poor estimate of $\boldsymbol{G}$.
 
 ### Intuitive method with $L_0$ regularization {#sec-intuitive}
 
-Instead of estimating the entire matrix $\boldsymbol{G}$ in @sec-subset, we leverage the MinT solution in @eq-mint to streamline the optimization problem under consideration. Specifically, we define $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \operatorname{diag}(\boldsymbol{z})$ is an $n \times n$ diagonal matrix, and $\boldsymbol{z}$ is an $n$-dimensional vector with elements either equal to 0 or 1. Taking the MinT solution in @eq-mint, we have $\bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}$. Given fixed $\boldsymbol{S}$ and estimation of $\boldsymbol{W}$, $\bar{\boldsymbol{G}}$ is entirely determined by $\boldsymbol{A}$. By this way, when the $j$th diagonal element of $\boldsymbol{A}$ equals zero, the $j$th column of $\bar{\boldsymbol{G}}$ becomes entirely composed of zeros. Therefore, the optimization problem can be reduced to an integer quadratic programming (IQP) problem in which all of the variables are restricted to be integers:
-
-$$
+Instead of estimating the entire matrix $\boldsymbol{G}$ in @sec-subset, we leverage the MinT solution in @eq-mint to streamline the optimization problem under consideration. Specifically, we define $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \operatorname{diag}(\boldsymbol{z})$ is an $n \times n$ diagonal matrix, and $\boldsymbol{z}$ is an $n$-dimensional vector with elements either equal to 0 or 1. Taking the MinT solution in @eq-mint, we have $\bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}$. Given fixed $\boldsymbol{S}$ and estimation of $\boldsymbol{W}$, $\bar{\boldsymbol{G}}$ is entirely determined by $\boldsymbol{A}$. By this way, when the $j$th diagonal element of $\boldsymbol{A}$ equals zero, the $j$th column of $\bar{\boldsymbol{G}}$ becomes entirely composed of zeros. Therefore, the optimization problem can be reduced to an integer quadratic programming (IQP) problem in which all of the variables are restricted to be integers: $$
 \begin{aligned}
-\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}_{T+h \mid T}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}_{T+h \mid T}\right) + \lambda_0 \sum_{j=1}^n \boldsymbol{A}_{jj} \\
+\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right) + \lambda_0 \sum_{j=1}^n \boldsymbol{A}_{jj} \\
 \text { s.t. } \quad & \bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1} \\
 & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I},
 \end{aligned}
@@ -311,110 +268,93 @@ where $\lambda_0 \geq 0$ controls the number of nonzero diagonal elements in $\b
 
 We should note that implementing grouped variable selection with this optimization problem can be challenging because it imposes restrictions on the parameter of interest ($\bar{\boldsymbol{G}}$) to ensure it adheres rigorously to the analytical solution of MinT while making the selection. Therefore, the resulting solution tends to be dense and may not have zero columns.
 
-To ensure the invertibility of $\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S}$ and make the problem compatible with Gurobi, we reformulate the problem as
-
-$$
+To ensure the invertibility of $\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S}$ and make the problem compatible with Gurobi, we reformulate the problem as $$
 \begin{aligned}
 \min _{\boldsymbol{A},\bar{\boldsymbol{G}},\boldsymbol{C},\check{\boldsymbol{e}},\boldsymbol{z}} \quad & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j \\
 \text { s.t. } \quad & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I} \\
-& \hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\bar{\boldsymbol{G}}) = \check{\boldsymbol{e}} \\
+& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\bar{\boldsymbol{G}}) = \check{\boldsymbol{e}} \\
 & \bar{\boldsymbol{G}}\boldsymbol{A}\boldsymbol{S} = \boldsymbol{I} \\
 & \bar{\boldsymbol{G}} = \boldsymbol{C}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1} \\
 & z_j \in\{0,1\}, \quad j \in[n].
 \end{aligned}
 $$ {#eq-intuitive_mip}
 
-**Parameter tuning.** Similarly to the setup in @sec-subset, we select the tuning parameter, $\lambda_0$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $\max\{h, s\}$ observations occurred prior to the forecast origin. Let $\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)$, and $\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}$, the collection of candidate values for $\lambda_0$ we consider is $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
+**Parameter tuning.** Similarly to the setup in @sec-subset, we select the tuning parameter, $\lambda_0$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $\max\{h, s\}$ observations occurred prior to the forecast origin. Let $\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)$, and $\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}$, the collection of candidate values for $\lambda_0$ we consider is $\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}$, where $\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
 
 **Computation details.** Following a setup akin to that in @sec-subset, we employ Gurobi to solve @eq-intuitive_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds for problems with $p > 1000$.
 
 ### Group lasso method {#sec-lasso}
 
-Lasso is another popular method for selection and estimation of parameters in the context of linear regression. @Yuan2006-mw introduced the group lasso method that can be used when there is a grouped structure among the variables. Here, we consider *a group lasso problem under the unbiasedness assumption* given by
-
-$$
+Lasso is another popular method for selection and estimation of parameters in the context of linear regression. @Yuan2006-mw introduced the group lasso method that can be used when there is a grouped structure among the variables. Here, we consider *a group lasso problem under the unbiasedness assumption* given by $$
 \begin{aligned}
-\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
-& + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
+\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
 \text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right),
 \end{aligned}
 $$ {#eq-lasso}
 
-where $\lambda \geq 0$ is a tuning parameter, $w_j \neq 0$ is the penalty weight assigned in $\boldsymbol{G}_{\cdot j}$ to make model more flexible, and the second term in the objective is the penalty function that is intermediate between the $L_1$-penalty that is used in the lasso and the $L_2$-penalty that is used in ridge regression. In the results that follow, we label the **Lasso** method differently based on various estimators for $\boldsymbol{W}$, referring to them as **OLS-lasso**, **WLSs-lasso**, **WLSv-lasso**, **MinT-lasso**, and **MinTs-lasso**, respectively.
+where $\lambda \geq 0$ is a tuning parameter, $w_j \neq 0$ is the penalty weight assigned in $\boldsymbol{G}_{\cdot j}$ to make model more flexible, and the second term in the objective is the penalty function that is intermediate between the $L_1$-penalty that is used in the lasso and the $L_2$-penalty that is used in ridge regression. In the results that follow, we label the **Lasso** method based on various estimators for $\boldsymbol{W}$, referring to them as **OLS-lasso**, **WLSs-lasso**, **WLSv-lasso**, **MinT-lasso**, and **MinTs-lasso**, respectively.
 
-Next, we present the second order cone programming (SOCP) formulation for the group lasso based estimators given by
-
-$$
+Next, we present the second order cone programming (SOCP) formulation for the group lasso based estimators given by $$
 \begin{aligned}
 \min _{\operatorname{vec}(\boldsymbol{G}), \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}_h^{-1}\check{\boldsymbol{e}} + \lambda \sum_{j=1}^n w_j c_j \\
 \text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
-& \hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
-& c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{2}}, \quad j \in[n].
+& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
+& c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n].
 \end{aligned}
 $$ {#eq-lasso_socp}
 
-@eq-lasso_socp includes additional auxiliary variables $c_j \in \mathbb{R}_{\geq 0}$, $j \in [n]$, and second order cone constraints, $c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{2}}$ for $j \in[n]$.
+@eq-lasso_socp includes additional auxiliary variables $c_j \in \mathbb{R}_{\geq 0}$, $j \in [n]$, and second order cone constraints, $c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}$ for $j \in[n]$.
 
 Compared to the previous two methods we proposed, the group lasso method is computationally friendlier. Nonetheless, @Hazimeh2023-ie demonstrated, both empirically and theoretically, that group $L_0$-regularized method exhibits advantages over its group lasso counterpart across a range of regimes. Group lasso can either be highly dense or possess non-zero coefficients that are overly shrunk. This issue becomes more pronounced when the groups are correlated with each other as group lasso tends to retain all correlated groups instead of seeking a more concise model.
 
-**Penalty weights and parameter tuning.** In the context of group lasso, the default choice for the penalty weight, $w_j$, is $\sqrt{p_j}$, where $p_j$ is the size of each group (in our case, $p_j = n_b$). In our experiment, we allocate different penalty weights to each group by considering $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$, which allows us to account for variations in scale across different levels in the hierarchy.
+**Penalty weights and parameter tuning.** In the context of group lasso, the default choice for the penalty weight, $w_j$, is $\sqrt{p_j}$, where $p_j$ is the size of each group (in our case, $p_j = n_b$). In our experiments, we allocate different penalty weights to each group using $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2$, which allows us to account for variations in scale across different time series in the structure.
 
-We compute the group lasso over $k+1$ values of the tuning parameter $\lambda$, and select the tuning parameter by optimizing the sum of squared reconciled forecast errors on a truncated training set, consisting only of $\max\{h, s\}$ observations occurred prior to the forecast origin. The collection of candidate values for $\lambda$ under consideration is $\{\lambda^{1},...,\lambda^{k}, 0\}$, where $\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j$, $\lambda^{k} = 0.0001\lambda^{1}$, and $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
+We compute the group lasso over $k+1$ values of the tuning parameter $\lambda$, and select the tuning parameter by optimizing the sum of squared reconciled forecast errors on a truncated training set, consisting only of $\max\{h, s\}$ observations occurred prior to the forecast origin. The collection of candidate values for $\lambda$ under consideration is $\{\lambda^{1},...,\lambda^{k}, 0\}$, where $\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j$, $\lambda^{k} = 0.0001\lambda^{1}$, and $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$.
 
-**Proposition 3.** *Ignoring the unbiasedness constraint, we define* $\lambda^{1}$ *as the smallest* $\lambda$ *value such that all predictors in the group lasso problem have zero coefficients. Then we have*
-
-$$
-\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j,
+**Proposition 3.** *Ignoring the unbiasedness constraint, we define* $\lambda^{1}$ *as the smallest* $\lambda$ *value such that all predictors in the group lasso problem have zero coefficients. Then we have* $$
+\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j,
 $$
 
-*where* $j^{*}$ *denotes the column index of* $\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}$ *that corresponds to the* $j$*th column of* $\boldsymbol{G}$*.*
+*where* $j^{*}$ *denotes the column index of* $\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}$ *that corresponds to the* $j$*th column of* $\boldsymbol{G}$*.*
 
-*Proof.* Denote $\boldsymbol{\beta} = \operatorname{vec}(\boldsymbol{G})$, and the first term in the objective of @eq-lasso as $L\left(\boldsymbol{\beta} \mid \boldsymbol{D}\right)$, where $\boldsymbol{D}$ is the working data $\{\hat{\boldsymbol{y}}_{T+h \mid T} , \hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\}$. Ignoring the unbiasedness constraint, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\boldsymbol{\beta}}^{1}=\boldsymbol{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have
-
-$$
+*Proof.* Denote $\boldsymbol{\beta} = \operatorname{vec}(\boldsymbol{G})$, and the first term in the objective of @eq-lasso as $L\left(\boldsymbol{\beta} \mid \boldsymbol{D}\right)$, where $\boldsymbol{D}$ is the working data $\{\hat{\boldsymbol{y}} , \hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\}$. Ignoring the unbiasedness constraint, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\boldsymbol{\beta}}^{1}=\boldsymbol{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have $$
 \begin{aligned}
 \lambda^{1} & = \max _{j=1, \ldots, n}\left\|\left[\nabla L\left(\hat{\boldsymbol{\beta}}^{1} \mid \mathbf{D}\right)\right]^{(j)}\right\|_2 / w_j \\
-& = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j.
+& = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j.
 \end{aligned}
 $$
 
-**Computation details.** Due to the incorporation of the unbiasedness constraint, we can not directly use some open-source packages designed for group lasso. Consequently, we employ Gurobi to solve the SOCP problem in @eq-lasso_socp, configuring it by setting OptimalityTol = $0.0001$.
+**Computation details.** Due to the incorporation of the unbiasedness constraint, we can not directly use some open-source packages designed for group lasso. Consequently, we employ Gurobi to solve the SOCP problem, configuring it by setting OptimalityTol = $0.0001$.
 
 ## Series selection method without unbiasedness constraint {#sec-unconstrained}
 
-In this section, we relax the unbiasedness constraint, $\boldsymbol{GS} = \boldsymbol{I}$, and introduce a reconciliation method with selection that relies on in-sample observations and fitted values. Let $\boldsymbol{Y} \in \mathbb{R}^{T \times n}$ denote a matrix comprising observations from all time series on the training set in the structure, and $\hat{\boldsymbol{Y}} \in \mathbb{R}^{T \times n}$ denote a matrix of in-sample one-step-ahead forecasts (i.e., fitted values) for all time series, where $T$ is the length of the training set. The proposed *empirical group lasso* method considers the optimization problem given by
-
-$$
+In this section, we relax the unbiasedness constraint, $\boldsymbol{GS} = \boldsymbol{I}$, and introduce a reconciliation method with selection that relies on in-sample observations and fitted values. Let $\boldsymbol{Y} \in \mathbb{R}^{T \times n}$ denote a matrix comprising observations from all time series on the training set in the structure, and $\hat{\boldsymbol{Y}} \in \mathbb{R}^{T \times n}$ denote a matrix of in-sample one-step-ahead forecasts (i.e., fitted values) for all time series. The proposed *empirical group lasso* method considers the optimization problem $$
 \min _{\boldsymbol{G}} \quad \frac{1}{2 T} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
 $$
 
-where $\left\| \cdot \right\|_F$ is the Frobenius norm, and $\lambda \geq 0$ is a tuning parameter, $w_j \neq 0$ is the penalty weight assigned in $\boldsymbol{G}_{\cdot j}$ to make a more flexible model. Following the work by @Ben_Taieb2019-be, using the fact that $\|\boldsymbol{X}\|_F^2 = \|\operatorname{vec}(X)\|_2^2$ and the useful formulation that $\operatorname{vec}(\boldsymbol{ABC}) = (\boldsymbol{C}^{\prime} \otimes \boldsymbol{A})\operatorname{vec}(\boldsymbol{B})$, we rewrite the problem as
-
-$$
-\min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2 N} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
+where $\lambda \geq 0$ is a tuning parameter, $w_j \neq 0$ is the penalty weight assigned in $\boldsymbol{G}_{\cdot j}$ to make a more flexible model. We rewrite the problem as $$
+\min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2 T} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
 $$
 
 which becomes a standard group lasso problem, with $\operatorname{vec}(\boldsymbol{Y})$ serving as the dependent variable and $\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}$ as the covariate matrix. We denote this as **Elasso** in the results that follow.
 
-Upon relaxing the unbiasedness constraint, the number of non-zero column entries in the solution for $\boldsymbol{G}$ may be less than the number of time series at the bottom level. This differs from the series selection methods with an unbiasedness constraint that we introduced in @sec-constrained. In an extreme scenario, it can happen that the solution takes the form of a top-down $\boldsymbol{G}_{TD}=[\boldsymbol{p} \mid \boldsymbol{O}_{n_b \times (n-1)}]$, where only the column corresponding to the top level (most aggregated level) retains non-zero values, and $\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})$ is a proportionality vector obtained based on in-sample reconciled forecast errors such that $\sum_{i=1}^{n_b} p_i=1$.
+Upon relaxing the unbiasedness constraint, the number of non-zero column entries in the solution for $\boldsymbol{G}$ may be less than the number of time series at the bottom level. This differs from the series selection methods with an unbiasedness constraint that we introduced in @sec-constrained. In an extreme scenario, it can happen that the solution takes the form of a top-down $\boldsymbol{G}_{TD}=[\boldsymbol{p} \mid \boldsymbol{O}_{n_b \times (n-1)}]$, where only the column corresponding to the top level (most aggregated level) retains non-zero values, and $\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})$ is a proportionality vector obtained based on in-sample reconciled forecast errors.
 
 We also explored the empirical version of group best-subset selection with ridge regularization and intuitive method with $L_0$ regularization in which we do not impose the unbiasedness constraint. It is worth mentioning that @Hazimeh2023-ie presented a new algorithmic framework for formulating the group $L_0$ problem with ridge regularization and provided the **L0Group** Python package for implementation. However, our experiments showed that this algorithm can not terminate within five hours for typical instances with $p \sim 10^4$. Therefore, in this paper, we only present the empirical group lasso method for series selection without unbiasedness constraint.
 
 **Penalty weights and parameter tuning.** Similarly to the setup in @sec-lasso, we assign different penalty weights to each group by setting $w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2$, where $\boldsymbol{G}^{\text{OLS}}$ is the solution obtained by the OLS estimator of $\boldsymbol{W}$. Given a fixed tuning parameter value, we solve the target optimization problem by considering the initial $T-T_v$ observations, where $T_v = \max\{h, s\}$ for seasonal time series and $T_v = \lfloor \frac{1}{10}T \rfloor$ for non-seasonal time series. Then we select the tuning parameter, $\lambda$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $T_v$ observations closest to the forecast origin. Specifically, we form the set of candidate values for $\lambda$ as $\{\lambda^{1},...,\lambda^{k}, 0\}$, where $\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\boldsymbol{Y})\right\|_2 / w_j$, $\lambda^{k} = 0.0001\lambda^{1}$, and $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$. Following the same derivation as in the proof of **Proposition 3**, $\lambda^{1}$ is the smallest $\lambda$ value such that all predictors in the empirical group lasso problem have zero coefficients, i.e., $\boldsymbol{G} = \boldsymbol{O}$. Note that we need to resolve the optimization problem based the whole training set by using the optimal tuning parameter to obtain the final solution.
 
-**Computation details.** While there are open-source packages available for solving a group lasso problem, they are still relatively slow when applied to large instance for practical usage. For example, given a specific value for the tuning parameter, $\lambda$, our experiments observed that, using the **gglasso** R package, we can not obtain a solution within five hours for typical instances with $p \sim 10^4$. Instead, we use Gurobi to solve the problem based on the SOCP formulation for the empirical group lasso. The formulation aligns with @eq-lasso_socp but omits the unbiasedness constraint.
+**Computation details.** While there are open-source packages available for solving a group lasso problem, they are still relatively slow when applied to large instance for practical usage. For example, given a specific value for the parameter, $\lambda$, our experiments observed that, using the **gglasso** R package, we can not obtain a solution within five hours for typical instances with $p \sim 10^4$. Instead, we use Gurobi to solve the problem based on the SOCP formulation for the empirical group lasso which aligns with @eq-lasso_socp but omits the unbiasedness constraint.
 
 # Monte Carlo simulations {#sec-simulations}
 
-To evaluate the performance of various reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. In both simulations, we consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. Specifically, the structure has four time series at the bottom level, and seven time series in total, i.e., $n_b = 4$, and $n = 7$. In addition, the bottom-level series are first generated and then summed appropriately to obtain aggregated time series at higher levels.
+To evaluate the performance of various reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. In both simulations, we consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. Specifically, the structure has four series at the bottom level, and seven series in total, i.e., $n_b = 4$, and $n = 7$. The bottom-level series are first generated and then summed appropriately to obtain aggregated series at higher levels.
 
-In particular, @sec-sim1 delves into a setup where the bottom-level series are generated using a structural time series model, but model misspecification exists for some series within the hierarchical structure. In @sec-sim2, we explore the impact of correlation between series on the performance of reconciled forecasts.
+@sec-sim1 considers a setup where the bottom-level series are generated using a structural time series model, but model misspecification exists for some series within the structure. @sec-sim2 explores the impact of correlation between series on the performance of reconciled forecasts.
 
 ## Setup 1: Exploring the effect of model misspecification {#sec-sim1}
 
-In this simulation design, we follow a simulation setup similar to @Wickramasuriya2019-fc, assuming that the bottom-level time series are generated using the basic structural time series model
-
-$$
+In this simulation design, we follow a simulation setup similar to @Wickramasuriya2019-fc, assuming that the bottom-level time series are generated using the basic structural time series model $$
 \boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t,
 $$
 
@@ -428,9 +368,7 @@ $$
 \end{aligned}
 $$
 
-where $\boldsymbol{\varrho}_t$, $\boldsymbol{\zeta}_t$, and $\boldsymbol{\omega}_t$ are error terms independent of each other and over time. The error term $\boldsymbol{\eta}_t$ is generated independently from an $\text{ARIMA}(p,0,q)$ process, where $p$ and $q$ take values of $0$ or $1$ with equal probability. The coefficients for the AR and MA components in the ARIMA process are sampled randomly from a uniform distribution within the range $[0.5, 0.7]$, and the contemporaneous error covariance matrix is given by
-
-$$
+where $\boldsymbol{\varrho}_t$, $\boldsymbol{\zeta}_t$, and $\boldsymbol{\omega}_t$ are error terms independent of each other and over time. The error term $\boldsymbol{\eta}_t$ is generated independently from an $\text{ARIMA}(p,0,q)$ process, where $p$ and $q$ take values of $0$ or $1$ with equal probability. The coefficients for the AR and MA components in the ARIMA process are sampled randomly from a uniform distribution within the range $[0.5, 0.7]$, and the contemporaneous error covariance matrix is given by $$
 \left[\begin{array}{llll}
 5 & 3 & 2 & 1 \\
 3 & 4 & 2 & 1 \\
@@ -460,30 +398,6 @@ latex_table(rmse_s1)
 ```
 
 ```{r}
-#| label: tbl-s2-rmse
-#| echo: false
-#| message: false
-#| warning: false
-#| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario II, Setup 1.
-
-rmse_s2 <- readRDS("results/sim_rmse_s2.rds")
-latex_table(rmse_s2)
-```
-
-```{r}
-#| label: tbl-s3-rmse
-#| echo: false
-#| message: false
-#| warning: false
-#| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario III, Setup 1.
-
-rmse_s3 <- readRDS("results/sim_rmse_s3.rds")
-latex_table(rmse_s3)
-```
-
-```{r}
 #| label: tbl-s1-selection
 #| echo: false
 #| message: false
@@ -495,28 +409,6 @@ selection_sim <- readRDS("results/sim_selection.rds")
 latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n, "s1")
 ```
 
-```{r}
-#| label: tbl-s2-selection
-#| echo: false
-#| message: false
-#| warning: false
-#| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario II, Setup 1.
-
-latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n, "s2")
-```
-
-```{r}
-#| label: tbl-s3-selection
-#| echo: false
-#| message: false
-#| warning: false
-#| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario III, Setup 1.
-
-latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n, "s3")
-```
-
 Focusing on the results of the benchmark reconciliation methods, we find that the BU approach performs the best in both Scenario II and III but ranks as the worst overall in Scenario I. This is not surprising, as bottom-level base forecasts are deteriorated in Scenario I, while higher-level base forecasts are deteriorated in Scenario II and III. Moreover, the WLSv, MinT, and MinTs approaches perform especially well in this simulation design, benefiting from their ability to consider the in-sample covariance of base forecast errors, allowing for larger range of adjustments in reconciliation for base forecasts with higher estimated error variance. EMinT also provides accurate reconciled forecasts in our setup, where the in-sample forecasts for specific series are intentionally undermined, a situation that can be detected by the in-sample information based EMinT method. However, OLS and WLSs perform much worse than other benchmark methods in this simulation design.
 
 In all three scenarios, our proposed methods consistently produce either improved or comparable reconciled forecasts compared to their respective benchmark methods. The improvements are particularly pronounced when using OLS and WLSs estimators of $\boldsymbol{W}$, which do not take into account the in-sample covariance of base forecast errors. One advantage of using the forecast reconciliation methods with selection proposed in this paper is that they can reduce the difference introduced by using different estimates of $\boldsymbol{W}$, thereby mitigating the risk of estimator selection. In some cases, such as Scenarios II and III, we can align the forecast accuracy achieved using different estimators, and make them close to the best results we can obtain. When we drop the unbiasedness assumption, Elasso delivers results on par with EMinT overall, while achieving improvements at the top level, which is typically the aspect of greatest concern to practitioners.
@@ -525,18 +417,14 @@ In addition, we report the proportion of time series being selected from the imp
 
 ## Setup 2: Exploring the effect of correlation {#sec-sim2}
 
-We now consider to simulate a hierarchical structure with correlated series. A similar simulation to @Wickramasuriya2021-am is implemented in this section. Using the same hierarchical structure as shown in @fig-hts, we assume the data generating process for the time series at the bottom level follows a stationary first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by
-
-$$
+We now consider to simulate a hierarchical structure with correlated series. A similar simulation to @Wickramasuriya2021-am is implemented in this section. Using the same hierarchical structure as shown in @fig-hts, we assume the data generating process for the time series at the bottom level follows a stationary first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by $$
 \boldsymbol{b}_t= \boldsymbol{c} + \left[\begin{array}{cc}
 \boldsymbol{A}_1 & \boldsymbol{0} \\
 \boldsymbol{0} & \boldsymbol{A}_2
 \end{array}\right] \boldsymbol{b}_{t-1} + \boldsymbol{\varepsilon}_t,
 $$
 
-where $\boldsymbol{c}$ is a constant vector with all entries set to $1$, $\boldsymbol{A}_1$ and $\boldsymbol{A}_2$ are $2 \times 2$ matrices with eigenvalues $z_{1,2}=0.6[\cos (\pi / 3) \pm i \sin (\pi / 3)]$ and $z_{3,4}=0.9[\cos (\pi / 6) \pm i \sin (\pi / 6)]$, respectively, and $\boldsymbol{\varepsilon}_t \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{\Sigma})$, where
-
-$$
+where $\boldsymbol{c}$ is a constant vector with all entries set to $1$, $\boldsymbol{A}_1$ and $\boldsymbol{A}_2$ are $2 \times 2$ matrices with eigenvalues $z_{1,2}=0.6[\cos (\pi / 3) \pm i \sin (\pi / 3)]$ and $z_{3,4}=0.9[\cos (\pi / 6) \pm i \sin (\pi / 6)]$, respectively, and $\boldsymbol{\varepsilon}_t \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{\Sigma})$, where $$
 \boldsymbol{\Sigma}=\left[\begin{array}{cc}
 \boldsymbol{\Sigma}_1 & 0 \\0 & \boldsymbol{\Sigma}_2
 \end{array}\right], \text { and } \boldsymbol{\Sigma}_1=\boldsymbol{\Sigma}_2=\left[\begin{array}{cc}2 & \sqrt{6} \rho \\\sqrt{6} \rho & 3\end{array}\right],
@@ -546,7 +434,7 @@ and $\rho \in \{0, \pm 0.2, \pm 0.4, \pm 0.6, \pm 0.8\}$ controls the error corr
 
 For each time series at the bottom level, we generate a total of $101$ observations, with the last one observation serving as the test set, i.e., $T=100$ and $h=1$. Once again, the data at the higher levels are obtained by aggreating the bottom-level series. The process is repeated $500$ times for each candidate correlation, $\rho$.
 
-For each series in the hierarchy, base forecasts are generated from ARMA models based on a training data comprising $100$ observations. Specifically, we identify the best ARMA model with the minimum AICc (corrected Akaike information criterion) value for each series by using the automated algorithm implemented in the **forecast** R package. Additionally, when fitting ARMA models for time series Total, A, and BA, we introduce a slight bias by omitting the constant term, which is a common scenario in practice. @fig-corr-data presents an illustrative example of a hierarchical time series simulated. The left panels depict time plots for each series at different levels of the structure, while right panels show the residuals obtained from forecasting each series using the fitted ARMA model. Notably, despite our omission of the constant term when fitting ARMA models to series Total, A, and BA, the residuals derived from the identified optimal models still exhibit fluctuations around zero and do not display significant deviations in comparison to the residuals from other series. This is because the influence of the constant term is minimal, i.e., it is much smaller compared to the data variability. Thus, it may be challenging to identify the "bad" base forecasts and exclude them from reconciliation in this setup.
+For each series in the hierarchy, base forecasts are generated from ARMA models based on a training data comprising $100$ observations. Specifically, we identify the best ARMA model with the minimum AICc (corrected Akaike information criterion) value for each series by using the automated algorithm implemented in the **forecast** R package. Additionally, when fitting ARMA models for time series Total, A, and BA, we introduce a slight bias by omitting the constant term, which is a common scenario in practice. @fig-corr-data presents an illustrative example of a hierarchical time series simulated. The left panels depict time plots for each series at different levels of the structure, while right panels show the residuals obtained from forecasting each series using the fitted ARMA model. Notably, despite our omission of the constant term when fitting ARMA models to series Total, A, and BA, the residuals derived from the identified optimal models still exhibit fluctuations around zero and do not display significant deviations in comparison to the residuals from other series. This is because the influence of the constant term is minimal, i.e., it is much smaller compared to the data variability. Thus, it may be challenging to identify the "poor" base forecasts and exclude them from reconciliation in this setup.
 
 ```{r}
 #| label: fig-corr-data
@@ -645,7 +533,7 @@ p23 <- resid |>
 (p11 + p21) / (p12 + p22) / (p13 + p23)
 ```
 
-@tbl-corr-rmse summarizes the average RMSE of the base forecasts across various error correlations and the percentage relative improvements in RMSE achieved by reconciliation methods relative to the base forecasts. The results show that, for OLS, WLSs, WLSv estimators, our proposed methods consistently dominate their respective benchmark methods at all levels when the error correlation is $-0.8$. In general, as the error correlation ranges from $-0.8$ to $0.8$, the overall improvements in our methods over the benchmark methods show a slight decrease. Similar pattern is observed in the overall improvements of all benchmark reconciliation methods compared to the base forecasts. Of the methods we propose, the Subset methods display more consistently stable improvements overall. We should highlight the challenge of identifying the "bad" base forecasts in this simulation design, given that the omission of the constant term has minimal impact relative to the data variability. In addition, we observe that the MinT and MinTs methods perform especially well and our methods provide results same with benchmark methods. This is attributed to the use of in-sample covariance by MinT and MinTs, which allows for large adjustments in reconciliation for base forecasts with high estimated error variance. Elasso forecasts are slightly worse than EMinT, possibly due to the difficulty of identifying underperforming base forecasts in this simulation setup.
+@tbl-corr-rmse summarizes the average RMSE of the base forecasts across various error correlations and the percentage relative improvements in RMSE achieved by reconciliation methods relative to the base forecasts. The results show that, for OLS, WLSs, WLSv estimators, our proposed methods consistently dominate their respective benchmark methods at all levels when the error correlation is $-0.8$. In general, as the error correlation ranges from $-0.8$ to $0.8$, the overall improvements in our methods over the benchmark methods show a slight decrease. Similar pattern is observed in the overall improvements of all benchmark reconciliation methods compared to the base forecasts. Of the methods we propose, the Subset methods display more consistently stable improvements overall. We should highlight the challenge of identifying the "poor" base forecasts in this simulation design, given that the omission of the constant term has minimal impact relative to the data variability. In addition, we observe that the MinT and MinTs methods perform especially well and our methods provide results same with benchmark methods. This is attributed to the use of in-sample covariance by MinT and MinTs, which allows for large adjustments in reconciliation for base forecasts with high estimated error variance. Elasso forecasts are slightly worse than EMinT, possibly due to the difficulty of identifying underperforming base forecasts in this simulation setup.
 
 We have also considered alternative error correlation values, $\rho = -0.6, -0.2, 0.2, 0.4$, for this simulation setting, but to save space, we do not present all results. The omitted results follow a similar pattern and are available upon request.
 
@@ -675,20 +563,6 @@ selection_corr_neg <- readRDS("results/corr_selection_neg.rds")
 latex_sim_nos_table(selection_corr_neg$out_s0$z,
                     selection_corr_neg$out_s0$n,
                     "corr_neg")
-```
-
-```{r}
-#| label: tbl-corr-selection-pos
-#| echo: false
-#| message: false
-#| warning: false
-#| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being 0.8.
-
-selection_corr_pos <- readRDS("results/corr_selection_pos.rds")
-latex_sim_nos_table(selection_corr_pos$out_s0$z,
-                    selection_corr_pos$out_s0$n,
-                    "corr_pos")
 ```
 
 # Applications {#sec-applications}
@@ -760,7 +634,7 @@ p3 <- labour_ts |>
 p1 / (p2 + p3)
 ```
 
-We assess the forecast accuracy of base forecasts and various reconciliation methods through a rolling forecast origin approach. Our aim is to generate $1$- to $12$-steps-ahead forecasts for each of the $63$ series while ensuring coherence. Given the limited data compared to the forecast horizon, we initiate the process with a training set of $139$ observations for each series. The training set is used to select the optimal ETS model with the automatic algorithm implemented in the **forecast** package for R. Using these fitted ETS models, we generate base forecasts, and then perform diverse forecast reconciliation methods. Following this, we roll the forecast origin forward by one month and repeat the process until July 2022. We note that it may be challenging to identify the series with "bad" forecasts due to structural changes in the data caused by the COVID-19 pandemic, which affect the accuracy of forecasts across all time series.
+We assess the forecast accuracy of base forecasts and various reconciliation methods through a rolling forecast origin approach. Our aim is to generate $1$- to $12$-steps-ahead forecasts for each of the $63$ series while ensuring coherence. Given the limited data compared to the forecast horizon, we initiate the process with a training set of $139$ observations for each series. The training set is used to select the optimal ETS model with the automatic algorithm implemented in the **forecast** package for R. Using these fitted ETS models, we generate base forecasts, and then perform diverse forecast reconciliation methods. Following this, we roll the forecast origin forward by one month and repeat the process until July 2022. We note that it may be challenging to identify the series with "poor" forecasts due to structural changes in the data caused by the COVID-19 pandemic, which affect the accuracy of forecasts across all time series.
 
 The average results are presented in @tbl-labour-rmse-avg. The Subset methods using different estimators of $\boldsymbol{G}$ generally improve forecast accuracy over their respective benchmark methods overall, particularly when focusing on aggregation levels, which are typically of paramount concern to practitioners. The only one exception is the WLSs-subset method, which returns reduced accuracy for longer horizons overall. However, it still demonstrates improvements in top-level forecasts, and other levels remains within a reasonable range. Moreover, the Intuitive and Lasso methods almost always yield results identical to the corresponding benchmark methods. This is because they tend to provide dense estimates, and ETS models typically do not result in extremely poor forecasts. The only exception is OLS-intuitive, which shows improved forecast accuracy at the top level but deterioration at other levels. When we drop the unbiasedness assumption, EMinT is the worst performing method across all levels because it relies on the assumption that the series in the hierarchy are jointly weakly stationary, which is evidently not the case in the application. Elasso significantly improves the quality of forecasts over EMinT, with the most accurate coherent forecasts observed at the top level and STT level. Overall, Elasso performs well for longer forecast horizons, but it is less effective for one-step-ahead forecasts.
 
@@ -956,4 +830,81 @@ The simulation experiments and two empirical applications demonstrated the super
 
 A remarkable feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue within the field of forecast reconciliation research.
 
-\textbf{\large{Acknowledgement}}
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+```{=tex}
+\newpage
+\appendix
+\setcounter{section}{0}
+\renewcommand{\thesection}{\Alph{section}}
+\renewcommand{\thefigure}{A\arabic{figure}}
+\renewcommand{\thetable}{A\arabic{table}}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+```
+# Appendix {.unnumbered}
+
+AAA
+
+```{r}
+#| label: tbl-s2-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario II, Setup 1.
+
+rmse_s2 <- readRDS("results/sim_rmse_s2.rds")
+latex_table(rmse_s2)
+```
+
+```{r}
+#| label: tbl-s3-rmse
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario III, Setup 1.
+
+rmse_s3 <- readRDS("results/sim_rmse_s3.rds")
+latex_table(rmse_s3)
+```
+
+```{r}
+#| label: tbl-s2-selection
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario II, Setup 1.
+
+latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n, "s2")
+```
+
+```{r}
+#| label: tbl-s3-selection
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario III, Setup 1.
+
+latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n, "s3")
+```
+
+```{r}
+#| label: tbl-corr-selection-pos
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being 0.8.
+
+selection_corr_pos <- readRDS("results/corr_selection_pos.rds")
+latex_sim_nos_table(selection_corr_pos$out_s0$z,
+                    selection_corr_pos$out_s0$n,
+                    "corr_pos")
+```

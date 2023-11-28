@@ -353,10 +353,12 @@ Monash University, VIC 3145, Australia\newline
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
 \makeatletter
-\@ifpackageloaded{tcolorbox}{}{\usepackage[many]{tcolorbox}}
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
 \makeatother
 \makeatletter
 \@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
+\makeatother
+\makeatletter
 \makeatother
 \makeatletter
 \makeatother
@@ -370,14 +372,14 @@ Monash University, VIC 3145, Australia\newline
 Forecast reconciliation ensures forecasts of time series in a hierarchy
 adhere to aggregation constraints, enabling aligned decision making.
 While forecast reconciliation can improve overall forecast accuracy in
-hierarchical structures, the most substantial improvements occur in
-series with initially poor base forecasts, and some series may still
-experience a deterioration in reconciled forecasts. However, in
-practice, some series in a hierarchy often have poor base forecasts due
+hierarchical or grouped structures, the most substantial improvements
+occur in series with initially poor base forecasts, and some series may
+still experience a deterioration in reconciled forecasts. However, in
+practice, some series in a structure often have poor base forecasts due
 to model misspecification or low forecastability. To address this, we
 propose two categories of forecast reconciliation methods that
 incorporate time series selection based on out-of-sample and in-sample
-information, respectively. Our methods keep ``bad'' base forecasts of
+information, respectively. Our methods keep ``poor'' base forecasts of
 some series unused in forming reconciled forecasts, preventing their
 negative influence on the reconciled forecasts. This process adjusts the
 weights allocated to the remaining series accordingly when generating
@@ -395,31 +397,32 @@ Coherent, Hierarchical time series, Grouped time series, Linear forecast
 reconciliation, Optimization problem
 \end{keywords}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, interior hidden, borderline west={3pt}{0pt}{shadecolor}, enhanced, breakable, boxrule=0pt, sharp corners]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, borderline west={3pt}{0pt}{shadecolor}, breakable, frame hidden, boxrule=0pt, sharp corners, enhanced]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
 
 Hierarchical time series are characterized as a set of time series
-organized in a hierarchical aggregation structure, while grouped time
-series arise when attributes of interest are crossed rather than nested
-in the aggregation structure \autocite{Hyndman2016-cz}. For example,
-unemployment data is a crucial social and economic indicator. The
-analysis of the number of unemployment persons in a country is crucial
-for informed policymaking and economic research. It is also valuable to
-examine attributes such as labour market region and the length of time
-that unemployed people have been looking for work. Such a disaggregation
+organized in a unique hierarchical aggregation structure, while grouped
+time series arise when attributes of interest are crossed rather than
+nested in the aggregation structure \autocite{Hyndman2016-cz}. For
+example, unemployment data is a crucial social and economic indicator
+and is a natural example of a grouped time series. The analysis of the
+number of unemployment persons in a country is crucial for informed
+policymaking and economic research. It is also valuable to examine
+attributes such as labour market region and the length of time that
+unemployed people have been looking for work. Such a disaggregation
 allows us to identify regional disparities, and comprehend the
 structural nuances underlying unemployment. Forecasts of time series in
-such a hierarchical structure should adhere to some known aggregation
-constraints to maintain coherence, which is a vital aspect for aligned
-decision making.
+such a hierarchical or grouped structure should adhere to some known
+aggregation constraints to maintain coherence, which is a vital aspect
+for aligned decision making.
 
 Earlier studies perform forecast reconciliation by focusing only on a
-single hierarchy level, subsequently aggregating or disaggregating their
-forecasts to produce coherent forecasts for other levels of the
-structure. These single-level methods typically fall into three
-categories, namely bottom-up \autocite{Dunn1976-op}, top-down
+single level of the structure, subsequently aggregating or
+disaggregating their forecasts to produce coherent forecasts for other
+levels of the structure. These single-level methods typically fall into
+three categories, namely bottom-up \autocite{Dunn1976-op}, top-down
 \autocite{Gross1990-lg}, and middle-out
 \autocite{Athanasopoulos2009-ps}. However, these methods only use
 information from a single level while overlooking valuable insights
@@ -428,49 +431,53 @@ structure.
 
 To overcome these limitations, \textcite{Hyndman2011-sd} introduced a
 reconciliation approach using a linear regression model based on
-forecasts from all series within a hierarchy, resulting in a generalized
-least squares (GLS) solution. This method initially generates
-independent base forecasts for all series in a hierarchical structure
-and subsequently adjusts these forecasts to make them coherent.
-Following this work, further research has led to the modifications of
-the least squares-based reconciliation method in various frameworks,
-including cross-sectional hierarchy
+forecasts from all series within a given structure, resulting in a
+generalized least squares (GLS) solution. This method initially
+generates independent base forecasts for all series in the structure and
+subsequently adjusts these forecasts to make them coherent. Following
+this work, further research has led to the modifications of the least
+squares-based reconciliation method in various frameworks, including
+cross-sectional data
 \autocite{Hyndman2016-cz,Wickramasuriya2019-fc,Panagiotelis2021-mf},
-temporal hierarchy \autocite{Athanasopoulos2017-jj,Nystrup2020-di}, and
-cross-temporal hierarchy \autocite{Di_Fonzo2023-vo}. In particular,
-assuming unbiased base forecasts, \textcite{Wickramasuriya2019-fc}
-proposed the minimum trace method, which formulates the reconciliation
-problem as minimizing the trace of the covariance matrix of reconciled
-forecast error. These reconciliation approaches have been demonstrated
-to produce coherent and potentially more accurate forecasts compared to
+temporal data \autocite{Athanasopoulos2017-jj,Nystrup2020-di}, and
+cross-temporal data \autocite{Di_Fonzo2023-vo}. In particular, assuming
+unbiased base forecasts, \textcite{Wickramasuriya2019-fc} proposed the
+minimum trace method, which formulates the reconciliation problem as
+minimizing the trace of the covariance matrix of reconciled forecast
+errors. These reconciliation approaches have been demonstrated to
+produce coherent and potentially more accurate forecasts compared to
 traditional single-level methods in various empirical applications
 \autocites[see, for
 example,][]{Taieb2021-tc,Panagiotelis2021-mf,Wickramasuriya2023-hn}.
 Additionally, \textcite{Van_Erven2015-ir},
-\textcite{Wickramasuriya2019-fc}, and \textcite{Panagiotelis2021-mf}
-provided theoretical insights into the performance of forecast
-reconciliation methods. For a comprehensive introduction of various
-forecast reconciliation methods, refer to a recent review by
-\textcite{Athanasopoulos2023-sm}.
+\textcite{Wickramasuriya2019-fc}, \textcite{Panagiotelis2021-mf}, and
+\textcite{Wickramasuriya2021-am} provided theoretical insights into the
+performance of forecast reconciliation methods. Please refer to
+\textcite{Athanasopoulos2023-sm} for a comprehensive introduction of
+various forecast reconciliation methods.
 
-Although reconciliation is well recognized for its ability to improve
-overall forecast accuracy in hierarchical structures, it is important to
-acknowledge that reconciled forecasts for some series in the hierarchy
-may experience deterioration. As demonstrated by
-\textcite{Athanasopoulos2017-jj}, most of the improvements attributed to
-reconciliation are observed in series with initially poor-performing
-base forecasts. Thus, they suggested that the ideal solution would be to
-combine the most accurate aspects of base forecasts from each level,
-aiming to avoid a myopic view from a single level. In practice, it is
-not uncommon for some series in a hierarchy to exhibit poor performance
-in their base forecasts due to inherent challenges that are difficult to
-completely mitigate in real-world situations. These challenges may
-include model misspecification or low forecastability resulting from the
-absence of discernible patterns. In such cases, it becomes crucial to
-exclude ``bad'' base forecasts of some series in a hierarchy when
-performing reconciliation, thereby preventing their negative influence
-on the reconciled forecasts. This forms the primary objective of this
-paper.
+Reconciliation is well recognized for its ability to improve overall
+forecast accuracy in structures with aggregation constraints.
+Theoretically, the mean squared reconciled forecast error from the
+minimum trace (MinT) reconciliation method for each series in the
+structure is lower than that of OLS and base forecasts
+\autocite{Wickramasuriya2021-am}. However, it is important to
+acknowledge that reconciled forecasts for some series in the structure
+may experience deterioration in its forecasting performance. As
+demonstrated by \textcite{Athanasopoulos2017-jj}, most of the
+improvements attributed to reconciliation are observed in series with
+initially poor-performing base forecasts. Thus, they suggested that the
+ideal solution would be to combine the most accurate aspects of base
+forecasts from each level, aiming to avoid a myopic view from a single
+level. In practice, it is not uncommon for some series in a structure to
+exhibit poor performance in their base forecasts due to inherent
+challenges that are difficult to completely mitigate in real-world
+situations. These challenges may include model misspecification or low
+forecastability resulting from the absence of discernible patterns (low
+signal-to-noise ratio). In such cases, it becomes crucial to exclude
+``poor'' base forecasts of some series in a hierarchy when performing
+reconciliation, thereby preventing their negative influence on the
+reconciled forecasts. This forms the primary objective of this paper.
 
 This paper addresses a few gaps in the field of forecast reconciliation.
 First, we propose forecast reconciliation methods that incorporate time
@@ -483,18 +490,18 @@ series is at least equal to the number of series at the bottom level,
 and we can reconstruct the full hierarchical structure by
 aggregating/disaggregating the selected series. Second, we relax the
 unbiasedness assumption and introduce another reconciliation method with
-selection, utilizing in-sample observations and fitted values. This
-allows us to use the in-sample reconciliation performance for selection
-purposes. In this case, it may happen that less than the number of
-series at the bottom level are used for reconciliation. Third, we carry
-out simulation experiments and two empirical applications, showing that
-our proposed methods guarantee coherent forecasts that outperform or, at
-the very least, match their respective benchmark methods. The
+selection, utilizing in-sample observations and their fitted values.
+This allows us to use the in-sample reconciliation performance for
+selection purposes. In this case, it may happen that less than the
+number of series at the bottom level are used for reconciliation. We
+carry out simulation experiments and two empirical applications, showing
+that our proposed methods guarantee coherent forecasts that outperform
+or, at the very least, match their respective benchmark methods. The
 improvements are particularly pronounced when focusing on aggregation
-levels, longer forecast horizons, and addressing model misspecification.
-Finally, a remarkable feature of the proposed methods is their ability
-to reduce the disparities arising from using different estimates of the
-base forecast error covariance matrix, thereby mitigating the challenges
+levels, longer forecast horizons, and model misspecification. A
+remarkable feature of the proposed methods is their ability to reduce
+the disparities arising from using different estimates of the base
+forecast error covariance matrix, thereby mitigating the challenges
 associated with estimator selection, which is a prominent issue in the
 field of forecast reconciliation research.
 
@@ -514,23 +521,21 @@ code for reproducing the results is available at LINK.
 \hypertarget{notation}{%
 \subsection{Notation}\label{notation}}
 
-We denote the set \(\{1,\ldots,k\}\) by \([k]\) for any non-negative
-integer \(k\). A \emph{hierarchical time series} can be considered as an
-\(n\)-dimensional multivariate time series,
-\(\{\boldsymbol{y}_t, t \in [T]\}\), that adheres to known linear
+We denote the set \(\{1,\ldots,k\}\) by \([k]\) for any positive integer
+\(k\). A \emph{hierarchical time series} can be considered as an
+\(n\)-dimensional multivariate time series that adheres to known linear
 constraints. Let \(\boldsymbol{y}_t \in \mathbb{R}^n\) be a vector
 comprising observations of all time series in the hierarchy at time
 \(t\), and \(\boldsymbol{b}_t \in \mathbb{R}^{n_b}\) be a vector
 comprising observations of all bottom-level time series at time \(t\).
-The full hierarchy at time \(t\) can be written as
-
-\[
+The full hierarchy at time \(t\) can be written as \[
 \boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t,
 \]
 
-where \(\boldsymbol{S}\) is an \(n \times n_b\) \emph{summing matrix}
-that shows aggregation constraints present in the structure. We can
-write the summing matrix as
+for \(t=1,2,\ldots,T\), where \(T\) is the length of the time series,
+and \(\boldsymbol{S}\) is an \(n \times n_b\) \emph{summing matrix} that
+shows aggregation constraints present in the structure. We can write the
+summing matrix as
 \(\boldsymbol{S} = \left[\begin{array}{c}\boldsymbol{A} \\ \boldsymbol{I}_{n_b}\end{array}\right]\),
 where \(\boldsymbol{A}\) is an \(n_a \times n_b\) \emph{aggregation
 matrix} with \(n = n_a + n_b\), and \(\boldsymbol{I}_{n_b}\) is an
@@ -552,9 +557,7 @@ in Figure~\ref{fig-hts}. For this two-level hierarchy, we have
 \(n = 7\), \(n_b = 4\), \(n_a = 3\),
 \(\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}\),
 \(\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}\),
-and
-
-\[
+and \[
 \boldsymbol{S} = \left[
 \begin{array}{cccc}
 1 & 1 & 1 & 1 \\
@@ -563,39 +566,12 @@ and
 \multicolumn{4}{c}{\boldsymbol{I}_4}
 \end{array}\right].
 \]
-
-\begin{figure}
-
-{\centering \includegraphics[width=0.8\textwidth,height=\textheight]{figs/gts_example.pdf}
-
-}
-
-\caption{\label{fig-gts}An example of a two level grouped time series.}
-
-\end{figure}
 
 When data structure does not naturally disaggregate in a unique
 hierarchical manner, we can combine these hierarchical structures to
 form a \emph{grouped time series}. Thus, grouped time series can also be
 considered as hierarchical time series with more than one grouping
-structure. Figure~\ref{fig-gts} shows an example of a two-level grouped
-time series with two alternative aggregation structures. For this
-example, \(n = 9\), \(n_b = 4\), \(n_a = 5\),
-\(\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{X},t}, y_{\text{Y},t}, y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}\),
-\(\boldsymbol{b}_t = [y_{\text{AX},t}, y_{\text{AY},t}, y_{\text{BX},t}, y_{\text{BY},t}]^{\prime}\),
-and
-
-\[
-\boldsymbol{S} = \left[
-\begin{array}{cccc}
-1 & 1 & 1 & 1 \\
-1 & 1 & 0 & 0 \\
-0 & 0 & 1 & 1 \\
-1 & 0 & 1 & 0 \\
-0 & 1 & 0 & 1 \\
-\multicolumn{4}{c}{\boldsymbol{I}_4}
-\end{array}\right].
-\]
+structure. Please refer to \textcite{Hyndman2021-fo} on further details.
 
 \hypertarget{linear-forecast-reconciliation}{%
 \subsection{Linear forecast
@@ -603,25 +579,24 @@ reconciliation}\label{linear-forecast-reconciliation}}
 
 Let \(\hat{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n\) be a vector
 of \(h\)-step-ahead \emph{base forecasts} for all time series in the
-hierarchy, given observations up to time \(T\), and stacked in the same
-order as \(\boldsymbol{y}_t\). We can use any method to generate these
-forecasts, but in general they will not add up especially when we
-forecast each series independently.
+structure, given observations up to and including time \(T\), and
+stacked in the same order as \(\boldsymbol{y}_t\). We can use any method
+to generate these forecasts, but in general they will not add up
+especially when we forecast each series independently.
 
-When forecasting hierarchical time series, we expect the forecasts to be
-\emph{coherent} (i.e., aggregation constraints are satisfied). Let
-\(\tilde{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n\) denote a vector
-of \(h\)-step-ahead \emph{reconciled forecasts} which are coherent by
-construction, \(\psi\) a \emph{mapping} that reconciles base forecasts,
-\(\hat{\boldsymbol{y}}_{T+h \mid T}\). Then we have \emph{forecast
-reconciliation}
+When forecasting these time series structure, we expect the forecasts to
+be \emph{coherent} (i.e., aggregation constraints of the data are
+satisfied). Let \(\tilde{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n\)
+denote a vector of \(h\)-step-ahead \emph{reconciled forecasts} which
+are coherent by construction, \(\psi\) a \emph{mapping} that reconciles
+base forecasts, \(\hat{\boldsymbol{y}}_{T+h \mid T}\). Then we have
+\emph{forecast reconciliation}
 \(\tilde{\boldsymbol{y}}_{T+h \mid T}=\psi(\hat{\boldsymbol{y}}_{T+h \mid T})\),
 which is essentially a post-processing method. In this paper, we focus
 on linear forecast reconciliation given by
-
-\[
+\begin{equation}\protect\hypertarget{eq-lr}{}{
 \tilde{\boldsymbol{y}}_{T+h \mid T} = \boldsymbol{S}\boldsymbol{G}_h\hat{\boldsymbol{y}}_{T+h \mid T},
-\]
+}\label{eq-lr}\end{equation}
 
 where
 
@@ -629,41 +604,37 @@ where
 \tightlist
 \item
   \(\boldsymbol{G}_h\) is an \(n_b \times n\) weighting matrix that maps
-  the base forecasts into the bottom level. In other words, it combines
-  all base forecasts to form reconciled forecasts for bottom-level
-  series.
+  base forecasts into the bottom level. In other words, it combines all
+  base forecasts to form reconciled forecasts for bottom-level series.
 \item
   \(\boldsymbol{S}\) is an \(n \times n_b\) summing matrix that sums up
   bottom-level reconciled forecasts to produce coherent forecasts of all
-  levels. It identifies the linear constraints involved in a given
-  hierarchy.
+  levels. It identifies the linear constraints in a given structure.
 \end{itemize}
 
 \hypertarget{minimum-trace-reconciliation}{%
 \subsubsection{Minimum trace
 reconciliation}\label{minimum-trace-reconciliation}}
 
-Let the \(h\)-step-ahead \emph{base forecast errors} be defined as
-\(\hat{\boldsymbol{e}}_{T+h \mid T} = \boldsymbol{y}_{T+h} - \hat{\boldsymbol{y}}_{T+h \mid T}\),
+Let the \(h\)-step-ahead in-sample \emph{base forecast errors} be
+defined as
+\(\hat{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h \mid t}\),
 and the \(h\)-step-ahead \emph{reconciled forecast errors} be defined as
-\(\tilde{\boldsymbol{e}}_{T+h \mid T} = \boldsymbol{y}_{T+h} - \tilde{\boldsymbol{y}}_{T+h \mid T}\).
-\textcite{Wickramasuriya2019-fc} formulated a linear reconciliation
-problem as minimizing the trace (MinT) of the \(h\)-step-ahead
-covariance matrix of the reconciled forecast errors,
-\(\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})\). Under the
-assumption of unbiased base forecasts, the unique solution of the
-minimization problem is given by
-
+\(\tilde{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{t+h \mid t}\)
+for \(t = 1,2,\ldots,T-h\). \textcite{Wickramasuriya2019-fc} formulated
+a linear reconciliation problem as minimizing the trace (MinT) of the
+\(h\)-step-ahead covariance matrix of the reconciled forecast errors,
+\(\operatorname{Var}(\tilde{\boldsymbol{e}}_{t+h \mid t})\). Under the
+assumption of unbiasedness of base forecasts and reconciled forecasts,
+the unique solution of the minimization problem is given by
 \begin{equation}\protect\hypertarget{eq-mint}{}{
 \boldsymbol{G}_h=\left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1},
 }\label{eq-mint}\end{equation} where \(\boldsymbol{W}_h\) is the
 positive definite covariance matrix of the \(h\)-step-ahead base
-forecast errors,
-\(\operatorname{Var}(\hat{\boldsymbol{e}}_{T+h \mid T})\).
+forecast errors.
 
 The trace minimization problem can be reformulated as a least squares
 problem with linear constraints given by
-
 \begin{equation}\protect\hypertarget{eq-mint_op}{}{
 \begin{aligned}
 & \min _{\tilde{\boldsymbol{y}}_{T+h \mid T}} \quad \frac{1}{2}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T})^{\prime} \boldsymbol{W}_{h}^{-1}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}) \\
@@ -674,7 +645,7 @@ problem with linear constraints given by
 where \(\tilde{\boldsymbol{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}\) is
 the vector comprising \(h\)-step-ahead bottom-level reconciled
 forecasts, made at time \(T\). Focusing on \(\boldsymbol{W}_h\), the
-intuitive behind the MinT reconciliation is that \textbf{the larger the
+intuition behind the MinT reconciliation is that \textbf{the larger the
 estimated variance of the base forecast errors, the larger the range of
 adjustments permitted for forecast reconciliation}.
 
@@ -690,56 +661,61 @@ forecast reconciliation literature are listed as follows.
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \(\boldsymbol{W}_{\text{OLS}} = \boldsymbol{I}\) is the \emph{OLS
-  estimator} proposed by \textcite{Hyndman2011-sd}, assuming that the
-  base forecast errors are uncorrelated and equivariant. In what
-  follows, we denote this as \textbf{OLS}.
+  \(\boldsymbol{W}_{\text{OLS}} \propto \boldsymbol{I}\), is the
+  \emph{OLS estimator} proposed by \textcite{Hyndman2011-sd}, and
+  assumes that the base forecast errors are uncorrelated and
+  equivariant. We denote this as \textbf{OLS}.
 \item
-  \(\boldsymbol{W}_{\text{WLSs}} = \operatorname{diag}(\boldsymbol{S} \mathbf{1})\)
+  \(\boldsymbol{W}_{\text{WLSs}} \propto \operatorname{diag}(\boldsymbol{S} \mathbf{1})\),
   is the \emph{WLS estimator applying structural scaling} proposed by
-  \textcite{Athanasopoulos2017-jj}. This estimator depends only on the
-  aggregation structure of the hierarchy. It assumes that the variance
-  of each bottom-level base forecast error is equivalent and
+  \textcite{Athanasopoulos2017-jj}, where \(\mathbf{1}\) is a vector of
+  1s of size \(n_b\), and \(\operatorname{diag}(\cdot)\) constructs a
+  diagonal matrix using a given vector. This estimator depends only on
+  the aggregation structure of the hierarchy. It assumes that the
+  variance of each bottom-level base forecast error is equivalent and
   uncorrelated between nodes. We denote this method as \textbf{WLSs}.
 \item
-  \(\boldsymbol{W}_{\text{WLSv}} = \operatorname{diag}(\hat{\boldsymbol{W}}_1)\)
+  \(\boldsymbol{W}_{\text{WLSv}} \propto \operatorname{Diag}(\hat{\boldsymbol{W}}_1)\),
   is the \emph{WLS estimator applying variance scaling} proposed by
   \textcite{Hyndman2016-cz}, where \(\hat{\boldsymbol{W}}_1\) denotes
   the unbiased covariance estimator based on the in-sample
-  one-step-ahead base forecast errors (i.e., residuals). In the results
-  that follow, we denote this as \textbf{WLSv}.
+  one-step-ahead base forecast errors (i.e., residuals), and
+  \(\operatorname{Diag}(\cdot)\) forms a diagonal matrix using the
+  diagonal elements of the input matrix. We denote this as
+  \textbf{WLSv}.
 \item
-  \(\boldsymbol{W}_{\text{MinT}} = \hat{\boldsymbol{W}}_1\) is referred
-  to as the \emph{MinT estimator} based on the sample covariance matrix
-  proposed by \textcite{Wickramasuriya2019-fc}. We denote this method as
-  \textbf{MinT} in the results that follow.
+  \(\boldsymbol{W}_{\text{MinT}} \propto \hat{\boldsymbol{W}}_1\), is
+  referred to as the \emph{MinT estimator} based on the sample
+  covariance matrix proposed by \textcite{Wickramasuriya2019-fc}. We
+  denote this method as \textbf{MinT} in the results that follow.
 \item
-  \(\boldsymbol{W}_{\text{MinTs}} = \lambda\operatorname{diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1\)
+  \(\boldsymbol{W}_{\text{MinTs}} \propto \lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1\),
   is the \emph{MinT shrinkage estimator} suggested by
   \textcite{Wickramasuriya2019-fc}, in which off-diagonal elements of
   \(\hat{\boldsymbol{W}}_1\) are shrunk towards zero. We refer to this
   method as \textbf{MinTs}.
 \end{enumerate}
 
-It is hard to say which estimator for \(\boldsymbol{W}\) works better.
-\textcite{Pritularga2021-lz} demonstrated that the performance of
-forecast reconciliation is affected by two sources of uncertainties,
-i.e., the base forecast uncertainty and the reconciliation weight
-uncertainty. Recall that the uncertainty in the MinT solution in
-Equation~\ref{eq-mint} is introduced by the uncertainty in the weighting
-matrix as the summing matrix is fixed for a given hierarchy. This
-indicates that OLS and WLSs estimators for \(\boldsymbol{W}\) may lead
-to less volatile reconciliation performance compared to WLSv, MinT, and
-MinTs estimators. \textcite{Panagiotelis2021-mf} provided a geometric
-intuition for reconciliation and showed that, when considering the
-Euclidean distance loss function, OLS reconciliation yields results that
-are at least as favorable as the base forecasts, whereas MinT
-reconciliation performs poorly relative to the base forecasts. However,
-when considering the mean squared reconciled forecast error,
+In practice, it is hard to say which estimator for \(\boldsymbol{W}\)
+works better. \textcite{Pritularga2021-lz} demonstrated that the
+performance of forecast reconciliation is affected by two sources of
+uncertainties, i.e., the base forecast uncertainty and the
+reconciliation weight uncertainty. Recall that the uncertainty in the
+MinT solution in Equation~\ref{eq-mint} is introduced by the uncertainty
+in the weighting matrix as the summing matrix is fixed for a given
+structure. This indicates that OLS and WLSs estimators for
+\(\boldsymbol{W}\) may lead to less volatile reconciliation performance
+compared to WLSv, MinT, and MinTs estimators.
+\textcite{Panagiotelis2021-mf} provided a geometric intuition for
+reconciliation and showed that, when considering the Euclidean distance
+loss function, OLS reconciliation yields results that are at least as
+favorable as the base forecasts, whereas MinT reconciliation performs
+poorly relative to the base forecasts. However, when considering the
+expected Euclidean distance of the reconciled forecast error,
 \textcite{Wickramasuriya2021-am} indicated that MinT reconciliation is
 better than OLS reconciliation. Therefore, which estimator for
-\(\boldsymbol{W}\) to use hinges on the specific hierarchical time
-series of interest, the targeted level or series, and the selected loss
+\(\boldsymbol{W}\) to use hinges on the specific time series structure
+of interest, the targeted level or series, and the selected loss
 function.
 
 \hypertarget{relaxation-of-the-unbiasedness-assumptions}{%
@@ -752,25 +728,24 @@ reconciled forecasts are unbiased. \textcite{Ben_Taieb2019-be} proposed
 a reconciliation method relaxing the assumption of unbiasedness.
 Specifically, by expanding the training window forward by one
 observation until \(T-h\), they formulated the reconciliation problem as
-a regularized empirical risk minimization (RERM) problem given by
-
-\[
+a regularized empirical risk minimization (RERM) problem given by \[
 \min _{\boldsymbol{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\boldsymbol{Y}_{h}^{*}-\hat{\boldsymbol{Y}}_{h}^{*} \mathbf{G}_{h}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \boldsymbol{G}_h)\|_1,
 \]
 
 where \(T_1\) denotes the minimum number of observations used for model
 training, \(\left\| \cdot \right\|_F\) is the Frobenius norm,
+\(\|\cdot\|_1\) is the \(L_1\) norm, \(\operatorname{vec}(\cdot)\)
+denotes the vectorization of a matrix, which stacks the columns of the
+matrix on top of one another,
 \(\boldsymbol{Y}_{h}^{*}=\left[\boldsymbol{y}_{T_1+h}, \ldots, \boldsymbol{y}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\),
 \(\hat{\boldsymbol{Y}}_{h}^{*}=\left[\hat{\boldsymbol{y}}_{T_1+h \mid T_1}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\),
 and \(\lambda \geq 0\) is a regularization parameter.
 
 When \(\lambda = 0\), the problem reduces to an empirical risk
 minimization (ERM) problem without regularization. Assuming that the
-series in the hierarchy are jointly weakly stationary and
+series in the structure are jointly weakly stationary and
 \(\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\) is
-invertible, it has a closed-form solution given by
-
-\[
+invertible, it has a closed-form solution given by \[
 \hat{\boldsymbol{G}}_h = \boldsymbol{B}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\left(\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\right)^{-1},
 \]
 
@@ -792,9 +767,7 @@ empirical MinT (\textbf{EMinT}) without the unbiasedness constraint by
 minimizing the trace of the covariance matrix of the reconciled forecast
 errors, \(\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})\).
 Assuming that the series are jointly weakly stationary, she derived the
-solution given by
-
-\[
+solution given by \[
 \hat{\boldsymbol{G}}_{h} = \boldsymbol{B}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\left(\hat{\boldsymbol{Y}}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\right)^{-1},
 \]
 
@@ -807,37 +780,39 @@ EMinT uses in-sample observations and base forecasts, while ERM relies
 on observations and base forecasts from a holdout validation set. We
 note that both ERM and EMinT consider an estimate of \(\boldsymbol{G}\)
 that changes over the forecast horizon, which is why we keep the
-subscript \(h\) here. EMinT results that follow assume the weighting
-matrix \(\boldsymbol{G}\) for \(h=1\) holds for \(h>1\).
+subscript \(h\) here. When reporting the EMinT results in following
+sections, we assume the weighting matrix \(\boldsymbol{G}\) for \(h=1\)
+holds for \(h>1\).
 
 In practice, a prevalent challenge in forecast reconciliation arises
-when the base forecasts of some time series within the hierarchical
-structure may perform poorly, especially for large hierarchies. This can
-be attributed to either the inherent complexity of forecasting these
-series or potential model misspecification. In such cases, the
-effectiveness of forecast reconciliation may diminish, as the role of
-the weighting matrix \(\boldsymbol{G}\) is to assimilate \emph{all} base
-forecasts and map them into bottom-level disaggregated forecasts which
-are subsequently summed by \(\boldsymbol{S}\). While the RERM method
+when the base forecasts of some time series within the structure may
+perform poorly, especially for large hierarchies. This can be attributed
+to either the inherent complexity of forecasting these series or
+potential model misspecification. In such cases, the effectiveness of
+forecast reconciliation may diminish, as the role of the weighting
+matrix \(\boldsymbol{G}\) is to assimilate \emph{all} base forecasts and
+map them into bottom-level disaggregated forecasts which are
+subsequently summed by \(\boldsymbol{S}\). While the RERM method
 proposed by \textcite{Ben_Taieb2019-be} introduces sparsity by shrinking
 some elements of \(\boldsymbol{G}\) towards zero, it remains incapable
 of mitigating the adverse impact of underperforming base forecasts on
 the quality of the reconciled forecasts. Moreover, the method is
-time-consuming because it uses expanding windows to recursively generate
+time-consuming and might be problematic when there are limited number of
+observations because it uses expanding windows to recursively generate
 out-of-sample base forecasts, which are then used in the minimization
 problem.
 
 We therefore propose two categories of innovative methods, constrained
-(under the unbiasedness assumption) and unconstrained (without
-unbiasedness assumption) forecast reconciliation with time series
-selection. These methods aim to identify and address the negative effect
-of some base forecasts of poor performance in a hierarchy on the overall
-performance of the reconciled forecasts. Additionally, through the
-incorporation of regularization in our objective function, our method
-has the potential to enhance reconciliation outcomes produced by using a
-``bad'' choice of \(\boldsymbol{W}\), thus reducing the risk of choosing
-estimator of \(\boldsymbol{W}\). Moreover, our method generalizes to
-grouped hierarchies.
+out-of-sample (under the unbiasedness assumption) and unconstrained
+in-sample (without unbiasedness assumption) forecast reconciliation with
+time series selection. These methods aim to identify and address the
+negative effect of some base forecasts of poor performance in a
+structure on the overall performance of the reconciled forecasts.
+Additionally, through the incorporation of regularization in our
+objective function, our method has the potential to enhance
+reconciliation outcomes produced by using a ``poor'' choice of
+\(\boldsymbol{W}\), thus reducing the risk of choosing estimator of
+\(\boldsymbol{W}\).
 
 \hypertarget{sec-methodology}{%
 \section{Forecast reconciliation with time series
@@ -850,7 +825,7 @@ reconciliation with time series selection. Section~\ref{sec-constrained}
 introduces constrained reconciliation methods with selection that
 formulate the problem based on out-of-sample base forecasts, while
 Section~\ref{sec-unconstrained} presents an unconstrained reconciliation
-method with selection where we formulate the problem based on in-sample
+method with selection, where we formulate the problem based on in-sample
 observations and base forecasts.
 
 \hypertarget{sec-constrained}{%
@@ -858,19 +833,20 @@ observations and base forecasts.
 constraint}\label{sec-constrained}}
 
 As \(\boldsymbol{S}\) is fixed and \(\hat{\boldsymbol{y}}_{T+h \mid T}\)
-is given, the estimation of \(\boldsymbol{G}\) carries the linear
-reconciliation performance, as shown in Equation~\ref{eq-mint}.
-(Subscript \(h\) is dropped as we assume \(\boldsymbol{W}\) and
-\(\boldsymbol{G}\) do not change over the forecast horizon.) A natural
-way to keep forecasts of some series unused in reconciliation is through
-controlling the number of nonzero column entries in \(\boldsymbol{G}\).
-This leads to a generalization of the MinT optimization problem by
-applying an additional penalty to the objective function. More
-precisely, we consider the optimization problem given by
-
+is given, once we get the estimation of \(\boldsymbol{G}\), the linear
+reconciliation performance is determined, as shown in
+Equation~\ref{eq-lr}. In this section, the subscript \(h\) is dropped as
+we assume \(\boldsymbol{W}\) and \(\boldsymbol{G}\) do not vary with the
+forecast horizon. A natural way to keep forecasts of some series unused
+in reconciliation is through controlling the number of nonzero column
+entries in \(\boldsymbol{G}\). This leads to a generalization of the
+MinT optimization problem by applying an additional penalty to the
+objective function. More precisely, let
+\(\hat{\boldsymbol{y}}:=\hat{\boldsymbol{y}}_{T+1 \mid T}\), we consider
+the optimization problem given by
 \begin{equation}\protect\hypertarget{eq-op_u}{}{
 \begin{aligned}
-& \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right)
+& \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}-\boldsymbol{SG}\hat{\boldsymbol{y}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\boldsymbol{SG}\hat{\boldsymbol{y}}\right)
 + \lambda\mathfrak{g}(\boldsymbol{G}) \\
 & \text { s.t. } \quad \boldsymbol{GS}=\boldsymbol{I},
 \end{aligned}
@@ -897,9 +873,7 @@ hierarchical structure by aggregating/disaggregating the selected time
 series.}
 
 \emph{Proof}. According to the unbiasedness constraint
-\(\boldsymbol{GS}=\boldsymbol{I}\), we have
-
-\[
+\(\boldsymbol{GS}=\boldsymbol{I}\), we have \[
 \min \left(\operatorname{rank}(\boldsymbol{G}), \operatorname{rank}(\boldsymbol{S})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b,
 \]
 
@@ -910,29 +884,32 @@ Let
 \(\boldsymbol{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
 denote the submatrix of the \(r \times c\) matrix \(\boldsymbol{X}\)
 with column indices forming a set \(\mathbb{S}\) (and when
-\(\mathbb{S} = \{j\}\), we simply use \(\boldsymbol{X}_{\cdot j}\)).
-Here, \(|\mathbb{S}|\) denotes the size of the set \(\mathbb{S}\).
+\(\mathbb{S} = \{j\}\), we simply use \(\boldsymbol{X}_{\cdot j}\)),
+where \(|\mathbb{S}|\) denotes the size of the set \(\mathbb{S}\).
 Similarly, let
 \(\boldsymbol{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}\)
 denote the submatrix of \(\boldsymbol{X}\) whose rows are indexed by a
 set \(\mathbb{S}\) (and when \(\mathbb{S} = \{i\}\), we simply use
 \(\boldsymbol{X}_{i\cdot}\)). Assuming that the set \(\mathbb{S}\)
 consists of the indices of nonzero columns in the solution of
-Equation~\ref{eq-op_u}, the following equations hold:
-
-\[
+Equation~\ref{eq-op_u}, \(\hat{\boldsymbol{G}}\), the following
+equations hold: \[
 \begin{aligned}
-& \boldsymbol{G}\boldsymbol{S} = \boldsymbol{G}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot} \text{ and } \\
-& \min \left(\operatorname{rank}(\boldsymbol{G}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b.
+& \boldsymbol{G}\boldsymbol{S} = \hat{\boldsymbol{G}}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot} = \boldsymbol{I} \text{, and } \\
+& \min \left(\operatorname{rank}(\hat{\boldsymbol{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b.
 \end{aligned}
 \]
 
 Additionally, we have
 \(\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b\) as
 \(\boldsymbol{S}\) has \(n_b\) columns. Therefore, we can conclude that
-\(\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b\), which
-implies that the hierarchical structure can be fully restored by
-aggregating/disaggregating the selected time series,
+\(\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b\).
+Moreover, we have \[
+\boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t = \boldsymbol{S}\boldsymbol{G}\boldsymbol{S}\boldsymbol{b}_t=\boldsymbol{S}\hat{\boldsymbol{G}}_{\cdot\mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot}\boldsymbol{b}_t=\boldsymbol{S}\hat{\boldsymbol{G}}_{\cdot \mathbb{S}}(\boldsymbol{y}_t)_{\mathbb{S}},
+\]
+
+which implies that the hierarchical structure can be fully restored by
+aggregating/disaggregating the selected time series denoted by
 \((\boldsymbol{y}_{t})_{\mathbb{S}}\).
 
 For example, consider the simple hierarchy shown in
@@ -944,11 +921,10 @@ possible to zero out columns related to series AA and BA simultaneously.
 \textbf{Proposition 2.} \emph{The optimization problem in
 Equation~\ref{eq-op_u} can be reformulated as a least squares problem
 with regularization and linear equality constraint as follows:}
-
 \begin{equation}\protect\hypertarget{eq-op_u_reg}{}{
 \begin{aligned}
-& \min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\boldsymbol{G})\right) \\
-& \text { s.t. } \quad \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{nb}),
+& \min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\boldsymbol{G})\right) \\
+& \text { s.t. } \quad \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{n_b}),
 \end{aligned}
 }\label{eq-op_u_reg}\end{equation}
 
@@ -956,15 +932,11 @@ with regularization and linear equality constraint as follows:}
 number of features, denoted as} \(p = n_b \times n\)\emph{, is much
 larger than the number of observations,} \(n\)\emph{.}
 
-\emph{Proof.} Let \(\operatorname{vec}(\boldsymbol{A})\) denote the
-vectorization of a matrix \(\boldsymbol{A}\), which stacks the columns
-of \(\boldsymbol{A}\) on top of one another. We have
-
-\[
+\emph{Proof.} We have \[
 \begin{aligned}
-& \operatorname{vec}\left(\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \hat{\boldsymbol{y}}_{T+h \mid T}, \\
-& \operatorname{vec}\left(\boldsymbol{SG}\hat{\boldsymbol{y}}_{T+h \mid T}\right) = \left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}), \\
-& \operatorname{vec}\left(\boldsymbol{GS}\right) = \operatorname{vec}\left(\boldsymbol{I}_{nb}\boldsymbol{GS}\right) = \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G}).
+& \operatorname{vec}\left(\hat{\boldsymbol{y}}\right) = \hat{\boldsymbol{y}}, \\
+& \operatorname{vec}\left(\boldsymbol{SG}\hat{\boldsymbol{y}}\right) = \left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}), \\
+& \operatorname{vec}\left(\boldsymbol{GS}\right) = \operatorname{vec}\left(\boldsymbol{I}_{n_b}\boldsymbol{GS}\right) = \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G}).
 \end{aligned}
 \]
 
@@ -988,30 +960,27 @@ assume that the true regression coefficient (i.e.,
 \(\operatorname{vec}(\boldsymbol{G})\) in our problem) is sparse. We
 propose to apply a combination of \(L_0\) and \(L_2\) regularization as
 the exterior penalty function to control the nonzero column entries in
-\(\boldsymbol{G}\):
-
-\begin{equation}\protect\hypertarget{eq-subset}{}{
+\(\boldsymbol{G}\): \begin{equation}\protect\hypertarget{eq-subset}{}{
 \begin{aligned}
-\min _{\operatorname{vec}(\boldsymbol{G})} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
-& + \lambda_0 \sum_{j=1}^n \mathbf{1}\left(\boldsymbol{G}_{\cdot j} \neq \mathbf{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\boldsymbol{G}\right)\right\|_2^2 \\
-\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{nb}),
+\min _{\operatorname{vec}(\boldsymbol{G})} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda_0 \sum_{j=1}^n 1\left(\boldsymbol{G}_{\cdot j} \neq \mathbf{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\boldsymbol{G}\right)\right\|_2^2 \\
+\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{n_b}),
 \end{aligned}
 }\label{eq-subset}\end{equation}
 
-where \(\mathbf{1}(\cdot)\) is the indicator function,
-\(\lambda_0 \geq 0\) controls the number of nonzero columns of
-\(\boldsymbol{G}\) selected, and \(\lambda_2 \geq 0\) controls the
-strength of the ridge regularization. In a hierarchical time series
-context, the parameter of interest in Equation~\ref{eq-subset},
-\(\operatorname{vec}(\boldsymbol{G})\), has an inherent non-overlapping
-group structure, wherein each group corresponds to a single column of
-\(\boldsymbol{G}\), each with a size of \(n_b\). Therefore, we refer to
-this reconciliation method as \emph{group best-subset selection with
-ridge regularization}. In the results that follow, we label the
-\textbf{Subset} method differently based on various estimators for
-\(\boldsymbol{W}\), referring to them as \textbf{OLS-subset},
-\textbf{WLSs-subset}, \textbf{WLSv-subset}, \textbf{MinT-subset}, and
-\textbf{MinTs-subset}, respectively.
+where \(1(\cdot)\) is the indicator function, \(\lambda_0 \geq 0\)
+controls the number of nonzero columns of \(\boldsymbol{G}\) selected,
+\(\lambda_2 \geq 0\) controls the strength of the ridge regularization,
+and \(\|\cdot\|_2\) is the \(L_2\) norm. In a hierarchical or grouped
+time series context, the parameter of interest in
+Equation~\ref{eq-subset}, \(\operatorname{vec}(\boldsymbol{G})\), has an
+inherent non-overlapping grouping structure, wherein each group
+corresponds to a single column of \(\boldsymbol{G}\), each with a size
+of \(n_b\). Therefore, we refer to this reconciliation method as
+\emph{group best-subset selection with ridge regularization}. In the
+results that follow, we label the \textbf{Subset} method differently
+based on various estimators for \(\boldsymbol{W}\), referring to them as
+\textbf{OLS-subset}, \textbf{WLSs-subset}, \textbf{WLSv-subset},
+\textbf{MinT-subset}, and \textbf{MinTs-subset}, respectively.
 
 The inclusion of the ridge term in Equation~\ref{eq-subset} is motivated
 by earlier work on best-subset selection
@@ -1022,12 +991,11 @@ ratio (SNR) regimes.
 
 We present a Big-M based mixed integer programming (MIP) formulation for
 problem in Equation~\ref{eq-subset} given by
-
 \begin{equation}\protect\hypertarget{eq-subset_mip}{}{
 \begin{aligned}
 \min _{\operatorname{vec}(\boldsymbol{G}), \boldsymbol{z}, \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \boldsymbol{g}^{+\prime}\boldsymbol{g}^{+} \\
 \text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
-& \hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
+& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
 & \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \\
 & \boldsymbol{g}^{+} \geqslant \operatorname{vec}(\boldsymbol{G}) \\
 & \boldsymbol{g}^{+} \geqslant-\operatorname{vec}(\boldsymbol{G}) \\
@@ -1046,23 +1014,22 @@ zero or not, i.e., \(z_j=0\) implies that
 \(\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\). Such
 Big-M formulations are commonly used in MIP problems to model relations
 between discrete and continuous variables, and have been recently
-explored in regression with \(L_0\) regularization, see
-\textcite{Bertsimas2016-ig} for more discussion. The problem is a mixed
-integer quadratic program (MIQP) that can be solved using commercial MIP
-solvers, e.g., Gurobi and CPLEX.
+explored in regression with \(L_0\) regularization
+\autocite{Bertsimas2016-ig}. The problem is a mixed integer quadratic
+program (MIQP) that can be solved using commercial MIP solvers, e.g.,
+Gurobi and CPLEX.
 
-\textbf{Parameter tuning.} \(\lambda_0 \geq 0\) and \(\lambda_2 \geq 0\)
-are tuning parameters. To avoid computationally-expensive
+\textbf{Parameter tuning.} To avoid computationally-expensive
 cross-validation, we tune the parameters to minimize the sum of squared
 reconciled forecast errors on the truncated training set, comprising
 only the \(\max\{h, s\}\) observations closest to the forecast origin,
 where \(s\) is the seasonal period for seasonal data and \(s=T\) for
 non-seasonal data. Let
-\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)\)
-that captures the scale of first term in the objective, where
-\(\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\) is a vector of
-reconciled forecasts obtained using Equation~\ref{eq-mint} with same
-estimator of \(\boldsymbol{W}\), and define
+\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)\)
+that captures the scale of first term in the objective function, where
+\(\tilde{\boldsymbol{y}}^{\text{bench}}\) is a vector of reconciled
+forecasts obtained using Equation~\ref{eq-mint} with same estimator of
+\(\boldsymbol{W}\), and define
 \(\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}\). For the parameter
 \(\lambda_0\), we consider a grid of \(k+1\) values,
 \(\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}\), where
@@ -1091,8 +1058,8 @@ with \(p > 1000\). This enables us to terminate the solver before
 reaching the global optimum and return a suboptimal solution instead.
 This strategy is motivated by our need to consider numerous parameter
 candidates, and the final solution will be validated against the
-training set, which helps prevent the utilization of a very poor
-estimate of \(\boldsymbol{G}\).
+training set, which prevents the utilization of a very poor estimate of
+\(\boldsymbol{G}\).
 
 \hypertarget{sec-intuitive}{%
 \subsubsection{\texorpdfstring{Intuitive method with \(L_0\)
@@ -1114,11 +1081,9 @@ By this way, when the \(j\)th diagonal element of \(\boldsymbol{A}\)
 equals zero, the \(j\)th column of \(\bar{\boldsymbol{G}}\) becomes
 entirely composed of zeros. Therefore, the optimization problem can be
 reduced to an integer quadratic programming (IQP) problem in which all
-of the variables are restricted to be integers:
-
-\[
+of the variables are restricted to be integers: \[
 \begin{aligned}
-\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}_{T+h \mid T}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}_{T+h \mid T}\right) + \lambda_0 \sum_{j=1}^n \boldsymbol{A}_{jj} \\
+\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right) + \lambda_0 \sum_{j=1}^n \boldsymbol{A}_{jj} \\
 \text { s.t. } \quad & \bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1} \\
 & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I},
 \end{aligned}
@@ -1144,13 +1109,11 @@ not have zero columns.
 To ensure the invertibility of
 \(\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S}\)
 and make the problem compatible with Gurobi, we reformulate the problem
-as
-
-\begin{equation}\protect\hypertarget{eq-intuitive_mip}{}{
+as \begin{equation}\protect\hypertarget{eq-intuitive_mip}{}{
 \begin{aligned}
 \min _{\boldsymbol{A},\bar{\boldsymbol{G}},\boldsymbol{C},\check{\boldsymbol{e}},\boldsymbol{z}} \quad & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j \\
 \text { s.t. } \quad & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I} \\
-& \hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\bar{\boldsymbol{G}}) = \check{\boldsymbol{e}} \\
+& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\bar{\boldsymbol{G}}) = \check{\boldsymbol{e}} \\
 & \bar{\boldsymbol{G}}\boldsymbol{A}\boldsymbol{S} = \boldsymbol{I} \\
 & \bar{\boldsymbol{G}} = \boldsymbol{C}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1} \\
 & z_j \in\{0,1\}, \quad j \in[n].
@@ -1162,7 +1125,7 @@ Section~\ref{sec-subset}, we select the tuning parameter, \(\lambda_0\),
 by minimizing the sum of squared reconciled forecast errors on a
 truncated training set, comprising only the \(\max\{h, s\}\)
 observations occurred prior to the forecast origin. Let
-\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}^{\text{bench}}\right)\),
+\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)\),
 and \(\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}\), the collection of
 candidate values for \(\lambda_0\) we consider is
 \(\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}\), where
@@ -1183,11 +1146,9 @@ parameters in the context of linear regression. \textcite{Yuan2006-mw}
 introduced the group lasso method that can be used when there is a
 grouped structure among the variables. Here, we consider \emph{a group
 lasso problem under the unbiasedness assumption} given by
-
 \begin{equation}\protect\hypertarget{eq-lasso}{}{
 \begin{aligned}
-\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) \\
-& + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
+\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
 \text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right),
 \end{aligned}
 }\label{eq-lasso}\end{equation}
@@ -1197,28 +1158,26 @@ penalty weight assigned in \(\boldsymbol{G}_{\cdot j}\) to make model
 more flexible, and the second term in the objective is the penalty
 function that is intermediate between the \(L_1\)-penalty that is used
 in the lasso and the \(L_2\)-penalty that is used in ridge regression.
-In the results that follow, we label the \textbf{Lasso} method
-differently based on various estimators for \(\boldsymbol{W}\),
-referring to them as \textbf{OLS-lasso}, \textbf{WLSs-lasso},
-\textbf{WLSv-lasso}, \textbf{MinT-lasso}, and \textbf{MinTs-lasso},
-respectively.
+In the results that follow, we label the \textbf{Lasso} method based on
+various estimators for \(\boldsymbol{W}\), referring to them as
+\textbf{OLS-lasso}, \textbf{WLSs-lasso}, \textbf{WLSv-lasso},
+\textbf{MinT-lasso}, and \textbf{MinTs-lasso}, respectively.
 
 Next, we present the second order cone programming (SOCP) formulation
 for the group lasso based estimators given by
-
 \begin{equation}\protect\hypertarget{eq-lasso_socp}{}{
 \begin{aligned}
 \min _{\operatorname{vec}(\boldsymbol{G}), \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}_h^{-1}\check{\boldsymbol{e}} + \lambda \sum_{j=1}^n w_j c_j \\
 \text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
-& \hat{\boldsymbol{y}}_{T+h \mid T}-\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
-& c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{2}}, \quad j \in[n].
+& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
+& c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n].
 \end{aligned}
 }\label{eq-lasso_socp}\end{equation}
 
 Equation~\ref{eq-lasso_socp} includes additional auxiliary variables
 \(c_j \in \mathbb{R}_{\geq 0}\), \(j \in [n]\), and second order cone
-constraints, \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{2}}\) for
-\(j \in[n]\).
+constraints, \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\)
+for \(j \in[n]\).
 
 Compared to the previous two methods we proposed, the group lasso method
 is computationally friendlier. Nonetheless, \textcite{Hazimeh2023-ie}
@@ -1233,11 +1192,11 @@ seeking a more concise model.
 \textbf{Penalty weights and parameter tuning.} In the context of group
 lasso, the default choice for the penalty weight, \(w_j\), is
 \(\sqrt{p_j}\), where \(p_j\) is the size of each group (in our case,
-\(p_j = n_b\)). In our experiment, we allocate different penalty weights
-to each group by considering
+\(p_j = n_b\)). In our experiments, we allocate different penalty
+weights to each group using
 \(w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2\),
-which allows us to account for variations in scale across different
-levels in the hierarchy.
+which allows us to account for variations in scale across different time
+series in the structure.
 
 We compute the group lasso over \(k+1\) values of the tuning parameter
 \(\lambda\), and select the tuning parameter by optimizing the sum of
@@ -1245,7 +1204,7 @@ squared reconciled forecast errors on a truncated training set,
 consisting only of \(\max\{h, s\}\) observations occurred prior to the
 forecast origin. The collection of candidate values for \(\lambda\)
 under consideration is \(\{\lambda^{1},...,\lambda^{k}, 0\}\), where
-\(\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j\),
+\(\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j\),
 \(\lambda^{k} = 0.0001\lambda^{1}\), and
 \(\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\).
@@ -1253,42 +1212,37 @@ for \(j \in [k]\).
 \textbf{Proposition 3.} \emph{Ignoring the unbiasedness constraint, we
 define} \(\lambda^{1}\) \emph{as the smallest} \(\lambda\) \emph{value
 such that all predictors in the group lasso problem have zero
-coefficients. Then we have}
-
-\[
-\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j,
+coefficients. Then we have} \[
+\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j,
 \]
 
 \emph{where} \(j^{*}\) \emph{denotes the column index of}
-\(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\)
-\emph{that corresponds to the} \(j\)\emph{th column of}
-\(\boldsymbol{G}\)\emph{.}
+\(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\) \emph{that
+corresponds to the} \(j\)\emph{th column of} \(\boldsymbol{G}\)\emph{.}
 
 \emph{Proof.} Denote
 \(\boldsymbol{\beta} = \operatorname{vec}(\boldsymbol{G})\), and the
 first term in the objective of Equation~\ref{eq-lasso} as
 \(L\left(\boldsymbol{\beta} \mid \boldsymbol{D}\right)\), where
 \(\boldsymbol{D}\) is the working data
-\(\{\hat{\boldsymbol{y}}_{T+h \mid T} , \hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\}\).
+\(\{\hat{\boldsymbol{y}} , \hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\}\).
 Ignoring the unbiasedness constraint, we define \(\lambda^{1}\) as the
 smallest \(\lambda\) value such that all predictors in the group lasso
 problem have zero coefficients, i.e., the solution at \(\lambda^{1}\) is
 \(\hat{\boldsymbol{\beta}}^{1}=\boldsymbol{0}\). (Note that there is no
 intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we
-have
-
-\[
+have \[
 \begin{aligned}
 \lambda^{1} & = \max _{j=1, \ldots, n}\left\|\left[\nabla L\left(\hat{\boldsymbol{\beta}}^{1} \mid \mathbf{D}\right)\right]^{(j)}\right\|_2 / w_j \\
-& = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}_{T+h \mid T}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}_{T+h \mid T}\right\|_2 / w_j.
+& = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j.
 \end{aligned}
 \]
 
 \textbf{Computation details.} Due to the incorporation of the
 unbiasedness constraint, we can not directly use some open-source
 packages designed for group lasso. Consequently, we employ Gurobi to
-solve the SOCP problem in Equation~\ref{eq-lasso_socp}, configuring it
-by setting OptimalityTol = \(0.0001\).
+solve the SOCP problem, configuring it by setting OptimalityTol =
+\(0.0001\).
 
 \hypertarget{sec-unconstrained}{%
 \subsection{Series selection method without unbiasedness
@@ -1302,25 +1256,15 @@ matrix comprising observations from all time series on the training set
 in the structure, and
 \(\hat{\boldsymbol{Y}} \in \mathbb{R}^{T \times n}\) denote a matrix of
 in-sample one-step-ahead forecasts (i.e., fitted values) for all time
-series, where \(T\) is the length of the training set. The proposed
-\emph{empirical group lasso} method considers the optimization problem
-given by
-
-\[
+series. The proposed \emph{empirical group lasso} method considers the
+optimization problem \[
 \min _{\boldsymbol{G}} \quad \frac{1}{2 T} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
 \]
 
-where \(\left\| \cdot \right\|_F\) is the Frobenius norm, and
-\(\lambda \geq 0\) is a tuning parameter, \(w_j \neq 0\) is the penalty
-weight assigned in \(\boldsymbol{G}_{\cdot j}\) to make a more flexible
-model. Following the work by \textcite{Ben_Taieb2019-be}, using the fact
-that \(\|\boldsymbol{X}\|_F^2 = \|\operatorname{vec}(X)\|_2^2\) and the
-useful formulation that
-\(\operatorname{vec}(\boldsymbol{ABC}) = (\boldsymbol{C}^{\prime} \otimes \boldsymbol{A})\operatorname{vec}(\boldsymbol{B})\),
-we rewrite the problem as
-
-\[
-\min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2 N} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
+where \(\lambda \geq 0\) is a tuning parameter, \(w_j \neq 0\) is the
+penalty weight assigned in \(\boldsymbol{G}_{\cdot j}\) to make a more
+flexible model. We rewrite the problem as \[
+\min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2 T} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
 \]
 
 which becomes a standard group lasso problem, with
@@ -1338,8 +1282,7 @@ that the solution takes the form of a top-down
 where only the column corresponding to the top level (most aggregated
 level) retains non-zero values, and
 \(\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})\) is a proportionality
-vector obtained based on in-sample reconciled forecast errors such that
-\(\sum_{i=1}^{n_b} p_i=1\).
+vector obtained based on in-sample reconciled forecast errors.
 
 We also explored the empirical version of group best-subset selection
 with ridge regularization and intuitive method with \(L_0\)
@@ -1380,13 +1323,12 @@ by using the optimal tuning parameter to obtain the final solution.
 \textbf{Computation details.} While there are open-source packages
 available for solving a group lasso problem, they are still relatively
 slow when applied to large instance for practical usage. For example,
-given a specific value for the tuning parameter, \(\lambda\), our
-experiments observed that, using the \textbf{gglasso} R package, we can
-not obtain a solution within five hours for typical instances with
-\(p \sim 10^4\). Instead, we use Gurobi to solve the problem based on
-the SOCP formulation for the empirical group lasso. The formulation
-aligns with Equation~\ref{eq-lasso_socp} but omits the unbiasedness
-constraint.
+given a specific value for the parameter, \(\lambda\), our experiments
+observed that, using the \textbf{gglasso} R package, we can not obtain a
+solution within five hours for typical instances with \(p \sim 10^4\).
+Instead, we use Gurobi to solve the problem based on the SOCP
+formulation for the empirical group lasso which aligns with
+Equation~\ref{eq-lasso_socp} but omits the unbiasedness constraint.
 
 \hypertarget{sec-simulations}{%
 \section{Monte Carlo simulations}\label{sec-simulations}}
@@ -1395,18 +1337,16 @@ To evaluate the performance of various reconciliation methods with time
 series selection outlined in Section~\ref{sec-methodology}, we carry out
 two simulations with different designs. In both simulations, we consider
 a hierarchy comprising two levels of aggregation, as shown in
-Figure~\ref{fig-hts}. Specifically, the structure has four time series
-at the bottom level, and seven time series in total, i.e., \(n_b = 4\),
-and \(n = 7\). In addition, the bottom-level series are first generated
-and then summed appropriately to obtain aggregated time series at higher
-levels.
+Figure~\ref{fig-hts}. Specifically, the structure has four series at the
+bottom level, and seven series in total, i.e., \(n_b = 4\), and
+\(n = 7\). The bottom-level series are first generated and then summed
+appropriately to obtain aggregated series at higher levels.
 
-In particular, Section~\ref{sec-sim1} delves into a setup where the
-bottom-level series are generated using a structural time series model,
-but model misspecification exists for some series within the
-hierarchical structure. In Section~\ref{sec-sim2}, we explore the impact
-of correlation between series on the performance of reconciled
-forecasts.
+Section~\ref{sec-sim1} considers a setup where the bottom-level series
+are generated using a structural time series model, but model
+misspecification exists for some series within the structure.
+Section~\ref{sec-sim2} explores the impact of correlation between series
+on the performance of reconciled forecasts.
 
 \hypertarget{sec-sim1}{%
 \subsection{Setup 1: Exploring the effect of model
@@ -1414,9 +1354,7 @@ misspecification}\label{sec-sim1}}
 
 In this simulation design, we follow a simulation setup similar to
 \textcite{Wickramasuriya2019-fc}, assuming that the bottom-level time
-series are generated using the basic structural time series model
-
-\[
+series are generated using the basic structural time series model \[
 \boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t,
 \]
 
@@ -1440,9 +1378,7 @@ independently from an \(\text{ARIMA}(p,0,q)\) process, where \(p\) and
 coefficients for the AR and MA components in the ARIMA process are
 sampled randomly from a uniform distribution within the range
 \([0.5, 0.7]\), and the contemporaneous error covariance matrix is given
-by
-
-\[
+by \[
 \left[\begin{array}{llll}
 5 & 3 & 2 & 1 \\
 3 & 4 & 2 & 1 \\
@@ -1542,112 +1478,6 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & -31.9 & -32.3 & -27.5 & 
 \end{threeparttable}}
 \end{table}
 
-\hypertarget{tbl-s2-rmse}{}
-\begin{table}[!h]
-\caption{\label{tbl-s2-rmse}Out-of-sample forecast results for the simulated data in Scenario II,
-Setup 1. }\tabularnewline
-
-\centering
-\resizebox{\linewidth}{!}{
-\begin{threeparttable}
-\begin{tabular}{lrrrrlrrrrlrrrrlr}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
-\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17}
-Method & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16\\
-\midrule
-Base & 9.6 & 10.7 & 12.6 & 15.6 & 12.1 & 14.4 & 15.3 & 17.0 & 4.2 & 4.9 & 5.9 & 7.5 & 7.2 & 8.5 & 9.6 & 11.4\\
-BU & \textcolor{blue}{\textbf{-1.0}} & 0.4 & 0.6 & 0.7 & \textcolor{blue}{\textbf{-47.7}} & \textcolor{blue}{\textbf{-49.6}} & \textcolor{blue}{\textbf{-43.6}} & \textcolor{blue}{\textbf{-36.2}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{-23.0}} & \textcolor{blue}{\textbf{-24.0}} & \textcolor{blue}{\textbf{-19.8}} & \textcolor{blue}{\textbf{-15.3}}\\
-\midrule
-OLS & 8.5 & 13.9 & 10.4 & 7.6 & -28.2 & -29.4 & -26.7 & -23.1 & 22.9 & 23.9 & 17.0 & 11.3 & -4.2 & -3.8 & -4.2 & -4.1\\
-\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-15.0}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-36.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-15.0}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.9}}\\
-\midrule
-WLSs & 12.1 & 18.6 & 14.0 & 10.2 & -34.4 & -35.1 & -31.7 & -26.9 & 15.6 & 17.0 & 12.0 & 8.0 & -9.0 & -8.0 & -7.6 & -6.5\\
-\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.8}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.9}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.9}}\\
-\midrule
-WLSv & -0.8 & 2.3 & 1.8 & 1.6 & -46.3 & -47.9 & -42.3 & -35.2 & 1.6 & 1.9 & 1.2 & 0.8 & -21.7 & -22.2 & -18.6 & -14.4\\
-\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{-0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-42.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.7}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{-0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-42.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.7}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{-0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-47.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.8}}\\
-\midrule
-MinT & 0.2 & 0.5 & 0.6 & 0.5 & -47.5 & -49.4 & -43.5 & -36.1 & 1.1 & 0.5 & 0.3 & 0.1 & -22.3 & -23.7 & -19.6 & \textcolor{blue}{\textbf{-15.3}}\\
-\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.1}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{-46.9} & \cellcolor[HTML]{e6e3e3}{-49.1} & \cellcolor[HTML]{e6e3e3}{-43.3} & \cellcolor[HTML]{e6e3e3}{-36.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{-21.9} & \cellcolor[HTML]{e6e3e3}{-23.4} & \cellcolor[HTML]{e6e3e3}{-19.4} & \cellcolor[HTML]{e6e3e3}{-15.1}\\
-\cellcolor[HTML]{e6e3e3}{MinT-intuitive} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{-47.5} & \cellcolor[HTML]{e6e3e3}{-49.4} & \cellcolor[HTML]{e6e3e3}{-43.5} & \cellcolor[HTML]{e6e3e3}{-36.1} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{-22.3} & \cellcolor[HTML]{e6e3e3}{-23.7} & \cellcolor[HTML]{e6e3e3}{-19.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
-\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{-47.6}} & \cellcolor[HTML]{e6e3e3}{-49.4} & \cellcolor[HTML]{e6e3e3}{-43.5} & \cellcolor[HTML]{e6e3e3}{-36.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
-\midrule
-MinTs & -0.3 & 0.3 & \textcolor{blue}{\textbf{ 0.4}} & \textcolor{blue}{\textbf{ 0.4}} & -47.6 & -49.5 & \textcolor{blue}{\textbf{-43.6}} & \textcolor{blue}{\textbf{-36.2}} & 0.7 & 0.2 & 0.1 & \textcolor{blue}{\textbf{ 0.0}} & -22.6 & -23.9 & \textcolor{blue}{\textbf{-19.8}} & \textcolor{blue}{\textbf{-15.3}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.8}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{-47.2} & \cellcolor[HTML]{e6e3e3}{-49.2} & \cellcolor[HTML]{e6e3e3}{-43.4} & \cellcolor[HTML]{e6e3e3}{-36.0} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{-22.3} & \cellcolor[HTML]{e6e3e3}{-23.6} & \cellcolor[HTML]{e6e3e3}{-19.5} & \cellcolor[HTML]{e6e3e3}{-15.1}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{-0.3} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{-47.6} & \cellcolor[HTML]{e6e3e3}{-49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-36.2}}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{-22.6} & \cellcolor[HTML]{e6e3e3}{-23.9} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.9}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.2}}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-47.7}}} & \cellcolor[HTML]{e6e3e3}{-49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-36.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-24.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
-\midrule
-EMinT & 2.2 & 2.9 & 2.5 & 1.7 & -46.2 & -48.1 & -42.4 & -35.3 & 3.6 & 2.9 & 2.0 & 1.1 & -20.5 & -21.9 & -18.2 & -14.3\\
-\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.2}} & \cellcolor[HTML]{e6e3e3}{-42.4} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.1}} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{-20.9}} & \cellcolor[HTML]{e6e3e3}{-21.9} & \cellcolor[HTML]{e6e3e3}{-18.2} & \cellcolor[HTML]{e6e3e3}{-14.3}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
-\end{table}
-
-\hypertarget{tbl-s3-rmse}{}
-\begin{table}[!h]
-\caption{\label{tbl-s3-rmse}Out-of-sample forecast results for the simulated data in Scenario III,
-Setup 1. }\tabularnewline
-
-\centering
-\resizebox{\linewidth}{!}{
-\begin{threeparttable}
-\begin{tabular}{lrrrrlrrrrlrrrrlr}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
-\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17}
-Method & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16\\
-\midrule
-Base & 25.0 & 30.3 & 30.9 & 32.3 & 6.3 & 7.3 & 8.6 & 10.8 & 4.2 & 4.9 & 5.9 & 7.5 & 7.8 & 9.2 & 10.3 & 12.0\\
-BU & -62.0 & \textcolor{blue}{\textbf{-64.4}} & \textcolor{blue}{\textbf{-59.0}} & -51.5 & \textcolor{blue}{\textbf{-0.3}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.1}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{-28.5}} & \textcolor{blue}{\textbf{-30.2}} & \textcolor{blue}{\textbf{-25.3}} & \textcolor{blue}{\textbf{-19.8}}\\
-\midrule
-OLS & -34.8 & -35.5 & -33.5 & -30.1 & 45.3 & 50.6 & 37.7 & 25.1 & 27.7 & 29.9 & 21.2 & 13.7 & 3.1 & 3.8 & 1.6 & -0.2\\
-\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-41.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-39.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{43.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{39.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{29.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{19.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{27.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{23.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{16.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{10.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -3.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -4.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -4.5}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-41.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-49.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-45.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-40.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{35.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{26.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{20.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{13.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{21.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{15.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{11.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -4.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-12.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-10.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -9.1}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}}\\
-\midrule
-WLSs & -50.9 & -52.4 & -48.7 & -43.3 & 17.6 & 20.0 & 14.5 & 9.3 & 9.6 & 11.3 & 7.7 & 4.9 & -16.3 & -16.7 & -14.9 & -12.5\\
-\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.0}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.1}}\\
-\midrule
-WLSv & -61.1 & -63.4 & -58.1 & -50.8 & 1.0 & 1.7 & 1.3 & 0.8 & 0.7 & 1.0 & 0.6 & 0.4 & -27.6 & -29.1 & -24.5 & -19.2\\
-\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.3}} & \cellcolor[HTML]{e6e3e3}{-24.5} & \cellcolor[HTML]{e6e3e3}{-19.2}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-51.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.3}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-51.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.4}}\\
-\midrule
-MinT & -62.1 & -64.3 & -58.9 & \textcolor{blue}{\textbf{-51.6}} & -0.2 & 0.6 & 0.5 & 0.2 & 0.8 & 0.5 & 0.3 & 0.1 & -28.3 & -29.9 & -25.1 & \textcolor{blue}{\textbf{-19.8}}\\
-\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{-61.8} & \cellcolor[HTML]{e6e3e3}{-63.7} & \cellcolor[HTML]{e6e3e3}{-58.2} & \cellcolor[HTML]{e6e3e3}{-50.9} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{-28.0} & \cellcolor[HTML]{e6e3e3}{-29.3} & \cellcolor[HTML]{e6e3e3}{-24.5} & \cellcolor[HTML]{e6e3e3}{-19.2}\\
-\cellcolor[HTML]{e6e3e3}{MinT-intuitive} & \cellcolor[HTML]{e6e3e3}{-62.1} & \cellcolor[HTML]{e6e3e3}{-64.3} & \cellcolor[HTML]{e6e3e3}{-58.9} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-51.6}}} & \cellcolor[HTML]{e6e3e3}{-0.2} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{-28.3} & \cellcolor[HTML]{e6e3e3}{-29.9} & \cellcolor[HTML]{e6e3e3}{-25.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
-\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{-62.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-64.4}}} & \cellcolor[HTML]{e6e3e3}{-58.9} & \cellcolor[HTML]{e6e3e3}{-51.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-0.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-30.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-25.2}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
-\midrule
-MinTs & \textcolor{blue}{\textbf{-62.2}} & \textcolor{blue}{\textbf{-64.4}} & \textcolor{blue}{\textbf{-59.0}} & \textcolor{blue}{\textbf{-51.6}} & \textcolor{blue}{\textbf{-0.3}} & 0.3 & 0.4 & 0.1 & 0.4 & 0.3 & 0.1 & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{-28.5}} & -30.1 & -25.2 & \textcolor{blue}{\textbf{-19.8}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{-62.0} & \cellcolor[HTML]{e6e3e3}{-63.8} & \cellcolor[HTML]{e6e3e3}{-58.4} & \cellcolor[HTML]{e6e3e3}{-51.1} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{-28.2} & \cellcolor[HTML]{e6e3e3}{-29.5} & \cellcolor[HTML]{e6e3e3}{-24.6} & \cellcolor[HTML]{e6e3e3}{-19.3}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-62.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-64.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-59.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-51.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-0.3}}} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-28.5}}} & \cellcolor[HTML]{e6e3e3}{-30.1} & \cellcolor[HTML]{e6e3e3}{-25.2} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-62.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-64.4}}} & \cellcolor[HTML]{e6e3e3}{-58.9} & \cellcolor[HTML]{e6e3e3}{-51.5} & \cellcolor[HTML]{e6e3e3}{-0.2} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-28.5}}} & \cellcolor[HTML]{e6e3e3}{-30.1} & \cellcolor[HTML]{e6e3e3}{-25.2} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
-\midrule
-EMinT & -60.7 & -63.5 & -58.2 & -51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 2.0 & 1.1 & -26.2 & -28.3 & -23.8 & -18.9\\
-\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-60.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{-58.2} & \cellcolor[HTML]{e6e3e3}{\textbf{-51.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.8}} & \cellcolor[HTML]{e6e3e3}{2.3} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.1}} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{-26.5}} & \cellcolor[HTML]{e6e3e3}{-28.3} & \cellcolor[HTML]{e6e3e3}{-23.8} & \cellcolor[HTML]{e6e3e3}{-18.9}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
-\end{table}
-
 \hypertarget{tbl-s1-selection}{}
 \begin{table}[!h]
 \caption{\label{tbl-s1-selection}Proportion of time series being selected after using the proposed
@@ -1682,94 +1512,6 @@ MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics
 MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-lasso.png}\\
 \midrule
 Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_Elasso.png}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
-\end{tablenotes}
-\end{threeparttable}}
-\endgroup{}
-\end{table}
-
-\hypertarget{tbl-s2-selection}{}
-\begin{table}[!h]
-\caption{\label{tbl-s2-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario II, Setup 1. }\tabularnewline
-
-\centering\begingroup\fontsize{7}{9}\selectfont
-
-\resizebox{\linewidth}{!}{
-\begin{threeparttable}
-\begin{tabular}{llrrrrrr>{}r}
-\toprule
-  & Top & A & B & AA & AB & BA & BB & Summary\\
-\midrule
-OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
-OLS-intuitive & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-intuitive.png}\\
-OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
-\midrule
-WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
-WLSs-intuitive & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-intuitive.png}\\
-WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
-\midrule
-WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
-WLSv-intuitive & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-intuitive.png}\\
-WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
-\midrule
-MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-intuitive.png}\\
-MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
-\midrule
-MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-intuitive.png}\\
-MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
-\midrule
-Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
-\end{tablenotes}
-\end{threeparttable}}
-\endgroup{}
-\end{table}
-
-\hypertarget{tbl-s3-selection}{}
-\begin{table}[!h]
-\caption{\label{tbl-s3-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario III, Setup 1. }\tabularnewline
-
-\centering\begingroup\fontsize{7}{9}\selectfont
-
-\resizebox{\linewidth}{!}{
-\begin{threeparttable}
-\begin{tabular}{llrrrrrr>{}r}
-\toprule
-  & Top & A & B & AA & AB & BA & BB & Summary\\
-\midrule
-OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
-OLS-intuitive & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-intuitive.png}\\
-OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-lasso.png}\\
-\midrule
-WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-subset.png}\\
-WLSs-intuitive & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-intuitive.png}\\
-WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-lasso.png}\\
-\midrule
-WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-subset.png}\\
-WLSv-intuitive & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-intuitive.png}\\
-WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-lasso.png}\\
-\midrule
-MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-intuitive.png}\\
-MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-lasso.png}\\
-\midrule
-MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-intuitive.png}\\
-MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-lasso.png}\\
-\midrule
-Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
@@ -1832,9 +1574,7 @@ series. A similar simulation to \textcite{Wickramasuriya2021-am} is
 implemented in this section. Using the same hierarchical structure as
 shown in Figure~\ref{fig-hts}, we assume the data generating process for
 the time series at the bottom level follows a stationary first-order
-vector autoregressive model, i.e., \(\text{VAR}(1)\), given by
-
-\[
+vector autoregressive model, i.e., \(\text{VAR}(1)\), given by \[
 \boldsymbol{b}_t= \boldsymbol{c} + \left[\begin{array}{cc}
 \boldsymbol{A}_1 & \boldsymbol{0} \\
 \boldsymbol{0} & \boldsymbol{A}_2
@@ -1847,9 +1587,7 @@ matrices with eigenvalues
 \(z_{1,2}=0.6[\cos (\pi / 3) \pm i \sin (\pi / 3)]\) and
 \(z_{3,4}=0.9[\cos (\pi / 6) \pm i \sin (\pi / 6)]\), respectively, and
 \(\boldsymbol{\varepsilon}_t \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{\Sigma})\),
-where
-
-\[
+where \[
 \boldsymbol{\Sigma}=\left[\begin{array}{cc}
 \boldsymbol{\Sigma}_1 & 0 \\0 & \boldsymbol{\Sigma}_2
 \end{array}\right], \text { and } \boldsymbol{\Sigma}_1=\boldsymbol{\Sigma}_2=\left[\begin{array}{cc}2 & \sqrt{6} \rho \\\sqrt{6} \rho & 3\end{array}\right],
@@ -1882,8 +1620,8 @@ models still exhibit fluctuations around zero and do not display
 significant deviations in comparison to the residuals from other series.
 This is because the influence of the constant term is minimal, i.e., it
 is much smaller compared to the data variability. Thus, it may be
-challenging to identify the ``bad'' base forecasts and exclude them from
-reconciliation in this setup.
+challenging to identify the ``poor'' base forecasts and exclude them
+from reconciliation in this setup.
 
 \begin{figure}
 
@@ -1908,7 +1646,7 @@ slight decrease. Similar pattern is observed in the overall improvements
 of all benchmark reconciliation methods compared to the base forecasts.
 Of the methods we propose, the Subset methods display more consistently
 stable improvements overall. We should highlight the challenge of
-identifying the ``bad'' base forecasts in this simulation design, given
+identifying the ``poor'' base forecasts in this simulation design, given
 that the omission of the constant term has minimal impact relative to
 the data variability. In addition, we observe that the MinT and MinTs
 methods perform especially well and our methods provide results same
@@ -2044,51 +1782,6 @@ Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \endgroup{}
 \end{table}
 
-\hypertarget{tbl-corr-selection-pos}{}
-\begin{table}[!h]
-\caption{\label{tbl-corr-selection-pos}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Setup 2, with the error
-correlation being 0.8. }\tabularnewline
-
-\centering\begingroup\fontsize{7}{9}\selectfont
-
-\resizebox{\linewidth}{!}{
-\begin{threeparttable}
-\begin{tabular}{llrrrrrr>{}r}
-\toprule
-  & Top & A & B & AA & AB & BA & BB & Summary\\
-\midrule
-OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-subset.png}\\
-OLS-intuitive & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-intuitive.png}\\
-OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-lasso.png}\\
-\midrule
-WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-subset.png}\\
-WLSs-intuitive & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-intuitive.png}\\
-WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-lasso.png}\\
-\midrule
-WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-subset.png}\\
-WLSv-intuitive & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-intuitive.png}\\
-WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-lasso.png}\\
-\midrule
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-intuitive.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-lasso.png}\\
-\midrule
-MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-intuitive.png}\\
-MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-lasso.png}\\
-\midrule
-Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_Elasso.png}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
-\end{tablenotes}
-\end{threeparttable}}
-\endgroup{}
-\end{table}
-
 \hypertarget{sec-applications}{%
 \section{Applications}\label{sec-applications}}
 
@@ -2182,7 +1875,7 @@ implemented in the \textbf{forecast} package for R. Using these fitted
 ETS models, we generate base forecasts, and then perform diverse
 forecast reconciliation methods. Following this, we roll the forecast
 origin forward by one month and repeat the process until July 2022. We
-note that it may be challenging to identify the series with ``bad''
+note that it may be challenging to identify the series with ``poor''
 forecasts due to structural changes in the data caused by the COVID-19
 pandemic, which affect the accuracy of forecasts across all time series.
 
@@ -2645,8 +2338,265 @@ forecast error covariance matrix, thereby mitigating the challenges
 associated with estimator selection, which is a prominent issue within
 the field of forecast reconciliation research.
 
-\textbf{\large{Acknowledgement}}
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
 
-\printbibliography
+\printbibliography[heading=none]
+
+\newpage
+\appendix
+\setcounter{section}{0}
+\renewcommand{\thesection}{\Alph{section}}
+\renewcommand{\thefigure}{A\arabic{figure}}
+\renewcommand{\thetable}{A\arabic{table}}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+
+\hypertarget{appendix}{%
+\section*{Appendix}\label{appendix}}
+\addcontentsline{toc}{section}{Appendix}
+
+AAA
+
+\hypertarget{tbl-s2-rmse}{}
+\begin{table}[!h]
+\caption{\label{tbl-s2-rmse}Out-of-sample forecast results for the simulated data in Scenario II,
+Setup 1. }\tabularnewline
+
+\centering
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}{lrrrrlrrrrlrrrrlr}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17}
+Method & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16\\
+\midrule
+Base & 9.6 & 10.7 & 12.6 & 15.6 & 12.1 & 14.4 & 15.3 & 17.0 & 4.2 & 4.9 & 5.9 & 7.5 & 7.2 & 8.5 & 9.6 & 11.4\\
+BU & \textcolor{blue}{\textbf{-1.0}} & 0.4 & 0.6 & 0.7 & \textcolor{blue}{\textbf{-47.7}} & \textcolor{blue}{\textbf{-49.6}} & \textcolor{blue}{\textbf{-43.6}} & \textcolor{blue}{\textbf{-36.2}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{-23.0}} & \textcolor{blue}{\textbf{-24.0}} & \textcolor{blue}{\textbf{-19.8}} & \textcolor{blue}{\textbf{-15.3}}\\
+\midrule
+OLS & 8.5 & 13.9 & 10.4 & 7.6 & -28.2 & -29.4 & -26.7 & -23.1 & 22.9 & 23.9 & 17.0 & 11.3 & -4.2 & -3.8 & -4.2 & -4.1\\
+\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-15.0}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-36.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-15.0}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.9}}\\
+\midrule
+WLSs & 12.1 & 18.6 & 14.0 & 10.2 & -34.4 & -35.1 & -31.7 & -26.9 & 15.6 & 17.0 & 12.0 & 8.0 & -9.0 & -8.0 & -7.6 & -6.5\\
+\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.8}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.9}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.9}}\\
+\midrule
+WLSv & -0.8 & 2.3 & 1.8 & 1.6 & -46.3 & -47.9 & -42.3 & -35.2 & 1.6 & 1.9 & 1.2 & 0.8 & -21.7 & -22.2 & -18.6 & -14.4\\
+\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{-0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-42.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.7}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{-0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-42.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.7}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{-0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-47.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-43.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-14.8}}\\
+\midrule
+MinT & 0.2 & 0.5 & 0.6 & 0.5 & -47.5 & -49.4 & -43.5 & -36.1 & 1.1 & 0.5 & 0.3 & 0.1 & -22.3 & -23.7 & -19.6 & \textcolor{blue}{\textbf{-15.3}}\\
+\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.1}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{-46.9} & \cellcolor[HTML]{e6e3e3}{-49.1} & \cellcolor[HTML]{e6e3e3}{-43.3} & \cellcolor[HTML]{e6e3e3}{-36.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{-21.9} & \cellcolor[HTML]{e6e3e3}{-23.4} & \cellcolor[HTML]{e6e3e3}{-19.4} & \cellcolor[HTML]{e6e3e3}{-15.1}\\
+\cellcolor[HTML]{e6e3e3}{MinT-intuitive} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{-47.5} & \cellcolor[HTML]{e6e3e3}{-49.4} & \cellcolor[HTML]{e6e3e3}{-43.5} & \cellcolor[HTML]{e6e3e3}{-36.1} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{-22.3} & \cellcolor[HTML]{e6e3e3}{-23.7} & \cellcolor[HTML]{e6e3e3}{-19.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
+\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{-47.6}} & \cellcolor[HTML]{e6e3e3}{-49.4} & \cellcolor[HTML]{e6e3e3}{-43.5} & \cellcolor[HTML]{e6e3e3}{-36.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-23.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
+\midrule
+MinTs & -0.3 & 0.3 & \textcolor{blue}{\textbf{ 0.4}} & \textcolor{blue}{\textbf{ 0.4}} & -47.6 & -49.5 & \textcolor{blue}{\textbf{-43.6}} & \textcolor{blue}{\textbf{-36.2}} & 0.7 & 0.2 & 0.1 & \textcolor{blue}{\textbf{ 0.0}} & -22.6 & -23.9 & \textcolor{blue}{\textbf{-19.8}} & \textcolor{blue}{\textbf{-15.3}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.8}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{-47.2} & \cellcolor[HTML]{e6e3e3}{-49.2} & \cellcolor[HTML]{e6e3e3}{-43.4} & \cellcolor[HTML]{e6e3e3}{-36.0} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{-22.3} & \cellcolor[HTML]{e6e3e3}{-23.6} & \cellcolor[HTML]{e6e3e3}{-19.5} & \cellcolor[HTML]{e6e3e3}{-15.1}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{-0.3} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{-47.6} & \cellcolor[HTML]{e6e3e3}{-49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-36.2}}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{-22.6} & \cellcolor[HTML]{e6e3e3}{-23.9} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-0.9}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.2}}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-47.7}}} & \cellcolor[HTML]{e6e3e3}{-49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-36.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{-22.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-24.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-15.3}}}\\
+\midrule
+EMinT & 2.2 & 2.9 & 2.5 & 1.7 & -46.2 & -48.1 & -42.4 & -35.3 & 3.6 & 2.9 & 2.0 & 1.1 & -20.5 & -21.9 & -18.2 & -14.3\\
+\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-46.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-48.2}} & \cellcolor[HTML]{e6e3e3}{-42.4} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.1}} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{-20.9}} & \cellcolor[HTML]{e6e3e3}{-21.9} & \cellcolor[HTML]{e6e3e3}{-18.2} & \cellcolor[HTML]{e6e3e3}{-14.3}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item \underline{\textit{NOTE:}} 
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}
+
+\hypertarget{tbl-s3-rmse}{}
+\begin{table}[!h]
+\caption{\label{tbl-s3-rmse}Out-of-sample forecast results for the simulated data in Scenario III,
+Setup 1. }\tabularnewline
+
+\centering
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}{lrrrrlrrrrlrrrrlr}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17}
+Method & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16 & h=1 & 1-4 & 1-8 & 1-16\\
+\midrule
+Base & 25.0 & 30.3 & 30.9 & 32.3 & 6.3 & 7.3 & 8.6 & 10.8 & 4.2 & 4.9 & 5.9 & 7.5 & 7.8 & 9.2 & 10.3 & 12.0\\
+BU & -62.0 & \textcolor{blue}{\textbf{-64.4}} & \textcolor{blue}{\textbf{-59.0}} & -51.5 & \textcolor{blue}{\textbf{-0.3}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.1}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{-28.5}} & \textcolor{blue}{\textbf{-30.2}} & \textcolor{blue}{\textbf{-25.3}} & \textcolor{blue}{\textbf{-19.8}}\\
+\midrule
+OLS & -34.8 & -35.5 & -33.5 & -30.1 & 45.3 & 50.6 & 37.7 & 25.1 & 27.7 & 29.9 & 21.2 & 13.7 & 3.1 & 3.8 & 1.6 & -0.2\\
+\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-41.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-39.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-35.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{43.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{39.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{29.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{19.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{27.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{23.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{16.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{10.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -3.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -4.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -4.5}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-41.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-49.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-45.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-40.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{35.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{26.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{20.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{13.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{21.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{15.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{11.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -4.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-12.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-10.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ -9.1}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}}\\
+\midrule
+WLSs & -50.9 & -52.4 & -48.7 & -43.3 & 17.6 & 20.0 & 14.5 & 9.3 & 9.6 & 11.3 & 7.7 & 4.9 & -16.3 & -16.7 & -14.9 & -12.5\\
+\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.0}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.2}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.1}}\\
+\midrule
+WLSv & -61.1 & -63.4 & -58.1 & -50.8 & 1.0 & 1.7 & 1.3 & 0.8 & 0.7 & 1.0 & 0.6 & 0.4 & -27.6 & -29.1 & -24.5 & -19.2\\
+\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{-50.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.3}} & \cellcolor[HTML]{e6e3e3}{-24.5} & \cellcolor[HTML]{e6e3e3}{-19.2}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-51.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.3}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-61.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-58.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-51.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{-29.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{-24.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{-19.4}}\\
+\midrule
+MinT & -62.1 & -64.3 & -58.9 & \textcolor{blue}{\textbf{-51.6}} & -0.2 & 0.6 & 0.5 & 0.2 & 0.8 & 0.5 & 0.3 & 0.1 & -28.3 & -29.9 & -25.1 & \textcolor{blue}{\textbf{-19.8}}\\
+\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{-61.8} & \cellcolor[HTML]{e6e3e3}{-63.7} & \cellcolor[HTML]{e6e3e3}{-58.2} & \cellcolor[HTML]{e6e3e3}{-50.9} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{-28.0} & \cellcolor[HTML]{e6e3e3}{-29.3} & \cellcolor[HTML]{e6e3e3}{-24.5} & \cellcolor[HTML]{e6e3e3}{-19.2}\\
+\cellcolor[HTML]{e6e3e3}{MinT-intuitive} & \cellcolor[HTML]{e6e3e3}{-62.1} & \cellcolor[HTML]{e6e3e3}{-64.3} & \cellcolor[HTML]{e6e3e3}{-58.9} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-51.6}}} & \cellcolor[HTML]{e6e3e3}{-0.2} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{-28.3} & \cellcolor[HTML]{e6e3e3}{-29.9} & \cellcolor[HTML]{e6e3e3}{-25.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
+\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{-62.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-64.4}}} & \cellcolor[HTML]{e6e3e3}{-58.9} & \cellcolor[HTML]{e6e3e3}{-51.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-0.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.1}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{-28.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{-30.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{-25.2}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
+\midrule
+MinTs & \textcolor{blue}{\textbf{-62.2}} & \textcolor{blue}{\textbf{-64.4}} & \textcolor{blue}{\textbf{-59.0}} & \textcolor{blue}{\textbf{-51.6}} & \textcolor{blue}{\textbf{-0.3}} & 0.3 & 0.4 & 0.1 & 0.4 & 0.3 & 0.1 & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{-28.5}} & -30.1 & -25.2 & \textcolor{blue}{\textbf{-19.8}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{-62.0} & \cellcolor[HTML]{e6e3e3}{-63.8} & \cellcolor[HTML]{e6e3e3}{-58.4} & \cellcolor[HTML]{e6e3e3}{-51.1} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{-28.2} & \cellcolor[HTML]{e6e3e3}{-29.5} & \cellcolor[HTML]{e6e3e3}{-24.6} & \cellcolor[HTML]{e6e3e3}{-19.3}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-62.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-64.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-59.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-51.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-0.3}}} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-28.5}}} & \cellcolor[HTML]{e6e3e3}{-30.1} & \cellcolor[HTML]{e6e3e3}{-25.2} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-62.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-64.4}}} & \cellcolor[HTML]{e6e3e3}{-58.9} & \cellcolor[HTML]{e6e3e3}{-51.5} & \cellcolor[HTML]{e6e3e3}{-0.2} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-28.5}}} & \cellcolor[HTML]{e6e3e3}{-30.1} & \cellcolor[HTML]{e6e3e3}{-25.2} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{-19.8}}}\\
+\midrule
+EMinT & -60.7 & -63.5 & -58.2 & -51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 2.0 & 1.1 & -26.2 & -28.3 & -23.8 & -18.9\\
+\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{-60.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{-63.6}} & \cellcolor[HTML]{e6e3e3}{-58.2} & \cellcolor[HTML]{e6e3e3}{\textbf{-51.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.8}} & \cellcolor[HTML]{e6e3e3}{2.3} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.1}} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{-26.5}} & \cellcolor[HTML]{e6e3e3}{-28.3} & \cellcolor[HTML]{e6e3e3}{-23.8} & \cellcolor[HTML]{e6e3e3}{-18.9}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item \underline{\textit{NOTE:}} 
+\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}
+
+\hypertarget{tbl-s2-selection}{}
+\begin{table}[!h]
+\caption{\label{tbl-s2-selection}Proportion of time series being selected after using the proposed
+reconciliation methods with selection in Scenario II, Setup 1. }\tabularnewline
+
+\centering\begingroup\fontsize{7}{9}\selectfont
+
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}{llrrrrrr>{}r}
+\toprule
+  & Top & A & B & AA & AB & BA & BB & Summary\\
+\midrule
+OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
+OLS-intuitive & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-intuitive.png}\\
+OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
+WLSs-intuitive & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-intuitive.png}\\
+WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
+WLSv-intuitive & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-intuitive.png}\\
+WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-intuitive.png}\\
+MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-intuitive.png}\\
+MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item \underline{\textit{NOTE:}} 
+\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\end{tablenotes}
+\end{threeparttable}}
+\endgroup{}
+\end{table}
+
+\hypertarget{tbl-s3-selection}{}
+\begin{table}[!h]
+\caption{\label{tbl-s3-selection}Proportion of time series being selected after using the proposed
+reconciliation methods with selection in Scenario III, Setup 1. }\tabularnewline
+
+\centering\begingroup\fontsize{7}{9}\selectfont
+
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}{llrrrrrr>{}r}
+\toprule
+  & Top & A & B & AA & AB & BA & BB & Summary\\
+\midrule
+OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
+OLS-intuitive & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-intuitive.png}\\
+OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-subset.png}\\
+WLSs-intuitive & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-intuitive.png}\\
+WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-subset.png}\\
+WLSv-intuitive & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-intuitive.png}\\
+WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-intuitive.png}\\
+MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-intuitive.png}\\
+MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_Elasso.png}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item \underline{\textit{NOTE:}} 
+\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\end{tablenotes}
+\end{threeparttable}}
+\endgroup{}
+\end{table}
+
+\hypertarget{tbl-corr-selection-pos}{}
+\begin{table}[!h]
+\caption{\label{tbl-corr-selection-pos}Proportion of time series being selected after using the proposed
+reconciliation methods with selection in Setup 2, with the error
+correlation being 0.8. }\tabularnewline
+
+\centering\begingroup\fontsize{7}{9}\selectfont
+
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}{llrrrrrr>{}r}
+\toprule
+  & Top & A & B & AA & AB & BA & BB & Summary\\
+\midrule
+OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-subset.png}\\
+OLS-intuitive & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-intuitive.png}\\
+OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-subset.png}\\
+WLSs-intuitive & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-intuitive.png}\\
+WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-subset.png}\\
+WLSv-intuitive & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-intuitive.png}\\
+WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-intuitive.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-intuitive.png}\\
+MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_Elasso.png}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item \underline{\textit{NOTE:}} 
+\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\end{tablenotes}
+\end{threeparttable}}
+\endgroup{}
+\end{table}
+
 
 \end{document}
