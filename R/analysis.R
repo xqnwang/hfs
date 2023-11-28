@@ -18,7 +18,7 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
         sapply(function(lentry) as.numeric(lentry[[level]]))
     })
     out <- data.frame(method, do.call(cbind, out))
-    colnames(out) <- c("Method", c(ifelse(horizons == 1, paste0("h=", 1), paste0("1-", horizons))) |> rep(length(levels)))
+    colnames(out) <- c("Method", c(ifelse(horizons == 1, paste0("h=", 1), paste0("1--", horizons))) |> rep(length(levels)))
     assign(paste0(data_method, "_", measure), out)
   }
   
@@ -73,13 +73,15 @@ latex_table <- function(out_all){
     out_x <- ifelse(x == min(x), 
                     cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), 
                     ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
+    out_x <- sub("-", "--", out_x)
+    out_x
   })
   
   out |>
     kable(format = "latex",
           booktabs = TRUE,
           digits = 1,
-          align = c("l", rep("r", length(horizons)*length(levels))),
+          align = c("l", rep("r", ncol(out)-1)),
           escape = FALSE,
           linesep = "") |>
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
@@ -273,7 +275,8 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
         sapply(function(lentry) as.numeric(lentry[[level]]))
     })
     out <- data.frame(method, do.call(cbind, out))
-    colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, paste0("$\\rho$=", -0.8), corr[index])) |> rep(length(levels)))
+    # colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, paste0("$\\rho$=", -0.8), corr[index])) |> rep(length(levels)))
+    colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, "$\\rho$=--0.8", sub("-", "--", corr[index]))) |> rep(length(levels)))
     assign(paste0(data_label, "_", method_label), out)
   }
   
@@ -326,13 +329,15 @@ latex_corr_table <- function(out_all){
                 rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), 
                 rep(origin_x[length(origin_x)-1], each = 2))
     out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
+    out_x <- sub("-", "--", out_x)
+    out_x
   })
   
   out |>
     kable(format = "latex",
           booktabs = TRUE,
           digits = 1,
-          align = c("l", rep("r", length(correlations)*length(levels))),
+          align = c("l", rep("r", ncol(out)-1)),
           escape = FALSE,
           linesep = "") |>
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>

@@ -847,8 +847,6 @@ A remarkable feature of the proposed methods is their ability to reduce the disp
 ```
 # Appendix {.unnumbered}
 
-AAA
-
 ```{r}
 #| label: tbl-s2-rmse
 #| echo: false
