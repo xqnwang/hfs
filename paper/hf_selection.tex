@@ -397,7 +397,7 @@ Coherent, Hierarchical time series, Grouped time series, Linear forecast
 reconciliation, Optimization problem
 \end{keywords}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, boxrule=0pt, frame hidden, borderline west={3pt}{0pt}{shadecolor}, interior hidden, breakable, enhanced]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, interior hidden, enhanced, borderline west={3pt}{0pt}{shadecolor}, sharp corners, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -775,14 +775,13 @@ where
 \(\boldsymbol{B}_{h}=\left[\boldsymbol{b}_{h}, \ldots, \boldsymbol{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}\),
 and
 \(\hat{\boldsymbol{Y}}_{h}=\left[\hat{\boldsymbol{y}}_{h \mid 0}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}\).
-The difference between EMinT and ERM lies in the data sources used, as
-EMinT uses in-sample observations and base forecasts, while ERM relies
-on observations and base forecasts from a holdout validation set. We
-note that both ERM and EMinT consider an estimate of \(\boldsymbol{G}\)
-that changes over the forecast horizon, which is why we keep the
-subscript \(h\) here. When reporting the EMinT results in following
-sections, we assume the weighting matrix \(\boldsymbol{G}\) for \(h=1\)
-holds for \(h>1\).
+The difference between EMinT and ERM lies in the data sources, as EMinT
+uses in-sample observations and base forecasts, while ERM relies on
+observations and base forecasts from a holdout validation set. We note
+that both ERM and EMinT consider an estimate of \(\boldsymbol{G}\) that
+changes over the forecast horizon, which is why we keep the subscript
+\(h\) here. When reporting the EMinT results that follow, we assume the
+weighting matrix \(\boldsymbol{G}\) for \(h=1\) holds for \(h>1\).
 
 In practice, a prevalent challenge in forecast reconciliation arises
 when the base forecasts of some time series within the structure may
@@ -1415,15 +1414,17 @@ series AA at the bottom level, series A at the middle level, and series
 Total at the top level, resulting in Scenario I, Scenario II, and
 Scenario III, respectively.
 
-The results for Scenario I, II, and III are presented in
+The results for Scenarios I, II, and III are presented in
 Table~\ref{tbl-s1-rmse}, Table~\ref{tbl-s2-rmse}, and
 Table~\ref{tbl-s3-rmse}, respectively. Each table reports the average
 root mean squared error (RMSE) for each level as well as the whole
 structure (denoted as \emph{Average}). The \emph{Base} row shows the
-average RMSE of the base forecasts, while entries below this row
-reporting the percentage decrease (negative) or increase (positive) in
-the average RMSE of the reconciled forecasts compared to the base
-forecasts.
+average RMSE of base forecasts, while entries below this row reporting
+the percentage decrease (negative) or increase (positive) in the average
+RMSE of reconciled forecasts compared to base forecasts. For each
+scenario considered, the largest improvements occur at the respective
+hierarchical level where model misspecification is introduced, while
+slightly deteriorating the performance of other levels.
 
 \hypertarget{tbl-s1-rmse}{}
 \begin{table}[!h]
@@ -1528,30 +1529,30 @@ ranks as the worst overall in Scenario I. This is not surprising, as
 bottom-level base forecasts are deteriorated in Scenario I, while
 higher-level base forecasts are deteriorated in Scenario II and III.
 Moreover, the WLSv, MinT, and MinTs approaches perform especially well
-in this simulation design, benefiting from their ability to consider the
-in-sample covariance of base forecast errors, allowing for larger range
-of adjustments in reconciliation for base forecasts with higher
-estimated error variance. EMinT also provides accurate reconciled
-forecasts in our setup, where the in-sample forecasts for specific
-series are intentionally undermined, a situation that can be detected by
-the in-sample information based EMinT method. However, OLS and WLSs
-perform much worse than other benchmark methods in this simulation
-design.
+in Setup 1, benefiting from their ability to consider the in-sample
+covariance of base forecast errors, allowing for larger range of
+adjustments in reconciliation for base forecasts with higher estimated
+error variance. EMinT also provides accurate reconciled forecasts in our
+setup, where the in-sample forecasts for specific series are
+intentionally undermined, a situation that can be detected by the
+in-sample information based EMinT method. However, OLS and WLSs perform
+much worse than other benchmark methods in this simulation design.
 
 In all three scenarios, our proposed methods consistently produce either
 improved or comparable reconciled forecasts compared to their respective
 benchmark methods. The improvements are particularly pronounced when
-using OLS and WLSs estimators of \(\boldsymbol{W}\), which do not take
-into account the in-sample covariance of base forecast errors. One
-advantage of using the forecast reconciliation methods with selection
-proposed in this paper is that they can reduce the difference introduced
-by using different estimates of \(\boldsymbol{W}\), thereby mitigating
-the risk of estimator selection. In some cases, such as Scenarios II and
-III, we can align the forecast accuracy achieved using different
-estimators, and make them close to the best results we can obtain. When
-we drop the unbiasedness assumption, Elasso delivers results on par with
-EMinT overall, while achieving improvements at the top level, which is
-typically the aspect of greatest concern to practitioners.
+using OLS and WLSs estimators of \(\boldsymbol{W}\) in the benchmark
+methods, which do not take into account the in-sample covariance of base
+forecast errors. One advantage of using the forecast reconciliation
+methods with selection proposed in this paper is that they can reduce
+the difference introduced by using different estimates of
+\(\boldsymbol{W}\), thereby mitigating the risk of estimator selection.
+In some cases, such as Scenarios II and III, we can align the forecast
+accuracy achieved using different estimators, and make them close to the
+best results we can obtain. When we drop the unbiasedness assumption,
+Elasso delivers results on par with EMinT overall, while achieving
+improvements at the top level, which is typically the aspect of greatest
+concern to practitioners.
 
 In addition, we report the proportion of time series being selected from
 the implementation of our proposed methods in 500 simulation instances,
@@ -1561,9 +1562,15 @@ our proposed methods select fewer time series from the hierarchy for
 forecast reconciliation, and generally improve forecast accuracy over
 the benchmark methods. Furthermore, we observe that the Subset methods
 tend to return fewer time series compared to the Intuitive and Lasso
-methods, which aligns with our expectations. As discussed in
-Section~\ref{sec-methodology}, the Intuitive and Lasso methods tend to
-produce dense estimates.
+methods, which aligns with our expectations that the Intuitive and Lasso
+methods tend to produce dense estimates. Most importantly, depending on
+the scenario considered, the time series with model misspecification has
+been selected less often than others. For example, considering Scenario
+I, series AA is expected to be removed, while AB is expected to be
+retained. This allows us to obtain series AA via operations such as
+A\(-\)AB, Total\(-\)B\(-\)AB, or Total\(-\)AB\(-\)BA\(-\)BB. The results
+in Table~\ref{tbl-s1-selection} align with our expectations, and show
+that series AA is dropped often, whereas AB is selected all the time.
 
 \hypertarget{sec-sim2}{%
 \subsection{Setup 2: Exploring the effect of
@@ -1609,19 +1616,19 @@ Specifically, we identify the best ARMA model with the minimum AICc
 the automated algorithm implemented in the \textbf{forecast} R package.
 Additionally, when fitting ARMA models for time series Total, A, and BA,
 we introduce a slight bias by omitting the constant term, which is a
-common scenario in practice. Figure~\ref{fig-corr-data} presents an
-illustrative example of a hierarchical time series simulated. The left
-panels depict time plots for each series at different levels of the
-structure, while right panels show the residuals obtained from
-forecasting each series using the fitted ARMA model. Notably, despite
-our omission of the constant term when fitting ARMA models to series
-Total, A, and BA, the residuals derived from the identified optimal
-models still exhibit fluctuations around zero and do not display
-significant deviations in comparison to the residuals from other series.
-This is because the influence of the constant term is minimal, i.e., it
-is much smaller compared to the data variability. Thus, it may be
-challenging to identify the ``poor'' base forecasts and exclude them
-from reconciliation in this setup.
+common case when using some models to get base forecasts in practice.
+Figure~\ref{fig-corr-data} presents an illustrative example of a
+hierarchical time series simulated. The left panels depict time plots
+for each series at different levels of the structure, while right panels
+show the residuals obtained from forecasting each series using the
+fitted ARMA model. Notably, despite our omission of the constant term
+when fitting ARMA models to series Total, A, and BA, the residuals
+derived from the identified optimal models still exhibit fluctuations
+around zero and do not display significant deviations in comparison to
+the residuals from other series. This is because the influence of the
+constant term is minimal, i.e., it is much smaller compared to the data
+variability. Thus, it may be challenging to identify the ``poor'' base
+forecasts and exclude them from reconciliation in this setup.
 
 \begin{figure}
 
@@ -1641,21 +1648,19 @@ base forecasts. The results show that, for OLS, WLSs, WLSv estimators,
 our proposed methods consistently dominate their respective benchmark
 methods at all levels when the error correlation is \(-0.8\). In
 general, as the error correlation ranges from \(-0.8\) to \(0.8\), the
-overall improvements in our methods over the benchmark methods show a
-slight decrease. Similar pattern is observed in the overall improvements
-of all benchmark reconciliation methods compared to the base forecasts.
-Of the methods we propose, the Subset methods display more consistently
-stable improvements overall. We should highlight the challenge of
-identifying the ``poor'' base forecasts in this simulation design, given
-that the omission of the constant term has minimal impact relative to
-the data variability. In addition, we observe that the MinT and MinTs
-methods perform especially well and our methods provide results same
-with benchmark methods. This is attributed to the use of in-sample
-covariance by MinT and MinTs, which allows for large adjustments in
-reconciliation for base forecasts with high estimated error variance.
-Elasso forecasts are slightly worse than EMinT, possibly due to the
-difficulty of identifying underperforming base forecasts in this
-simulation setup.
+overall improvements in our methods over the benchmark methods show
+comparable results. Similar pattern is observed in the overall
+improvements of all benchmark reconciliation methods compared to the
+base forecasts. We should highlight the challenge of identifying the
+``poor'' base forecasts in this simulation design, given that the
+omission of the constant term has minimal impact relative to the data
+variability. In addition, we observe that the MinT and MinTs methods
+perform especially well and our methods provide results same with
+benchmark methods. This is attributed to the use of in-sample covariance
+by MinT and MinTs, which allows for large adjustments in reconciliation
+for base forecasts with high estimated error variance. Elasso forecasts
+are slightly worse than EMinT, possibly due to the difficulty of
+identifying underperforming base forecasts in this simulation setup.
 
 We have also considered alternative error correlation values,
 \(\rho = -0.6, -0.2, 0.2, 0.4\), for this simulation setting, but to
@@ -1723,19 +1728,19 @@ Table~\ref{tbl-corr-selection-pos}, respectively. Once again, we note
 that it is difficult to exclude poor-performing base forecasts in this
 simulation design as the constant term omitted is very small compared to
 the data variability. As observed in Table~\ref{tbl-corr-selection-neg},
-for OLS, WLSs, and WLS estimators, the Subset and Intuitive methods are
+for OLS, WLSs, and WLSv estimators, the Subset and Intuitive methods are
 still able to exclude the series Total, A, and BA in some instances, in
 which small biases are introduced in model fitting, while essentially
 retaining the rest series in the hierarchy. The Subset methods perform
-superior to the Intuitive method in selection.The Lasso methods
+superior to the Intuitive method in selection. The Lasso methods
 typically select all bottom-level series since they tend to yield dense
-estimates. Elasso also select all bottom-level series. When dealing with
-a high positive error correlation, Table~\ref{tbl-corr-selection-pos}
-shows that our methods still have the potential to do some selection but
-it becomes somewhat challenging to identify and exclude the series that
-should be omitted in reconciliation. Hence, our methods are preferred,
-particularly when the error correlation within the hierarchical
-structure is negative.
+estimates as discussed in Section~\ref{sec-lasso}. Elasso also select
+all bottom-level series. When dealing with a high positive error
+correlation, Table~\ref{tbl-corr-selection-pos} shows that our methods
+still have the potential to do some selection but it becomes somewhat
+challenging to identify and exclude the series that should be omitted in
+reconciliation. Hence, our methods are preferred, particularly when the
+error correlation within the hierarchical structure is negative.
 
 \hypertarget{tbl-corr-selection-neg}{}
 \begin{table}[!h]
@@ -1818,16 +1823,16 @@ search (referred to as \emph{Duration}), and State and Territory
 are nested within the others. At the bottom level, the data are
 disaggregated by both attributes. We refer to the bottom level as the
 \emph{Duration} \(\times\) \emph{STT} level. Specifically, there are six
-different groups of job search duration, under 1 month, 1-3 months, 3-6
-months, 6-12 months, 1-2 years, and 2 years and over. Additionally, the
-number of unemployed persons in Australia can be disaggregated by eight
-states and territories, i.e., NSW (New South Wales), VIC (Victoria), QLD
-(Queensland), SA (South Australia), WA (Western Australia), TAS
-(Tasmania), NT (Northern Territory), and ACT (Australian Capital
-Territory). So the final grouped hierarchy consists of the top series,
-six series at the Duration level, eight series at the STT level, and
-\(48\) series at the Duration \(\times\) STT level, giving \(63\) time
-series in total, each of length \(163\) observations.
+different groups of job search duration, under 1 month, 1--3 months,
+3--6 months, 6--12 months, 1--2 years, and 2 years and over.
+Additionally, the number of unemployed persons in Australia can be
+disaggregated by eight states and territories, i.e., NSW (New South
+Wales), VIC (Victoria), QLD (Queensland), SA (South Australia), WA
+(Western Australia), TAS (Tasmania), NT (Northern Territory), and ACT
+(Australian Capital Territory). So the final grouped hierarchy consists
+of the top series, six series at the Duration level, eight series at the
+STT level, and \(48\) series at the Duration \(\times\) STT level,
+giving \(63\) time series in total, each of length \(163\) observations.
 
 The top panel in Figure~\ref{fig-labour-data} shows the total number of
 unemployed persons in Australia from January 2010 to July 2023,
@@ -1949,19 +1954,21 @@ EMinT & 43.1 & 17.6 & 9.9 & 10.2 & 36.8 & 25.2 & 27.9 & 24.1 & 16.8 & 15.1 & 6.2
 \end{table}
 
 We also provide the results based on the final test set spanning from
-August 2022 to July 2023 in Table~\ref{tbl-labour-rmse}. The results
-indicate that all Subset methods using different estimators of
-\(\boldsymbol{G}\), i.e., OLS-subset, WLSs-subset, WLSv-subset, and
-MinTs-subset, produce improved or comparable reconciled forecasts
-compared to their respective benchmark methods. The improvements in
-forecast accuracy become more noticeable for longer forecast horizons.
-Similar to the average results in Table~\ref{tbl-labour-rmse-avg}, the
-Intuitive and Lasso methods yield results identical to the benchmark
-methods due to their tendency to offer dense estimates. Surprisingly,
-when relaxing the unbiasedness constraint, the Elasso method ranks the
-best and demonstrates significant improvement compared to the EMinT
-method, and outperforms other methods across almost all levels except
-for the top level.
+August 2022 to July 2023 in Table~\ref{tbl-labour-rmse}. We consider
+this period because it is the latest available data, enabling us to use
+more data for model training to get more knowledge about the post-COVID
+pattern. The results indicate that all Subset methods using different
+estimators of \(\boldsymbol{W}\), i.e., OLS-subset, WLSs-subset,
+WLSv-subset, and MinTs-subset, produce improved or comparable reconciled
+forecasts compared to their respective benchmark methods. The
+improvements in forecast accuracy become more noticeable for longer
+forecast horizons. Similar to the average results in
+Table~\ref{tbl-labour-rmse-avg}, the Intuitive and Lasso methods yield
+results identical to the benchmark methods due to their tendency to
+offer dense estimates. Surprisingly, when relaxing the unbiasedness
+constraint, the Elasso method ranks the best and demonstrates
+significant improvement compared to the EMinT method, and outperforms
+other methods across almost all levels except for the top level.
 
 \hypertarget{tbl-labour-rmse}{}
 \begin{table}[!h]
@@ -2033,7 +2040,8 @@ compared to those at the STT level.
 \begin{table}[!h]
 \caption{\label{tbl-labour-info}Number of time series selected using different proposed methods and the
 optimal parameter values identified in the labour application,
-considering a single test set (from August 2022 to July 2023). }\tabularnewline
+considering a single test set (from August 2022 to July 2023). The None
+row shows the original number of series in the structure. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -2095,14 +2103,14 @@ large decrease in tourism flows for WA occurred in 2016.
 \end{figure}
 
 Our objective is to forecast tourism flows for each series in the
-geographical hierarchy while ensuring the coherence of forecasts across
-all levels. We adopt the rolling forecast origin approach to evaluate
-the forecast accuracy of different methods. We start with a training set
-of \(216\) months for each series to generate base forecasts by fitting
-the optimal ETS model. Following this, we roll the forecast origin
-forward by one month and repeat the process until December 2016. The
-base forecasts are reconciled using our proposed methods and some
-state-of-the-art reconciliation methods.
+geographical hierarchy while ensuring coherence across all levels. We
+adopt the rolling forecast origin approach to evaluate the forecast
+accuracy of different methods. We start with a training set of \(216\)
+months for each series to generate base forecasts by fitting the optimal
+ETS model. We then roll the forecast origin forward by one month and
+repeat the process until December 2016. The base forecasts are
+reconciled using our proposed methods and some state-of-the-art
+reconciliation methods.
 
 Table~\ref{tbl-tourism-rmse-avg} reports the average RMSE values for
 base forecasts generated by ETS models, along with the percentage
@@ -2178,11 +2186,11 @@ EMinT & --2.3 & 24.3 & 58.8 & 59.7 & 36.9 & 56.0 & 68.4 & 70.4 & 51.4 & 64.6 & 7
 
 We also present the results based on the last one training set spanning
 from January 2017 to December 2017 in Table~\ref{tbl-tourism-rmse}. The
-results shows a similar performance to the average results described
-above, indicating relatively high-quality forecasts from the Subset and
-Elasso methods. The reconciliation errors across each of the \(111\)
-series and across the four levels in the hierarchy are displayed in
-Figure~\ref{fig-tourism-rmse}.
+reconciliation errors across each of the \(111\) series and across the
+four levels in the hierarchy are displayed in
+Figure~\ref{fig-tourism-rmse}. The results shows a similar performance
+to the average results described above, indicating relatively
+high-quality forecasts from the Subset and Elasso methods.
 
 \hypertarget{tbl-tourism-rmse}{}
 \begin{table}[!h]
@@ -2267,7 +2275,8 @@ reconciliation.
 \begin{table}[!h]
 \caption{\label{tbl-tourism-info}Number of time series selected using different proposed methods and the
 optimal parameter values identified in the tourism application,
-considering a single test set (from January 2017 to December 2017). }\tabularnewline
+considering a single test set (from January 2017 to December 2017). The
+None row shows the original number of series in the structure. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -2290,19 +2299,20 @@ Elasso & 1 & 4 & 0 & 8 & 13 & 71759.21 & - & -\\
 \hypertarget{sec-conclusion}{%
 \section{Conclusion}\label{sec-conclusion}}
 
-In the existing literature on hierarchical time series and linear
-forecast reconciliation, we map all base forecasts into bottom-level
-disaggregated forecasts, which are then summed up by a summing matrix to
-yield coherent forecasts for the entire structure. Hence, the mapping
-step in forecast reconciliation can be conceptually regarded as a
-forecast combination. In practical applications, it is common that the
-base forecasts for some time series in the hierarchical structure may
-perform poorly, especially in the context of large hierarchies. This may
+In the existing literature on hierarchical or grouped time series when
+we perform linear forecast reconciliation, we map all base forecasts
+into bottom-level disaggregated forecasts, which are then summed up by a
+summing matrix to yield coherent forecasts for the entire structure.
+Hence, the mapping step in forecast reconciliation can be conceptually
+regarded as a forecast combination. In practical applications, it is
+common that the base forecasts for some time series in the structure may
+perform poorly, especially in the context of large structures. This may
 reduce the overall effectiveness of forecast reconciliation methods. In
 this paper, we aimed to address this issue by introducing a selection
-mechanism in forecast reconciliation, i.e., involving time series
-selection when reconciling forecasts for hierarchical time series, while
-ensuring the generation of coherent forecasts for all series.
+mechanism in forecast reconciliation, i.e., incorparating time series
+selection when reconciling forecasts for hierarchical or grouped time
+series, while ensuring the generation of coherent forecasts for all
+series.
 
 Under the unbiasedness constraint, we developed three reconciliation
 methods with selection mechanisms to keep forecasts for an automatically
@@ -2314,23 +2324,23 @@ on out-of-sample base forecasts using different penalty functions
 designed to penalize the columns of the weighting matrix,
 \(\boldsymbol{G}\), towards zero. Additionally, we relaxed the
 unbiasedness constraint and proposed the empirical group lasso method
-(Elasso) which achieves series selection based on in-sample observations
-and fitted values.
+(Elasso) which selects series based on in-sample observations and fitted
+values.
 
-The simulation experiments and two empirical applications demonstrated
-the superiority of the proposed methods over the reconciliation methods
-that do not involve series selection. In particular, our methods were
-preferred, particularly when the error correlation within the
-hierarchical structure is negative. Furthermore, when model
-misspecification was introduced for some series in the hierarchy, our
-proposed methods guaranteed coherent forecasts that outperformed or, at
-the very least, matched their respective benchmark methods in the
-minimum trace reconciliation framework. In both empirical applications,
-where no apparent model misspecification was present, the Subset and
-Elasso methods were always preferred, particularly for aggregation
-levels and longer forecast horizons, while the Intuitive and Lasso
-methods yield results identical to the corresponding benchmark methods,
-as they tend to provide dense estimates.
+Simulation experiments and two empirical applications demonstrated the
+superiority of the proposed methods over the reconciliation methods that
+do not involve series selection. Our methods were preferred,
+particularly when the error correlation within the hierarchical
+structure is negative. Furthermore, when model misspecification was
+introduced for some series in the hierarchy, our proposed methods
+guaranteed coherent forecasts that outperformed or, at the very least,
+matched their respective benchmark methods in the minimum trace
+reconciliation framework. In both empirical applications, where no
+apparent model misspecification was present, the Subset and Elasso
+methods were always preferred, particularly for aggregation levels and
+longer forecast horizons, while the Intuitive and Lasso methods yield
+results identical to the corresponding benchmark methods, as they tend
+to provide dense estimates.
 
 A remarkable feature of the proposed methods is their ability to reduce
 the disparities arising from using different estimates of the base
