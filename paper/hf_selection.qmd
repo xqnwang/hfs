@@ -127,14 +127,32 @@ $$ {#eq-mint_op}
 
 where $\tilde{\boldsymbol{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}$ is the vector comprising $h$-step-ahead bottom-level reconciled forecasts, made at time $T$. Focusing on $\boldsymbol{W}_h$, the intuition behind the MinT reconciliation is that **the larger the estimated variance of the base forecast errors, the larger the range of adjustments permitted for forecast reconciliation**.
 
-It is challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assuming that $\boldsymbol{W}_h = k_h\boldsymbol{W}_1$, $\forall h$, where $k_h > 0$, the MinT solution of $\boldsymbol{G}$ does not change with the forecast horizon, $h$. Hence, we will drop the subscript $h$ for the ease of exposition. The most popularly used candidate estimators for $\boldsymbol{W}$ in the forecast reconciliation literature are listed as follows.
+It is challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assuming that $\boldsymbol{W}_h = k_h\boldsymbol{W}_1$, $\forall h$, where $k_h > 0$, the MinT solution of $\boldsymbol{G}$ does not change with the forecast horizon, $h$. Hence, we will drop the subscript $h$ for the ease of exposition. The most popularly used candidate estimators for $\boldsymbol{W}$ in the forecast reconciliation literature are listed in @tbl-bench.
 
-1.  $\boldsymbol{W}_{\text{OLS}} \propto \boldsymbol{I}$, is the *OLS estimator* proposed by @Hyndman2011-sd, and assumes that the base forecast errors are uncorrelated and equivariant. We denote this as **OLS**.
-2.  $\boldsymbol{W}_{\text{WLSs}} \propto \operatorname{diag}(\boldsymbol{S} \mathbf{1})$, is the *WLS estimator applying structural scaling* proposed by @Athanasopoulos2017-jj, where $\mathbf{1}$ is a vector of 1s of size $n_b$, and $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector. This estimator depends only on the aggregation structure of the hierarchy. It assumes that the variance of each bottom-level base forecast error is equivalent and uncorrelated between nodes. We denote this method as **WLSs**.
-3.  $\boldsymbol{W}_{\text{WLSv}} \propto \operatorname{Diag}(\hat{\boldsymbol{W}}_1)$, is the *WLS estimator applying variance scaling* proposed by @Hyndman2016-cz, where $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix. We denote this as **WLSv**.
-4.  $\boldsymbol{W}_{\text{MinT}} \propto \hat{\boldsymbol{W}}_1$, is referred to as the *MinT estimator* based on the sample covariance matrix proposed by @Wickramasuriya2019-fc. We denote this method as **MinT** in the results that follow.
-5.  $\boldsymbol{W}_{\text{MinTs}} \propto \lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$, is the *MinT shrinkage estimator* suggested by @Wickramasuriya2019-fc, in which off-diagonal elements of $\hat{\boldsymbol{W}}_1$ are shrunk towards zero. We refer to this method as **MinTs**.
-
+```{=tex}
+\begin{table}[!h]
+\caption{Forecast reconciliation methods for which different estimators of $\boldsymbol{W}$ are used. {#tbl-bench}}
+\centering
+\begin{threeparttable}
+\begin{tabular}{ll}
+\toprule
+Reconciliation method & $\boldsymbol{W}_h \propto$\\
+\midrule
+\textbf{OLS} \autocite{Hyndman2011-sd} & $\boldsymbol{I}$\\
+\textbf{WLSs} \autocite{Athanasopoulos2017-jj} & $\operatorname{diag}(\boldsymbol{S} \mathbf{1})$\\
+\textbf{WLSv} \autocite{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\boldsymbol{W}}_1)$\\
+\textbf{MinT} \autocite{Wickramasuriya2019-fc} & $\hat{\boldsymbol{W}}_1$\\
+\textbf{MinTs} \autocite{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\footnotesize
+\item \underline{\textit{NOTE:}} 
+\item $\mathbf{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+```
 In practice, it is hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the weighting matrix as the summing matrix is fixed for a given structure. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconciliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the expected Euclidean distance of the reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific time series structure of interest, the targeted level or series, and the selected loss function.
 
 ### Relaxation of the unbiasedness assumptions
@@ -358,9 +376,7 @@ In this simulation design, we follow a simulation setup similar to @Wickramasuri
 \boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t,
 $$
 
-where $\boldsymbol{\mu}_t$, $\boldsymbol{\gamma}_t$, and $\boldsymbol{\eta}_t$ are trend, seasonality, and error components, respectively. The trend and seasonality components are defined by
-
-$$
+where $\boldsymbol{\mu}_t$, $\boldsymbol{\gamma}_t$, and $\boldsymbol{\eta}_t$ are trend, seasonality, and error components, respectively. The trend and seasonality components are defined by $$
 \begin{aligned}
 \boldsymbol{\mu}_t & =\boldsymbol{\mu}_{t-1}+\boldsymbol{v}_t+\boldsymbol{\varrho}_t, & \boldsymbol{\varrho}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_{\varrho}^2 \boldsymbol{I}_4\right), \\
 \boldsymbol{v}_t & =\boldsymbol{v}_{t-1}+\boldsymbol{\zeta}_t, & \boldsymbol{\zeta}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_\zeta^2 \boldsymbol{I}_4\right), \\

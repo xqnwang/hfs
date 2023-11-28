@@ -397,7 +397,7 @@ Coherent, Hierarchical time series, Grouped time series, Linear forecast
 reconciliation, Optimization problem
 \end{keywords}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, interior hidden, enhanced, borderline west={3pt}{0pt}{shadecolor}, sharp corners, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, boxrule=0pt, interior hidden, frame hidden]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -655,46 +655,31 @@ It is challenging to estimate \(\boldsymbol{W}_h\), especially for
 \(\boldsymbol{G}\) does not change with the forecast horizon, \(h\).
 Hence, we will drop the subscript \(h\) for the ease of exposition. The
 most popularly used candidate estimators for \(\boldsymbol{W}\) in the
-forecast reconciliation literature are listed as follows.
+forecast reconciliation literature are listed in Table~\ref{tbl-bench}.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \(\boldsymbol{W}_{\text{OLS}} \propto \boldsymbol{I}\), is the
-  \emph{OLS estimator} proposed by \textcite{Hyndman2011-sd}, and
-  assumes that the base forecast errors are uncorrelated and
-  equivariant. We denote this as \textbf{OLS}.
-\item
-  \(\boldsymbol{W}_{\text{WLSs}} \propto \operatorname{diag}(\boldsymbol{S} \mathbf{1})\),
-  is the \emph{WLS estimator applying structural scaling} proposed by
-  \textcite{Athanasopoulos2017-jj}, where \(\mathbf{1}\) is a vector of
-  1s of size \(n_b\), and \(\operatorname{diag}(\cdot)\) constructs a
-  diagonal matrix using a given vector. This estimator depends only on
-  the aggregation structure of the hierarchy. It assumes that the
-  variance of each bottom-level base forecast error is equivalent and
-  uncorrelated between nodes. We denote this method as \textbf{WLSs}.
-\item
-  \(\boldsymbol{W}_{\text{WLSv}} \propto \operatorname{Diag}(\hat{\boldsymbol{W}}_1)\),
-  is the \emph{WLS estimator applying variance scaling} proposed by
-  \textcite{Hyndman2016-cz}, where \(\hat{\boldsymbol{W}}_1\) denotes
-  the unbiased covariance estimator based on the in-sample
-  one-step-ahead base forecast errors (i.e., residuals), and
-  \(\operatorname{Diag}(\cdot)\) forms a diagonal matrix using the
-  diagonal elements of the input matrix. We denote this as
-  \textbf{WLSv}.
-\item
-  \(\boldsymbol{W}_{\text{MinT}} \propto \hat{\boldsymbol{W}}_1\), is
-  referred to as the \emph{MinT estimator} based on the sample
-  covariance matrix proposed by \textcite{Wickramasuriya2019-fc}. We
-  denote this method as \textbf{MinT} in the results that follow.
-\item
-  \(\boldsymbol{W}_{\text{MinTs}} \propto \lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1\),
-  is the \emph{MinT shrinkage estimator} suggested by
-  \textcite{Wickramasuriya2019-fc}, in which off-diagonal elements of
-  \(\hat{\boldsymbol{W}}_1\) are shrunk towards zero. We refer to this
-  method as \textbf{MinTs}.
-\end{enumerate}
+\hypertarget{tbl-bench}{}
+\begin{table}[!h]
+\caption{\label{tbl-bench}Forecast reconciliation methods for which different estimators of $\boldsymbol{W}$ are used. }
+\centering
+\begin{threeparttable}
+\begin{tabular}{ll}
+\toprule
+Reconciliation method & $\boldsymbol{W}_h \propto$\\
+\midrule
+\textbf{OLS} \autocite{Hyndman2011-sd} & $\boldsymbol{I}$\\
+\textbf{WLSs} \autocite{Athanasopoulos2017-jj} & $\operatorname{diag}(\boldsymbol{S} \mathbf{1})$\\
+\textbf{WLSv} \autocite{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\boldsymbol{W}}_1)$\\
+\textbf{MinT} \autocite{Wickramasuriya2019-fc} & $\hat{\boldsymbol{W}}_1$\\
+\textbf{MinTs} \autocite{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\footnotesize
+\item \underline{\textit{NOTE:}} 
+\item $\mathbf{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
 
 In practice, it is hard to say which estimator for \(\boldsymbol{W}\)
 works better. \textcite{Pritularga2021-lz} demonstrated that the
@@ -1359,9 +1344,7 @@ series are generated using the basic structural time series model \[
 
 where \(\boldsymbol{\mu}_t\), \(\boldsymbol{\gamma}_t\), and
 \(\boldsymbol{\eta}_t\) are trend, seasonality, and error components,
-respectively. The trend and seasonality components are defined by
-
-\[
+respectively. The trend and seasonality components are defined by \[
 \begin{aligned}
 \boldsymbol{\mu}_t & =\boldsymbol{\mu}_{t-1}+\boldsymbol{v}_t+\boldsymbol{\varrho}_t, & \boldsymbol{\varrho}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_{\varrho}^2 \boldsymbol{I}_4\right), \\
 \boldsymbol{v}_t & =\boldsymbol{v}_{t-1}+\boldsymbol{\zeta}_t, & \boldsymbol{\zeta}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_\zeta^2 \boldsymbol{I}_4\right), \\
