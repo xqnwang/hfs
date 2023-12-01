@@ -1,45 +1,29 @@
 ---
 title: "Optimal forecast reconciliation with time series selection"
 author:
-- familyname: Wang
-  othernames: Xiaoqian
-  address:
-    - Monash University, VIC 3800, Australia
-  email: xiaoqian.wang@monash.edu
-  correspondingauthor: true
-- familyname: Hyndman
-  othernames: Rob J
-  address:
-    - Monash University, VIC 3800, Australia
-  email: rob.hyndman@monash.edu
-- familyname: Wickramasuriya
-  othernames: Shanika L
-  address:
-    - Monash University, VIC 3145, Australia
-  email: shanika.wickramasuriya@monash.edu
+- name: Xiaoqian Wang
+  acknowledgements: | 
+      Corresponding author.
+- name: Rob J Hyndman
+- name: Shanika L Wickramasuriya
+  affiliations:
+    - name: Monash University
+      department: Department of Econometrics \& Business Statistics
 abstract: Forecast reconciliation ensures forecasts of time series in a hierarchy adhere to aggregation constraints, enabling aligned decision making. While forecast reconciliation can improve overall forecast accuracy in hierarchical or grouped structures, the most substantial improvements occur in series with initially poor base forecasts, and some series may still experience a deterioration in reconciled forecasts. However, in practice, some series in a structure often have poor base forecasts due to model misspecification or low forecastability. To address this, we propose two categories of forecast reconciliation methods that incorporate time series selection based on out-of-sample and in-sample information, respectively. Our methods keep "poor" base forecasts of some series unused in forming reconciled forecasts, preventing their negative influence on the reconciled forecasts. This process adjusts the weights allocated to the remaining series accordingly when generating bottom-level reconciled forecasts. Additionally, our methods can reduce disparities arising from using different estimates of the base forecast error covariance matrix, thus alleviating the challenge of estimator selection. We evaluate the proposed methods through two simulation studies and two empirical applications using Australian labour force data and domestic tourism data, showing improved accuracy compared to alternative methods, especially for aggregation levels, longer forecast horizons, and under model misspecification.
 keywords: "Coherent, Hierarchical time series, Grouped time series, Linear forecast reconciliation, Optimization problem"
-wpnumber: no/yr
-blind: false
-cover: true
-toc: false
-number-sections: true
-fig-height: 5
-fig-width: 8
-cite-method: biblatex
 bibliography: references.bib
-biblio-style: authoryear-comp
-keep-tex: true
 format:
-  wp-pdf:
-    knitr:
-      opts_chunk:
-        dev: "CairoPDF"
+  asa-pdf:
+    keep-tex: true  
+    journal:
+      blinded: false
+  asa-html: default
 execute:
   echo: false
   warning: false
   message: false
   cache: true
+date: last-modified
 ---
 
 ```{r}
@@ -58,26 +42,26 @@ library(latex2exp)
 source("../R/nemenyi.R") # MCB test
 source("../R/analysis.R") # Other functions used for analysis
 
-theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
+#theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 ```
 
-# Introduction {#sec-introduction}
+## Introduction {#sec-introduction}
 
-Hierarchical time series are characterized as a set of time series organized in a unique hierarchical aggregation structure, while grouped time series arise when attributes of interest are crossed rather than nested in the aggregation structure [@Hyndman2016-cz]. For example, unemployment data is a crucial social and economic indicator and is a natural example of a grouped time series. The analysis of the number of unemployment persons in a country is crucial for informed policymaking and economic research. It is also valuable to examine attributes such as labour market region and the length of time that unemployed people have been looking for work. Such a disaggregation allows us to identify regional disparities, and comprehend the structural nuances underlying unemployment. Forecasts of time series in such a hierarchical or grouped structure should adhere to some known aggregation constraints to maintain coherence, which is a vital aspect for aligned decision making.
+Hierarchical time series are characterized as a set of time series organized in a unique hierarchical aggregation structure, while grouped time series arise when attributes of interest are crossed rather than nested in the aggregation structure [@Hyndman2016-cz]. For example, unemployment data, a crucial social and economic indicator, is a natural example of a grouped time series. The analysis of the number of unemployment persons in a country is crucial for informed policymaking and economic research. It is also valuable to examine attributes such as labour market region and the length of time that unemployed people have been looking for work. Such a disaggregation allows us to identify regional disparities, and comprehend the structural nuances underlying unemployment. Forecasts in such a hierarchical or grouped structure should adhere to some known aggregation constraints to maintain coherence, which is a vital aspect for aligned decision making.
 
 Earlier studies perform forecast reconciliation by focusing only on a single level of the structure, subsequently aggregating or disaggregating their forecasts to produce coherent forecasts for other levels of the structure. These single-level methods typically fall into three categories, namely bottom-up [@Dunn1976-op], top-down [@Gross1990-lg], and middle-out [@Athanasopoulos2009-ps]. However, these methods only use information from a single level while overlooking valuable insights available at other levels and the intricate relationships in the structure.
 
 To overcome these limitations, @Hyndman2011-sd introduced a reconciliation approach using a linear regression model based on forecasts from all series within a given structure, resulting in a generalized least squares (GLS) solution. This method initially generates independent base forecasts for all series in the structure and subsequently adjusts these forecasts to make them coherent. Following this work, further research has led to the modifications of the least squares-based reconciliation method in various frameworks, including cross-sectional data [@Hyndman2016-cz; @Wickramasuriya2019-fc; @Panagiotelis2021-mf], temporal data [@Athanasopoulos2017-jj; @Nystrup2020-di], and cross-temporal data [@Di_Fonzo2023-vo]. In particular, assuming unbiased base forecasts, @Wickramasuriya2019-fc proposed the minimum trace method, which formulates the reconciliation problem as minimizing the trace of the covariance matrix of reconciled forecast errors. These reconciliation approaches have been demonstrated to produce coherent and potentially more accurate forecasts compared to traditional single-level methods in various empirical applications [see, for example, @Taieb2021-tc; @Panagiotelis2021-mf; @Wickramasuriya2023-hn]. Additionally, @Van_Erven2015-ir, @Wickramasuriya2019-fc, @Panagiotelis2021-mf, and @Wickramasuriya2021-am provided theoretical insights into the performance of forecast reconciliation methods. Please refer to @Athanasopoulos2023-sm for a comprehensive introduction of various forecast reconciliation methods.
 
-Reconciliation is well recognized for its ability to improve overall forecast accuracy in structures with aggregation constraints. Theoretically, the mean squared reconciled forecast error from the minimum trace (MinT) reconciliation method for each series in the structure is lower than that of OLS and base forecasts [@Wickramasuriya2021-am]. However, it is important to acknowledge that reconciled forecasts for some series in the structure may experience deterioration in its forecasting performance. As demonstrated by @Athanasopoulos2017-jj, most of the improvements attributed to reconciliation are observed in series with initially poor-performing base forecasts. Thus, they suggested that the ideal solution would be to combine the most accurate aspects of base forecasts from each level, aiming to avoid a myopic view from a single level. In practice, it is not uncommon for some series in a structure to exhibit poor performance in their base forecasts due to inherent challenges that are difficult to completely mitigate in real-world situations. These challenges may include model misspecification or low forecastability resulting from the absence of discernible patterns (low signal-to-noise ratio). In such cases, it becomes crucial to exclude "poor" base forecasts of some series in a hierarchy when performing reconciliation, thereby preventing their negative influence on the reconciled forecasts. This forms the primary objective of this paper.
+Reconciliation is well recognized for its ability to improve overall forecast accuracy in structures with aggregation constraints. Theoretically, the mean squared reconciled forecast error from the minimum trace reconciliation method for each series in the structure is lower than that of OLS and base forecasts [@Wickramasuriya2021-am]. However, it is important to acknowledge that reconciled forecasts for some series in the structure may experience deterioration in its forecasting performance. As shown by @Athanasopoulos2017-jj, most of the improvements attributed to reconciliation are observed in series with initially poor-performing base forecasts. Thus, they suggested that the ideal solution would be to combine the most accurate aspects of base forecasts from each level, aiming to avoid a myopic view from a single level. In practice, it is not uncommon for some series in a structure to perform poorly in their base forecasts due to inherent challenges that are difficult to completely mitigate in real-world situations. These challenges may include model misspecification or low forecastability resulting from the absence of discernible patterns (low signal-to-noise ratio). In such cases, it becomes crucial to exclude "poor" base forecasts of some series in a structure when performing reconciliation, thereby preventing their negative influence on reconciled forecasts. This forms the primary objective of this paper.
 
 This paper addresses a few gaps in the field of forecast reconciliation. First, we propose forecast reconciliation methods that incorporate time series selection based on out-of-sample information, assuming unbiased base forecasts. We formulate this as an optimization problem, using different penalty functions designed to control the number of nonzero column entries in the weighting matrix for linear forecast reconciliation. We theoretically show that the number of selected time series is at least equal to the number of series at the bottom level, and we can reconstruct the full hierarchical structure by aggregating/disaggregating the selected series. Second, we relax the unbiasedness assumption and introduce another reconciliation method with selection, utilizing in-sample observations and their fitted values. This allows us to use the in-sample reconciliation performance for selection purposes. In this case, it may happen that less than the number of series at the bottom level are used for reconciliation. We carry out simulation experiments and two empirical applications, showing that our proposed methods guarantee coherent forecasts that outperform or, at the very least, match their respective benchmark methods. The improvements are particularly pronounced when focusing on aggregation levels, longer forecast horizons, and model misspecification. A remarkable feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue in the field of forecast reconciliation research.
 
 The remainder of the paper is structured as follows. @sec-preliminaries presents the notations and a review of linear forecast reconciliation methods. @sec-methodology introduces our proposed methods to achieve time series selection in reconciliation, and provides some theoretical insights. @sec-simulations and @sec-applications show the results from simulations and two real-world datasets, respectively, followed by concluding remarks in @sec-conclusion. The R code for reproducing the results is available at LINK.
 
-# Preliminaries {#sec-preliminaries}
+## Preliminaries {#sec-preliminaries}
 
-## Notation
+### Notation
 
 We denote the set $\{1,\ldots,k\}$ by $[k]$ for any positive integer $k$. A *hierarchical time series* can be considered as an $n$-dimensional multivariate time series that adheres to known linear constraints. Let $\boldsymbol{y}_t \in \mathbb{R}^n$ be a vector comprising observations of all time series in the hierarchy at time $t$, and $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ be a vector comprising observations of all bottom-level time series at time $t$. The full hierarchy at time $t$ can be written as $$
 \boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t,
@@ -99,7 +83,7 @@ $$
 
 When data structure does not naturally disaggregate in a unique hierarchical manner, we can combine these hierarchical structures to form a *grouped time series*. Thus, grouped time series can also be considered as hierarchical time series with more than one grouping structure. Please refer to @Hyndman2021-fo on further details.
 
-## Linear forecast reconciliation
+### Linear forecast reconciliation
 
 Let $\hat{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n$ be a vector of $h$-step-ahead *base forecasts* for all time series in the structure, given observations up to and including time $T$, and stacked in the same order as $\boldsymbol{y}_t$. We can use any method to generate these forecasts, but in general they will not add up especially when we forecast each series independently.
 
@@ -109,10 +93,10 @@ $$ {#eq-lr}
 
 where
 
--   $\boldsymbol{G}_h$ is an $n_b \times n$ weighting matrix that maps base forecasts into the bottom level. In other words, it combines all base forecasts to form reconciled forecasts for bottom-level series.
--   $\boldsymbol{S}$ is an $n \times n_b$ summing matrix that sums up bottom-level reconciled forecasts to produce coherent forecasts of all levels. It identifies the linear constraints in a given structure.
+-   $\boldsymbol{G}_h$ is an $n_b \times n$ weighting matrix that maps base forecasts into the bottom level. It combines all base forecasts to form reconciled forecasts for bottom-level series.
+-   $\boldsymbol{S}$ is an $n \times n_b$ summing matrix that sums up bottom-level reconciled forecasts to produce coherent forecasts of all levels. It identifies the linear aggregation constraints in a given structure.
 
-### Minimum trace reconciliation
+#### Minimum trace reconciliation
 
 Let the $h$-step-ahead in-sample *base forecast errors* be defined as $\hat{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h \mid t}$, and the $h$-step-ahead *reconciled forecast errors* be defined as $\tilde{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{t+h \mid t}$ for $t = 1,2,\ldots,T-h$. @Wickramasuriya2019-fc formulated a linear reconciliation problem as minimizing the trace (MinT) of the $h$-step-ahead covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\boldsymbol{e}}_{t+h \mid t})$. Under the assumption of unbiasedness of base forecasts and reconciled forecasts, the unique solution of the minimization problem is given by $$
 \boldsymbol{G}_h=\left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1},
@@ -134,18 +118,19 @@ It is challenging to estimate $\boldsymbol{W}_h$, especially for $h > 1$. Assumi
 \caption{Forecast reconciliation methods for which different estimators of $\boldsymbol{W}$ are used. {#tbl-bench}}
 \centering
 \begin{threeparttable}
-\begin{tabular}{ll}
+\begin{tabular}{p{0.7\linewidth}r}
 \toprule
 Reconciliation method & $\boldsymbol{W}_h \propto$\\
 \midrule
-\textbf{OLS} \autocite{Hyndman2011-sd} & $\boldsymbol{I}$\\
-\textbf{WLSs} \autocite{Athanasopoulos2017-jj} & $\operatorname{diag}(\boldsymbol{S} \mathbf{1})$\\
-\textbf{WLSv} \autocite{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\boldsymbol{W}}_1)$\\
-\textbf{MinT} \autocite{Wickramasuriya2019-fc} & $\hat{\boldsymbol{W}}_1$\\
-\textbf{MinTs} \autocite{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$\\
+\textbf{OLS} \citep{Hyndman2011-sd} & $\boldsymbol{I}$\\
+\textbf{WLSs} \citep{Athanasopoulos2017-jj} & $\operatorname{diag}(\boldsymbol{S} \mathbf{1})$\\
+\textbf{WLSv} \citep{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\boldsymbol{W}}_1)$\\
+\textbf{MinT} \citep{Wickramasuriya2019-fc} & $\hat{\boldsymbol{W}}_1$\\
+\textbf{MinTs} \citep{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
+\linespread{1}\small
 \footnotesize
 \item \underline{\textit{NOTE:}} 
 \item $\mathbf{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
@@ -155,7 +140,7 @@ Reconciliation method & $\boldsymbol{W}_h \propto$\\
 ```
 In practice, it is hard to say which estimator for $\boldsymbol{W}$ works better. @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties, i.e., the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the weighting matrix as the summing matrix is fixed for a given structure. This indicates that OLS and WLSs estimators for $\boldsymbol{W}$ may lead to less volatile reconciliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the expected Euclidean distance of the reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\boldsymbol{W}$ to use hinges on the specific time series structure of interest, the targeted level or series, and the selected loss function.
 
-### Relaxation of the unbiasedness assumptions
+#### Relaxation of the unbiasedness assumptions
 
 Both @Hyndman2011-sd and @Wickramasuriya2019-fc impose two unbiasedness conditions, i.e., the base forecasts and the reconciled forecasts are unbiased. @Ben_Taieb2019-be proposed a reconciliation method relaxing the assumption of unbiasedness. Specifically, by expanding the training window forward by one observation until $T-h$, they formulated the reconciliation problem as a regularized empirical risk minimization (RERM) problem given by $$
 \min _{\boldsymbol{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\boldsymbol{Y}_{h}^{*}-\hat{\boldsymbol{Y}}_{h}^{*} \mathbf{G}_{h}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \boldsymbol{G}_h)\|_1,
@@ -181,11 +166,11 @@ In practice, a prevalent challenge in forecast reconciliation arises when the ba
 
 We therefore propose two categories of innovative methods, constrained out-of-sample (under the unbiasedness assumption) and unconstrained in-sample (without unbiasedness assumption) forecast reconciliation with time series selection. These methods aim to identify and address the negative effect of some base forecasts of poor performance in a structure on the overall performance of the reconciled forecasts. Additionally, through the incorporation of regularization in our objective function, our method has the potential to enhance reconciliation outcomes produced by using a "poor" choice of $\boldsymbol{W}$, thus reducing the risk of choosing estimator of $\boldsymbol{W}$.
 
-# Forecast reconciliation with time series selection {#sec-methodology}
+## Forecast reconciliation with time series selection {#sec-methodology}
 
 In this section, we introduce our methods for keeping forecasts of an automatically selected set of series, identified as harmful to reconciliation, unused in forming reconciled forecasts, i.e., forecast reconciliation with time series selection. @sec-constrained introduces constrained reconciliation methods with selection that formulate the problem based on out-of-sample base forecasts, while @sec-unconstrained presents an unconstrained reconciliation method with selection, where we formulate the problem based on in-sample observations and base forecasts.
 
-## Series selection with unbiasedness constraint {#sec-constrained}
+### Series selection with unbiasedness constraint {#sec-constrained}
 
 As $\boldsymbol{S}$ is fixed and $\hat{\boldsymbol{y}}_{T+h \mid T}$ is given, once we get the estimation of $\boldsymbol{G}$, the linear reconciliation performance is determined, as shown in @eq-lr. In this section, the subscript $h$ is dropped as we assume $\boldsymbol{W}$ and $\boldsymbol{G}$ do not vary with the forecast horizon. A natural way to keep forecasts of some series unused in reconciliation is through controlling the number of nonzero column entries in $\boldsymbol{G}$. This leads to a generalization of the MinT optimization problem by applying an additional penalty to the objective function. More precisely, let $\hat{\boldsymbol{y}}:=\hat{\boldsymbol{y}}_{T+1 \mid T}$, we consider the optimization problem given by $$
 \begin{aligned}
@@ -241,7 +226,7 @@ Substituting the terms in @eq-op_u with these expressions, the previous problem 
 
 Moving forward, we present three classes of regularizations we use to establish forecast reconciliation with series selection, resulting in the consideration of three optimization problems: (i) group best-subset selection with ridge regularization, (ii) intuitive method with $L_0$ regularization, and (iii) group lasso method.
 
-### Group best-subset selection with ridge regularization {#sec-subset}
+#### Group best-subset selection with ridge regularization {#sec-subset}
 
 In high-dimensional regime with $p \gg n$, a common desiderata is to assume that the true regression coefficient (i.e., $\operatorname{vec}(\boldsymbol{G})$ in our problem) is sparse. We propose to apply a combination of $L_0$ and $L_2$ regularization as the exterior penalty function to control the nonzero column entries in $\boldsymbol{G}$: $$
 \begin{aligned}
@@ -272,7 +257,7 @@ where $\mathcal{M}$ is a Big-M parameter (a-priori specified) that is sufficient
 
 **Computation details.** The MIQP problem in @eq-subset_mip is NP-Hard and computationally intensive. @Bertsimas2016-ig showed that commercial MIP solvers are capable of tackling problem instances for $p$ up to a thousand. To address larger instances, there has been impressive work on developing MIP-based approches for solving $L_0$-regularized regression problem, e.g., @Bertsimas2016-ig, @Hazimeh2020-xd, and @Hazimeh2022-hc. However, it is challenging to extend their approaches to accommodate additional constraints within the optimization problem. Despite the potential sluggishness of handling large instances with commercial MIP solvers, in our experiments, we use Gurobi to solve our problem in @eq-subset_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds for cases with $p > 1000$. This enables us to terminate the solver before reaching the global optimum and return a suboptimal solution instead. This strategy is motivated by our need to consider numerous parameter candidates, and the final solution will be validated against the training set, which prevents the utilization of a very poor estimate of $\boldsymbol{G}$.
 
-### Intuitive method with $L_0$ regularization {#sec-intuitive}
+#### Intuitive method with $L_0$ regularization {#sec-intuitive}
 
 Instead of estimating the entire matrix $\boldsymbol{G}$ in @sec-subset, we leverage the MinT solution in @eq-mint to streamline the optimization problem under consideration. Specifically, we define $\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}$, where $\boldsymbol{A} = \operatorname{diag}(\boldsymbol{z})$ is an $n \times n$ diagonal matrix, and $\boldsymbol{z}$ is an $n$-dimensional vector with elements either equal to 0 or 1. Taking the MinT solution in @eq-mint, we have $\bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}$. Given fixed $\boldsymbol{S}$ and estimation of $\boldsymbol{W}$, $\bar{\boldsymbol{G}}$ is entirely determined by $\boldsymbol{A}$. By this way, when the $j$th diagonal element of $\boldsymbol{A}$ equals zero, the $j$th column of $\bar{\boldsymbol{G}}$ becomes entirely composed of zeros. Therefore, the optimization problem can be reduced to an integer quadratic programming (IQP) problem in which all of the variables are restricted to be integers: $$
 \begin{aligned}
@@ -301,7 +286,7 @@ $$ {#eq-intuitive_mip}
 
 **Computation details.** Following a setup akin to that in @sec-subset, we employ Gurobi to solve @eq-intuitive_mip by configuring parameters such as MIPGap = $0.001$ and TimeLimit = $600$ seconds for problems with $p > 1000$.
 
-### Group lasso method {#sec-lasso}
+#### Group lasso method {#sec-lasso}
 
 Lasso is another popular method for selection and estimation of parameters in the context of linear regression. @Yuan2006-mw introduced the group lasso method that can be used when there is a grouped structure among the variables. Here, we consider *a group lasso problem under the unbiasedness assumption* given by $$
 \begin{aligned}
@@ -344,7 +329,7 @@ $$
 
 **Computation details.** Due to the incorporation of the unbiasedness constraint, we can not directly use some open-source packages designed for group lasso. Consequently, we employ Gurobi to solve the SOCP problem, configuring it by setting OptimalityTol = $0.0001$.
 
-## Series selection method without unbiasedness constraint {#sec-unconstrained}
+### Series selection method without unbiasedness constraint {#sec-unconstrained}
 
 In this section, we relax the unbiasedness constraint, $\boldsymbol{GS} = \boldsymbol{I}$, and introduce a reconciliation method with selection that relies on in-sample observations and fitted values. Let $\boldsymbol{Y} \in \mathbb{R}^{T \times n}$ denote a matrix comprising observations from all time series on the training set in the structure, and $\hat{\boldsymbol{Y}} \in \mathbb{R}^{T \times n}$ denote a matrix of in-sample one-step-ahead forecasts (i.e., fitted values) for all time series. The proposed *empirical group lasso* method considers the optimization problem $$
 \min _{\boldsymbol{G}} \quad \frac{1}{2 T} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
@@ -364,13 +349,13 @@ We also explored the empirical version of group best-subset selection with ridge
 
 **Computation details.** While there are open-source packages available for solving a group lasso problem, they are still relatively slow when applied to large instance for practical usage. For example, given a specific value for the parameter, $\lambda$, our experiments observed that, using the **gglasso** R package, we can not obtain a solution within five hours for typical instances with $p \sim 10^4$. Instead, we use Gurobi to solve the problem based on the SOCP formulation for the empirical group lasso which aligns with @eq-lasso_socp but omits the unbiasedness constraint.
 
-# Monte Carlo simulations {#sec-simulations}
+## Monte Carlo simulations {#sec-simulations}
 
 To evaluate the performance of various reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. In both simulations, we consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. Specifically, the structure has four series at the bottom level, and seven series in total, i.e., $n_b = 4$, and $n = 7$. The bottom-level series are first generated and then summed appropriately to obtain aggregated series at higher levels.
 
 @sec-sim1 considers a setup where the bottom-level series are generated using a structural time series model, but model misspecification exists for some series within the structure. @sec-sim2 explores the impact of correlation between series on the performance of reconciled forecasts.
 
-## Setup 1: Exploring the effect of model misspecification {#sec-sim1}
+### Setup 1: Exploring the effect of model misspecification {#sec-sim1}
 
 In this simulation design, we follow a simulation setup similar to @Wickramasuriya2019-fc, assuming that the bottom-level time series are generated using the basic structural time series model $$
 \boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t,
@@ -431,7 +416,7 @@ In all three scenarios, our proposed methods consistently produce either improve
 
 In addition, we report the proportion of time series being selected from the implementation of our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection for each respective scenario. Clearly, our proposed methods select fewer time series from the hierarchy for forecast reconciliation, and generally improve forecast accuracy over the benchmark methods. Furthermore, we observe that the Subset methods tend to return fewer time series compared to the Intuitive and Lasso methods, which aligns with our expectations that the Intuitive and Lasso methods tend to produce dense estimates. Most importantly, depending on the scenario considered, the time series with model misspecification has been selected less often than others. For example, considering Scenario I, series AA is expected to be removed, while AB is expected to be retained. This allows us to obtain series AA via operations such as A$-$AB, Total$-$B$-$AB, or Total$-$AB$-$BA$-$BB. The results in @tbl-s1-selection align with our expectations, and show that series AA is dropped often, whereas AB is selected all the time.
 
-## Setup 2: Exploring the effect of correlation {#sec-sim2}
+### Setup 2: Exploring the effect of correlation {#sec-sim2}
 
 We now consider to simulate a hierarchical structure with correlated series. A similar simulation to @Wickramasuriya2021-am is implemented in this section. Using the same hierarchical structure as shown in @fig-hts, we assume the data generating process for the time series at the bottom level follows a stationary first-order vector autoregressive model, i.e., $\text{VAR}(1)$, given by $$
 \boldsymbol{b}_t= \boldsymbol{c} + \left[\begin{array}{cc}
@@ -459,51 +444,48 @@ For each series in the hierarchy, base forecasts are generated from ARMA models 
 #| warning: false
 #| results: hide
 #| fig-width: 9
-#| fig-height: 9
+#| fig-height: 7
 #| fig-cap: An example hierarchical time series and its in-sample residuals in Setup 2.
 
 data <- readRDS("results/corr_data_neg.rds")
 resid <- readRDS("results/corr_resid_neg.rds")
 
+theme_plot <- theme_bw() +
+  theme(legend.position="bottom",
+        legend.margin=margin(0,0,0,0),
+        legend.box.spacing = unit(0, "pt"),
+        plot.background = element_blank(),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        axis.text = element_text(face = "bold"),
+        axis.ticks.x.top = element_blank())
 p11 <- data |>
   filter(Series == "Total") |>
   autoplot(Value) +
   labs(y = "",
        x = "Time",
        title = "Top level: observations") +
-  theme_bw() +
-  theme(plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
+  theme_plot
 
 p12 <- data |>
   filter(Series %in% c("A", "B")) |>
   autoplot(Value) +
+  scale_color_manual(labels = c("A", "B"),
+                     values=c("#1B9E77", "#D95F02")) +
   labs(y = "",
        x = "Time",
        title = "Middle level: observations") +
-  theme_bw() +
-  theme(legend.position="bottom",
-        plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
+  theme_plot
+
 p13 <- data |>
   filter(Series %in% c("AA", "AB", "BA", "BB")) |>
   autoplot(Value) +
+  scale_color_manual(labels = c("AA", "AB", "BA", "BB"),
+                     values=c("#7570B3", "#E7298A", "#66A61E", "#E6AB02")) +
   labs(y = "",
        x = "Time",
        title = "Bottom level: observations") +
-  theme_bw() +
-  theme(legend.position="bottom",
-        plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
+  theme_plot
 
 p21 <- resid |>
   filter(Series == "Total") |>
@@ -511,40 +493,27 @@ p21 <- resid |>
   labs(y = "",
        x = "Time",
        title = "Top level: residuals") +
-  theme_bw() +
-  theme(plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
+  theme_plot
 
 p22 <- resid |>
   filter(Series %in% c("A", "B")) |>
   autoplot(Value) +
+  scale_color_manual(labels = c("A", "B"),
+                     values=c("#1B9E77", "#D95F02")) +
   labs(y = "",
        x = "Time",
        title = "Middle level: residuals") +
-  theme_bw() +
-  theme(legend.position="bottom",
-        plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
+  theme_plot
 
 p23 <- resid |>
   filter(Series %in% c("AA", "AB", "BA", "BB")) |>
   autoplot(Value) +
+  scale_color_manual(labels = c("AA", "AB", "BA", "BB"),
+                     values=c("#7570B3", "#E7298A", "#66A61E", "#E6AB02")) +
   labs(y = "",
        x = "Time",
        title = "Bottom level: residuals") +
-  theme_bw() +
-  theme(legend.position="bottom",
-        plot.background = element_blank(),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        axis.text = element_text(face = "bold"),
-        axis.ticks.x.top = element_blank())
+  theme_plot
 
 (p11 + p21) / (p12 + p22) / (p13 + p23)
 ```
@@ -581,11 +550,11 @@ latex_sim_nos_table(selection_corr_neg$out_s0$z,
                     "corr_neg")
 ```
 
-# Applications {#sec-applications}
+## Applications {#sec-applications}
 
 In this section we perform two empirical applications to investigate the performance of our proposed methods and compare them with state-of-the-art reconciliation approaches. @sec-labour focuses on a grouped hierarchy built using the Australian labour force survey data released by the Australian Bureau of Statistics, while @sec-tourism considers Australian domestic tourism flows with a natural geographical hierarchy.
 
-## Forecasting Australian labour force {#sec-labour}
+### Forecasting Australian labour force {#sec-labour}
 
 This section evaluates the performance of the proposed methods using a grouped hierarchy built using the Australian labour force dataset. The dataset from the Labour Force Survey are released by the Australian Bureau of Statistics, consisting of monthly data on the number of unemployed persons in Australia for the period from January 2010 to July 2023[^1]. There are a few missing values in the dataset. To deal with the missing observations, we use a random walk to give linear interpolation between points. Analysis of unemployment data in a country by labor market region and duration of job search can provide valuable insights into regional disparities, and the structural nuances underlying unemployment. Forecast reconciliation is crucial in such a case to ensure aligned decision making.
 
@@ -706,7 +675,7 @@ labour_info |>
                    align = "c")
 ```
 
-## Forecasting Australian domestic tourism {#sec-tourism}
+### Forecasting Australian domestic tourism {#sec-tourism}
 
 In this section we consider Australian domestic tourism flows, measured as the number of overnight trips Australians spend away from home, and create a hierarchical structure using geographic divisions. The data are sourced from the National Visitor Survey and collected through computer-assisted telephone interviews involving approximately $120,000$ Australian residents aged $15$ years and older. The hierarchical structure starts with the national total tourism flow as the top-level aggregation, then disaggregates it into seven states and territories (referred to as *State* level hereafter), further divides them into $27$ zones, and finally, into $76$ regions, thus forming a natural geographical hierarchy.
 
@@ -721,7 +690,7 @@ Therefore, the hierarchy under consideration involves $76$ monthly time series a
 #| warning: false
 #| results: hide
 #| fig-width: 9
-#| fig-height: 8
+#| fig-height: 7
 #| fig-cap: Domestic tourism flows from January 1998 to December 2017 for the whole of Australia as well as the states.
 tourism_ts <- readRDS("results/tourism_hts.rds")
 tourism_ts |>
@@ -836,7 +805,7 @@ tourism_info |>
                    align = "c")
 ```
 
-# Conclusion {#sec-conclusion}
+## Conclusion {#sec-conclusion}
 
 In the existing literature on hierarchical or grouped time series when we perform linear forecast reconciliation, we map all base forecasts into bottom-level disaggregated forecasts, which are then summed up by a summing matrix to yield coherent forecasts for the entire structure. Hence, the mapping step in forecast reconciliation can be conceptually regarded as a forecast combination. In practical applications, it is common that the base forecasts for some time series in the structure may perform poorly, especially in the context of large structures. This may reduce the overall effectiveness of forecast reconciliation methods. In this paper, we aimed to address this issue by introducing a selection mechanism in forecast reconciliation, i.e., incorparating time series selection when reconciling forecasts for hierarchical or grouped time series, while ensuring the generation of coherent forecasts for all series.
 
@@ -846,7 +815,7 @@ Simulation experiments and two empirical applications demonstrated the superiori
 
 A remarkable feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue within the field of forecast reconciliation research.
 
-# References {.unnumbered}
+## References {.unnumbered}
 
 ::: {#refs}
 :::
@@ -861,7 +830,7 @@ A remarkable feature of the proposed methods is their ability to reduce the disp
 \setcounter{figure}{0}
 \setcounter{table}{0}
 ```
-# Appendix {.unnumbered}
+## Appendix {.unnumbered}
 
 The section provides additional results for the simulation data in @sec-simulations.
 

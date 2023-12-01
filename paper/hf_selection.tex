@@ -1,45 +1,68 @@
-\documentclass[11pt,a4paper,]{article}
-\usepackage{lmodern}
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  12pt]{article}
 
-\usepackage{multirow}
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-\else % if luatex or xelatex
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
   \usepackage{unicode-math}
-  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
-% use upquote if available, for straight quotes in verbatim environments
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage[]{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
-\PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
-\usepackage[unicode=true]{hyperref}
-\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
-\hypersetup{
-            pdftitle={Optimal forecast reconciliation with time series selection},
-            pdfkeywords={Coherent, Hierarchical time series, Grouped
-time series, Linear forecast reconciliation, Optimization problem},
-            colorlinks=true,
-            linkcolor=blue,
-            citecolor=Blue,
-            urlcolor=Blue,
-            breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
-\usepackage{geometry}
-\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
-\usepackage[style=authoryear-comp,]{biblatex}
-\addbibresource{references.bib}
-\usepackage{longtable,booktabs}
-% Fix footnotes in tables (requires footnote package)
-\IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{long table}}{}
-\usepackage{graphicx,grffile}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{5}
+% Make \paragraph and \subparagraph free-standing
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
 \def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
@@ -48,253 +71,16 @@ time series, Linear forecast reconciliation, Optimization problem},
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-\IfFileExists{parskip.sty}{%
-\usepackage{parskip}
-}{% else
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{5}
-
-% set default figure placement to htbp
+% Set default figure placement to htbp
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
 
-
-\title{Optimal forecast reconciliation with time series selection}
-
-%% MONASH STUFF
-
-%% CAPTIONS
-\RequirePackage{caption}
-\DeclareCaptionStyle{italic}[justification=centering]
- {labelfont={bf},textfont={it},labelsep=colon}
-\captionsetup[figure]{style=italic,format=hang,singlelinecheck=true}
-\captionsetup[table]{style=italic,format=hang,singlelinecheck=true}
-
-%% FONT
-\usepackage[tabular,lf]{sourcesanspro}
-\RequirePackage{mathpazo}
-
-%% HEADERS AND FOOTERS
-\RequirePackage{fancyhdr}
-\pagestyle{fancy}
-\rfoot{\Large\sffamily\raisebox{-0.1cm}{\textbf{\thepage}}}
-\makeatletter
-\lhead{\textsf{\expandafter{\@title}}}
-\makeatother
-\rhead{}
-\cfoot{}
-\setlength{\headheight}{15pt}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0.4pt}
-\fancypagestyle{plain}{%
-\fancyhf{} % clear all header and footer fields
-\fancyfoot[C]{\sffamily\thepage} % except the center
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}}
-
-%% MATHS
-\RequirePackage{bm,amsmath}
-\allowdisplaybreaks
-
-%% GRAPHICS
-\RequirePackage{graphicx}
-\setcounter{topnumber}{2}
-\setcounter{bottomnumber}{2}
-\setcounter{totalnumber}{4}
-\renewcommand{\topfraction}{0.85}
-\renewcommand{\bottomfraction}{0.85}
-\renewcommand{\textfraction}{0.15}
-\renewcommand{\floatpagefraction}{0.8}
-
-%\RequirePackage[section]{placeins}
-
-%% SECTION TITLES
-\RequirePackage[compact,sf,bf]{titlesec}
-\titleformat{\section}[block]
-  {\fontsize{15}{17}\bfseries\sffamily}
-  {\thesection}
-  {0.4em}{}
-\titleformat{\subsection}[block]
-  {\fontsize{12}{14}\bfseries\sffamily}
-  {\thesubsection}
-  {0.4em}{}
-\titlespacing{\section}{0pt}{*5}{*1}
-\titlespacing{\subsection}{0pt}{*2}{*0.2}
-
-
-%% TITLE PAGE
-\def\Date{\number\day}
-\def\Month{\ifcase\month\or
- January\or February\or March\or April\or May\or June\or
- July\or August\or September\or October\or November\or December\fi}
-\def\Year{\number\year}
-
-\makeatletter
-\def\wp#1{\gdef\@wp{#1}}\def\@wp{??/??}
-\def\jel#1{\gdef\@jel{#1}}\def\@jel{??}
-\def\showjel{{\large\textsf{\textbf{JEL classification:}}~\@jel}}
-\def\nojel{\def\showjel{}}
-\def\addresses#1{\gdef\@addresses{#1}}\def\@addresses{??}
-\def\cover{{\sffamily\setcounter{page}{0}
-        \thispagestyle{empty}
-        \placefig{2}{1.5}{width=5cm}{_extensions/wp/monash2}
-        \placefig{16.9}{1.5}{width=2.1cm}{_extensions/wp/MBSportrait}
-        \begin{textblock}{4}(16.9,4)ISSN 1440-771X\end{textblock}
-        \begin{textblock}{7}(12.7,27.9)\hfill
-        \includegraphics[height=0.7cm]{_extensions/wp/AACSB}~~~
-        \includegraphics[height=0.7cm]{_extensions/wp/EQUIS}~~~
-        \includegraphics[height=0.7cm]{_extensions/wp/AMBA}
-        \end{textblock}
-        \vspace*{2cm}
-        \begin{center}\Large
-        Department of Econometrics and Business Statistics\\[.5cm]
-        \footnotesize http://monash.edu/business/ebs/research/publications
-        \end{center}\vspace{2cm}
-        \begin{center}
-        \fbox{\parbox{14cm}{\begin{onehalfspace}\centering\Huge\vspace*{0.3cm}
-                \textsf{\textbf{\expandafter{\@title}}}\vspace{1cm}\par
-                \LARGE\@author\end{onehalfspace}
-        }}
-        \end{center}
-        \vfill
-                \begin{center}\Large
-                \Month~\Year\\[1cm]
-                Working Paper \@wp
-        \end{center}\vspace*{2cm}}}
-\def\pageone{{\sffamily\setstretch{1}%
-        \thispagestyle{empty}%
-        \vbox to \textheight{%
-        \raggedright\baselineskip=1.2cm
-     {\fontsize{24.88}{30}\sffamily\textbf{\expandafter{\@title}}}
-        \vspace{2cm}\par
-        \hspace{1cm}\parbox{14cm}{\sffamily\large\@addresses}\vspace{1cm}\vfill
-        \hspace{1cm}{\large\Date~\Month~\Year}\\[1cm]
-        \hspace{1cm}\showjel\vss}}}
-\def\blindtitle{{\sffamily
-     \thispagestyle{plain}\raggedright\baselineskip=1.2cm
-     {\fontsize{24.88}{30}\sffamily\textbf{\expandafter{\@title}}}\vspace{1cm}\par
-        }}
-\def\titlepage{{\cover\newpage\pageone\newpage\blindtitle}}
-
-\def\blind{\def\titlepage{{\blindtitle}}\let\maketitle\blindtitle}
-\def\titlepageonly{\def\titlepage{{\pageone\end{document}}}}
-\def\nocover{\def\titlepage{{\pageone\newpage\blindtitle}}\let\maketitle\titlepage}
-\let\maketitle\titlepage
-\makeatother
-
-%% SPACING
-\RequirePackage{setspace}
-\spacing{1.5}
-
-%% LINE AND PAGE BREAKING
-\sloppy
-\clubpenalty = 10000
-\widowpenalty = 10000
-\brokenpenalty = 10000
-\RequirePackage{microtype}
-
-%% PARAGRAPH BREAKS
-\setlength{\parskip}{1.4ex}
-\setlength{\parindent}{0em}
-
-%% HYPERLINKS
-\RequirePackage{xcolor} % Needed for links
-\definecolor{darkblue}{rgb}{0,0,.6}
-\RequirePackage{url}
-
-\makeatletter
-\@ifpackageloaded{hyperref}{}{\RequirePackage{hyperref}}
-\makeatother
-\hypersetup{
-     citecolor=0 0 0,
-     breaklinks=true,
-     bookmarksopen=true,
-     bookmarksnumbered=true,
-     linkcolor=darkblue,
-     urlcolor=blue,
-     citecolor=darkblue,
-     colorlinks=true}
-
-%% KEYWORDS
-\newenvironment{keywords}{\par\vspace{0.5cm}\noindent{\sffamily\textbf{Keywords:}}}{\vspace{0.25cm}\par\hrule\vspace{0.5cm}\par}
-
-%% ABSTRACT
-\renewenvironment{abstract}{\begin{minipage}{\textwidth}\parskip=1.4ex\noindent
-\hrule\vspace{0.1cm}\par{\sffamily\textbf{\abstractname}}\newline}
-  {\end{minipage}}
-
-
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-
-\usepackage[showonlyrefs]{mathtools}
-\usepackage[no-weekday]{eukdate}
-
-%% BIBLIOGRAPHY
-
-\makeatletter
-\@ifpackageloaded{biblatex}{}{\usepackage[style=authoryear-comp, backend=biber, natbib=true]{biblatex}}
-\makeatother
-\ExecuteBibliographyOptions{bibencoding=utf8,minnames=1,maxnames=3, maxbibnames=99,dashed=false,terseinits=true,giveninits=true,uniquename=false,uniquelist=false,doi=false, isbn=false,url=true,sortcites=false, date=year}
-
-\DeclareFieldFormat{url}{\texttt{\url{#1}}}
-\DeclareFieldFormat[article]{pages}{#1}
-\DeclareFieldFormat[inproceedings]{pages}{\lowercase{pp.}#1}
-\DeclareFieldFormat[incollection]{pages}{\lowercase{pp.}#1}
-\DeclareFieldFormat[article]{volume}{\mkbibbold{#1}}
-\DeclareFieldFormat[article]{number}{\mkbibparens{#1}}
-\DeclareFieldFormat[article]{title}{\MakeCapital{#1}}
-\DeclareFieldFormat[inproceedings]{title}{#1}
-\DeclareFieldFormat{shorthandwidth}{#1}
-% No dot before number of articles
-\usepackage{xpatch}
-\xpatchbibmacro{volume+number+eid}{\setunit*{\adddot}}{}{}{}
-% Remove In: for an article.
-\renewbibmacro{in:}{%
-  \ifentrytype{article}{}{%
-  \printtext{\bibstring{in}\intitlepunct}}}
-
-\makeatletter
-\DeclareDelimFormat[cbx@textcite]{nameyeardelim}{\addspace}
-\makeatother
-\renewcommand*{\finalnamedelim}{%
-  %\ifnumgreater{\value{liststop}}{2}{\finalandcomma}{}% there really should be no funny Oxford comma business here
-  \addspace\&\space}
-
-\wp{no/yr}
-\nojel
-
-\RequirePackage[absolute,overlay]{textpos}
-\setlength{\TPHorizModule}{1cm}
-\setlength{\TPVertModule}{1cm}
-\def\placefig#1#2#3#4{\begin{textblock}{.1}(#1,#2)\rlap{\includegraphics[#3]{#4}}\end{textblock}}
-
-
-
-
-\author{Xiaoqian~Wang, Rob J~Hyndman, Shanika L~Wickramasuriya}
-\addresses{\textbf{Xiaoqian Wang}\newline
-Monash University, VIC 3800, Australia\newline
-{Email: xiaoqian.wang@monash.edu}\newline Corresponding author\newline\\[0.5cm]
-\textbf{Rob J Hyndman}\newline
-Monash University, VIC 3800, Australia\newline
-{Email: rob.hyndman@monash.edu}\\[0.5cm]
-\textbf{Shanika L Wickramasuriya}\newline
-Monash University, VIC 3145, Australia\newline
-{Email: shanika.wickramasuriya@monash.edu}\\[0.5cm]
-}
-
-\date{\sf\Date~\Month~\Year}
-\makeatletter
- \lfoot{\sf Wang, Hyndman, Wickramasuriya: \@date}
-\makeatother
-
+\addtolength{\oddsidemargin}{-.5in}%
+\addtolength{\evensidemargin}{-1in}%
+\addtolength{\textwidth}{1in}%
+\addtolength{\textheight}{1.7in}%
+\addtolength{\topmargin}{-1in}%
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -362,12 +148,49 @@ Monash University, VIC 3145, Australia\newline
 \makeatother
 \makeatletter
 \makeatother
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage[]{natbib}
+\bibliographystyle{agsm}
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Optimal forecast reconciliation with time series selection},
+  pdfauthor={Xiaoqian Wang; Rob J Hyndman; Shanika L Wickramasuriya},
+  pdfkeywords={Coherent, Hierarchical time series, Grouped time series,
+Linear forecast reconciliation, Optimization problem},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
 
-% Adjust headwidth in case user has changed geometry in header-includes
-\renewcommand{\headwidth}{\textwidth}
 
 \begin{document}
+
+
+\def\spacingset#1{\renewcommand{\baselinestretch}%
+{#1}\small\normalsize} \spacingset{1}
+
+\renewcommand*{\arraystretch}{0.5} % Specify row height in a table globally
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\date{December 2, 2023}
+\title{\bf Optimal forecast reconciliation with time series selection}
+\author{
+Xiaoqian Wang\thanks{Corresponding author.}\\
+and\\Rob J Hyndman\\
+and\\Shanika L Wickramasuriya\\
+Department of Econometrics \& Business Statistics, Monash University\\
+}
 \maketitle
+
+\bigskip
+\bigskip
 \begin{abstract}
 Forecast reconciliation ensures forecasts of time series in a hierarchy
 adhere to aggregation constraints, enabling aligned decision making.
@@ -392,12 +215,14 @@ data and domestic tourism data, showing improved accuracy compared to
 alternative methods, especially for aggregation levels, longer forecast
 horizons, and under model misspecification.
 \end{abstract}
-\begin{keywords}
-Coherent, Hierarchical time series, Grouped time series, Linear forecast
-reconciliation, Optimization problem
-\end{keywords}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, breakable, interior hidden, frame hidden, enhanced]}{\end{tcolorbox}}\fi
+\noindent%
+{\it Keywords:} Coherent, Hierarchical time series, Grouped time series,
+Linear forecast reconciliation, Optimization problem
+\vfill
+
+\newpage
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, breakable, sharp corners, borderline west={3pt}{0pt}{shadecolor}, interior hidden, boxrule=0pt, frame hidden]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -405,31 +230,29 @@ reconciliation, Optimization problem
 Hierarchical time series are characterized as a set of time series
 organized in a unique hierarchical aggregation structure, while grouped
 time series arise when attributes of interest are crossed rather than
-nested in the aggregation structure \autocite{Hyndman2016-cz}. For
-example, unemployment data is a crucial social and economic indicator
-and is a natural example of a grouped time series. The analysis of the
-number of unemployment persons in a country is crucial for informed
-policymaking and economic research. It is also valuable to examine
-attributes such as labour market region and the length of time that
-unemployed people have been looking for work. Such a disaggregation
-allows us to identify regional disparities, and comprehend the
-structural nuances underlying unemployment. Forecasts of time series in
-such a hierarchical or grouped structure should adhere to some known
-aggregation constraints to maintain coherence, which is a vital aspect
-for aligned decision making.
+nested in the aggregation structure \citep{Hyndman2016-cz}. For example,
+unemployment data, a crucial social and economic indicator, is a natural
+example of a grouped time series. The analysis of the number of
+unemployment persons in a country is crucial for informed policymaking
+and economic research. It is also valuable to examine attributes such as
+labour market region and the length of time that unemployed people have
+been looking for work. Such a disaggregation allows us to identify
+regional disparities, and comprehend the structural nuances underlying
+unemployment. Forecasts in such a hierarchical or grouped structure
+should adhere to some known aggregation constraints to maintain
+coherence, which is a vital aspect for aligned decision making.
 
 Earlier studies perform forecast reconciliation by focusing only on a
 single level of the structure, subsequently aggregating or
 disaggregating their forecasts to produce coherent forecasts for other
 levels of the structure. These single-level methods typically fall into
-three categories, namely bottom-up \autocite{Dunn1976-op}, top-down
-\autocite{Gross1990-lg}, and middle-out
-\autocite{Athanasopoulos2009-ps}. However, these methods only use
-information from a single level while overlooking valuable insights
-available at other levels and the intricate relationships in the
-structure.
+three categories, namely bottom-up \citep{Dunn1976-op}, top-down
+\citep{Gross1990-lg}, and middle-out \citep{Athanasopoulos2009-ps}.
+However, these methods only use information from a single level while
+overlooking valuable insights available at other levels and the
+intricate relationships in the structure.
 
-To overcome these limitations, \textcite{Hyndman2011-sd} introduced a
+To overcome these limitations, \citet{Hyndman2011-sd} introduced a
 reconciliation approach using a linear regression model based on
 forecasts from all series within a given structure, resulting in a
 generalized least squares (GLS) solution. This method initially
@@ -438,46 +261,44 @@ subsequently adjusts these forecasts to make them coherent. Following
 this work, further research has led to the modifications of the least
 squares-based reconciliation method in various frameworks, including
 cross-sectional data
-\autocite{Hyndman2016-cz,Wickramasuriya2019-fc,Panagiotelis2021-mf},
-temporal data \autocite{Athanasopoulos2017-jj,Nystrup2020-di}, and
-cross-temporal data \autocite{Di_Fonzo2023-vo}. In particular, assuming
-unbiased base forecasts, \textcite{Wickramasuriya2019-fc} proposed the
+\citep{Hyndman2016-cz, Wickramasuriya2019-fc, Panagiotelis2021-mf},
+temporal data \citep{Athanasopoulos2017-jj, Nystrup2020-di}, and
+cross-temporal data \citep{Di_Fonzo2023-vo}. In particular, assuming
+unbiased base forecasts, \citet{Wickramasuriya2019-fc} proposed the
 minimum trace method, which formulates the reconciliation problem as
 minimizing the trace of the covariance matrix of reconciled forecast
 errors. These reconciliation approaches have been demonstrated to
 produce coherent and potentially more accurate forecasts compared to
 traditional single-level methods in various empirical applications
-\autocites[see, for
-example,][]{Taieb2021-tc,Panagiotelis2021-mf,Wickramasuriya2023-hn}.
-Additionally, \textcite{Van_Erven2015-ir},
-\textcite{Wickramasuriya2019-fc}, \textcite{Panagiotelis2021-mf}, and
-\textcite{Wickramasuriya2021-am} provided theoretical insights into the
-performance of forecast reconciliation methods. Please refer to
-\textcite{Athanasopoulos2023-sm} for a comprehensive introduction of
-various forecast reconciliation methods.
+\citep[see, for
+example,][]{Taieb2021-tc, Panagiotelis2021-mf, Wickramasuriya2023-hn}.
+Additionally, \citet{Van_Erven2015-ir}, \citet{Wickramasuriya2019-fc},
+\citet{Panagiotelis2021-mf}, and \citet{Wickramasuriya2021-am} provided
+theoretical insights into the performance of forecast reconciliation
+methods. Please refer to \citet{Athanasopoulos2023-sm} for a
+comprehensive introduction of various forecast reconciliation methods.
 
 Reconciliation is well recognized for its ability to improve overall
 forecast accuracy in structures with aggregation constraints.
 Theoretically, the mean squared reconciled forecast error from the
-minimum trace (MinT) reconciliation method for each series in the
-structure is lower than that of OLS and base forecasts
-\autocite{Wickramasuriya2021-am}. However, it is important to
-acknowledge that reconciled forecasts for some series in the structure
-may experience deterioration in its forecasting performance. As
-demonstrated by \textcite{Athanasopoulos2017-jj}, most of the
-improvements attributed to reconciliation are observed in series with
-initially poor-performing base forecasts. Thus, they suggested that the
-ideal solution would be to combine the most accurate aspects of base
+minimum trace reconciliation method for each series in the structure is
+lower than that of OLS and base forecasts \citep{Wickramasuriya2021-am}.
+However, it is important to acknowledge that reconciled forecasts for
+some series in the structure may experience deterioration in its
+forecasting performance. As shown by \citet{Athanasopoulos2017-jj}, most
+of the improvements attributed to reconciliation are observed in series
+with initially poor-performing base forecasts. Thus, they suggested that
+the ideal solution would be to combine the most accurate aspects of base
 forecasts from each level, aiming to avoid a myopic view from a single
 level. In practice, it is not uncommon for some series in a structure to
-exhibit poor performance in their base forecasts due to inherent
-challenges that are difficult to completely mitigate in real-world
-situations. These challenges may include model misspecification or low
-forecastability resulting from the absence of discernible patterns (low
-signal-to-noise ratio). In such cases, it becomes crucial to exclude
-``poor'' base forecasts of some series in a hierarchy when performing
-reconciliation, thereby preventing their negative influence on the
-reconciled forecasts. This forms the primary objective of this paper.
+perform poorly in their base forecasts due to inherent challenges that
+are difficult to completely mitigate in real-world situations. These
+challenges may include model misspecification or low forecastability
+resulting from the absence of discernible patterns (low signal-to-noise
+ratio). In such cases, it becomes crucial to exclude ``poor'' base
+forecasts of some series in a structure when performing reconciliation,
+thereby preventing their negative influence on reconciled forecasts.
+This forms the primary objective of this paper.
 
 This paper addresses a few gaps in the field of forecast reconciliation.
 First, we propose forecast reconciliation methods that incorporate time
@@ -571,7 +392,7 @@ When data structure does not naturally disaggregate in a unique
 hierarchical manner, we can combine these hierarchical structures to
 form a \emph{grouped time series}. Thus, grouped time series can also be
 considered as hierarchical time series with more than one grouping
-structure. Please refer to \textcite{Hyndman2021-fo} on further details.
+structure. Please refer to \citet{Hyndman2021-fo} on further details.
 
 \hypertarget{linear-forecast-reconciliation}{%
 \subsection{Linear forecast
@@ -604,12 +425,13 @@ where
 \tightlist
 \item
   \(\boldsymbol{G}_h\) is an \(n_b \times n\) weighting matrix that maps
-  base forecasts into the bottom level. In other words, it combines all
-  base forecasts to form reconciled forecasts for bottom-level series.
+  base forecasts into the bottom level. It combines all base forecasts
+  to form reconciled forecasts for bottom-level series.
 \item
   \(\boldsymbol{S}\) is an \(n \times n_b\) summing matrix that sums up
   bottom-level reconciled forecasts to produce coherent forecasts of all
-  levels. It identifies the linear constraints in a given structure.
+  levels. It identifies the linear aggregation constraints in a given
+  structure.
 \end{itemize}
 
 \hypertarget{minimum-trace-reconciliation}{%
@@ -621,8 +443,8 @@ defined as
 \(\hat{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h \mid t}\),
 and the \(h\)-step-ahead \emph{reconciled forecast errors} be defined as
 \(\tilde{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{t+h \mid t}\)
-for \(t = 1,2,\ldots,T-h\). \textcite{Wickramasuriya2019-fc} formulated
-a linear reconciliation problem as minimizing the trace (MinT) of the
+for \(t = 1,2,\ldots,T-h\). \citet{Wickramasuriya2019-fc} formulated a
+linear reconciliation problem as minimizing the trace (MinT) of the
 \(h\)-step-ahead covariance matrix of the reconciled forecast errors,
 \(\operatorname{Var}(\tilde{\boldsymbol{e}}_{t+h \mid t})\). Under the
 assumption of unbiasedness of base forecasts and reconciled forecasts,
@@ -662,18 +484,19 @@ forecast reconciliation literature are listed in Table~\ref{tbl-bench}.
 \caption{\label{tbl-bench}Forecast reconciliation methods for which different estimators of $\boldsymbol{W}$ are used. }
 \centering
 \begin{threeparttable}
-\begin{tabular}{ll}
+\begin{tabular}{p{0.7\linewidth}r}
 \toprule
 Reconciliation method & $\boldsymbol{W}_h \propto$\\
 \midrule
-\textbf{OLS} \autocite{Hyndman2011-sd} & $\boldsymbol{I}$\\
-\textbf{WLSs} \autocite{Athanasopoulos2017-jj} & $\operatorname{diag}(\boldsymbol{S} \mathbf{1})$\\
-\textbf{WLSv} \autocite{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\boldsymbol{W}}_1)$\\
-\textbf{MinT} \autocite{Wickramasuriya2019-fc} & $\hat{\boldsymbol{W}}_1$\\
-\textbf{MinTs} \autocite{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$\\
+\textbf{OLS} \citep{Hyndman2011-sd} & $\boldsymbol{I}$\\
+\textbf{WLSs} \citep{Athanasopoulos2017-jj} & $\operatorname{diag}(\boldsymbol{S} \mathbf{1})$\\
+\textbf{WLSv} \citep{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\boldsymbol{W}}_1)$\\
+\textbf{MinT} \citep{Wickramasuriya2019-fc} & $\hat{\boldsymbol{W}}_1$\\
+\textbf{MinTs} \citep{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
+\linespread{1}\small
 \footnotesize
 \item \underline{\textit{NOTE:}} 
 \item $\mathbf{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
@@ -682,7 +505,7 @@ Reconciliation method & $\boldsymbol{W}_h \propto$\\
 \end{table}
 
 In practice, it is hard to say which estimator for \(\boldsymbol{W}\)
-works better. \textcite{Pritularga2021-lz} demonstrated that the
+works better. \citet{Pritularga2021-lz} demonstrated that the
 performance of forecast reconciliation is affected by two sources of
 uncertainties, i.e., the base forecast uncertainty and the
 reconciliation weight uncertainty. Recall that the uncertainty in the
@@ -691,13 +514,13 @@ in the weighting matrix as the summing matrix is fixed for a given
 structure. This indicates that OLS and WLSs estimators for
 \(\boldsymbol{W}\) may lead to less volatile reconciliation performance
 compared to WLSv, MinT, and MinTs estimators.
-\textcite{Panagiotelis2021-mf} provided a geometric intuition for
+\citet{Panagiotelis2021-mf} provided a geometric intuition for
 reconciliation and showed that, when considering the Euclidean distance
 loss function, OLS reconciliation yields results that are at least as
 favorable as the base forecasts, whereas MinT reconciliation performs
 poorly relative to the base forecasts. However, when considering the
 expected Euclidean distance of the reconciled forecast error,
-\textcite{Wickramasuriya2021-am} indicated that MinT reconciliation is
+\citet{Wickramasuriya2021-am} indicated that MinT reconciliation is
 better than OLS reconciliation. Therefore, which estimator for
 \(\boldsymbol{W}\) to use hinges on the specific time series structure
 of interest, the targeted level or series, and the selected loss
@@ -707,10 +530,10 @@ function.
 \subsubsection{Relaxation of the unbiasedness
 assumptions}\label{relaxation-of-the-unbiasedness-assumptions}}
 
-Both \textcite{Hyndman2011-sd} and \textcite{Wickramasuriya2019-fc}
-impose two unbiasedness conditions, i.e., the base forecasts and the
-reconciled forecasts are unbiased. \textcite{Ben_Taieb2019-be} proposed
-a reconciliation method relaxing the assumption of unbiasedness.
+Both \citet{Hyndman2011-sd} and \citet{Wickramasuriya2019-fc} impose two
+unbiasedness conditions, i.e., the base forecasts and the reconciled
+forecasts are unbiased. \citet{Ben_Taieb2019-be} proposed a
+reconciliation method relaxing the assumption of unbiasedness.
 Specifically, by expanding the training window forward by one
 observation until \(T-h\), they formulated the reconciliation problem as
 a regularized empirical risk minimization (RERM) problem given by \[
@@ -747,12 +570,12 @@ also proposed another strategy that penalizes the matrix
 (\textbf{BU}) method, i.e.,
 \(\boldsymbol{G}_{\text{BU}} = \left[\boldsymbol{0}_{n_b \times n_a} \mid \boldsymbol{I}_{n_b}\right]\).
 
-Following the work, \textcite{Wickramasuriya2021-am} proposed an
-empirical MinT (\textbf{EMinT}) without the unbiasedness constraint by
-minimizing the trace of the covariance matrix of the reconciled forecast
-errors, \(\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})\).
-Assuming that the series are jointly weakly stationary, she derived the
-solution given by \[
+Following the work, \citet{Wickramasuriya2021-am} proposed an empirical
+MinT (\textbf{EMinT}) without the unbiasedness constraint by minimizing
+the trace of the covariance matrix of the reconciled forecast errors,
+\(\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})\). Assuming
+that the series are jointly weakly stationary, she derived the solution
+given by \[
 \hat{\boldsymbol{G}}_{h} = \boldsymbol{B}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\left(\hat{\boldsymbol{Y}}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\right)^{-1},
 \]
 
@@ -777,7 +600,7 @@ forecast reconciliation may diminish, as the role of the weighting
 matrix \(\boldsymbol{G}\) is to assimilate \emph{all} base forecasts and
 map them into bottom-level disaggregated forecasts which are
 subsequently summed by \(\boldsymbol{S}\). While the RERM method
-proposed by \textcite{Ben_Taieb2019-be} introduces sparsity by shrinking
+proposed by \citet{Ben_Taieb2019-be} introduces sparsity by shrinking
 some elements of \(\boldsymbol{G}\) towards zero, it remains incapable
 of mitigating the adverse impact of underperforming base forecasts on
 the quality of the reconciled forecasts. Moreover, the method is
@@ -968,7 +791,7 @@ based on various estimators for \(\boldsymbol{W}\), referring to them as
 
 The inclusion of the ridge term in Equation~\ref{eq-subset} is motivated
 by earlier work on best-subset selection
-\autocites[e.g.,][]{Hazimeh2020-xd,Mazumder2022-hx}, which suggests that
+\citep[e.g.,][]{Hazimeh2020-xd, Mazumder2022-hx}, which suggests that
 additional ridge regularization can mitigate the poor predictive
 performance of best-subset selection method in the low signal-to-noise
 ratio (SNR) regimes.
@@ -999,7 +822,7 @@ zero or not, i.e., \(z_j=0\) implies that
 Big-M formulations are commonly used in MIP problems to model relations
 between discrete and continuous variables, and have been recently
 explored in regression with \(L_0\) regularization
-\autocite{Bertsimas2016-ig}. The problem is a mixed integer quadratic
+\citep{Bertsimas2016-ig}. The problem is a mixed integer quadratic
 program (MIQP) that can be solved using commercial MIP solvers, e.g.,
 Gurobi and CPLEX.
 
@@ -1027,12 +850,12 @@ optimal combination of \(\lambda_0\) and \(\lambda_2\).
 
 \textbf{Computation details.} The MIQP problem in
 Equation~\ref{eq-subset_mip} is NP-Hard and computationally intensive.
-\textcite{Bertsimas2016-ig} showed that commercial MIP solvers are
-capable of tackling problem instances for \(p\) up to a thousand. To
-address larger instances, there has been impressive work on developing
-MIP-based approches for solving \(L_0\)-regularized regression problem,
-e.g., \textcite{Bertsimas2016-ig}, \textcite{Hazimeh2020-xd}, and
-\textcite{Hazimeh2022-hc}. However, it is challenging to extend their
+\citet{Bertsimas2016-ig} showed that commercial MIP solvers are capable
+of tackling problem instances for \(p\) up to a thousand. To address
+larger instances, there has been impressive work on developing MIP-based
+approches for solving \(L_0\)-regularized regression problem, e.g.,
+\citet{Bertsimas2016-ig}, \citet{Hazimeh2020-xd}, and
+\citet{Hazimeh2022-hc}. However, it is challenging to extend their
 approaches to accommodate additional constraints within the optimization
 problem. Despite the potential sluggishness of handling large instances
 with commercial MIP solvers, in our experiments, we use Gurobi to solve
@@ -1126,7 +949,7 @@ Equation~\ref{eq-intuitive_mip} by configuring parameters such as MIPGap
 \subsubsection{Group lasso method}\label{sec-lasso}}
 
 Lasso is another popular method for selection and estimation of
-parameters in the context of linear regression. \textcite{Yuan2006-mw}
+parameters in the context of linear regression. \citet{Yuan2006-mw}
 introduced the group lasso method that can be used when there is a
 grouped structure among the variables. Here, we consider \emph{a group
 lasso problem under the unbiasedness assumption} given by
@@ -1164,7 +987,7 @@ constraints, \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\)
 for \(j \in[n]\).
 
 Compared to the previous two methods we proposed, the group lasso method
-is computationally friendlier. Nonetheless, \textcite{Hazimeh2023-ie}
+is computationally friendlier. Nonetheless, \citet{Hazimeh2023-ie}
 demonstrated, both empirically and theoretically, that group
 \(L_0\)-regularized method exhibits advantages over its group lasso
 counterpart across a range of regimes. Group lasso can either be highly
@@ -1271,7 +1094,7 @@ vector obtained based on in-sample reconciled forecast errors.
 We also explored the empirical version of group best-subset selection
 with ridge regularization and intuitive method with \(L_0\)
 regularization in which we do not impose the unbiasedness constraint. It
-is worth mentioning that \textcite{Hazimeh2023-ie} presented a new
+is worth mentioning that \citet{Hazimeh2023-ie} presented a new
 algorithmic framework for formulating the group \(L_0\) problem with
 ridge regularization and provided the \textbf{L0Group} Python package
 for implementation. However, our experiments showed that this algorithm
@@ -1337,7 +1160,7 @@ on the performance of reconciled forecasts.
 misspecification}\label{sec-sim1}}
 
 In this simulation design, we follow a simulation setup similar to
-\textcite{Wickramasuriya2019-fc}, assuming that the bottom-level time
+\citet{Wickramasuriya2019-fc}, assuming that the bottom-level time
 series are generated using the basic structural time series model \[
 \boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t,
 \]
@@ -1386,11 +1209,11 @@ process is repeated \(500\) times.
 
 We use ETS models to generate base forecasts for all time series in the
 hierarchy, using the default settings as implemented in the
-\textbf{forecast} R package \autocite{Hyndman2023-fc}. To introduce
-model misspecification into our experiment, we deliberately undermine
-the quality of in-sample and out-of-sample forecasts (i.e., fitted
-values and base forecasts) for some specific time series. Specifically,
-we investigate three scenarios characterized by artificial model
+\textbf{forecast} R package \citep{Hyndman2023-fc}. To introduce model
+misspecification into our experiment, we deliberately undermine the
+quality of in-sample and out-of-sample forecasts (i.e., fitted values
+and base forecasts) for some specific time series. Specifically, we
+investigate three scenarios characterized by artificial model
 misspecifications, where a 1.5 multiplier is applied to in-sample and
 out-of-sample forecasts for a single series in each scenario, i.e.,
 series AA at the bottom level, series A at the middle level, and series
@@ -1560,7 +1383,7 @@ that series AA is dropped often, whereas AB is selected all the time.
 correlation}\label{sec-sim2}}
 
 We now consider to simulate a hierarchical structure with correlated
-series. A similar simulation to \textcite{Wickramasuriya2021-am} is
+series. A similar simulation to \citet{Wickramasuriya2021-am} is
 implemented in this section. Using the same hierarchical structure as
 shown in Figure~\ref{fig-hts}, we assume the data generating process for
 the time series at the bottom level follows a stationary first-order
@@ -2342,7 +2165,8 @@ the field of forecast reconciliation research.
 \section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
-\printbibliography[heading=none]
+\renewcommand{\bibsection}{}
+\bibliography{references.bib}
 
 \newpage
 \appendix
@@ -2598,6 +2422,8 @@ Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width
 \end{threeparttable}}
 \endgroup{}
 \end{table}
+
+
 
 
 \end{document}
