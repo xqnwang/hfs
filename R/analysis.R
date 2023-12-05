@@ -5,8 +5,8 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
   for(method_label in methods){
     data_method <- paste0(data_label, "_", method_label)
     for(h in horizons){
-      assign(paste0(data_method, "_", measure, "_h", h), 
-             readRDS(file = paste0("data_new/", data_method, "_reconsf", 
+      assign(paste0(data_method, "_", measure, "_h", h),
+             readRDS(file = paste0("data_new/", data_method, "_reconsf",
                                    ifelse(is.null(scenario), "", paste0("_", scenario)), "_", measure, "_", h, ".rds"))
       )
     }
@@ -14,14 +14,14 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
     levels <- colnames(example)[-1]
     method <- sub("_", "-", example$Method)
     out <- lapply(levels, function(level){
-      mget(paste0(data_method, "_", measure, "_h", horizons), inherits = TRUE) |> 
+      mget(paste0(data_method, "_", measure, "_h", horizons), inherits = TRUE) |>
         sapply(function(lentry) as.numeric(lentry[[level]]))
     })
     out <- data.frame(method, do.call(cbind, out))
     colnames(out) <- c("Method", c(ifelse(horizons == 1, paste0("h=", 1), paste0("1--", horizons))) |> rep(length(levels)))
     assign(paste0(data_method, "_", measure), out)
   }
-  
+
   out_com <- mget(paste0(data_label, "_", methods, "_", measure), inherits = TRUE) %>% do.call(rbind, .)
   rownames(out_com) <- NULL
   out_com <- out_com[!duplicated(out_com), ]
@@ -30,9 +30,9 @@ combine_table <- function(data_label, methods, measure, scenario = NULL, horizon
   } else if (data_label == "simulation"){
     candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
   }
-  target <- c("Base", "BU", 
-              sapply(candidates, 
-                     function(len) c(len, paste0(len, "-", c("subset", "intuitive", "lasso")))) |> as.vector(), 
+  target <- c("Base", "BU",
+              sapply(candidates,
+                     function(len) c(len, paste0(len, "-", c("subset", "intuitive", "lasso")))) |> as.vector(),
               "EMinT", "Elasso")
   out_com <- out_com[match(target, out_com$Method), ]
   colnames_out <- colnames(out_com)
@@ -60,7 +60,7 @@ latex_table <- function(out_all){
   header <- c("", rep(as.character(horizons), length(levels)))
   names(header) <- c("", levels)
   candidates <- out_all$candidates
-  
+
   # Red entries identify the best performing approaches
   # Bold entries identify methods that perform better than the corresponding benchmark method
   out[, -1] <- lapply(out[, -1], function(x) {
@@ -70,13 +70,13 @@ latex_table <- function(out_all){
     comp_x <- c(origin_x[1:2],
                 rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4),
                 rep(origin_x[length(origin_x)-1], each = 2))
-    out_x <- ifelse(x == min(x), 
-                    cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), 
+    out_x <- ifelse(x == min(x),
+                    cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"),
                     ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
     out_x <- sub("-", "--", out_x)
     out_x
   })
-  
+
   out |>
     kable(format = "latex",
           booktabs = TRUE,
@@ -87,7 +87,7 @@ latex_table <- function(out_all){
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
     kable_paper(full_width = F) |>
     kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
-    row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(), 
+    row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(),
              background = "#e6e3e3") |>
     add_header_above(header, align = "c") |>
     footnote(general = "The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.",
@@ -104,13 +104,13 @@ extract_element <- function(data, index, method, element){
   out <- data[[index]][[method]][[element]]
   if(length(out) == 1){
     if(is.na(out)){
-      out <- NULL 
+      out <- NULL
     }
   } else{
     if(is.vector(out)){
-      out <- cbind(matrix(out, nrow = 1), Index = index) 
+      out <- cbind(matrix(out, nrow = 1), Index = index)
     }else{
-      out <- cbind(out, Index = index) 
+      out <- cbind(out, Index = index)
     }
   }
   out
@@ -122,10 +122,10 @@ extract_element <- function(data, index, method, element){
 calc_rmse <- function(fc, test, h){
   err <- subset(test, select = -Index) - subset(fc, select = -Index)
   err <- cbind(err, Index = subset(test, select = Index))
-  rmse <- err |> 
-    as_tibble() |> 
-    group_by(Index) |> 
-    mutate(Horizon = row_number()) |> 
+  rmse <- err |>
+    as_tibble() |>
+    group_by(Index) |>
+    mutate(Horizon = row_number()) |>
     filter(Horizon <= h) |>
     summarise_at(1:NCOL(err), function(x) sqrt(mean(x^2))) |>
     ungroup() |>
@@ -142,17 +142,17 @@ calc_mase <- function(fc, train, test, freq, h){
   err <- subset(test, select = -Index) - subset(fc, select = -Index)
   scaling <- apply(x, 2, function(s) mean(abs(diff(as.vector(s), freq))))
   q <- cbind(t(t(err) /scaling), Index = subset(test, select = Index))
-  
-  mase <- q |> 
-    as_tibble() |> 
-    group_by(Index) |> 
-    mutate(Horizon = row_number()) |> 
+
+  mase <- q |>
+    as_tibble() |>
+    group_by(Index) |>
+    mutate(Horizon = row_number()) |>
     filter(Horizon <= h) |>
     summarise_at(1:NCOL(q), function(x) mean(abs(x))) |>
     ungroup() |>
     select(!c("Index", "Horizon")) |>
     summarise_all(mean)
-  
+
   return(mase)
 }
 
@@ -162,10 +162,10 @@ calc_mase <- function(fc, train, test, freq, h){
 combine_z <- function(data_label, methods, scenarios, series_name){
   for (scenario in scenarios){
     for(method_label in methods){
-      target <- paste0(data_label, "_", method_label, "_reconsf", 
+      target <- paste0(data_label, "_", method_label, "_reconsf",
                        ifelse(scenario == "s0", "", paste0("_", scenario)))
-      
-      assign(target, 
+
+      assign(target,
              readRDS(file = paste0("data_new/", target, ".rds")))
       z_method <- lapply(get(target), function(lentry){
         select_methods <- names(lentry)[grepl("_", names(lentry))|grepl("Elasso", names(lentry))]
@@ -182,7 +182,7 @@ combine_z <- function(data_label, methods, scenarios, series_name){
     n_scenario$Method <- sub("_", "-", n_scenario$Method)
     rownames(n_scenario) <- NULL
     assign(paste0("out_", scenario),
-           list(z = assign(paste0("z_", scenario), z_scenario), 
+           list(z = assign(paste0("z_", scenario), z_scenario),
                 n = assign(paste0("n_", scenario), n_scenario)))
   }
   mget(paste0("out_", scenarios))
@@ -202,10 +202,10 @@ latex_sim_nos_table <- function(z_out, n_out, label_out){
   n_img <- split(n_out$Total, n_out$Method)
   n_img <- n_img[match(target, names(n_img))]
   n_img <- lapply(n_img, function(N) data.frame(table(N), Method = "method"))
-  
+
   colors_used <- hcl.colors(10, "Purples")[3:6]
   names(colors_used) <- 7:4
-  
+
   inline_bars <-
     n_img %>%
     map(~ ggplot(.x, aes(x=Method, y=Freq, fill=N)) +
@@ -225,7 +225,7 @@ latex_sim_nos_table <- function(z_out, n_out, label_out){
             axis.ticks.y = element_blank(),
             axis.ticks.x.top = element_blank()
           ))
-  
+
   map(1:length(n_img), function(i) {
     ggsave(
       filename = paste0(label_out, "_", names(n_img)[i], ".png"),
@@ -234,7 +234,7 @@ latex_sim_nos_table <- function(z_out, n_out, label_out){
     )
   })
   ls_inline_plots <- file.path(getwd(), paste0("_figs/", label_out, "_", names(n_img), ".png"))
-  
+
   z_out |>
     kable(format = "latex",
           booktabs = TRUE,
@@ -242,8 +242,8 @@ latex_sim_nos_table <- function(z_out, n_out, label_out){
           align = c("l", rep("r", NCOL(z_out))),
           escape = FALSE,
           linesep = "") |>
-    kable_styling(latex_options = c("hold_position", "repeat_header",  "scale_down"),
-                  font_size = 7) |>
+    kable_styling(latex_options = c("hold_position", "repeat_header"),
+                  font_size = 11) |>
     kable_paper(full_width = F) |>
     row_spec(3*(1:length(candidates)), hline_after = TRUE) |>
     footnote(general = "The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.",
@@ -252,7 +252,7 @@ latex_sim_nos_table <- function(z_out, n_out, label_out){
              threeparttable = T,
              fixed_small_size = F) |>
     column_spec(NCOL(z_out) + 1,
-                image = spec_image(ls_inline_plots, width = 140, height = 30)) 
+                image = spec_image(ls_inline_plots, width = 140, height = 30))
 }
 
 #--------------------------------------------------------------------
@@ -262,8 +262,8 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
   for(method_label in methods){
     for(i in index){
       data_method <- paste0(data_label, "_", i, "_", method_label)
-      assign(data_method, 
-             readRDS(file = paste0("data_new/", data_method, "_reconsf", 
+      assign(data_method,
+             readRDS(file = paste0("data_new/", data_method, "_reconsf",
                                    "_", measure, "_1.rds"))
       )
     }
@@ -271,7 +271,7 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
     levels <- colnames(example)[-1]
     method <- sub("_", "-", example$Method)
     out <- lapply(levels, function(level){
-      mget(paste0(data_label, "_", index, "_", method_label), inherits = TRUE) |> 
+      mget(paste0(data_label, "_", index, "_", method_label), inherits = TRUE) |>
         sapply(function(lentry) as.numeric(lentry[[level]]))
     })
     out <- data.frame(method, do.call(cbind, out))
@@ -279,7 +279,7 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
     colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, "$\\rho$=--0.8", sub("-", "--", corr[index]))) |> rep(length(levels)))
     assign(paste0(data_label, "_", method_label), out)
   }
-  
+
   out_com <- mget(paste0(data_label, "_", methods), inherits = TRUE) %>% do.call(rbind, .)
   rownames(out_com) <- NULL
   out_com <- out_com[!duplicated(out_com), ]
@@ -288,9 +288,9 @@ combine_corr_table <- function(data_label, methods, corr, index, measure){
   } else if (data_label %in% c("simulation", "corr")){
     candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
   }
-  target <- c("Base", "BU", 
-              sapply(candidates, 
-                     function(len) c(len, paste0(len, "-", c("subset", "intuitive", "lasso")))) |> as.vector(), 
+  target <- c("Base", "BU",
+              sapply(candidates,
+                     function(len) c(len, paste0(len, "-", c("subset", "intuitive", "lasso")))) |> as.vector(),
               "EMinT", "Elasso")
   out_com <- out_com[match(target, out_com$Method), ]
   colnames_out <- colnames(out_com)
@@ -318,21 +318,21 @@ latex_corr_table <- function(out_all){
   header <- c("", rep(as.character((ncol(out)-1)/length(levels)), length(levels)))
   names(header) <- c("", levels)
   candidates <- out_all$candidates
-  
+
   # Red entries identify the best performing approaches
   # Bold entries identify methods that perform better than the corresponding benchmark method
   out[, -1] <- lapply(out[, -1], function(x) {
     x <- round(x, 1)
     origin_x <- x
     min_x <- min(origin_x)
-    comp_x <- c(origin_x[1:2], 
-                rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4), 
+    comp_x <- c(origin_x[1:2],
+                rep(origin_x[3+4*(0:(length(candidates)-1))], each = 4),
                 rep(origin_x[length(origin_x)-1], each = 2))
     out_x <- ifelse(x == min(x), cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"), ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1)))
     out_x <- sub("-", "--", out_x)
     out_x
   })
-  
+
   out |>
     kable(format = "latex",
           booktabs = TRUE,
@@ -343,9 +343,9 @@ latex_corr_table <- function(out_all){
     row_spec(2+4*(0:length(candidates)), hline_after = TRUE) |>
     kable_paper(full_width = F) |>
     kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down")) |>
-    row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(), 
+    row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(),
              background = "#e6e3e3") |>
-    add_header_above(header, align = "c") |> 
+    add_header_above(header, align = "c") |>
     footnote(general = "The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.",
              general_title = "NOTE:",
              footnote_as_chunk = T, title_format = c("italic", "underline"),

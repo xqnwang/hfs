@@ -4,7 +4,8 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-  12pt]{article}
+  12pt,
+  11pt]{article}
 
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
@@ -81,6 +82,13 @@
 \addtolength{\textwidth}{1in}%
 \addtolength{\textheight}{1.7in}%
 \addtolength{\topmargin}{-1in}%
+\usepackage{bm}
+\usepackage{mathptmx}
+\usepackage[margin = 2cm]{geometry}
+\allowdisplaybreaks
+\sloppy
+\usepackage[onlyrefs]{mathtools}
+\setlength{\tabcolsep}{0.11cm}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -179,7 +187,7 @@ Linear forecast reconciliation, Optimization problem},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{December 2, 2023}
+\date{December 5, 2023}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.}\\
@@ -222,7 +230,9 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, interior hidden, breakable, borderline west={3pt}{0pt}{shadecolor}, frame hidden, enhanced, boxrule=0pt]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, sharp corners, interior hidden, frame hidden, breakable, enhanced, borderline west={3pt}{0pt}{shadecolor}]}{\end{tcolorbox}}\fi
+
+\spacingset{1.65}
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -345,22 +355,20 @@ code for reproducing the results is available at LINK.
 We denote the set \(\{1,\ldots,k\}\) by \([k]\) for any positive integer
 \(k\). A \emph{hierarchical time series} can be considered as an
 \(n\)-dimensional multivariate time series that adheres to known linear
-constraints. Let \(\boldsymbol{y}_t \in \mathbb{R}^n\) be a vector
-comprising observations of all time series in the hierarchy at time
-\(t\), and \(\boldsymbol{b}_t \in \mathbb{R}^{n_b}\) be a vector
-comprising observations of all bottom-level time series at time \(t\).
-The full hierarchy at time \(t\) can be written as \[
-\boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t,
-\]
-
-for \(t=1,2,\ldots,T\), where \(T\) is the length of the time series,
-and \(\boldsymbol{S}\) is an \(n \times n_b\) \emph{summing matrix} that
-shows aggregation constraints present in the structure. We can write the
+constraints. Let \(\bm{y}_t \in \mathbb{R}^n\) be a vector comprising
+observations of all time series in the hierarchy at time \(t\), and
+\(\bm{b}_t \in \mathbb{R}^{n_b}\) be a vector comprising observations of
+all bottom-level time series at time \(t\). The full hierarchy at time
+\(t\) can be written as \[
+\bm{y}_t = \bm{S}\bm{b}_t,
+\] for \(t=1,2,\ldots,T\), where \(T\) is the length of the time series,
+and \(\bm{S}\) is an \(n \times n_b\) \emph{summing matrix} that shows
+aggregation constraints present in the structure. We can write the
 summing matrix as
-\(\boldsymbol{S} = \left[\begin{array}{c}\boldsymbol{A} \\ \boldsymbol{I}_{n_b}\end{array}\right]\),
-where \(\boldsymbol{A}\) is an \(n_a \times n_b\) \emph{aggregation
-matrix} with \(n = n_a + n_b\), and \(\boldsymbol{I}_{n_b}\) is an
-\(n_b\)-dimensional identity matrix.
+\(\bm{S} = \left[\begin{array}{c}\bm{A} \\ \bm{I}_{n_b}\end{array}\right]\),
+where \(\bm{A}\) is an \(n_a \times n_b\) \emph{aggregation matrix} with
+\(n = n_a + n_b\), and \(\bm{I}_{n_b}\) is an \(n_b\)-dimensional
+identity matrix.
 
 \begin{figure}
 
@@ -376,15 +384,15 @@ series.}
 To clarify these notations, consider the example of a simple hierarchy
 in Figure~\ref{fig-hts}. For this two-level hierarchy, we have
 \(n = 7\), \(n_b = 4\), \(n_a = 3\),
-\(\boldsymbol{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}\),
-\(\boldsymbol{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}\),
+\(\bm{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}\),
+\(\bm{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}\),
 and \[
-\boldsymbol{S} = \left[
+\bm{S} = \left[
 \begin{array}{cccc}
 1 & 1 & 1 & 1 \\
 1 & 1 & 0 & 0 \\
 0 & 0 & 1 & 1 \\
-\multicolumn{4}{c}{\boldsymbol{I}_4}
+\multicolumn{4}{c}{\bm{I}_4}
 \end{array}\right].
 \]
 
@@ -398,37 +406,35 @@ structure. Please refer to \citet{Hyndman2021-fo} on further details.
 \subsection{Linear forecast
 reconciliation}\label{linear-forecast-reconciliation}}
 
-Let \(\hat{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n\) be a vector
-of \(h\)-step-ahead \emph{base forecasts} for all time series in the
+Let \(\hat{\bm{y}}_{T+h \mid T} \in \mathbb{R}^n\) be a vector of
+\(h\)-step-ahead \emph{base forecasts} for all time series in the
 structure, given observations up to and including time \(T\), and
-stacked in the same order as \(\boldsymbol{y}_t\). We can use any method
-to generate these forecasts, but in general they will not add up
-especially when we forecast each series independently.
+stacked in the same order as \(\bm{y}_t\). We can use any method to
+generate these forecasts, but in general they will not add up especially
+when we forecast each series independently.
 
 When forecasting these time series structure, we expect the forecasts to
 be \emph{coherent} (i.e., aggregation constraints of the data are
-satisfied). Let \(\tilde{\boldsymbol{y}}_{T+h \mid T} \in \mathbb{R}^n\)
-denote a vector of \(h\)-step-ahead \emph{reconciled forecasts} which
-are coherent by construction, \(\psi\) a \emph{mapping} that reconciles
-base forecasts, \(\hat{\boldsymbol{y}}_{T+h \mid T}\). Then we have
-\emph{forecast reconciliation}
-\(\tilde{\boldsymbol{y}}_{T+h \mid T}=\psi(\hat{\boldsymbol{y}}_{T+h \mid T})\),
-which is essentially a post-processing method. In this paper, we focus
-on linear forecast reconciliation given by
+satisfied). Let \(\tilde{\bm{y}}_{T+h \mid T} \in \mathbb{R}^n\) denote
+a vector of \(h\)-step-ahead \emph{reconciled forecasts} which are
+coherent by construction, \(\psi\) a \emph{mapping} that reconciles base
+forecasts, \(\hat{\bm{y}}_{T+h \mid T}\). Then we have \emph{forecast
+reconciliation}
+\(\tilde{\bm{y}}_{T+h \mid T}=\psi(\hat{\bm{y}}_{T+h \mid T})\), which
+is essentially a post-processing method. In this paper, we focus on
+linear forecast reconciliation given by
 \begin{equation}\protect\hypertarget{eq-lr}{}{
-\tilde{\boldsymbol{y}}_{T+h \mid T} = \boldsymbol{S}\boldsymbol{G}_h\hat{\boldsymbol{y}}_{T+h \mid T},
-}\label{eq-lr}\end{equation}
-
-where
+\tilde{\bm{y}}_{T+h \mid T} = \bm{S}\bm{G}_h\hat{\bm{y}}_{T+h \mid T},
+}\label{eq-lr}\end{equation} where
 
 \begin{itemize}
 \tightlist
 \item
-  \(\boldsymbol{G}_h\) is an \(n_b \times n\) weighting matrix that maps
-  base forecasts into the bottom level. It combines all base forecasts
-  to form reconciled forecasts for bottom-level series.
+  \(\bm{G}_h\) is an \(n_b \times n\) weighting matrix that maps base
+  forecasts into the bottom level. It combines all base forecasts to
+  form reconciled forecasts for bottom-level series.
 \item
-  \(\boldsymbol{S}\) is an \(n \times n_b\) summing matrix that sums up
+  \(\bm{S}\) is an \(n \times n_b\) summing matrix that sums up
   bottom-level reconciled forecasts to produce coherent forecasts of all
   levels. It identifies the linear aggregation constraints in a given
   structure.
@@ -440,91 +446,84 @@ reconciliation}\label{minimum-trace-reconciliation}}
 
 Let the \(h\)-step-ahead in-sample \emph{base forecast errors} be
 defined as
-\(\hat{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h \mid t}\),
+\(\hat{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h \mid t}\),
 and the \(h\)-step-ahead \emph{reconciled forecast errors} be defined as
-\(\tilde{\boldsymbol{e}}_{t+h \mid t} = \boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{t+h \mid t}\)
+\(\tilde{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h \mid t}\)
 for \(t = 1,2,\ldots,T-h\). \citet{Wickramasuriya2019-fc} formulated a
 linear reconciliation problem as minimizing the trace (MinT) of the
 \(h\)-step-ahead covariance matrix of the reconciled forecast errors,
-\(\operatorname{Var}(\tilde{\boldsymbol{e}}_{t+h \mid t})\). Under the
+\(\operatorname{Var}(\tilde{\bm{e}}_{t+h \mid t})\). Under the
 assumption of unbiasedness of base forecasts and reconciled forecasts,
 the unique solution of the minimization problem is given by
 \begin{equation}\protect\hypertarget{eq-mint}{}{
-\boldsymbol{G}_h=\left(\boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1} \boldsymbol{S}\right)^{-1} \boldsymbol{S}^{\prime} \boldsymbol{W}_h^{-1},
-}\label{eq-mint}\end{equation} where \(\boldsymbol{W}_h\) is the
-positive definite covariance matrix of the \(h\)-step-ahead base
-forecast errors.
+\bm{G}_h=\left(\bm{S}^{\prime} \bm{W}_h^{-1} \bm{S}\right)^{-1} \bm{S}^{\prime} \bm{W}_h^{-1},
+}\label{eq-mint}\end{equation} where \(\bm{W}_h\) is the positive
+definite covariance matrix of the \(h\)-step-ahead base forecast errors.
 
 The trace minimization problem can be reformulated as a least squares
 problem with linear constraints given by
 \begin{equation}\protect\hypertarget{eq-mint_op}{}{
-\begin{aligned}
-& \min _{\tilde{\boldsymbol{y}}_{T+h \mid T}} \quad \frac{1}{2}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T})^{\prime} \boldsymbol{W}_{h}^{-1}(\hat{\boldsymbol{y}}_{T+h \mid T}-\tilde{\boldsymbol{y}}_{T+h \mid T}) \\
-& \text { s.t. } \quad \tilde{\boldsymbol{y}}_{T+h \mid T}=\boldsymbol{S}\tilde{\boldsymbol{b}}_{T+h \mid T},
-\end{aligned}
-}\label{eq-mint_op}\end{equation}
+ \min _{\tilde{\bm{y}}_{T+h \mid T}} \quad \frac{1}{2}(\hat{\bm{y}}_{T+h \mid T}-\tilde{\bm{y}}_{T+h \mid T})^{\prime} \bm{W}_{h}^{-1}(\hat{\bm{y}}_{T+h \mid T}-\tilde{\bm{y}}_{T+h \mid T})
+ \qquad \text { s.t. } \quad \tilde{\bm{y}}_{T+h \mid T}=\bm{S}\tilde{\bm{b}}_{T+h \mid T},
+}\label{eq-mint_op}\end{equation} where
+\(\tilde{\bm{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}\) is the vector
+comprising \(h\)-step-ahead bottom-level reconciled forecasts, made at
+time \(T\). Focusing on \(\bm{W}_h\), the intuition behind the MinT
+reconciliation is that \textbf{the larger the estimated variance of the
+base forecast errors, the larger the range of adjustments permitted for
+forecast reconciliation}.
 
-where \(\tilde{\boldsymbol{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}\) is
-the vector comprising \(h\)-step-ahead bottom-level reconciled
-forecasts, made at time \(T\). Focusing on \(\boldsymbol{W}_h\), the
-intuition behind the MinT reconciliation is that \textbf{the larger the
-estimated variance of the base forecast errors, the larger the range of
-adjustments permitted for forecast reconciliation}.
+It is challenging to estimate \(\bm{W}_h\), especially for \(h > 1\).
+Assuming that \(\bm{W}_h = k_h\bm{W}_1\), \(\forall h\), where
+\(k_h > 0\), the MinT solution of \(\bm{G}\) does not change with the
+forecast horizon, \(h\). Hence, we will drop the subscript \(h\) for the
+ease of exposition. The most popularly used candidate estimators for
+\(\bm{W}\) in the forecast reconciliation literature are listed in Table
+\ref{tbl-bench}.
 
-It is challenging to estimate \(\boldsymbol{W}_h\), especially for
-\(h > 1\). Assuming that \(\boldsymbol{W}_h = k_h\boldsymbol{W}_1\),
-\(\forall h\), where \(k_h > 0\), the MinT solution of
-\(\boldsymbol{G}\) does not change with the forecast horizon, \(h\).
-Hence, we will drop the subscript \(h\) for the ease of exposition. The
-most popularly used candidate estimators for \(\boldsymbol{W}\) in the
-forecast reconciliation literature are listed in Table~\ref{tbl-bench}.
-
-\hypertarget{tbl-bench}{}
 \begin{table}[!h]
-\caption{\label{tbl-bench}Forecast reconciliation methods for which different estimators of $\boldsymbol{W}$ are used. }
+\caption{Forecast reconciliation methods for which different estimators of $\bm{W}$ are used.}\label{tbl-bench}
 \centering
 \begin{threeparttable}
 \begin{tabular}{p{0.7\linewidth}r}
 \toprule
-Reconciliation method & $\boldsymbol{W}_h \propto$\\
+Reconciliation method & $\bm{W}_h \propto$\\
 \midrule
-\textbf{OLS} \citep{Hyndman2011-sd} & $\boldsymbol{I}$\\
-\textbf{WLSs} \citep{Athanasopoulos2017-jj} & $\operatorname{diag}(\boldsymbol{S} \mathbf{1})$\\
-\textbf{WLSv} \citep{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\boldsymbol{W}}_1)$\\
-\textbf{MinT} \citep{Wickramasuriya2019-fc} & $\hat{\boldsymbol{W}}_1$\\
-\textbf{MinTs} \citep{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\boldsymbol{W}}_1) + (1-\lambda)\hat{\boldsymbol{W}}_1$\\
+\textbf{OLS} \citep{Hyndman2011-sd} & $\bm{I}$\\
+\textbf{WLSs} \citep{Athanasopoulos2017-jj} & $\operatorname{diag}(\bm{S} \bm{1})$\\
+\textbf{WLSv} \citep{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\bm{W}}_1)$\\
+\textbf{MinT} \citep{Wickramasuriya2019-fc} & $\hat{\bm{W}}_1$\\
+\textbf{MinTs} \citep{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\bm{W}}_1) + (1-\lambda)\hat{\bm{W}}_1$\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
 \linespread{1}\small
 \footnotesize
-\item \underline{\textit{NOTE:}} 
-\item $\mathbf{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\boldsymbol{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
+\underline{\textit{NOTE:}}
+$\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
 
-In practice, it is hard to say which estimator for \(\boldsymbol{W}\)
-works better. \citet{Pritularga2021-lz} demonstrated that the
-performance of forecast reconciliation is affected by two sources of
-uncertainties, i.e., the base forecast uncertainty and the
-reconciliation weight uncertainty. Recall that the uncertainty in the
-MinT solution in Equation~\ref{eq-mint} is introduced by the uncertainty
-in the weighting matrix as the summing matrix is fixed for a given
-structure. This indicates that OLS and WLSs estimators for
-\(\boldsymbol{W}\) may lead to less volatile reconciliation performance
-compared to WLSv, MinT, and MinTs estimators.
-\citet{Panagiotelis2021-mf} provided a geometric intuition for
-reconciliation and showed that, when considering the Euclidean distance
-loss function, OLS reconciliation yields results that are at least as
-favorable as the base forecasts, whereas MinT reconciliation performs
-poorly relative to the base forecasts. However, when considering the
-expected Euclidean distance of the reconciled forecast error,
-\citet{Wickramasuriya2021-am} indicated that MinT reconciliation is
-better than OLS reconciliation. Therefore, which estimator for
-\(\boldsymbol{W}\) to use hinges on the specific time series structure
-of interest, the targeted level or series, and the selected loss
-function.
+In practice, it is hard to say which estimator for \(\bm{W}\) works
+better. \citet{Pritularga2021-lz} demonstrated that the performance of
+forecast reconciliation is affected by two sources of uncertainties,
+i.e., the base forecast uncertainty and the reconciliation weight
+uncertainty. Recall that the uncertainty in the MinT solution in
+Equation~\ref{eq-mint} is introduced by the uncertainty in the weighting
+matrix as the summing matrix is fixed for a given structure. This
+indicates that OLS and WLSs estimators for \(\bm{W}\) may lead to less
+volatile reconciliation performance compared to WLSv, MinT, and MinTs
+estimators. \citet{Panagiotelis2021-mf} provided a geometric intuition
+for reconciliation and showed that, when considering the Euclidean
+distance loss function, OLS reconciliation yields results that are at
+least as favorable as the base forecasts, whereas MinT reconciliation
+performs poorly relative to the base forecasts. However, when
+considering the expected Euclidean distance of the reconciled forecast
+error, \citet{Wickramasuriya2021-am} indicated that MinT reconciliation
+is better than OLS reconciliation. Therefore, which estimator for
+\(\bm{W}\) to use hinges on the specific time series structure of
+interest, the targeted level or series, and the selected loss function.
 
 \hypertarget{relaxation-of-the-unbiasedness-assumptions}{%
 \subsubsection{Relaxation of the unbiasedness
@@ -537,59 +536,52 @@ reconciliation method relaxing the assumption of unbiasedness.
 Specifically, by expanding the training window forward by one
 observation until \(T-h\), they formulated the reconciliation problem as
 a regularized empirical risk minimization (RERM) problem given by \[
-\min _{\boldsymbol{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\boldsymbol{Y}_{h}^{*}-\hat{\boldsymbol{Y}}_{h}^{*} \mathbf{G}_{h}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \boldsymbol{G}_h)\|_1,
-\]
-
-where \(T_1\) denotes the minimum number of observations used for model
-training, \(\left\| \cdot \right\|_F\) is the Frobenius norm,
+\min _{\bm{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\bm{Y}_{h}^{*}-\hat{\bm{Y}}_{h}^{*} \bm{G}_{h}^{\prime} \bm{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \bm{G}_h)\|_1,
+\] where \(T_1\) denotes the minimum number of observations used for
+model training, \(\left\| \cdot \right\|_F\) is the Frobenius norm,
 \(\|\cdot\|_1\) is the \(L_1\) norm, \(\operatorname{vec}(\cdot)\)
 denotes the vectorization of a matrix, which stacks the columns of the
 matrix on top of one another,
-\(\boldsymbol{Y}_{h}^{*}=\left[\boldsymbol{y}_{T_1+h}, \ldots, \boldsymbol{y}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\),
-\(\hat{\boldsymbol{Y}}_{h}^{*}=\left[\hat{\boldsymbol{y}}_{T_1+h \mid T_1}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\),
+\(\bm{Y}_{h}^{*}=\left[\bm{y}_{T_1+h}, \ldots, \bm{y}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\),
+\(\hat{\bm{Y}}_{h}^{*}=\left[\hat{\bm{y}}_{T_1+h \mid T_1}, \ldots, \hat{\bm{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\),
 and \(\lambda \geq 0\) is a regularization parameter.
 
 When \(\lambda = 0\), the problem reduces to an empirical risk
 minimization (ERM) problem without regularization. Assuming that the
 series in the structure are jointly weakly stationary and
-\(\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\) is
-invertible, it has a closed-form solution given by \[
-\hat{\boldsymbol{G}}_h = \boldsymbol{B}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\left(\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\right)^{-1},
-\]
+\(\hat{\bm{Y}}_{h}^{*\prime}\hat{\bm{Y}}_{h}^{*}\) is invertible, it has
+a closed-form solution given by \[
+\hat{\bm{G}}_h = \bm{B}_{h}^{*\prime}\hat{\bm{Y}}_{h}^{*}\left(\hat{\bm{Y}}_{h}^{*\prime}\hat{\bm{Y}}_{h}^{*}\right)^{-1},
+\] where
+\(\bm{B}_{h}^{*}=\left[\bm{b}_{T_1+h}, \ldots, \bm{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\).
+If \(\hat{\bm{Y}}_{h}^{*\prime}\hat{\bm{Y}}_{h}^{*}\) is not invertible,
+they suggested using a generalized inverse.
 
-where
-\(\boldsymbol{B}_{h}^{*}=\left[\boldsymbol{b}_{T_1+h}, \ldots, \boldsymbol{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-T_1-h+1\right) \times n}\).
-If \(\hat{\boldsymbol{Y}}_{h}^{*\prime}\hat{\boldsymbol{Y}}_{h}^{*}\) is
-not invertible, they suggested using a generalized inverse.
-
-When \(\lambda > 0\), imposing such a \(L_1\) penalty on
-\(\boldsymbol{G}_h\) will introduce sparsity and reduce estimation
-variance, albeit at the cost of introducing some bias. In addition, they
-also proposed another strategy that penalizes the matrix
-\(\boldsymbol{G}_h\) towards the solution obtained by bottom-up
-(\textbf{BU}) method, i.e.,
-\(\boldsymbol{G}_{\text{BU}} = \left[\boldsymbol{0}_{n_b \times n_a} \mid \boldsymbol{I}_{n_b}\right]\).
+When \(\lambda > 0\), imposing such a \(L_1\) penalty on \(\bm{G}_h\)
+will introduce sparsity and reduce estimation variance, albeit at the
+cost of introducing some bias. In addition, they also proposed another
+strategy that penalizes the matrix \(\bm{G}_h\) towards the solution
+obtained by bottom-up (\textbf{BU}) method, i.e.,
+\(\bm{G}_{\text{BU}} = \left[\bm{0}_{n_b \times n_a} \mid \bm{I}_{n_b}\right]\).
 
 Following the work, \citet{Wickramasuriya2021-am} proposed an empirical
 MinT (\textbf{EMinT}) without the unbiasedness constraint by minimizing
 the trace of the covariance matrix of the reconciled forecast errors,
-\(\operatorname{Var}(\tilde{\boldsymbol{e}}_{T+h \mid T})\). Assuming
-that the series are jointly weakly stationary, she derived the solution
-given by \[
-\hat{\boldsymbol{G}}_{h} = \boldsymbol{B}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\left(\hat{\boldsymbol{Y}}_{h}^{\prime}\hat{\boldsymbol{Y}}_{h}\right)^{-1},
-\]
-
-where
-\(\boldsymbol{B}_{h}=\left[\boldsymbol{b}_{h}, \ldots, \boldsymbol{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}\),
+\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\). Assuming that the
+series are jointly weakly stationary, she derived the solution given by
+\[
+\hat{\bm{G}}_{h} = \bm{B}_{h}^{\prime}\hat{\bm{Y}}_{h}\left(\hat{\bm{Y}}_{h}^{\prime}\hat{\bm{Y}}_{h}\right)^{-1},
+\] where
+\(\bm{B}_{h}=\left[\bm{b}_{h}, \ldots, \bm{b}_T\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}\),
 and
-\(\hat{\boldsymbol{Y}}_{h}=\left[\hat{\boldsymbol{y}}_{h \mid 0}, \ldots, \hat{\boldsymbol{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}\).
+\(\hat{\bm{Y}}_{h}=\left[\hat{\bm{y}}_{h \mid 0}, \ldots, \hat{\bm{y}}_{T \mid T-h}\right]^{\prime} \in \mathbb{R}^{\left(T-h+1\right) \times n}\).
 The difference between EMinT and ERM lies in the data sources, as EMinT
 uses in-sample observations and base forecasts, while ERM relies on
 observations and base forecasts from a holdout validation set. We note
-that both ERM and EMinT consider an estimate of \(\boldsymbol{G}\) that
-changes over the forecast horizon, which is why we keep the subscript
-\(h\) here. When reporting the EMinT results that follow, we assume the
-weighting matrix \(\boldsymbol{G}\) for \(h=1\) holds for \(h>1\).
+that both ERM and EMinT consider an estimate of \(\bm{G}\) that changes
+over the forecast horizon, which is why we keep the subscript \(h\)
+here. When reporting the EMinT results that follow, we assume the
+weighting matrix \(\bm{G}\) for \(h=1\) holds for \(h>1\).
 
 In practice, a prevalent challenge in forecast reconciliation arises
 when the base forecasts of some time series within the structure may
@@ -597,17 +589,16 @@ perform poorly, especially for large hierarchies. This can be attributed
 to either the inherent complexity of forecasting these series or
 potential model misspecification. In such cases, the effectiveness of
 forecast reconciliation may diminish, as the role of the weighting
-matrix \(\boldsymbol{G}\) is to assimilate \emph{all} base forecasts and
-map them into bottom-level disaggregated forecasts which are
-subsequently summed by \(\boldsymbol{S}\). While the RERM method
-proposed by \citet{Ben_Taieb2019-be} introduces sparsity by shrinking
-some elements of \(\boldsymbol{G}\) towards zero, it remains incapable
-of mitigating the adverse impact of underperforming base forecasts on
-the quality of the reconciled forecasts. Moreover, the method is
-time-consuming and might be problematic when there are limited number of
-observations because it uses expanding windows to recursively generate
-out-of-sample base forecasts, which are then used in the minimization
-problem.
+matrix \(\bm{G}\) is to assimilate \emph{all} base forecasts and map
+them into bottom-level disaggregated forecasts which are subsequently
+summed by \(\bm{S}\). While the RERM method proposed by
+\citet{Ben_Taieb2019-be} introduces sparsity by shrinking some elements
+of \(\bm{G}\) towards zero, it remains incapable of mitigating the
+adverse impact of underperforming base forecasts on the quality of the
+reconciled forecasts. Moreover, the method is time-consuming and might
+be problematic when there are limited number of observations because it
+uses expanding windows to recursively generate out-of-sample base
+forecasts, which are then used in the minimization problem.
 
 We therefore propose two categories of innovative methods, constrained
 out-of-sample (under the unbiasedness assumption) and unconstrained
@@ -618,8 +609,7 @@ structure on the overall performance of the reconciled forecasts.
 Additionally, through the incorporation of regularization in our
 objective function, our method has the potential to enhance
 reconciliation outcomes produced by using a ``poor'' choice of
-\(\boldsymbol{W}\), thus reducing the risk of choosing estimator of
-\(\boldsymbol{W}\).
+\(\bm{W}\), thus reducing the risk of choosing estimator of \(\bm{W}\).
 
 \hypertarget{sec-methodology}{%
 \section{Forecast reconciliation with time series
@@ -639,118 +629,101 @@ observations and base forecasts.
 \subsection{Series selection with unbiasedness
 constraint}\label{sec-constrained}}
 
-As \(\boldsymbol{S}\) is fixed and \(\hat{\boldsymbol{y}}_{T+h \mid T}\)
-is given, once we get the estimation of \(\boldsymbol{G}\), the linear
-reconciliation performance is determined, as shown in
-Equation~\ref{eq-lr}. In this section, the subscript \(h\) is dropped as
-we assume \(\boldsymbol{W}\) and \(\boldsymbol{G}\) do not vary with the
-forecast horizon. A natural way to keep forecasts of some series unused
-in reconciliation is through controlling the number of nonzero column
-entries in \(\boldsymbol{G}\). This leads to a generalization of the
-MinT optimization problem by applying an additional penalty to the
-objective function. More precisely, let
-\(\hat{\boldsymbol{y}}:=\hat{\boldsymbol{y}}_{T+1 \mid T}\), we consider
-the optimization problem given by
+As \(\bm{S}\) is fixed and \(\hat{\bm{y}}_{T+h \mid T}\) is given, once
+we get the estimation of \(\bm{G}\), the linear reconciliation
+performance is determined, as shown in Equation~\ref{eq-lr}. In this
+section, the subscript \(h\) is dropped as we assume \(\bm{W}\) and
+\(\bm{G}\) do not vary with the forecast horizon. A natural way to keep
+forecasts of some series unused in reconciliation is through controlling
+the number of nonzero column entries in \(\bm{G}\). This leads to a
+generalization of the MinT optimization problem by applying an
+additional penalty to the objective function. More precisely, let
+\(\hat{\bm{y}}:=\hat{\bm{y}}_{T+1 \mid T}\), we consider the
+optimization problem given by
 \begin{equation}\protect\hypertarget{eq-op_u}{}{
-\begin{aligned}
-& \min _{\boldsymbol{G}} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}-\boldsymbol{SG}\hat{\boldsymbol{y}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\boldsymbol{SG}\hat{\boldsymbol{y}}\right)
-+ \lambda\mathfrak{g}(\boldsymbol{G}) \\
-& \text { s.t. } \quad \boldsymbol{GS}=\boldsymbol{I},
-\end{aligned}
-}\label{eq-op_u}\end{equation}
-
-where \(\mathfrak{g}(\cdot)\) is defined as an exterior penalty function
-designed to penalize the columns of \(\boldsymbol{G}\) towards zero,
-with \(\lambda\) is the corresponding penalty coefficient. Thus, this
-can be considered as \emph{a grouped variable selection problem}, with
-each group corresponding to a column of \(\boldsymbol{G}\). Obviously,
-these groups are not overlapped. The constraint,
-\(\boldsymbol{GS}=\boldsymbol{I}\), reflects the assumption that base
-forecasts and reconciled forecasts are unbiased. When \(\lambda = 0\),
-\(\forall h\), the problem reduces to the MinT optimization problem in
+\min _{\bm{G}} \quad \frac{1}{2}\left(\hat{\bm{y}}-\bm{SG}\hat{\bm{y}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\bm{SG}\hat{\bm{y}}\right)
++ \lambda\mathfrak{g}(\bm{G}) \qquad
+\text { s.t. } \quad \bm{GS}=\bm{I},
+}\label{eq-op_u}\end{equation} where \(\mathfrak{g}(\cdot)\) is defined
+as an exterior penalty function designed to penalize the columns of
+\(\bm{G}\) towards zero, with \(\lambda\) is the corresponding penalty
+coefficient. Thus, this can be considered as \emph{a grouped variable
+selection problem}, with each group corresponding to a column of
+\(\bm{G}\). Obviously, these groups are not overlapped. The constraint,
+\(\bm{GS}=\bm{I}\), reflects the assumption that base forecasts and
+reconciled forecasts are unbiased. When \(\lambda = 0\), \(\forall h\),
+the problem reduces to the MinT optimization problem in
 Equation~\ref{eq-mint_op} with a closed-form solution given by
 Equation~\ref{eq-mint}.
 
 \textbf{Proposition 1.} \emph{Under the assumption of unbiasedness, the
-count of nonzero column entries of} \(\boldsymbol{G}\) (\emph{i.e., the
-number of time series selected for reconciliation}), \emph{derived
-through solving Equation~\ref{eq-op_u}, is at least equal to the number
-of time series at the bottom level. In addition, we can restore the full
+count of nonzero column entries of} \(\bm{G}\) (\emph{i.e., the number
+of time series selected for reconciliation}), \emph{derived through
+solving Equation~\ref{eq-op_u}, is at least equal to the number of time
+series at the bottom level. In addition, we can restore the full
 hierarchical structure by aggregating/disaggregating the selected time
 series.}
 
 \emph{Proof}. According to the unbiasedness constraint
-\(\boldsymbol{GS}=\boldsymbol{I}\), we have \[
-\min \left(\operatorname{rank}(\boldsymbol{G}), \operatorname{rank}(\boldsymbol{S})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b,
-\]
+\(\bm{GS}=\bm{I}\), we have \[
+\min \left(\operatorname{rank}(\bm{G}), \operatorname{rank}(\bm{S})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b,
+\] which indicates that the count of nonzero column entries of
+\(\bm{G}\) is at least equal to \(n_b\).
 
-which indicates that the count of nonzero column entries of
-\(\boldsymbol{G}\) is at least equal to \(n_b\).
-
-Let
-\(\boldsymbol{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
-denote the submatrix of the \(r \times c\) matrix \(\boldsymbol{X}\)
-with column indices forming a set \(\mathbb{S}\) (and when
-\(\mathbb{S} = \{j\}\), we simply use \(\boldsymbol{X}_{\cdot j}\)),
-where \(|\mathbb{S}|\) denotes the size of the set \(\mathbb{S}\).
-Similarly, let
-\(\boldsymbol{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}\)
-denote the submatrix of \(\boldsymbol{X}\) whose rows are indexed by a
-set \(\mathbb{S}\) (and when \(\mathbb{S} = \{i\}\), we simply use
-\(\boldsymbol{X}_{i\cdot}\)). Assuming that the set \(\mathbb{S}\)
-consists of the indices of nonzero columns in the solution of
-Equation~\ref{eq-op_u}, \(\hat{\boldsymbol{G}}\), the following
-equations hold: \[
-\begin{aligned}
-& \boldsymbol{G}\boldsymbol{S} = \hat{\boldsymbol{G}}_{\cdot \mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot} = \boldsymbol{I} \text{, and } \\
-& \min \left(\operatorname{rank}(\hat{\boldsymbol{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\boldsymbol{I}_{n_b})=n_b.
-\end{aligned}
-\]
-
-Additionally, we have
-\(\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) \leq n_b\) as
-\(\boldsymbol{S}\) has \(n_b\) columns. Therefore, we can conclude that
-\(\operatorname{rank}(\boldsymbol{S}_{\mathbb{S}\cdot}) = n_b\).
-Moreover, we have \[
-\boldsymbol{y}_t = \boldsymbol{S}\boldsymbol{b}_t = \boldsymbol{S}\boldsymbol{G}\boldsymbol{S}\boldsymbol{b}_t=\boldsymbol{S}\hat{\boldsymbol{G}}_{\cdot\mathbb{S}}\boldsymbol{S}_{\mathbb{S}\cdot}\boldsymbol{b}_t=\boldsymbol{S}\hat{\boldsymbol{G}}_{\cdot \mathbb{S}}(\boldsymbol{y}_t)_{\mathbb{S}},
-\]
-
-which implies that the hierarchical structure can be fully restored by
-aggregating/disaggregating the selected time series denoted by
-\((\boldsymbol{y}_{t})_{\mathbb{S}}\).
+Let \(\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
+denote the submatrix of the \(r \times c\) matrix \(\bm{X}\) with column
+indices forming a set \(\mathbb{S}\) (and when \(\mathbb{S} = \{j\}\),
+we simply use \(\bm{X}_{\cdot j}\)), where \(|\mathbb{S}|\) denotes the
+size of the set \(\mathbb{S}\). Similarly, let
+\(\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}\)
+denote the submatrix of \(\bm{X}\) whose rows are indexed by a set
+\(\mathbb{S}\) (and when \(\mathbb{S} = \{i\}\), we simply use
+\(\bm{X}_{i\cdot}\)). Assuming that the set \(\mathbb{S}\) consists of
+the indices of nonzero columns in the solution of
+Equation~\ref{eq-op_u}, \(\hat{\bm{G}}\), the following equations hold:
+\[
+\bm{G}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I},
+\qquad\text{and}\qquad
+\min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
+\] Additionally, we have
+\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b\) as \(\bm{S}\)
+has \(n_b\) columns. Therefore, we can conclude that
+\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b\). Moreover, we
+have \[
+\bm{y}_t = \bm{S}\bm{b}_t = \bm{S}\bm{G}\bm{S}\bm{b}_t=\bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{S}_{\mathbb{S}\cdot}\bm{b}_t=\bm{S}\hat{\bm{G}}_{\cdot \mathbb{S}}(\bm{y}_t)_{\mathbb{S}},
+\] which implies that the hierarchical structure can be fully restored
+by aggregating/disaggregating the selected time series denoted by
+\((\bm{y}_{t})_{\mathbb{S}}\).
 
 For example, consider the simple hierarchy shown in
 Figure~\ref{fig-hts}, it is not possible for our constrained
 reconciliation methods with selection to simultaneously zero out columns
-of \(\boldsymbol{G}\) associated with series AA and AB. However, it is
-possible to zero out columns related to series AA and BA simultaneously.
+of \(\bm{G}\) associated with series AA and AB. However, it is possible
+to zero out columns related to series AA and BA simultaneously.
 
 \textbf{Proposition 2.} \emph{The optimization problem in
 Equation~\ref{eq-op_u} can be reformulated as a least squares problem
 with regularization and linear equality constraint as follows:}
 \begin{equation}\protect\hypertarget{eq-op_u_reg}{}{
 \begin{aligned}
-& \min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\boldsymbol{G})\right) \\
-& \text { s.t. } \quad \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{n_b}),
+& \min _{\operatorname{vec}(\bm{G})} \quad \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\bm{G})\right) \\
+& \text { s.t. } \quad \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}(\bm{I}_{n_b}),
 \end{aligned}
-}\label{eq-op_u_reg}\end{equation}
-
-\emph{which is characterized as a high-dimensional problem in which the
-number of features, denoted as} \(p = n_b \times n\)\emph{, is much
-larger than the number of observations,} \(n\)\emph{.}
+}\label{eq-op_u_reg}\end{equation} \emph{which is characterized as a
+high-dimensional problem in which the number of features, denoted as}
+\(p = n_b \times n\)\emph{, is much larger than the number of
+observations,} \(n\)\emph{.}
 
 \emph{Proof.} We have \[
 \begin{aligned}
-& \operatorname{vec}\left(\hat{\boldsymbol{y}}\right) = \hat{\boldsymbol{y}}, \\
-& \operatorname{vec}\left(\boldsymbol{SG}\hat{\boldsymbol{y}}\right) = \left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}), \\
-& \operatorname{vec}\left(\boldsymbol{GS}\right) = \operatorname{vec}\left(\boldsymbol{I}_{n_b}\boldsymbol{GS}\right) = \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G}).
+& \operatorname{vec}\left(\hat{\bm{y}}\right) = \hat{\bm{y}}, \\
+& \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
+& \operatorname{vec}\left(\bm{GS}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{GS}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
 \end{aligned}
-\]
-
-Substituting the terms in Equation~\ref{eq-op_u} with these expressions,
-the previous problem now takes the form of a regression problem with an
-additional regularization term and an equality constraint on the
-coefficients, as shown in Equation~\ref{eq-op_u_reg}.
+\] Substituting the terms in Equation~\ref{eq-op_u} with these
+expressions, the previous problem now takes the form of a regression
+problem with an additional regularization term and an equality
+constraint on the coefficients, as shown in Equation~\ref{eq-op_u_reg}.
 
 Moving forward, we present three classes of regularizations we use to
 establish forecast reconciliation with series selection, resulting in
@@ -764,32 +737,28 @@ regularization}\label{sec-subset}}
 
 In high-dimensional regime with \(p \gg n\), a common desiderata is to
 assume that the true regression coefficient (i.e.,
-\(\operatorname{vec}(\boldsymbol{G})\) in our problem) is sparse. We
-propose to apply a combination of \(L_0\) and \(L_2\) regularization as
-the exterior penalty function to control the nonzero column entries in
-\(\boldsymbol{G}\): \begin{equation}\protect\hypertarget{eq-subset}{}{
-\begin{aligned}
-\min _{\operatorname{vec}(\boldsymbol{G})} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda_0 \sum_{j=1}^n 1\left(\boldsymbol{G}_{\cdot j} \neq \mathbf{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\boldsymbol{G}\right)\right\|_2^2 \\
-\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}(\boldsymbol{I}_{n_b}),
-\end{aligned}
-}\label{eq-subset}\end{equation}
-
-where \(1(\cdot)\) is the indicator function, \(\lambda_0 \geq 0\)
-controls the number of nonzero columns of \(\boldsymbol{G}\) selected,
-\(\lambda_2 \geq 0\) controls the strength of the ridge regularization,
-and \(\|\cdot\|_2\) is the \(L_2\) norm. In a hierarchical or grouped
-time series context, the parameter of interest in
-Equation~\ref{eq-subset}, \(\operatorname{vec}(\boldsymbol{G})\), has an
+\(\operatorname{vec}(\bm{G})\) in our problem) is sparse. We propose to
+apply a combination of \(L_0\) and \(L_2\) regularization as the
+exterior penalty function to control the nonzero column entries in
+\(\bm{G}\): \begin{align}
+\min _{\operatorname{vec}(\bm{G})} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda_0 \sum_{j=1}^n 1\left(\bm{G}_{\cdot j} \neq \bm{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\bm{G}\right)\right\|_2^2 \nonumber\\
+\text { s.t. } \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}(\bm{I}_{n_b}), \label{eq-subset}
+\end{align} where \(1(\cdot)\) is the indicator function,
+\(\lambda_0 \geq 0\) controls the number of nonzero columns of
+\(\bm{G}\) selected, \(\lambda_2 \geq 0\) controls the strength of the
+ridge regularization, and \(\|\cdot\|_2\) is the \(L_2\) norm. In a
+hierarchical or grouped time series context, the parameter of interest
+in Equation \ref{eq-subset}, \(\operatorname{vec}(\bm{G})\), has an
 inherent non-overlapping grouping structure, wherein each group
-corresponds to a single column of \(\boldsymbol{G}\), each with a size
-of \(n_b\). Therefore, we refer to this reconciliation method as
+corresponds to a single column of \(\bm{G}\), each with a size of
+\(n_b\). Therefore, we refer to this reconciliation method as
 \emph{group best-subset selection with ridge regularization}. In the
 results that follow, we label the \textbf{Subset} method differently
-based on various estimators for \(\boldsymbol{W}\), referring to them as
+based on various estimators for \(\bm{W}\), referring to them as
 \textbf{OLS-subset}, \textbf{WLSs-subset}, \textbf{WLSv-subset},
 \textbf{MinT-subset}, and \textbf{MinTs-subset}, respectively.
 
-The inclusion of the ridge term in Equation~\ref{eq-subset} is motivated
+The inclusion of the ridge term in Equation \ref{eq-subset} is motivated
 by earlier work on best-subset selection
 \citep[e.g.,][]{Hazimeh2020-xd, Mazumder2022-hx}, which suggests that
 additional ridge regularization can mitigate the poor predictive
@@ -797,27 +766,23 @@ performance of best-subset selection method in the low signal-to-noise
 ratio (SNR) regimes.
 
 We present a Big-M based mixed integer programming (MIP) formulation for
-problem in Equation~\ref{eq-subset} given by
-\begin{equation}\protect\hypertarget{eq-subset_mip}{}{
-\begin{aligned}
-\min _{\operatorname{vec}(\boldsymbol{G}), \boldsymbol{z}, \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \boldsymbol{g}^{+\prime}\boldsymbol{g}^{+} \\
-\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
-& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
-& \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \\
-& \boldsymbol{g}^{+} \geqslant \operatorname{vec}(\boldsymbol{G}) \\
-& \boldsymbol{g}^{+} \geqslant-\operatorname{vec}(\boldsymbol{G}) \\
+problem in Equation \ref{eq-subset} given by
+\begin{align} \label{eq-subset_mip}
+\min _{\operatorname{vec}(\bm{G}), \bm{z}, \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}^{-1}\check{\bm{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \bm{g}^{+\prime}\bm{g}^{+} \\
+\text { s.t. } \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right)\nonumber \\
+& \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right)\operatorname{vec}(\bm{G}) = \check{\bm{e}} \nonumber\\
+& \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \nonumber\\
+& \bm{g}^{+} \geqslant \operatorname{vec}(\bm{G}) \nonumber\\
+& \bm{g}^{+} \geqslant-\operatorname{vec}(\bm{G}) \nonumber\\
 & z_j \in\{0,1\}, \quad j \in[n],
-\end{aligned}
-}\label{eq-subset_mip}\end{equation}
-
-where \(\mathcal{M}\) is a Big-M parameter (a-priori specified) that is
-sufficiently large such that some optimal solution, say
-\(\boldsymbol{g}^{+*}\), to Equation~\ref{eq-subset_mip} satisfies
+\end{align} where \(\mathcal{M}\) is a Big-M parameter (a-priori
+specified) that is sufficiently large such that some optimal solution,
+say \(\bm{g}^{+*}\), to Equation \ref{eq-subset_mip} satisfies
 \(\max _{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\),
 the binary variable \(z_j\) controls whether all the regression
-coefficients, \(\operatorname{vec}(\boldsymbol{G})\), in group \(j\) are
-zero or not, i.e., \(z_j=0\) implies that
-\(\boldsymbol{G}_{\cdot j}=\mathbf{0}\), and \(z_j=1\) implies that
+coefficients, \(\operatorname{vec}(\bm{G})\), in group \(j\) are zero or
+not, i.e., \(z_j=0\) implies that \(\bm{G}_{\cdot j}=\bm{0}\), and
+\(z_j=1\) implies that
 \(\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\). Such
 Big-M formulations are commonly used in MIP problems to model relations
 between discrete and continuous variables, and have been recently
@@ -832,13 +797,12 @@ reconciled forecast errors on the truncated training set, comprising
 only the \(\max\{h, s\}\) observations closest to the forecast origin,
 where \(s\) is the seasonal period for seasonal data and \(s=T\) for
 non-seasonal data. Let
-\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)\)
+\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\bm{y}}-\tilde{\bm{y}}^{\text{bench}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\tilde{\bm{y}}^{\text{bench}}\right)\)
 that captures the scale of first term in the objective function, where
-\(\tilde{\boldsymbol{y}}^{\text{bench}}\) is a vector of reconciled
-forecasts obtained using Equation~\ref{eq-mint} with same estimator of
-\(\boldsymbol{W}\), and define
-\(\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}\). For the parameter
-\(\lambda_0\), we consider a grid of \(k+1\) values,
+\(\tilde{\bm{y}}^{\text{bench}}\) is a vector of reconciled forecasts
+obtained using Equation~\ref{eq-mint} with same estimator of \(\bm{W}\),
+and define \(\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}\). For the
+parameter \(\lambda_0\), we consider a grid of \(k+1\) values,
 \(\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}\), where
 \(\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\). So \(\lambda_{0}^{1},...,\lambda_{0}^{k}\) is a
@@ -848,8 +812,8 @@ the parameter \(\lambda_2\),
 over a two-dimensional grid of \((k+1) \times 6\) values to find the
 optimal combination of \(\lambda_0\) and \(\lambda_2\).
 
-\textbf{Computation details.} The MIQP problem in
-Equation~\ref{eq-subset_mip} is NP-Hard and computationally intensive.
+\textbf{Computation details.} The MIQP problem in Equation
+\ref{eq-subset_mip} is NP-Hard and computationally intensive.
 \citet{Bertsimas2016-ig} showed that commercial MIP solvers are capable
 of tackling problem instances for \(p\) up to a thousand. To address
 larger instances, there has been impressive work on developing MIP-based
@@ -859,70 +823,64 @@ approches for solving \(L_0\)-regularized regression problem, e.g.,
 approaches to accommodate additional constraints within the optimization
 problem. Despite the potential sluggishness of handling large instances
 with commercial MIP solvers, in our experiments, we use Gurobi to solve
-our problem in Equation~\ref{eq-subset_mip} by configuring parameters
+our problem in Equation \ref{eq-subset_mip} by configuring parameters
 such as MIPGap = \(0.001\) and TimeLimit = \(600\) seconds for cases
 with \(p > 1000\). This enables us to terminate the solver before
 reaching the global optimum and return a suboptimal solution instead.
 This strategy is motivated by our need to consider numerous parameter
 candidates, and the final solution will be validated against the
 training set, which prevents the utilization of a very poor estimate of
-\(\boldsymbol{G}\).
+\(\bm{G}\).
 
 \hypertarget{sec-intuitive}{%
 \subsubsection{\texorpdfstring{Intuitive method with \(L_0\)
 regularization}{Intuitive method with L\_0 regularization}}\label{sec-intuitive}}
 
-Instead of estimating the entire matrix \(\boldsymbol{G}\) in
+Instead of estimating the entire matrix \(\bm{G}\) in
 Section~\ref{sec-subset}, we leverage the MinT solution in
 Equation~\ref{eq-mint} to streamline the optimization problem under
-consideration. Specifically, we define
-\(\bar{\boldsymbol{S}} = \boldsymbol{A}\boldsymbol{S}\), where
-\(\boldsymbol{A} = \operatorname{diag}(\boldsymbol{z})\) is an
-\(n \times n\) diagonal matrix, and \(\boldsymbol{z}\) is an
-\(n\)-dimensional vector with elements either equal to 0 or 1. Taking
-the MinT solution in Equation~\ref{eq-mint}, we have
-\(\bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\).
-Given fixed \(\boldsymbol{S}\) and estimation of \(\boldsymbol{W}\),
-\(\bar{\boldsymbol{G}}\) is entirely determined by \(\boldsymbol{A}\).
-By this way, when the \(j\)th diagonal element of \(\boldsymbol{A}\)
-equals zero, the \(j\)th column of \(\bar{\boldsymbol{G}}\) becomes
-entirely composed of zeros. Therefore, the optimization problem can be
-reduced to an integer quadratic programming (IQP) problem in which all
-of the variables are restricted to be integers: \[
-\begin{aligned}
-\min _{\boldsymbol{A}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\boldsymbol{S}\bar{\boldsymbol{G}}\hat{\boldsymbol{y}}\right) + \lambda_0 \sum_{j=1}^n \boldsymbol{A}_{jj} \\
-\text { s.t. } \quad & \bar{\boldsymbol{G}} = (\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S})^{-1}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1} \\
-& \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I},
-\end{aligned}
-\]
-
-where \(\lambda_0 \geq 0\) controls the number of nonzero diagonal
-elements in \(\boldsymbol{A}\), consequently affecting the number of
-nonzero columns (i.e., selected time series) in \(\boldsymbol{G}\). We
-refer to this reconciliation method as \emph{intuitive method with}
-\(L_0\) \emph{regularization}. In the results that follow, we label the
+consideration. Specifically, we define \(\bar{\bm{S}} = \bm{A}\bm{S}\),
+where \(\bm{A} = \operatorname{diag}(\bm{z})\) is an \(n \times n\)
+diagonal matrix, and \(\bm{z}\) is an \(n\)-dimensional vector with
+elements either equal to 0 or 1. Taking the MinT solution in
+Equation~\ref{eq-mint}, we have
+\(\bar{\bm{G}} = (\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S})^{-1}\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\).
+Given fixed \(\bm{S}\) and estimation of \(\bm{W}\), \(\bar{\bm{G}}\) is
+entirely determined by \(\bm{A}\). By this way, when the \(j\)th
+diagonal element of \(\bm{A}\) equals zero, the \(j\)th column of
+\(\bar{\bm{G}}\) becomes entirely composed of zeros. Therefore, the
+optimization problem can be reduced to an integer quadratic programming
+(IQP) problem in which all of the variables are restricted to be
+integers: \begin{align*}
+\min _{\bm{A}} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\bm{S}\bar{\bm{G}}\hat{\bm{y}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\bm{S}\bar{\bm{G}}\hat{\bm{y}}\right) + \lambda_0 \sum_{j=1}^n \bm{A}_{jj} \\
+\text { s.t. } \quad & \bar{\bm{G}} = (\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S})^{-1}\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1} \qquad\text{and}\qquad \bar{\bm{G}}\bm{S} = \bm{I},
+\end{align*} where \(\lambda_0 \geq 0\) controls the number of nonzero
+diagonal elements in \(\bm{A}\), consequently affecting the number of
+nonzero columns (i.e., selected time series) in \(\bm{G}\). We refer to
+this reconciliation method as \emph{intuitive method with} \(L_0\)
+\emph{regularization}. In the results that follow, we label the
 \textbf{Intuitive} method differently based on various estimators for
-\(\boldsymbol{W}\), referring to them as \textbf{OLS-intuitive},
+\(\bm{W}\), referring to them as \textbf{OLS-intuitive},
 \textbf{WLSs-intuitive}, \textbf{WLSv-intuitive},
 \textbf{MinT-intuitive}, and \textbf{MinTs-intuitive}, respectively.
 
 We should note that implementing grouped variable selection with this
 optimization problem can be challenging because it imposes restrictions
-on the parameter of interest (\(\bar{\boldsymbol{G}}\)) to ensure it
-adheres rigorously to the analytical solution of MinT while making the
+on the parameter of interest (\(\bar{\bm{G}}\)) to ensure it adheres
+rigorously to the analytical solution of MinT while making the
 selection. Therefore, the resulting solution tends to be dense and may
 not have zero columns.
 
 To ensure the invertibility of
-\(\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1}\boldsymbol{A}\boldsymbol{S}\)
-and make the problem compatible with Gurobi, we reformulate the problem
-as \begin{equation}\protect\hypertarget{eq-intuitive_mip}{}{
+\(\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S}\) and make the
+problem compatible with Gurobi, we reformulate the problem as
+\begin{equation}\protect\hypertarget{eq-intuitive_mip}{}{
 \begin{aligned}
-\min _{\boldsymbol{A},\bar{\boldsymbol{G}},\boldsymbol{C},\check{\boldsymbol{e}},\boldsymbol{z}} \quad & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}^{-1}\check{\boldsymbol{e}} + \lambda_0 \sum_{j=1}^n z_j \\
-\text { s.t. } \quad & \bar{\boldsymbol{G}}\boldsymbol{S} = \boldsymbol{I} \\
-& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)\operatorname{vec}(\bar{\boldsymbol{G}}) = \check{\boldsymbol{e}} \\
-& \bar{\boldsymbol{G}}\boldsymbol{A}\boldsymbol{S} = \boldsymbol{I} \\
-& \bar{\boldsymbol{G}} = \boldsymbol{C}\boldsymbol{S}^{\prime}\boldsymbol{A}^{\prime}\boldsymbol{W}^{-1} \\
+\min _{\bm{A},\bar{\bm{G}},\bm{C},\check{\bm{e}},\bm{z}} \quad & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}^{-1}\check{\bm{e}} + \lambda_0 \sum_{j=1}^n z_j \\
+\text { s.t. } \quad & \bar{\bm{G}}\bm{S} = \bm{I} \\
+& \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right)\operatorname{vec}(\bar{\bm{G}}) = \check{\bm{e}} \\
+& \bar{\bm{G}}\bm{A}\bm{S} = \bm{I} \\
+& \bar{\bm{G}} = \bm{C}\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1} \\
 & z_j \in\{0,1\}, \quad j \in[n].
 \end{aligned}
 }\label{eq-intuitive_mip}\end{equation}
@@ -932,7 +890,7 @@ Section~\ref{sec-subset}, we select the tuning parameter, \(\lambda_0\),
 by minimizing the sum of squared reconciled forecast errors on a
 truncated training set, comprising only the \(\max\{h, s\}\)
 observations occurred prior to the forecast origin. Let
-\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\tilde{\boldsymbol{y}}^{\text{bench}}\right)\),
+\(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\bm{y}}-\tilde{\bm{y}}^{\text{bench}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\tilde{\bm{y}}^{\text{bench}}\right)\),
 and \(\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}\), the collection of
 candidate values for \(\lambda_0\) we consider is
 \(\{\lambda_{0}^{1},...,\lambda_{0}^{k}, 0\}\), where
@@ -955,36 +913,34 @@ grouped structure among the variables. Here, we consider \emph{a group
 lasso problem under the unbiasedness assumption} given by
 \begin{equation}\protect\hypertarget{eq-lasso}{}{
 \begin{aligned}
-\min _{\boldsymbol{G}} \quad & \frac{1}{2}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right)^{\prime} \boldsymbol{W}^{-1}\left(\hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G})\right) + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2 \\
-\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right),
+\min _{\bm{G}} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2 \\
+\text { s.t. } \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right),
 \end{aligned}
-}\label{eq-lasso}\end{equation}
-
-where \(\lambda \geq 0\) is a tuning parameter, \(w_j \neq 0\) is the
-penalty weight assigned in \(\boldsymbol{G}_{\cdot j}\) to make model
-more flexible, and the second term in the objective is the penalty
-function that is intermediate between the \(L_1\)-penalty that is used
-in the lasso and the \(L_2\)-penalty that is used in ridge regression.
-In the results that follow, we label the \textbf{Lasso} method based on
-various estimators for \(\boldsymbol{W}\), referring to them as
-\textbf{OLS-lasso}, \textbf{WLSs-lasso}, \textbf{WLSv-lasso},
-\textbf{MinT-lasso}, and \textbf{MinTs-lasso}, respectively.
+}\label{eq-lasso}\end{equation} where \(\lambda \geq 0\) is a tuning
+parameter, \(w_j \neq 0\) is the penalty weight assigned in
+\(\bm{G}_{\cdot j}\) to make model more flexible, and the second term in
+the objective is the penalty function that is intermediate between the
+\(L_1\)-penalty that is used in the lasso and the \(L_2\)-penalty that
+is used in ridge regression. In the results that follow, we label the
+\textbf{Lasso} method based on various estimators for \(\bm{W}\),
+referring to them as \textbf{OLS-lasso}, \textbf{WLSs-lasso},
+\textbf{WLSv-lasso}, \textbf{MinT-lasso}, and \textbf{MinTs-lasso},
+respectively.
 
 Next, we present the second order cone programming (SOCP) formulation
 for the group lasso based estimators given by
 \begin{equation}\protect\hypertarget{eq-lasso_socp}{}{
 \begin{aligned}
-\min _{\operatorname{vec}(\boldsymbol{G}), \check{\boldsymbol{e}}, \boldsymbol{g}^{+}} & \frac{1}{2}\check{\boldsymbol{e}}^{\prime} \boldsymbol{W}_h^{-1}\check{\boldsymbol{e}} + \lambda \sum_{j=1}^n w_j c_j \\
-\text { s.t. } \quad & \left(\boldsymbol{S}^{\prime} \otimes \boldsymbol{I}_{n_b}\right) \operatorname{vec}(\boldsymbol{G})=\operatorname{vec}\left(\boldsymbol{I}_{n_b}\right) \\
-& \hat{\boldsymbol{y}}-\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right) \operatorname{vec}(\boldsymbol{G}) = \check{\boldsymbol{e}} \\
+\min _{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \\
+\text { s.t. } \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right) \\
+& \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}) = \check{\bm{e}} \\
 & c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n].
 \end{aligned}
-}\label{eq-lasso_socp}\end{equation}
-
-Equation~\ref{eq-lasso_socp} includes additional auxiliary variables
-\(c_j \in \mathbb{R}_{\geq 0}\), \(j \in [n]\), and second order cone
-constraints, \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\)
-for \(j \in[n]\).
+}\label{eq-lasso_socp}\end{equation} Equation~\ref{eq-lasso_socp}
+includes additional auxiliary variables \(c_j \in \mathbb{R}_{\geq 0}\),
+\(j \in [n]\), and second order cone constraints,
+\(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\) for
+\(j \in[n]\).
 
 Compared to the previous two methods we proposed, the group lasso method
 is computationally friendlier. Nonetheless, \citet{Hazimeh2023-ie}
@@ -1001,8 +957,8 @@ lasso, the default choice for the penalty weight, \(w_j\), is
 \(\sqrt{p_j}\), where \(p_j\) is the size of each group (in our case,
 \(p_j = n_b\)). In our experiments, we allocate different penalty
 weights to each group using
-\(w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{bench}}\right\|_2\),
-which allows us to account for variations in scale across different time
+\(w_j = 1/\left\|\bm{G}_{\cdot j}^{\text{bench}}\right\|_2\), which
+allows us to account for variations in scale across different time
 series in the structure.
 
 We compute the group lasso over \(k+1\) values of the tuning parameter
@@ -1011,7 +967,7 @@ squared reconciled forecast errors on a truncated training set,
 consisting only of \(\max\{h, s\}\) observations occurred prior to the
 forecast origin. The collection of candidate values for \(\lambda\)
 under consideration is \(\{\lambda^{1},...,\lambda^{k}, 0\}\), where
-\(\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j\),
+\(\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right)_{\cdot j^{*}}\right)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\right\|_2 / w_j\),
 \(\lambda^{k} = 0.0001\lambda^{1}\), and
 \(\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\).
@@ -1020,29 +976,24 @@ for \(j \in [k]\).
 define} \(\lambda^{1}\) \emph{as the smallest} \(\lambda\) \emph{value
 such that all predictors in the group lasso problem have zero
 coefficients. Then we have} \[
-\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j,
-\]
+\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right)_{\cdot j^{*}}\right)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\right\|_2 / w_j,
+\] \emph{where} \(j^{*}\) \emph{denotes the column index of}
+\(\hat{\bm{y}}^{\prime} \otimes \bm{S}\) \emph{that corresponds to the}
+\(j\)\emph{th column of} \(\bm{G}\)\emph{.}
 
-\emph{where} \(j^{*}\) \emph{denotes the column index of}
-\(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\) \emph{that
-corresponds to the} \(j\)\emph{th column of} \(\boldsymbol{G}\)\emph{.}
-
-\emph{Proof.} Denote
-\(\boldsymbol{\beta} = \operatorname{vec}(\boldsymbol{G})\), and the
-first term in the objective of Equation~\ref{eq-lasso} as
-\(L\left(\boldsymbol{\beta} \mid \boldsymbol{D}\right)\), where
-\(\boldsymbol{D}\) is the working data
-\(\{\hat{\boldsymbol{y}} , \hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\}\).
-Ignoring the unbiasedness constraint, we define \(\lambda^{1}\) as the
-smallest \(\lambda\) value such that all predictors in the group lasso
-problem have zero coefficients, i.e., the solution at \(\lambda^{1}\) is
-\(\hat{\boldsymbol{\beta}}^{1}=\boldsymbol{0}\). (Note that there is no
-intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we
-have \[
-\begin{aligned}
-\lambda^{1} & = \max _{j=1, \ldots, n}\left\|\left[\nabla L\left(\hat{\boldsymbol{\beta}}^{1} \mid \mathbf{D}\right)\right]^{(j)}\right\|_2 / w_j \\
-& = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\boldsymbol{y}}^{\prime} \otimes \boldsymbol{S}\right)_{\cdot j^{*}}\right)^{\prime} \boldsymbol{W}^{-1} \hat{\boldsymbol{y}}\right\|_2 / w_j.
-\end{aligned}
+\emph{Proof.} Denote \(\bm{\beta} = \operatorname{vec}(\bm{G})\), and
+the first term in the objective of Equation~\ref{eq-lasso} as
+\(L\left(\bm{\beta} \mid \bm{D}\right)\), where \(\bm{D}\) is the
+working data
+\(\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}\). Ignoring
+the unbiasedness constraint, we define \(\lambda^{1}\) as the smallest
+\(\lambda\) value such that all predictors in the group lasso problem
+have zero coefficients, i.e., the solution at \(\lambda^{1}\) is
+\(\hat{\bm{\beta}}^{1}=\bm{0}\). (Note that there is no intercept in our
+problem.) Under the Karush-Kuhn-Tucker conditions, we have \[
+\lambda^{1}
+ = \max _{j=1, \ldots, n}\left\|\left[\nabla L\left(\hat{\bm{\beta}}^{1} \mid \bm{D}\right)\right]^{(j)}\right\|_2 / w_j
+ = \max _{j=1, \ldots, n}\left\|-\left(\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right)_{\cdot j^{*}}\right)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\right\|_2 / w_j.
 \]
 
 \textbf{Computation details.} Due to the incorporation of the
@@ -1056,40 +1007,35 @@ solve the SOCP problem, configuring it by setting OptimalityTol =
 constraint}\label{sec-unconstrained}}
 
 In this section, we relax the unbiasedness constraint,
-\(\boldsymbol{GS} = \boldsymbol{I}\), and introduce a reconciliation
-method with selection that relies on in-sample observations and fitted
-values. Let \(\boldsymbol{Y} \in \mathbb{R}^{T \times n}\) denote a
-matrix comprising observations from all time series on the training set
-in the structure, and
-\(\hat{\boldsymbol{Y}} \in \mathbb{R}^{T \times n}\) denote a matrix of
+\(\bm{GS} = \bm{I}\), and introduce a reconciliation method with
+selection that relies on in-sample observations and fitted values. Let
+\(\bm{Y} \in \mathbb{R}^{T \times n}\) denote a matrix comprising
+observations from all time series on the training set in the structure,
+and \(\hat{\bm{Y}} \in \mathbb{R}^{T \times n}\) denote a matrix of
 in-sample one-step-ahead forecasts (i.e., fitted values) for all time
 series. The proposed \emph{empirical group lasso} method considers the
 optimization problem \[
-\min _{\boldsymbol{G}} \quad \frac{1}{2 T} \left\|\boldsymbol{Y}-\hat{\boldsymbol{Y}} \boldsymbol{G}^{\prime} \boldsymbol{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
-\]
-
-where \(\lambda \geq 0\) is a tuning parameter, \(w_j \neq 0\) is the
-penalty weight assigned in \(\boldsymbol{G}_{\cdot j}\) to make a more
-flexible model. We rewrite the problem as \[
-\min _{\operatorname{vec}(\boldsymbol{G})} \quad \frac{1}{2 T} \left\|\operatorname{vec}(\boldsymbol{Y})-(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}) \operatorname{vec}\left(\boldsymbol{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\boldsymbol{G}_{\cdot j}\right\|_2,
-\]
-
-which becomes a standard group lasso problem, with
-\(\operatorname{vec}(\boldsymbol{Y})\) serving as the dependent variable
-and \(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\) as the covariate
-matrix. We denote this as \textbf{Elasso} in the results that follow.
+\min _{\bm{G}} \quad \frac{1}{2 T} \left\|\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
+\] where \(\lambda \geq 0\) is a tuning parameter, \(w_j \neq 0\) is the
+penalty weight assigned in \(\bm{G}_{\cdot j}\) to make a more flexible
+model. We rewrite the problem as \[
+\min _{\operatorname{vec}(\bm{G})} \quad \frac{1}{2 T} \left\|\operatorname{vec}(\bm{Y})-(\bm{S} \otimes \hat{\bm{Y}}) \operatorname{vec}\left(\bm{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
+\] which becomes a standard group lasso problem, with
+\(\operatorname{vec}(\bm{Y})\) serving as the dependent variable and
+\(\bm{S} \otimes \hat{\bm{Y}}\) as the covariate matrix. We denote this
+as \textbf{Elasso} in the results that follow.
 
 Upon relaxing the unbiasedness constraint, the number of non-zero column
-entries in the solution for \(\boldsymbol{G}\) may be less than the
-number of time series at the bottom level. This differs from the series
-selection methods with an unbiasedness constraint that we introduced in
+entries in the solution for \(\bm{G}\) may be less than the number of
+time series at the bottom level. This differs from the series selection
+methods with an unbiasedness constraint that we introduced in
 Section~\ref{sec-constrained}. In an extreme scenario, it can happen
 that the solution takes the form of a top-down
-\(\boldsymbol{G}_{TD}=[\boldsymbol{p} \mid \boldsymbol{O}_{n_b \times (n-1)}]\),
-where only the column corresponding to the top level (most aggregated
-level) retains non-zero values, and
-\(\boldsymbol{p} = (p_1, p_2, \ldots, p_{n_b})\) is a proportionality
-vector obtained based on in-sample reconciled forecast errors.
+\(\bm{G}_{TD}=[\bm{p} \mid \bm{O}_{n_b \times (n-1)}]\), where only the
+column corresponding to the top level (most aggregated level) retains
+non-zero values, and \(\bm{p} = (p_1, p_2, \ldots, p_{n_b})\) is a
+proportionality vector obtained based on in-sample reconciled forecast
+errors.
 
 We also explored the empirical version of group best-subset selection
 with ridge regularization and intuitive method with \(L_0\)
@@ -1105,27 +1051,26 @@ group lasso method for series selection without unbiasedness constraint.
 \textbf{Penalty weights and parameter tuning.} Similarly to the setup in
 Section~\ref{sec-lasso}, we assign different penalty weights to each
 group by setting
-\(w_j = 1/\left\|\boldsymbol{G}_{\cdot j}^{\text{OLS}}\right\|_2\),
-where \(\boldsymbol{G}^{\text{OLS}}\) is the solution obtained by the
-OLS estimator of \(\boldsymbol{W}\). Given a fixed tuning parameter
-value, we solve the target optimization problem by considering the
-initial \(T-T_v\) observations, where \(T_v = \max\{h, s\}\) for
-seasonal time series and \(T_v = \lfloor \frac{1}{10}T \rfloor\) for
-non-seasonal time series. Then we select the tuning parameter,
-\(\lambda\), by minimizing the sum of squared reconciled forecast errors
-on a truncated training set, comprising only the \(T_v\) observations
-closest to the forecast origin. Specifically, we form the set of
-candidate values for \(\lambda\) as
+\(w_j = 1/\left\|\bm{G}_{\cdot j}^{\text{OLS}}\right\|_2\), where
+\(\bm{G}^{\text{OLS}}\) is the solution obtained by the OLS estimator of
+\(\bm{W}\). Given a fixed tuning parameter value, we solve the target
+optimization problem by considering the initial \(T-T_v\) observations,
+where \(T_v = \max\{h, s\}\) for seasonal time series and
+\(T_v = \lfloor \frac{1}{10}T \rfloor\) for non-seasonal time series.
+Then we select the tuning parameter, \(\lambda\), by minimizing the sum
+of squared reconciled forecast errors on a truncated training set,
+comprising only the \(T_v\) observations closest to the forecast origin.
+Specifically, we form the set of candidate values for \(\lambda\) as
 \(\{\lambda^{1},...,\lambda^{k}, 0\}\), where
-\(\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\boldsymbol{S} \otimes \hat{\boldsymbol{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\boldsymbol{Y})\right\|_2 / w_j\),
+\(\lambda^{1} = \max _{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\bm{S} \otimes \hat{\bm{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\bm{Y})\right\|_2 / w_j\),
 \(\lambda^{k} = 0.0001\lambda^{1}\), and
 \(\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\). Following the same derivation as in the proof of
 \textbf{Proposition 3}, \(\lambda^{1}\) is the smallest \(\lambda\)
 value such that all predictors in the empirical group lasso problem have
-zero coefficients, i.e., \(\boldsymbol{G} = \boldsymbol{O}\). Note that
-we need to resolve the optimization problem based the whole training set
-by using the optimal tuning parameter to obtain the final solution.
+zero coefficients, i.e., \(\bm{G} = \bm{O}\). Note that we need to
+resolve the optimization problem based the whole training set by using
+the optimal tuning parameter to obtain the final solution.
 
 \textbf{Computation details.} While there are open-source packages
 available for solving a group lasso problem, they are still relatively
@@ -1162,50 +1107,40 @@ misspecification}\label{sec-sim1}}
 In this simulation design, we follow a simulation setup similar to
 \citet{Wickramasuriya2019-fc}, assuming that the bottom-level time
 series are generated using the basic structural time series model \[
-\boldsymbol{b}_t=\boldsymbol{\mu}_t+\boldsymbol{\gamma}_t+\boldsymbol{\eta}_t,
-\]
-
-where \(\boldsymbol{\mu}_t\), \(\boldsymbol{\gamma}_t\), and
-\(\boldsymbol{\eta}_t\) are trend, seasonality, and error components,
-respectively. The trend and seasonality components are defined by \[
-\begin{aligned}
-\boldsymbol{\mu}_t & =\boldsymbol{\mu}_{t-1}+\boldsymbol{v}_t+\boldsymbol{\varrho}_t, & \boldsymbol{\varrho}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_{\varrho}^2 \boldsymbol{I}_4\right), \\
-\boldsymbol{v}_t & =\boldsymbol{v}_{t-1}+\boldsymbol{\zeta}_t, & \boldsymbol{\zeta}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_\zeta^2 \boldsymbol{I}_4\right), \\
-\boldsymbol{\gamma}_t & =-\sum_{i=1}^{s-1} \boldsymbol{\gamma}_{t-i}+\boldsymbol{\omega}_t, & \boldsymbol{\omega}_t & \sim \mathcal{N}\left(\boldsymbol{0}, \sigma_\omega^2 \boldsymbol{I}_4\right),
-\end{aligned}
-\]
-
-where \(\boldsymbol{\varrho}_t\), \(\boldsymbol{\zeta}_t\), and
-\(\boldsymbol{\omega}_t\) are error terms independent of each other and
-over time. The error term \(\boldsymbol{\eta}_t\) is generated
-independently from an \(\text{ARIMA}(p,0,q)\) process, where \(p\) and
-\(q\) take values of \(0\) or \(1\) with equal probability. The
-coefficients for the AR and MA components in the ARIMA process are
-sampled randomly from a uniform distribution within the range
-\([0.5, 0.7]\), and the contemporaneous error covariance matrix is given
-by \[
+\bm{b}_t=\bm{\mu}_t+\bm{\gamma}_t+\bm{\eta}_t,
+\] where \(\bm{\mu}_t\), \(\bm{\gamma}_t\), and \(\bm{\eta}_t\) are
+trend, seasonality, and error components, respectively. The trend and
+seasonality components are defined by \begin{align*}
+\bm{\mu}_t & =\bm{\mu}_{t-1}+\bm{v}_t+\bm{\varrho}_t, &&& \bm{\varrho}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_{\varrho}^2 \bm{I}_4\right), \\
+\bm{v}_t & =\bm{v}_{t-1}+\bm{\zeta}_t, &&& \bm{\zeta}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\zeta^2 \bm{I}_4\right), \\
+\bm{\gamma}_t & =-\sum_{i=1}^{s-1} \bm{\gamma}_{t-i}+\bm{\omega}_t, &&& \bm{\omega}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\omega^2 \bm{I}_4\right),
+\end{align*} where \(\bm{\varrho}_t\), \(\bm{\zeta}_t\), and
+\(\bm{\omega}_t\) are error terms independent of each other and over
+time. The error term \(\bm{\eta}_t\) is generated independently from an
+\(\text{ARIMA}(p,0,q)\) process, where \(p\) and \(q\) take values of
+\(0\) or \(1\) with equal probability. The coefficients for the AR and
+MA components in the ARIMA process are sampled randomly from a uniform
+distribution within the range \([0.5, 0.7]\), and the contemporaneous
+error covariance matrix is given by \[
 \left[\begin{array}{llll}
 5 & 3 & 2 & 1 \\
 3 & 4 & 2 & 1 \\
 2 & 2 & 5 & 3 \\
 1 & 1 & 3 & 4
 \end{array}\right],
-\]
-
-which enables correlations among time series in a hierarchical
+\] which enables correlations among time series in a hierarchical
 structure.
 
 We set \(s = 4\) for quarterly data with error variances
 \(\sigma_{\varrho}^2=2\), \(\sigma_\zeta^2=0.007\), and
 \(\sigma_\omega^2=7\), respectively. The initial values for
-\(\boldsymbol{\mu}_0\), \(\boldsymbol{v}_0\), \(\boldsymbol{\gamma}_0\),
-\(\boldsymbol{\gamma}_1\), and \(\boldsymbol{\gamma}_2\) are generated
-independently from a multivariate normal distribution with zero mean and
-identity covariance matrix. For each series at the bottom level, we
-generate a total of \(T+h = 180\) observations, with the last \(h = 16\)
-observations serving as the test set. Recall that the bottom-level
-series are aggregated to obtain the data for the aggregated levels. This
-process is repeated \(500\) times.
+\(\bm{\mu}_0\), \(\bm{v}_0\), \(\bm{\gamma}_0\), \(\bm{\gamma}_1\), and
+\(\bm{\gamma}_2\) are generated independently from a multivariate normal
+distribution with zero mean and identity covariance matrix. For each
+series at the bottom level, we generate a total of \(T+h = 180\)
+observations, with the last \(h = 16\) observations serving as the test
+set. Recall that the bottom-level series are aggregated to obtain the
+data for the aggregated levels. This process is repeated \(500\) times.
 
 We use ETS models to generate base forecasts for all time series in the
 hierarchy, using the default settings as implemented in the
@@ -1290,42 +1225,41 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & --31.9 & --32.3 & --27.5
 \caption{\label{tbl-s1-selection}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Scenario I, Setup 1. }\tabularnewline
 
-\centering\begingroup\fontsize{7}{9}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
-\resizebox{\linewidth}{!}{
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
-OLS-intuitive & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-intuitive.png}\\
-OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-lasso.png}\\
+OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_OLS-subset.png}\\
+OLS-intuitive & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_OLS-intuitive.png}\\
+OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-subset.png}\\
-WLSs-intuitive & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-intuitive.png}\\
-WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-lasso.png}\\
+WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_WLSs-subset.png}\\
+WLSs-intuitive & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_WLSs-intuitive.png}\\
+WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-subset.png}\\
-WLSv-intuitive & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-intuitive.png}\\
-WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-lasso.png}\\
+WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_WLSv-subset.png}\\
+WLSv-intuitive & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_WLSv-intuitive.png}\\
+WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-intuitive.png}\\
-MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-lasso.png}\\
+MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_MinT-intuitive.png}\\
+MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-intuitive.png}\\
-MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-lasso.png}\\
+MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_MinTs-intuitive.png}\\
+MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_Elasso.png}\\
+Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s1_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
 \item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
-\end{threeparttable}}
+\end{threeparttable}
 \endgroup{}
 \end{table}
 
@@ -1347,18 +1281,18 @@ much worse than other benchmark methods in this simulation design.
 In all three scenarios, our proposed methods consistently produce either
 improved or comparable reconciled forecasts compared to their respective
 benchmark methods. The improvements are particularly pronounced when
-using OLS and WLSs estimators of \(\boldsymbol{W}\) in the benchmark
-methods, which do not take into account the in-sample covariance of base
-forecast errors. One advantage of using the forecast reconciliation
-methods with selection proposed in this paper is that they can reduce
-the difference introduced by using different estimates of
-\(\boldsymbol{W}\), thereby mitigating the risk of estimator selection.
-In some cases, such as Scenarios II and III, we can align the forecast
-accuracy achieved using different estimators, and make them close to the
-best results we can obtain. When we drop the unbiasedness assumption,
-Elasso delivers results on par with EMinT overall, while achieving
-improvements at the top level, which is typically the aspect of greatest
-concern to practitioners.
+using OLS and WLSs estimators of \(\bm{W}\) in the benchmark methods,
+which do not take into account the in-sample covariance of base forecast
+errors. One advantage of using the forecast reconciliation methods with
+selection proposed in this paper is that they can reduce the difference
+introduced by using different estimates of \(\bm{W}\), thereby
+mitigating the risk of estimator selection. In some cases, such as
+Scenarios II and III, we can align the forecast accuracy achieved using
+different estimators, and make them close to the best results we can
+obtain. When we drop the unbiasedness assumption, Elasso delivers
+results on par with EMinT overall, while achieving improvements at the
+top level, which is typically the aspect of greatest concern to
+practitioners.
 
 In addition, we report the proportion of time series being selected from
 the implementation of our proposed methods in 500 simulation instances,
@@ -1388,26 +1322,20 @@ implemented in this section. Using the same hierarchical structure as
 shown in Figure~\ref{fig-hts}, we assume the data generating process for
 the time series at the bottom level follows a stationary first-order
 vector autoregressive model, i.e., \(\text{VAR}(1)\), given by \[
-\boldsymbol{b}_t= \boldsymbol{c} + \left[\begin{array}{cc}
-\boldsymbol{A}_1 & \boldsymbol{0} \\
-\boldsymbol{0} & \boldsymbol{A}_2
-\end{array}\right] \boldsymbol{b}_{t-1} + \boldsymbol{\varepsilon}_t,
-\]
-
-where \(\boldsymbol{c}\) is a constant vector with all entries set to
-\(1\), \(\boldsymbol{A}_1\) and \(\boldsymbol{A}_2\) are \(2 \times 2\)
-matrices with eigenvalues
-\(z_{1,2}=0.6[\cos (\pi / 3) \pm i \sin (\pi / 3)]\) and
+\bm{b}_t= \bm{c} + \left[\begin{array}{cc}
+\bm{A}_1 & \bm{0} \\
+\bm{0} & \bm{A}_2
+\end{array}\right] \bm{b}_{t-1} + \bm{\varepsilon}_t,
+\] where \(\bm{c}\) is a constant vector with all entries set to \(1\),
+\(\bm{A}_1\) and \(\bm{A}_2\) are \(2 \times 2\) matrices with
+eigenvalues \(z_{1,2}=0.6[\cos (\pi / 3) \pm i \sin (\pi / 3)]\) and
 \(z_{3,4}=0.9[\cos (\pi / 6) \pm i \sin (\pi / 6)]\), respectively, and
-\(\boldsymbol{\varepsilon}_t \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{\Sigma})\),
-where \[
-\boldsymbol{\Sigma}=\left[\begin{array}{cc}
-\boldsymbol{\Sigma}_1 & 0 \\0 & \boldsymbol{\Sigma}_2
-\end{array}\right], \text { and } \boldsymbol{\Sigma}_1=\boldsymbol{\Sigma}_2=\left[\begin{array}{cc}2 & \sqrt{6} \rho \\\sqrt{6} \rho & 3\end{array}\right],
-\]
-
-and \(\rho \in \{0, \pm 0.2, \pm 0.4, \pm 0.6, \pm 0.8\}\) controls the
-error correlation in the simulated hierarchy.
+\(\bm{\varepsilon}_t \sim \mathcal{N}(\bm{0}, \bm{\Sigma})\), where \[
+\bm{\Sigma}=\left[\begin{array}{cc}
+\bm{\Sigma}_1 & 0 \\0 & \bm{\Sigma}_2
+\end{array}\right], \text { and } \bm{\Sigma}_1=\bm{\Sigma}_2=\left[\begin{array}{cc}2 & \sqrt{6} \rho \\\sqrt{6} \rho & 3\end{array}\right],
+\] and \(\rho \in \{0, \pm 0.2, \pm 0.4, \pm 0.6, \pm 0.8\}\) controls
+the error correlation in the simulated hierarchy.
 
 For each time series at the bottom level, we generate a total of \(101\)
 observations, with the last one observation serving as the test set,
@@ -1436,7 +1364,7 @@ constant term is minimal, i.e., it is much smaller compared to the data
 variability. Thus, it may be challenging to identify the ``poor'' base
 forecasts and exclude them from reconciliation in this setup.
 
-\begin{figure}
+\begin{figure}[!htb]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-corr-data-1.pdf}
 
@@ -1554,42 +1482,41 @@ error correlation within the hierarchical structure is negative.
 reconciliation methods with selection in Setup 2, with the error
 correlation being -0.8. }\tabularnewline
 
-\centering\begingroup\fontsize{7}{9}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
-\resizebox{\linewidth}{!}{
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-subset.png}\\
-OLS-intuitive & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-intuitive.png}\\
-OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-lasso.png}\\
+OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_OLS-subset.png}\\
+OLS-intuitive & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_OLS-intuitive.png}\\
+OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-subset.png}\\
-WLSs-intuitive & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-intuitive.png}\\
-WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-lasso.png}\\
+WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_WLSs-subset.png}\\
+WLSs-intuitive & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_WLSs-intuitive.png}\\
+WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-subset.png}\\
-WLSv-intuitive & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-intuitive.png}\\
-WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-lasso.png}\\
+WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_WLSv-subset.png}\\
+WLSv-intuitive & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_WLSv-intuitive.png}\\
+WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-intuitive.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-lasso.png}\\
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_MinT-intuitive.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-intuitive.png}\\
-MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-lasso.png}\\
+MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_MinTs-intuitive.png}\\
+MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_Elasso.png}\\
+Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_neg_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
 \item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
-\end{threeparttable}}
+\end{threeparttable}
 \endgroup{}
 \end{table}
 
@@ -1640,6 +1567,17 @@ of the top series, six series at the Duration level, eight series at the
 STT level, and \(48\) series at the Duration \(\times\) STT level,
 giving \(63\) time series in total, each of length \(163\) observations.
 
+\begin{figure}[!htb]
+
+{\centering \includegraphics{hf_selection_files/figure-pdf/fig-labour-data-1.pdf}
+
+}
+
+\caption{\label{fig-labour-data}Australia unemployed persons,
+disaggregated by state and territory, and by duration of job search.}
+
+\end{figure}
+
 The top panel in Figure~\ref{fig-labour-data} shows the total number of
 unemployed persons in Australia from January 2010 to July 2023,
 representing the top-level series in the grouped hierarchical structure.
@@ -1664,17 +1602,6 @@ different. When comparing the series at the STT level and Duration
 level, we notice that the seasonal patterns in the Duration-level series
 is more consistent and potentially easier to forecast.
 
-\begin{figure}
-
-{\centering \includegraphics{hf_selection_files/figure-pdf/fig-labour-data-1.pdf}
-
-}
-
-\caption{\label{fig-labour-data}Australia unemployed persons,
-disaggregated by state and territory, and by duration of job search.}
-
-\end{figure}
-
 We assess the forecast accuracy of base forecasts and various
 reconciliation methods through a rolling forecast origin approach. Our
 aim is to generate \(1\)- to \(12\)-steps-ahead forecasts for each of
@@ -1695,26 +1622,25 @@ The MinT method and the respective proposed methods are not considered
 due to their poor performance, attributed to the poor sample covariance
 estimator when the sample size is slightly larger than the number of
 series in the structure. The Subset methods using different estimators
-of \(\boldsymbol{G}\) generally improve forecast accuracy over their
-respective benchmark methods overall, particularly when focusing on
-aggregation levels, which are typically of paramount concern to
-practitioners. The only one exception is the WLSs-subset method, which
-returns reduced accuracy for longer horizons overall. However, it still
-demonstrates improvements in top-level forecasts, and other levels
-remains within a reasonable range. Moreover, the Intuitive and Lasso
-methods almost always yield results identical to the corresponding
-benchmark methods. This is because they tend to provide dense estimates,
-and ETS models typically do not result in extremely poor forecasts. The
-only exception is OLS-intuitive, which shows improved forecast accuracy
-at the top level but deterioration at other levels. When we drop the
-unbiasedness assumption, EMinT is the worst performing method across all
-levels because it relies on the assumption that the series in the
-hierarchy are jointly weakly stationary, which is evidently not the case
-in the application. Elasso significantly improves the quality of
-forecasts over EMinT, with the most accurate coherent forecasts observed
-at the top level and STT level. Overall, Elasso performs well for longer
-forecast horizons, but it is less effective for one-step-ahead
-forecasts.
+of \(\bm{G}\) generally improve forecast accuracy over their respective
+benchmark methods overall, particularly when focusing on aggregation
+levels, which are typically of paramount concern to practitioners. The
+only one exception is the WLSs-subset method, which returns reduced
+accuracy for longer horizons overall. However, it still demonstrates
+improvements in top-level forecasts, and other levels remains within a
+reasonable range. Moreover, the Intuitive and Lasso methods almost
+always yield results identical to the corresponding benchmark methods.
+This is because they tend to provide dense estimates, and ETS models
+typically do not result in extremely poor forecasts. The only exception
+is OLS-intuitive, which shows improved forecast accuracy at the top
+level but deterioration at other levels. When we drop the unbiasedness
+assumption, EMinT is the worst performing method across all levels
+because it relies on the assumption that the series in the hierarchy are
+jointly weakly stationary, which is evidently not the case in the
+application. Elasso significantly improves the quality of forecasts over
+EMinT, with the most accurate coherent forecasts observed at the top
+level and STT level. Overall, Elasso performs well for longer forecast
+horizons, but it is less effective for one-step-ahead forecasts.
 
 \hypertarget{tbl-labour-rmse-avg}{}
 \begin{table}[!h]
@@ -1768,17 +1694,17 @@ August 2022 to July 2023 in Table~\ref{tbl-labour-rmse}. We consider
 this period because it is the latest available data, enabling us to use
 more data for model training to get more knowledge about the post-COVID
 pattern. The results indicate that all Subset methods using different
-estimators of \(\boldsymbol{W}\), i.e., OLS-subset, WLSs-subset,
-WLSv-subset, and MinTs-subset, produce improved or comparable reconciled
-forecasts compared to their respective benchmark methods. The
-improvements in forecast accuracy become more noticeable for longer
-forecast horizons. Similar to the average results in
-Table~\ref{tbl-labour-rmse-avg}, the Intuitive and Lasso methods yield
-results identical to the benchmark methods due to their tendency to
-offer dense estimates. Surprisingly, when relaxing the unbiasedness
-constraint, the Elasso method ranks the best and demonstrates
-significant improvement compared to the EMinT method, and outperforms
-other methods across almost all levels except for the top level.
+estimators of \(\bm{W}\), i.e., OLS-subset, WLSs-subset, WLSv-subset,
+and MinTs-subset, produce improved or comparable reconciled forecasts
+compared to their respective benchmark methods. The improvements in
+forecast accuracy become more noticeable for longer forecast horizons.
+Similar to the average results in Table~\ref{tbl-labour-rmse-avg}, the
+Intuitive and Lasso methods yield results identical to the benchmark
+methods due to their tendency to offer dense estimates. Surprisingly,
+when relaxing the unbiasedness constraint, the Elasso method ranks the
+best and demonstrates significant improvement compared to the EMinT
+method, and outperforms other methods across almost all levels except
+for the top level.
 
 \hypertarget{tbl-labour-rmse}{}
 \begin{table}[!h]
@@ -1853,8 +1779,8 @@ optimal parameter values identified in the labour application,
 considering a single test set (from August 2022 to July 2023). The None
 row shows the original number of series in the structure. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
+\centering\begingroup\fontsize{10}{12}\selectfont
+
 \begin{tabular}{lrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{5}{c}{Number of time series retained} & \multicolumn{3}{c}{Optimal parameters} \\
@@ -1868,7 +1794,8 @@ WLSv-subset & 1 & 5 & 7 & 48 & 61 & - & 0.51 & 1.00\\
 MinTs-subset & 0 & 1 & 1 & 47 & 49 & - & 0.03 & 0.01\\
 Elasso & 1 & 5 & 2 & 3 & 11 & 213.59 & - & -\\
 \bottomrule
-\end{tabular}}
+\end{tabular}
+\endgroup{}
 \end{table}
 
 \hypertarget{sec-tourism}{%
@@ -1901,7 +1828,7 @@ states such as NSW, VIC, QLD, and WA. While flows are relatively flat
 for SA, TAS, and NT. Moreover, the time plot displays that there was a
 large decrease in tourism flows for WA occurred in 2016.
 
-\begin{figure}
+\begin{figure}[!htb]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-data-1.pdf}
 
@@ -2052,7 +1979,7 @@ EMinT & 116.5 & 97.8 & --15.8 & --13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 6
 \end{threeparttable}}
 \end{table}
 
-\begin{figure}
+\begin{figure}[!htb]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-rmse-1.pdf}
 
@@ -2090,8 +2017,8 @@ optimal parameter values identified in the tourism application,
 considering a single test set (from January 2017 to December 2017). The
 None row shows the original number of series in the structure. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
+\centering\begingroup\fontsize{10}{12}\selectfont
+
 \begin{tabular}{lrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{5}{c}{Number of time series retained} & \multicolumn{3}{c}{Optimal parameters} \\
@@ -2105,7 +2032,8 @@ WLSv-subset & 1 & 7 & 27 & 76 & 111 & - & 0.03 & 0.01\\
 MinTs-subset & 1 & 7 & 27 & 76 & 111 & - & 0.05 & 0.01\\
 Elasso & 1 & 4 & 0 & 8 & 13 & 71759.21 & - & -\\
 \bottomrule
-\end{tabular}}
+\end{tabular}
+\endgroup{}
 \end{table}
 
 \hypertarget{sec-conclusion}{%
@@ -2133,11 +2061,10 @@ methods include group best-subset selection with ridge regularization
 (Subset), intuitive method with \(L_0\) regularization (Intuitive), and
 group lasso method (Lasso). These methods formulated the problem based
 on out-of-sample base forecasts using different penalty functions
-designed to penalize the columns of the weighting matrix,
-\(\boldsymbol{G}\), towards zero. Additionally, we relaxed the
-unbiasedness constraint and proposed the empirical group lasso method
-(Elasso) which selects series based on in-sample observations and fitted
-values.
+designed to penalize the columns of the weighting matrix, \(\bm{G}\),
+towards zero. Additionally, we relaxed the unbiasedness constraint and
+proposed the empirical group lasso method (Elasso) which selects series
+based on in-sample observations and fitted values.
 
 Simulation experiments and two empirical applications demonstrated the
 superiority of the proposed methods over the reconciliation methods that
@@ -2304,42 +2231,41 @@ EMinT & --60.7 & --63.5 & --58.2 & --51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 
 \caption{\label{tbl-s2-selection}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Scenario II, Setup 1. }\tabularnewline
 
-\centering\begingroup\fontsize{7}{9}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
-\resizebox{\linewidth}{!}{
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
-OLS-intuitive & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-intuitive.png}\\
-OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
+OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_OLS-subset.png}\\
+OLS-intuitive & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_OLS-intuitive.png}\\
+OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
-WLSs-intuitive & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-intuitive.png}\\
-WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
+WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_WLSs-subset.png}\\
+WLSs-intuitive & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_WLSs-intuitive.png}\\
+WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
-WLSv-intuitive & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-intuitive.png}\\
-WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
+WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_WLSv-subset.png}\\
+WLSv-intuitive & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_WLSv-intuitive.png}\\
+WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-intuitive.png}\\
-MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
+MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_MinT-intuitive.png}\\
+MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-intuitive.png}\\
-MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
+MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_MinTs-intuitive.png}\\
+MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
+Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s2_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
 \item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
-\end{threeparttable}}
+\end{threeparttable}
 \endgroup{}
 \end{table}
 
@@ -2348,42 +2274,41 @@ Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \caption{\label{tbl-s3-selection}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Scenario III, Setup 1. }\tabularnewline
 
-\centering\begingroup\fontsize{7}{9}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
-\resizebox{\linewidth}{!}{
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
-OLS-intuitive & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-intuitive.png}\\
-OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-lasso.png}\\
+OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_OLS-subset.png}\\
+OLS-intuitive & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_OLS-intuitive.png}\\
+OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-subset.png}\\
-WLSs-intuitive & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-intuitive.png}\\
-WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-lasso.png}\\
+WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_WLSs-subset.png}\\
+WLSs-intuitive & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_WLSs-intuitive.png}\\
+WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-subset.png}\\
-WLSv-intuitive & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-intuitive.png}\\
-WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-lasso.png}\\
+WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_WLSv-subset.png}\\
+WLSv-intuitive & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_WLSv-intuitive.png}\\
+WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-intuitive.png}\\
-MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-lasso.png}\\
+MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_MinT-intuitive.png}\\
+MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-intuitive.png}\\
-MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-lasso.png}\\
+MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_MinTs-intuitive.png}\\
+MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_Elasso.png}\\
+Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/s3_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
 \item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
-\end{threeparttable}}
+\end{threeparttable}
 \endgroup{}
 \end{table}
 
@@ -2393,42 +2318,41 @@ Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 reconciliation methods with selection in Setup 2, with the error
 correlation being 0.8. }\tabularnewline
 
-\centering\begingroup\fontsize{7}{9}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
-\resizebox{\linewidth}{!}{
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
 \toprule
   & Top & A & B & AA & AB & BA & BB & Summary\\
 \midrule
-OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-subset.png}\\
-OLS-intuitive & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-intuitive.png}\\
-OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-lasso.png}\\
+OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_OLS-subset.png}\\
+OLS-intuitive & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_OLS-intuitive.png}\\
+OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-subset.png}\\
-WLSs-intuitive & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-intuitive.png}\\
-WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-lasso.png}\\
+WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_WLSs-subset.png}\\
+WLSs-intuitive & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_WLSs-intuitive.png}\\
+WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-subset.png}\\
-WLSv-intuitive & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-intuitive.png}\\
-WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-lasso.png}\\
+WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_WLSv-subset.png}\\
+WLSv-intuitive & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_WLSv-intuitive.png}\\
+WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-subset.png}\\
-MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-intuitive.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-lasso.png}\\
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_MinT-subset.png}\\
+MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_MinT-intuitive.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-subset.png}\\
-MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-intuitive.png}\\
-MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-lasso.png}\\
+MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_MinTs-subset.png}\\
+MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_MinTs-intuitive.png}\\
+MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_Elasso.png}\\
+Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/home/robjhyndman/git/Research/hfs/paper/_figs/corr_pos_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
 \item \underline{\textit{NOTE:}} 
 \item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
-\end{threeparttable}}
+\end{threeparttable}
 \endgroup{}
 \end{table}
 
