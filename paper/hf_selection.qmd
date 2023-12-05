@@ -14,10 +14,10 @@ keywords: "Coherent, Hierarchical time series, Grouped time series, Linear forec
 bibliography: references.bib
 format:
   asa-pdf:
-    keep-tex: true  
+    keep-tex: true
+    pdf-engine: pdflatex
     journal:
       blinded: false
-  asa-html: default
 execute:
   echo: false
   warning: false
