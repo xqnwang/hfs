@@ -129,10 +129,7 @@ Reconciliation method & $\bm{W}_h \propto$\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\linespread{1}\small
-\footnotesize
-\underline{\textit{NOTE:}}
-$\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
+\item Note: $\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

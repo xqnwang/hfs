@@ -89,6 +89,10 @@
 \sloppy
 \usepackage[onlyrefs]{mathtools}
 \setlength{\tabcolsep}{0.11cm}
+\usepackage{threeparttable}
+\makeatletter
+\g@addto@macro\TPT@defaults{\linespread{1}\selectfont}
+\makeatother
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -187,7 +191,7 @@ Linear forecast reconciliation, Optimization problem},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{December 5, 2023}
+\date{December 6, 2023}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.}\\
@@ -230,7 +234,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, boxrule=0pt, frame hidden, borderline west={3pt}{0pt}{shadecolor}, interior hidden, breakable, enhanced]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, breakable, enhanced, sharp corners, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, frame hidden]}{\end{tcolorbox}}\fi
 
 \spacingset{1.65}
 
@@ -426,10 +430,7 @@ Reconciliation method & $\bm{W}_h \propto$\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\linespread{1}\small
-\footnotesize
-\underline{\textit{NOTE:}}
-$\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
+\item Note: $\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -1068,6 +1069,7 @@ Setup 1. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
@@ -1108,8 +1110,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & --31.9 & --32.3 & --27.5
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1150,8 +1151,7 @@ Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -1302,6 +1302,7 @@ simulation in Setup 2. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
@@ -1342,8 +1343,7 @@ EMinT & \textcolor{blue}{\textbf{--31.2}} & \textcolor{blue}{\textbf{--19.8}} & 
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1407,8 +1407,7 @@ Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -1542,6 +1541,7 @@ horizons, but it is less effective for one-step-ahead forecasts.
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
@@ -1577,8 +1577,7 @@ EMinT & 43.1 & 17.6 & 9.9 & 10.2 & 36.8 & 25.2 & 27.9 & 24.1 & 16.8 & 15.1 & 6.2
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1607,6 +1606,7 @@ July 2023) for Australian labour force data. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
@@ -1642,8 +1642,7 @@ EMinT & --60.4 & --14.0 & 1.4 & --29.9 & --6.0 & 12.0 & 10.7 & --6.7 & 16.7 & --
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1776,6 +1775,7 @@ data. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
@@ -1811,8 +1811,7 @@ EMinT & --2.3 & 24.3 & 58.8 & 59.7 & 36.9 & 56.0 & 68.4 & 70.4 & 51.4 & 64.6 & 7
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -1832,6 +1831,7 @@ to December 2017) for Australian domestic tourism data. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
@@ -1867,8 +1867,7 @@ EMinT & 116.5 & 97.8 & --15.8 & --13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 6
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -2021,6 +2020,7 @@ Setup 1. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
@@ -2061,8 +2061,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -2074,6 +2073,7 @@ Setup 1. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
@@ -2114,8 +2114,7 @@ EMinT & --60.7 & --63.5 & --58.2 & --51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -2156,8 +2155,7 @@ Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -2199,8 +2197,7 @@ Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -2243,8 +2240,7 @@ Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \underline{\textit{NOTE:}} 
-\item The last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
