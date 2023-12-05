@@ -230,111 +230,68 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, sharp corners, interior hidden, frame hidden, breakable, enhanced, borderline west={3pt}{0pt}{shadecolor}]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, interior hidden, breakable, boxrule=0pt, enhanced, sharp corners, borderline west={3pt}{0pt}{shadecolor}]}{\end{tcolorbox}}\fi
 
 \spacingset{1.65}
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
 
-Hierarchical time series are characterized as a set of time series
-organized in a unique hierarchical aggregation structure, while grouped
-time series arise when attributes of interest are crossed rather than
-nested in the aggregation structure \citep{Hyndman2016-cz}. For example,
-unemployment data, a crucial social and economic indicator, is a natural
-example of a grouped time series. The analysis of the number of
-unemployment persons in a country is crucial for informed policymaking
-and economic research. It is also valuable to examine attributes such as
-labour market region and the length of time that unemployed people have
-been looking for work. Such a disaggregation allows us to identify
-regional disparities, and comprehend the structural nuances underlying
-unemployment. Forecasts in such a hierarchical or grouped structure
-should adhere to some known aggregation constraints to maintain
-coherence, which is a vital aspect for aligned decision making.
+Forecast reconciliation is a post-processing method that ensures
+forecasts of multivariate time series adhere to known linear constraints
+\citep{Hyndman2011-sd, Wickramasuriya2019-fc}. For example, the sum of
+regional unemployment forecasts should be equal to the national
+unemployment forecast, to ensure aligned decision making.
 
-Earlier studies perform forecast reconciliation by focusing only on a
-single level of the structure, subsequently aggregating or
-disaggregating their forecasts to produce coherent forecasts for other
-levels of the structure. These single-level methods typically fall into
-three categories, namely bottom-up \citep{Dunn1976-op}, top-down
-\citep{Gross1990-lg}, and middle-out \citep{Athanasopoulos2009-ps}.
-However, these methods only use information from a single level while
-overlooking valuable insights available at other levels and the
-intricate relationships in the structure.
-
-To overcome these limitations, \citet{Hyndman2011-sd} introduced a
-reconciliation approach using a linear regression model based on
-forecasts from all series within a given structure, resulting in a
-generalized least squares (GLS) solution. This method initially
-generates independent base forecasts for all series in the structure and
-subsequently adjusts these forecasts to make them coherent. Following
-this work, further research has led to the modifications of the least
-squares-based reconciliation method in various frameworks, including
-cross-sectional data
+\citet{Hyndman2011-sd} introduced optimal forecast reconciliation,
+whereby''base'' forecasts of all series are generated independently.
+These are then adjusted to satisfy the constraints, leading to a set of
+coherent reconciled forecasts. Subsequent research has extended and
+developed the idea in the context of cross-sectional data
 \citep{Hyndman2016-cz, Wickramasuriya2019-fc, Panagiotelis2021-mf},
 temporal data \citep{Athanasopoulos2017-jj, Nystrup2020-di}, and
-cross-temporal data \citep{Di_Fonzo2023-vo}. In particular, assuming
-unbiased base forecasts, \citet{Wickramasuriya2019-fc} proposed the
-minimum trace method, which formulates the reconciliation problem as
-minimizing the trace of the covariance matrix of reconciled forecast
-errors. These reconciliation approaches have been demonstrated to
-produce coherent and potentially more accurate forecasts compared to
-traditional single-level methods in various empirical applications
-\citep[see, for
-example,][]{Taieb2021-tc, Panagiotelis2021-mf, Wickramasuriya2023-hn}.
-Additionally, \citet{Van_Erven2015-ir}, \citet{Wickramasuriya2019-fc},
-\citet{Panagiotelis2021-mf}, and \citet{Wickramasuriya2021-am} provided
-theoretical insights into the performance of forecast reconciliation
-methods. Please refer to \citet{Athanasopoulos2023-sm} for a
-comprehensive introduction of various forecast reconciliation methods.
+cross-temporal data \citep{Di_Fonzo2023-vo}. Please refer to
+\citet{Athanasopoulos2023-sm} for a comprehensive introduction to the
+forecast reconciliation literature.
 
-Reconciliation is well recognized for its ability to improve overall
-forecast accuracy in structures with aggregation constraints.
-Theoretically, the mean squared reconciled forecast error from the
-minimum trace reconciliation method for each series in the structure is
-lower than that of OLS and base forecasts \citep{Wickramasuriya2021-am}.
-However, it is important to acknowledge that reconciled forecasts for
-some series in the structure may experience deterioration in its
-forecasting performance. As shown by \citet{Athanasopoulos2017-jj}, most
-of the improvements attributed to reconciliation are observed in series
-with initially poor-performing base forecasts. Thus, they suggested that
-the ideal solution would be to combine the most accurate aspects of base
-forecasts from each level, aiming to avoid a myopic view from a single
-level. In practice, it is not uncommon for some series in a structure to
-perform poorly in their base forecasts due to inherent challenges that
-are difficult to completely mitigate in real-world situations. These
-challenges may include model misspecification or low forecastability
-resulting from the absence of discernible patterns (low signal-to-noise
-ratio). In such cases, it becomes crucial to exclude ``poor'' base
-forecasts of some series in a structure when performing reconciliation,
-thereby preventing their negative influence on reconciled forecasts.
-This forms the primary objective of this paper.
+Reconciliation is known to improve overall forecast accuracy in
+collections of time series with aggregation constraints. On average,
+when the base forecasts are unbiased, the mean squared reconciled
+forecast error from the minimum trace reconciliation method
+\citep{Wickramasuriya2019-fc} is lower than that from the base forecasts
+\citep{Wickramasuriya2021-am}. Most of the improvements attributed to
+reconciliation are observed in series with initially poor-performing
+base forecasts \citep{Athanasopoulos2017-jj}. In practice, it is not
+uncommon for some series to have poor base forecasts due to challenges
+such as model misspecification or low signal-to-noise ratio. In such
+cases, it may be advantageous to exclude the worst base forecasts when
+performing reconciliation. This is the motivation for our proposed
+methods.
 
-This paper addresses a few gaps in the field of forecast reconciliation.
 First, we propose forecast reconciliation methods that incorporate time
 series selection based on out-of-sample information, assuming unbiased
 base forecasts. We formulate this as an optimization problem, using
 different penalty functions designed to control the number of nonzero
 column entries in the weighting matrix for linear forecast
-reconciliation. We theoretically show that the number of selected time
-series is at least equal to the number of series at the bottom level,
-and we can reconstruct the full hierarchical structure by
+reconciliation. We show that the number of selected time series is at
+least equal to the number of series at the bottom level, and we can
+reconstruct the full hierarchical structure by
 aggregating/disaggregating the selected series. Second, we relax the
 unbiasedness assumption and introduce another reconciliation method with
 selection, utilizing in-sample observations and their fitted values.
 This allows us to use the in-sample reconciliation performance for
-selection purposes. In this case, it may happen that less than the
+selection purposes. In this case, it may happen that fewer than the
 number of series at the bottom level are used for reconciliation. We
 carry out simulation experiments and two empirical applications, showing
 that our proposed methods guarantee coherent forecasts that outperform
-or, at the very least, match their respective benchmark methods. The
-improvements are particularly pronounced when focusing on aggregation
-levels, longer forecast horizons, and model misspecification. A
-remarkable feature of the proposed methods is their ability to reduce
-the disparities arising from using different estimates of the base
-forecast error covariance matrix, thereby mitigating the challenges
-associated with estimator selection, which is a prominent issue in the
-field of forecast reconciliation research.
+or match their respective benchmark methods. The improvements are
+particularly pronounced when focusing on higher aggregation levels,
+longer forecast horizons, and model misspecification. A remarkable
+feature of the proposed methods is their ability to reduce the
+disparities arising from using different estimates of the base forecast
+error covariance matrix, thereby mitigating the challenges associated
+with estimator selection, which is a prominent issue in the field of
+forecast reconciliation research.
 
 The remainder of the paper is structured as follows.
 Section~\ref{sec-preliminaries} presents the notations and a review of
