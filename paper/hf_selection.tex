@@ -87,6 +87,10 @@
 \usepackage[margin = 2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
+\clubpenalty = 10000
+\widowpenalty = 10000
+\brokenpenalty = 10000
+\usepackage{microtype}
 \usepackage[onlyrefs]{mathtools}
 \setlength{\tabcolsep}{0.11cm}
 \usepackage{threeparttable}
@@ -234,7 +238,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, enhanced, breakable, boxrule=0pt, interior hidden, frame hidden, borderline west={3pt}{0pt}{shadecolor}]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, boxrule=0pt, enhanced, frame hidden, interior hidden, borderline west={3pt}{0pt}{shadecolor}, breakable]}{\end{tcolorbox}}\fi
 
 \spacingset{1.65}
 
@@ -974,14 +978,14 @@ omits the unbiasedness constraint.
 \hypertarget{sec-simulations}{%
 \section{Monte Carlo simulations}\label{sec-simulations}}
 
-To evaluate the performance of various reconciliation methods with time
-series selection outlined in Section~\ref{sec-methodology}, we carry out
-two simulations with different designs. In both simulations, we consider
-a hierarchy comprising two levels of aggregation, as shown in
-Figure~\ref{fig-hts}. Specifically, the structure has four series at the
-bottom level, and seven series in total, i.e., \(n_b = 4\), and
+To evaluate the performance of the proposed reconciliation methods with
+time series selection outlined in Section~\ref{sec-methodology}, we
+carry out two simulations with different designs. In both simulations,
+we consider a hierarchy comprising two levels of aggregation, as shown
+in Figure~\ref{fig-hts}. Specifically, the structure has four series at
+the bottom level, and seven series in total; i.e., \(n_b = 4\), and
 \(n = 7\). The bottom-level series are first generated and then summed
-appropriately to obtain aggregated series at higher levels.
+to obtain aggregated series at higher levels.
 
 Section~\ref{sec-sim1} considers a setup where the bottom-level series
 are generated using a structural time series model, but model
@@ -993,24 +997,23 @@ on the performance of reconciled forecasts.
 \subsection{Setup 1: Exploring the effect of model
 misspecification}\label{sec-sim1}}
 
-In this simulation design, we follow a simulation setup similar to
-\citet{Wickramasuriya2019-fc}, assuming that the bottom-level time
-series are generated using the basic structural time series model \[
+We follow a simulation setup similar to \citet{Wickramasuriya2019-fc},
+assuming that the bottom-level time series are generated using the basic
+structural time series model \[
 \bm{b}_t=\bm{\mu}_t+\bm{\gamma}_t+\bm{\eta}_t,
-\] where \(\bm{\mu}_t\), \(\bm{\gamma}_t\), and \(\bm{\eta}_t\) are
-trend, seasonality, and error components, respectively. The trend and
-seasonality components are defined by \begin{align*}
+\] where \(\bm{\mu}_t\) and \(\bm{\gamma}_t\) are trend and seasonal
+components defined by \begin{align*}
 \bm{\mu}_t & =\bm{\mu}_{t-1}+\bm{v}_t+\bm{\varrho}_t, &&& \bm{\varrho}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_{\varrho}^2 \bm{I}_4\right), \\
 \bm{v}_t & =\bm{v}_{t-1}+\bm{\zeta}_t, &&& \bm{\zeta}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\zeta^2 \bm{I}_4\right), \\
 \bm{\gamma}_t & =-\sum_{i=1}^{s-1} \bm{\gamma}_{t-i}+\bm{\omega}_t, &&& \bm{\omega}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\omega^2 \bm{I}_4\right),
-\end{align*} where \(\bm{\varrho}_t\), \(\bm{\zeta}_t\), and
-\(\bm{\omega}_t\) are error terms independent of each other and over
-time. The error term \(\bm{\eta}_t\) is generated independently from an
+\end{align*} \(\bm{\varrho}_t\), \(\bm{\zeta}_t\), and \(\bm{\omega}_t\)
+are error terms independent of each other and over time, and the error
+term \(\bm{\eta}_t\) is generated independently from an
 \(\text{ARIMA}(p,0,q)\) process, where \(p\) and \(q\) take values of
-\(0\) or \(1\) with equal probability. The coefficients for the AR and
-MA components in the ARIMA process are sampled randomly from a uniform
-distribution within the range \([0.5, 0.7]\), and the contemporaneous
-error covariance matrix is given by \[
+\(0\) or \(1\) with equal probability. The coefficients in the ARIMA
+process are sampled randomly from a uniform distribution within the
+range \([0.5, 0.7]\), and the contemporaneous error covariance matrix is
+given by \[
 \left[\begin{array}{llll}
 5 & 3 & 2 & 1 \\
 3 & 4 & 2 & 1 \\
@@ -1020,10 +1023,10 @@ error covariance matrix is given by \[
 \] which enables correlations among time series in a hierarchical
 structure.
 
-We set \(s = 4\) for quarterly data with error variances
+We set \(s = 4\) for quarterly data, with error variances
 \(\sigma_{\varrho}^2=2\), \(\sigma_\zeta^2=0.007\), and
-\(\sigma_\omega^2=7\), respectively. The initial values for
-\(\bm{\mu}_0\), \(\bm{v}_0\), \(\bm{\gamma}_0\), \(\bm{\gamma}_1\), and
+\(\sigma_\omega^2=7\). The initial values for \(\bm{\mu}_0\),
+\(\bm{v}_0\), \(\bm{\gamma}_0\), \(\bm{\gamma}_1\), and
 \(\bm{\gamma}_2\) are generated independently from a multivariate normal
 distribution with zero mean and identity covariance matrix. For each
 series at the bottom level, we generate a total of \(T+h = 180\)
@@ -1039,26 +1042,27 @@ quality of in-sample and out-of-sample forecasts (i.e., fitted values
 and base forecasts) for some specific time series. Specifically, we
 investigate three scenarios characterized by artificial model
 misspecifications, where a 1.5 multiplier is applied to in-sample and
-out-of-sample forecasts for a single series in each scenario, i.e.,
+out-of-sample forecasts for a single series in each scenario; i.e.,
 series AA at the bottom level, series A at the middle level, and series
-Total at the top level, resulting in Scenario I, Scenario II, and
-Scenario III, respectively.
+Total at the top level, resulting in Scenarios A--C, respectively.
 
-The results for Scenarios I, II, and III are presented in
-Table~\ref{tbl-s1-rmse}, Table~\ref{tbl-s2-rmse}, and
-Table~\ref{tbl-s3-rmse}, respectively. Each table reports the average
-root mean squared error (RMSE) for each level as well as the whole
-structure (denoted as \emph{Average}). The \emph{Base} row shows the
-average RMSE of base forecasts, while entries below this row reporting
-the percentage decrease (negative) or increase (positive) in the average
-RMSE of reconciled forecasts compared to base forecasts. For each
-scenario considered, the largest improvements occur at the respective
-hierarchical level where model misspecification is introduced, while
-slightly deteriorating the performance of other levels.
+The results are presented in Table~\ref{tbl-s1-rmse},
+Table~\ref{tbl-s2-rmse}, and Table~\ref{tbl-s3-rmse}, with each table
+reporting the average root mean squared error (RMSE) for each level as
+well as the whole structure (denoted as \emph{Average}). The \emph{Base}
+row shows the average RMSE of base forecasts, while entries below this
+row reporting the percentage decrease (negative) or increase (positive)
+in the average RMSE of reconciled forecasts compared to base forecasts.
+The \emph{BU} row uses a ``bottom-up'' approach, where the bottom-level
+base forecasts are simply aggregated to form forecasts of the aggregated
+series. For each scenario considered, the largest improvements occur at
+the respective hierarchical level where model misspecification is
+introduced, while slightly deteriorating the performance of other
+levels.
 
 \hypertarget{tbl-s1-rmse}{}
 \begin{table}[!h]
-\caption{\label{tbl-s1-rmse}Out-of-sample forecast results for the simulated data in Scenario I,
+\caption{\label{tbl-s1-rmse}Out-of-sample forecast results for the simulated data in Scenario A,
 Setup 1. }\tabularnewline
 
 \centering
@@ -1109,10 +1113,41 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & --31.9 & --32.3 & --27.5
 \end{threeparttable}}
 \end{table}
 
+Focusing on the results of the benchmark reconciliation methods, we find
+that the BU approach performs the best in both Scenario B and C but
+ranks as the worst overall in Scenario A. This is not surprising, as
+bottom-level base forecasts are deteriorated in Scenario A, while
+higher-level base forecasts are deteriorated in Scenario B and C.
+Moreover, the WLSv, MinT, and MinTs approaches perform especially well
+in Setup 1, benefiting from their ability to consider the in-sample
+covariance of base forecast errors, allowing for larger range of
+adjustments in reconciliation for base forecasts with higher estimated
+error variance. EMinT also provides accurate reconciled forecasts in our
+setup, where the in-sample forecasts for specific series are
+intentionally undermined, a situation that can be detected by the
+in-sample information based EMinT method. However, OLS and WLSs perform
+much worse than other benchmark methods in this simulation design.
+
+In all three scenarios, our proposed methods consistently produce either
+improved or comparable reconciled forecasts compared to their respective
+benchmark methods. The improvements are particularly pronounced when
+using OLS and WLSs estimators of \(\bm{W}\) in the benchmark methods,
+which do not take into account the in-sample covariance of base forecast
+errors. One advantage of using the forecast reconciliation methods with
+selection proposed in this paper is that they can reduce the difference
+introduced by using different estimates of \(\bm{W}\), thereby
+mitigating the risk of estimator selection. In some cases, such as
+Scenarios B and C, we can align the forecast accuracy achieved using
+different estimators, and make them close to the best results we can
+obtain. When we drop the unbiasedness assumption, Elasso delivers
+results on par with EMinT overall, while achieving improvements at the
+top level, which is typically the aspect of greatest concern to
+practitioners.
+
 \hypertarget{tbl-s1-selection}{}
 \begin{table}[!h]
 \caption{\label{tbl-s1-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario I, Setup 1. }\tabularnewline
+reconciliation methods with selection in Scenario A, Setup 1. }\tabularnewline
 
 \centering\begingroup\fontsize{11}{13}\selectfont
 
@@ -1151,50 +1186,18 @@ Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \endgroup{}
 \end{table}
 
-Focusing on the results of the benchmark reconciliation methods, we find
-that the BU approach performs the best in both Scenario II and III but
-ranks as the worst overall in Scenario I. This is not surprising, as
-bottom-level base forecasts are deteriorated in Scenario I, while
-higher-level base forecasts are deteriorated in Scenario II and III.
-Moreover, the WLSv, MinT, and MinTs approaches perform especially well
-in Setup 1, benefiting from their ability to consider the in-sample
-covariance of base forecast errors, allowing for larger range of
-adjustments in reconciliation for base forecasts with higher estimated
-error variance. EMinT also provides accurate reconciled forecasts in our
-setup, where the in-sample forecasts for specific series are
-intentionally undermined, a situation that can be detected by the
-in-sample information based EMinT method. However, OLS and WLSs perform
-much worse than other benchmark methods in this simulation design.
-
-In all three scenarios, our proposed methods consistently produce either
-improved or comparable reconciled forecasts compared to their respective
-benchmark methods. The improvements are particularly pronounced when
-using OLS and WLSs estimators of \(\bm{W}\) in the benchmark methods,
-which do not take into account the in-sample covariance of base forecast
-errors. One advantage of using the forecast reconciliation methods with
-selection proposed in this paper is that they can reduce the difference
-introduced by using different estimates of \(\bm{W}\), thereby
-mitigating the risk of estimator selection. In some cases, such as
-Scenarios II and III, we can align the forecast accuracy achieved using
-different estimators, and make them close to the best results we can
-obtain. When we drop the unbiasedness assumption, Elasso delivers
-results on par with EMinT overall, while achieving improvements at the
-top level, which is typically the aspect of greatest concern to
-practitioners.
-
 In addition, we report the proportion of time series being selected from
 the implementation of our proposed methods in 500 simulation instances,
 as shown in Table~\ref{tbl-s1-selection}, Table~\ref{tbl-s2-selection},
-and Table~\ref{tbl-s3-selection} for each respective scenario. Clearly,
-our proposed methods select fewer time series from the hierarchy for
-forecast reconciliation, and generally improve forecast accuracy over
+and Table~\ref{tbl-s3-selection}. Clearly, our proposed methods select
+fewer time series, and generally improve forecast accuracy, compared to
 the benchmark methods. Furthermore, we observe that the Subset methods
 tend to return fewer time series compared to the Intuitive and Lasso
 methods, which aligns with our expectations that the Intuitive and Lasso
 methods tend to produce dense estimates. Most importantly, depending on
 the scenario considered, the time series with model misspecification has
 been selected less often than others. For example, considering Scenario
-I, series AA is expected to be removed, while AB is expected to be
+A, series AA is expected to be removed, while AB is expected to be
 retained. This allows us to obtain series AA via operations such as
 A\(-\)AB, Total\(-\)B\(-\)AB, or Total\(-\)AB\(-\)BA\(-\)BB. The results
 in Table~\ref{tbl-s1-selection} align with our expectations, and show
@@ -1204,12 +1207,11 @@ that series AA is dropped often, whereas AB is selected all the time.
 \subsection{Setup 2: Exploring the effect of
 correlation}\label{sec-sim2}}
 
-We now consider to simulate a hierarchical structure with correlated
-series. A similar simulation to \citet{Wickramasuriya2021-am} is
-implemented in this section. Using the same hierarchical structure as
-shown in Figure~\ref{fig-hts}, we assume the data generating process for
-the time series at the bottom level follows a stationary first-order
-vector autoregressive model, i.e., \(\text{VAR}(1)\), given by \[
+We now simulate a hierarchical structure with correlated series, using a
+similar simulation to \citet{Wickramasuriya2021-am}, and the same
+hierarchical structure as shown in Figure~\ref{fig-hts}. We use a
+stationary VAR(1) data generating process for the time series at the
+bottom level: \[
 \bm{b}_t= \bm{c} + \left[\begin{array}{cc}
 \bm{A}_1 & \bm{0} \\
 \bm{0} & \bm{A}_2
@@ -1226,33 +1228,12 @@ eigenvalues \(z_{1,2}=0.6[\cos (\pi / 3) \pm i \sin (\pi / 3)]\) and
 the error correlation in the simulated hierarchy.
 
 For each time series at the bottom level, we generate a total of \(101\)
-observations, with the last one observation serving as the test set,
-i.e., \(T=100\) and \(h=1\). Once again, the data at the higher levels
-are obtained by aggreating the bottom-level series. The process is
-repeated \(500\) times for each candidate correlation, \(\rho\).
+observations, with the last observation serving as the test set, i.e.,
+\(T=100\) and \(h=1\). Once again, the data at the higher levels are
+obtained by aggregating the bottom-level series. The process is repeated
+\(500\) times for each candidate correlation, \(\rho\).
 
-For each series in the hierarchy, base forecasts are generated from ARMA
-models based on a training data comprising \(100\) observations.
-Specifically, we identify the best ARMA model with the minimum AICc
-(corrected Akaike information criterion) value for each series by using
-the automated algorithm implemented in the \textbf{forecast} R package.
-Additionally, when fitting ARMA models for time series Total, A, and BA,
-we introduce a slight bias by omitting the constant term, which is a
-common case when using some models to get base forecasts in practice.
-Figure~\ref{fig-corr-data} presents an illustrative example of a
-hierarchical time series simulated. The left panels depict time plots
-for each series at different levels of the structure, while right panels
-show the residuals obtained from forecasting each series using the
-fitted ARMA model. Notably, despite our omission of the constant term
-when fitting ARMA models to series Total, A, and BA, the residuals
-derived from the identified optimal models still exhibit fluctuations
-around zero and do not display significant deviations in comparison to
-the residuals from other series. This is because the influence of the
-constant term is minimal, i.e., it is much smaller compared to the data
-variability. Thus, it may be challenging to identify the ``poor'' base
-forecasts and exclude them from reconciliation in this setup.
-
-\begin{figure}[!htb]
+\begin{figure}[!b]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-corr-data-1.pdf}
 
@@ -1263,31 +1244,23 @@ its in-sample residuals in Setup 2.}
 
 \end{figure}
 
-Table~\ref{tbl-corr-rmse} summarizes the average RMSE of the base
-forecasts across various error correlations and the percentage relative
-improvements in RMSE achieved by reconciliation methods relative to the
-base forecasts. The results show that, for OLS, WLSs, WLSv estimators,
-our proposed methods consistently dominate their respective benchmark
-methods at all levels when the error correlation is \(-0.8\). In
-general, as the error correlation ranges from \(-0.8\) to \(0.8\), the
-overall improvements in our methods over the benchmark methods show
-comparable results. Similar pattern is observed in the overall
-improvements of all benchmark reconciliation methods compared to the
-base forecasts. We should highlight the challenge of identifying the
-``poor'' base forecasts in this simulation design, given that the
-omission of the constant term has minimal impact relative to the data
-variability. In addition, we observe that the MinT and MinTs methods
-perform especially well and our methods provide results same with
-benchmark methods. This is attributed to the use of in-sample covariance
-by MinT and MinTs, which allows for large adjustments in reconciliation
-for base forecasts with high estimated error variance. Elasso forecasts
-are slightly worse than EMinT, possibly due to the difficulty of
-identifying underperforming base forecasts in this simulation setup.
-
-We have also considered alternative error correlation values,
-\(\rho = -0.6, -0.2, 0.2, 0.4\), for this simulation setting, but to
-save space, we do not present all results. The omitted results follow a
-similar pattern and are available upon request.
+For each series, base forecasts are generated from ARMA models. We
+identify the best ARMA model using the automated algorithm implemented
+in the \textbf{forecast} R package \citep{HK08}. Additionally, when
+fitting ARMA models for time series Total, A, and BA, we introduce a
+slight bias by omitting the constant term. Figure~\ref{fig-corr-data}
+presents an illustrative example of a simulated hierarchical time
+series. The left panels depict time plots for each series at different
+levels of the structure, while the right panels show the residuals
+obtained from forecasting each series using the fitted ARMA model.
+Notably, despite our omission of the constant term when fitting ARMA
+models to series Total, A, and BA, the residuals derived from the
+identified optimal models still exhibit fluctuations around zero and do
+not display significant deviations in comparison to the residuals from
+other series. This is because the influence of the constant term is
+minimal, i.e., it is much smaller compared to the data variability.
+Thus, it may be challenging to identify the ``poor'' base forecasts and
+exclude them from reconciliation in this setup.
 
 \hypertarget{tbl-corr-rmse}{}
 \begin{table}[!h]
@@ -1342,25 +1315,41 @@ EMinT & \textcolor{blue}{\textbf{--31.2}} & \textcolor{blue}{\textbf{--19.8}} & 
 \end{threeparttable}}
 \end{table}
 
-We present the proportion of time series being selected by applying our
-proposed methods in \(500\) simulation instances for error correlation
-coefficients of \(-0.8\) and \(0.8\) in
-Table~\ref{tbl-corr-selection-neg} and
-Table~\ref{tbl-corr-selection-pos}, respectively. Once again, we note
-that it is difficult to exclude poor-performing base forecasts in this
-simulation design as the constant term omitted is very small compared to
-the data variability. As observed in Table~\ref{tbl-corr-selection-neg},
-for OLS, WLSs, and WLSv estimators, the Subset and Intuitive methods are
-still able to exclude the series Total, A, and BA in some instances, in
-which small biases are introduced in model fitting, while essentially
-retaining the rest series in the hierarchy. The Subset methods perform
-superior to the Intuitive method in selection. The Lasso methods
-typically select all bottom-level series since they tend to yield dense
-estimates as discussed in Section~\ref{sec-constrained}. Elasso also
-select all bottom-level series. When dealing with a high positive error
-correlation, Table~\ref{tbl-corr-selection-pos} shows that our methods
-still have the potential to do some selection but it becomes somewhat
-challenging to identify and exclude the series that should be omitted in
+Table~\ref{tbl-corr-rmse} summarizes the average RMSE of the base
+forecasts across various error correlations and the percentage relative
+improvements in RMSE achieved by reconciliation methods relative to the
+base forecasts. The results show that, for OLS, WLSs, WLSv estimators,
+our proposed methods consistently dominate or are equivalent to their
+respective benchmark methods at all levels. We should highlight the
+challenge of identifying the ``poor'' base forecasts in this simulation
+design, given that the omission of the constant term has minimal impact
+relative to the data variability. In addition, we observe that the MinT
+and MinTs methods perform especially well and our methods provide
+results similar to these benchmark methods. This is attributed to the
+use of in-sample covariance by MinT and MinTs, which allows for large
+adjustments in reconciliation for base forecasts with high estimated
+error variance. Elasso forecasts are slightly worse than EMinT, possibly
+due to the difficulty of identifying underperforming base forecasts in
+this simulation setup. We have also considered alternative error
+correlation values, \(\rho = -0.6, -0.2, 0.2, 0.4\), for this simulation
+setting, but to save space, we do not present all results. The omitted
+results follow a similar pattern and are available upon request.
+
+In Table~\ref{tbl-corr-selection-neg} and
+Table~\ref{tbl-corr-selection-pos}, we present the proportion of time
+series being selected by applying our proposed methods. As observed in
+Table~\ref{tbl-corr-selection-neg}, for OLS, WLSs, and WLSv estimators,
+the Subset and Intuitive methods are still able to exclude the series
+Total, A, and BA in some instances, in which small biases are introduced
+in model fitting, while essentially retaining the remaining series in
+the hierarchy. The Subset methods perform better than the Intuitive
+method in selection. The Lasso methods typically select all bottom-level
+series since they tend to yield dense estimates as discussed in
+Section~\ref{sec-constrained}. Elasso also selects all bottom-level
+series. When dealing with a high positive error correlation,
+Table~\ref{tbl-corr-selection-pos} shows that our methods still have the
+potential to do some selection but it becomes somewhat challenging to
+identify and exclude the series that should be omitted in
 reconciliation. Hence, our methods are preferred, particularly when the
 error correlation within the hierarchical structure is negative.
 
@@ -2009,7 +1998,7 @@ Section~\ref{sec-simulations}.
 
 \hypertarget{tbl-s2-rmse}{}
 \begin{table}[!h]
-\caption{\label{tbl-s2-rmse}Out-of-sample forecast results for the simulated data in Scenario II,
+\caption{\label{tbl-s2-rmse}Out-of-sample forecast results for the simulated data in Scenario B,
 Setup 1. }\tabularnewline
 
 \centering
@@ -2062,7 +2051,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 
 
 \hypertarget{tbl-s3-rmse}{}
 \begin{table}[!h]
-\caption{\label{tbl-s3-rmse}Out-of-sample forecast results for the simulated data in Scenario III,
+\caption{\label{tbl-s3-rmse}Out-of-sample forecast results for the simulated data in Scenario C,
 Setup 1. }\tabularnewline
 
 \centering
@@ -2116,7 +2105,7 @@ EMinT & --60.7 & --63.5 & --58.2 & --51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 
 \hypertarget{tbl-s2-selection}{}
 \begin{table}[!h]
 \caption{\label{tbl-s2-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario II, Setup 1. }\tabularnewline
+reconciliation methods with selection in Scenario B, Setup 1. }\tabularnewline
 
 \centering\begingroup\fontsize{11}{13}\selectfont
 
@@ -2158,7 +2147,7 @@ Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \hypertarget{tbl-s3-selection}{}
 \begin{table}[!h]
 \caption{\label{tbl-s3-selection}Proportion of time series being selected after using the proposed
-reconciliation methods with selection in Scenario III, Setup 1. }\tabularnewline
+reconciliation methods with selection in Scenario C, Setup 1. }\tabularnewline
 
 \centering\begingroup\fontsize{11}{13}\selectfont
 
