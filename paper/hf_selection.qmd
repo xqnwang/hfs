@@ -207,7 +207,7 @@ $$
 $$ {#eq-op_u_reg}
 *which is characterized as a high-dimensional problem in which the number of features, denoted as* $p = n_b \times n$*, is much larger than the number of observations,* $n$*.*
 
-*Proof.* We have
+*Proof.* We have\vspace{-0.4cm}\enlargethispage{0.4cm}
 $$
 \begin{aligned}
 & \operatorname{vec}\left(\hat{\bm{y}}\right) = \hat{\bm{y}}, \\
@@ -215,7 +215,7 @@ $$
 & \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
 \end{aligned}
 $$
-Substituting the terms in @eq-op_u with these expressions, the previous problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in @eq-op_u_reg.
+Substituting these into @eq-op_u, the previous problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in @eq-op_u_reg.
 
 Next, we present three classes of regularizations that allow forecast reconciliation with series selection, resulting in three optimization problems: (i) group best-subset selection with ridge regularization, (ii) an intuitive method with $L_0$ regularization, and (iii) a group lasso method.
 
@@ -285,15 +285,14 @@ $$ {#eq-lasso}
 where $\lambda \geq 0$ is a tuning parameter, $w_j \neq 0$ is the penalty weight assigned in $\bm{G}_{\cdot j}$ to make the model more flexible, and the second term in the objective is the penalty function that is intermediate between the $L_1$-penalty that is used in the lasso and the $L_2$-penalty that is used in ridge regression. In the results that follow, we label the **Lasso** method based on various estimators for $\bm{W}$, referring to them as **OLS-lasso**, **WLSs-lasso**, **WLSv-lasso**, **MinT-lasso**, and **MinTs-lasso**, respectively.
 
 Next, we present the second order cone programming (SOCP) formulation for the group lasso based estimators given by
-$$
-\begin{aligned}
-\min_{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \\
+\begin{align}
+\min_{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \label{eq-lasso_socp}\\
 \text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right) \\
 & \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}) = \check{\bm{e}} \\
 & c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n].
-\end{aligned}
-$$ {#eq-lasso_socp}
-@eq-lasso_socp includes additional auxiliary variables $c_j \in \mathbb{R}_{\geq 0}$, $j \in [n]$, and second order cone constraints, $c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}$ for $j \in[n]$.
+\end{align}
+$$
+Equation \ref{eq-lasso_socp} includes additional auxiliary variables $c_j \in \mathbb{R}_{\geq 0}$, $j \in [n]$, and second order cone constraints, $c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}$ for $j \in[n]$.
 
 Compared to the previous two methods above, the group lasso method is computationally friendlier. Nonetheless, @Hazimeh2023-ie demonstrated, both empirically and theoretically, that group $L_0$-regularized method exhibits advantages over its group lasso counterpart across a range of regimes. Group lasso can either be highly dense or possess non-zero coefficients that are overly shrunk. This issue becomes more pronounced when the groups are correlated with each other as group lasso tends to retain all correlated groups instead of seeking a more concise model.
 
@@ -334,7 +333,7 @@ We also explored the empirical version of group best-subset selection with ridge
 
 **Penalty weights and parameter tuning.** Similarly to the setup in the group lasso method, we assign different penalty weights to each group by setting $w_j = 1/\|\bm{G}_{\cdot j}^{\text{OLS}}\|_2$, where $\bm{G}^{\text{OLS}}$ is the solution obtained by the OLS estimator of $\bm{W}$. Given a fixed tuning parameter value, we solve the target optimization problem by considering the initial $T-T_v$ observations, where $T_v = \max\{h, s\}$ for seasonal time series and $T_v = \lfloor \frac{1}{10}T \rfloor$ for non-seasonal time series. Then we select the tuning parameter, $\lambda$, by minimizing the sum of squared reconciled forecast errors on a truncated training set, comprising only the $T_v$ observations closest to the forecast origin. Specifically, we form the set of candidate values for $\lambda$ as $\{\lambda^{1},\dots,\lambda^{k}, 0\}$, where $\lambda^{1} = \max_{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\bm{S} \otimes \hat{\bm{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\bm{Y})\right\|_2 / w_j$, $\lambda^{k} = 0.0001\lambda^{1}$, and $\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}$ for $j \in [k]$. Following the same derivation as in the proof of **Proposition 3**, $\lambda^{1}$ is the smallest $\lambda$ value such that all predictors in the empirical group lasso problem have zero coefficients, i.e., $\bm{G} = \bm{O}$. Note that we need to resolve the optimization problem based on the whole training set by using the optimal tuning parameter to obtain the final solution.
 
-**Computation details.** While there are open-source packages available for solving a group lasso problem, they are still relatively slow when applied to large instances. For example, given a specific value for the parameter, $\lambda$, our experiments observed that, using the **gglasso** R package, we can not obtain a solution within five hours for typical instances with $p \sim 10^4$. Instead, we use Gurobi to solve the problem based on the SOCP formulation for the empirical group lasso which aligns with @eq-lasso_socp but omits the unbiasedness constraint.
+**Computation details.** While there are open-source packages available for solving a group lasso problem, they are still relatively slow when applied to large instances. For example, given a specific value for the parameter, $\lambda$, our experiments observed that, using the **gglasso** R package, we can not obtain a solution within five hours for typical instances with $p \sim 10^4$. Instead, we use Gurobi to solve the problem based on the SOCP formulation for the empirical group lasso which aligns with Equation \ref{eq-lasso_socp} but omits the unbiasedness constraint.
 
 ## Monte Carlo simulations {#sec-simulations}
 

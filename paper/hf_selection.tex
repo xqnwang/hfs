@@ -87,16 +87,26 @@
 \usepackage[margin = 2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
-\clubpenalty = 10000
-\widowpenalty = 10000
-\brokenpenalty = 10000
+%\clubpenalty = 10000
+%\widowpenalty = 10000
+%\brokenpenalty = 10000
 \usepackage{microtype}
 \usepackage[onlyrefs]{mathtools}
 \setlength{\tabcolsep}{0.11cm}
 \usepackage{threeparttable}
 \makeatletter
 \g@addto@macro\TPT@defaults{\linespread{1}\selectfont}
+\def\fps@table{!tbh}
+\def\fps@figure{!tbh}
 \makeatother
+
+%% CAPTIONS
+\usepackage{setspace}
+\usepackage{caption}
+\DeclareCaptionStyle{italic}[justification=centering]
+ {labelfont={bf},textfont={it},labelsep=colon}
+\captionsetup[figure]{style=italic,format=hang,singlelinecheck=true,font=singlespacing}
+\captionsetup[table]{style=italic,format=hang,singlelinecheck=true,font=singlespacing}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -238,9 +248,9 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, boxrule=0pt, enhanced, frame hidden, interior hidden, borderline west={3pt}{0pt}{shadecolor}, breakable]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, breakable, interior hidden, frame hidden, sharp corners, enhanced]}{\end{tcolorbox}}\fi
 
-\spacingset{1.65}
+\spacing{1.65}
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -607,16 +617,16 @@ high-dimensional problem in which the number of features, denoted as}
 \(p = n_b \times n\)\emph{, is much larger than the number of
 observations,} \(n\)\emph{.}
 
-\emph{Proof.} We have \[
+\emph{Proof.} We have\vspace{-0.4cm}\enlargethispage{0.4cm} \[
 \begin{aligned}
 & \operatorname{vec}\left(\hat{\bm{y}}\right) = \hat{\bm{y}}, \\
 & \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
 & \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
 \end{aligned}
-\] Substituting the terms in Equation~\ref{eq-op_u} with these
-expressions, the previous problem now takes the form of a regression
-problem with an additional regularization term and an equality
-constraint on the coefficients, as shown in Equation~\ref{eq-op_u_reg}.
+\] Substituting these into Equation~\ref{eq-op_u}, the previous problem
+now takes the form of a regression problem with an additional
+regularization term and an equality constraint on the coefficients, as
+shown in Equation~\ref{eq-op_u_reg}.
 
 Next, we present three classes of regularizations that allow forecast
 reconciliation with series selection, resulting in three optimization
@@ -821,17 +831,14 @@ for \(\bm{W}\), referring to them as \textbf{OLS-lasso},
 \textbf{MinTs-lasso}, respectively.
 
 Next, we present the second order cone programming (SOCP) formulation
-for the group lasso based estimators given by
-\begin{equation}\protect\hypertarget{eq-lasso_socp}{}{
-\begin{aligned}
-\min_{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \\
+for the group lasso based estimators given by \begin{align}
+\min_{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \label{eq-lasso_socp}\\
 \text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right) \\
 & \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}) = \check{\bm{e}} \\
 & c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n].
-\end{aligned}
-}\label{eq-lasso_socp}\end{equation} Equation~\ref{eq-lasso_socp}
-includes additional auxiliary variables \(c_j \in \mathbb{R}_{\geq 0}\),
-\(j \in [n]\), and second order cone constraints,
+\end{align} \$\$ Equation \ref{eq-lasso_socp} includes additional
+auxiliary variables \(c_j \in \mathbb{R}_{\geq 0}\), \(j \in [n]\), and
+second order cone constraints,
 \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\) for
 \(j \in[n]\).
 
@@ -972,7 +979,7 @@ value for the parameter, \(\lambda\), our experiments observed that,
 using the \textbf{gglasso} R package, we can not obtain a solution
 within five hours for typical instances with \(p \sim 10^4\). Instead,
 we use Gurobi to solve the problem based on the SOCP formulation for the
-empirical group lasso which aligns with Equation~\ref{eq-lasso_socp} but
+empirical group lasso which aligns with Equation \ref{eq-lasso_socp} but
 omits the unbiasedness constraint.
 
 \hypertarget{sec-simulations}{%
@@ -1061,7 +1068,7 @@ introduced, while slightly deteriorating the performance of other
 levels.
 
 \hypertarget{tbl-s1-rmse}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-s1-rmse}Out-of-sample forecast results for the simulated data in Scenario A,
 Setup 1. }\tabularnewline
 
@@ -1145,7 +1152,7 @@ top level, which is typically the aspect of greatest concern to
 practitioners.
 
 \hypertarget{tbl-s1-selection}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-s1-selection}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Scenario A, Setup 1. }\tabularnewline
 
@@ -1233,7 +1240,7 @@ observations, with the last observation serving as the test set, i.e.,
 obtained by aggregating the bottom-level series. The process is repeated
 \(500\) times for each candidate correlation, \(\rho\).
 
-\begin{figure}[!b]
+\begin{figure}
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-corr-data-1.pdf}
 
@@ -1263,7 +1270,7 @@ Thus, it may be challenging to identify the ``poor'' base forecasts and
 exclude them from reconciliation in this setup.
 
 \hypertarget{tbl-corr-rmse}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-corr-rmse}Out-of-sample forecast results across various error correlations for
 simulation in Setup 2. }\tabularnewline
 
@@ -1354,7 +1361,7 @@ reconciliation. Hence, our methods are preferred, particularly when the
 error correlation within the hierarchical structure is negative.
 
 \hypertarget{tbl-corr-selection-neg}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-corr-selection-neg}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Setup 2, with the error
 correlation being -0.8. }\tabularnewline
@@ -1399,27 +1406,22 @@ Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \hypertarget{sec-applications}{%
 \section{Applications}\label{sec-applications}}
 
-In this section we perform two empirical applications to investigate the
-performance of our proposed methods and compare them with
-state-of-the-art reconciliation approaches. Section~\ref{sec-labour}
-focuses on a grouped hierarchy built using the Australian labour force
-survey data released by the Australian Bureau of Statistics, while
-Section~\ref{sec-tourism} considers Australian domestic tourism flows
-with a natural geographical hierarchy.
+In this section we describe two empirical applications:
+Section~\ref{sec-labour} focuses on a grouped hierarchy built using the
+Australian labour force survey data released by the Australian Bureau of
+Statistics, while Section~\ref{sec-tourism} considers Australian
+domestic tourism flows with a natural geographical hierarchy.
 
 \hypertarget{sec-labour}{%
 \subsection{Forecasting Australian labour force}\label{sec-labour}}
 
-This section evaluates the performance of the proposed methods using a
-grouped hierarchy built using the Australian labour force dataset. The
-dataset from the Labour Force Survey are released by the Australian
-Bureau of Statistics, consisting of monthly data on the number of
+The dataset from the Labour Force Survey were released by the Australian
+Bureau of Statistics, and comprise monthly data on the number of
 unemployed persons in Australia for the period from January 2010 to July
 2023\footnote{The Labour Force Survey data is publicly available at
   \url{https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023}.}.
-There are a few missing values in the dataset. To deal with the missing
-observations, we use a random walk to give linear interpolation between
-points. Analysis of unemployment data in a country by labor market
+To deal with the few missing observations, we use linear interpolation
+between observations. Analysis of unemployment data by labor market
 region and duration of job search can provide valuable insights into
 regional disparities, and the structural nuances underlying
 unemployment. Forecast reconciliation is crucial in such a case to
@@ -1428,8 +1430,7 @@ ensure aligned decision making.
 We construct a grouped hierarchy by disaggregating the number of
 unemployed persons over two independent attributes, duration of job
 search (referred to as \emph{Duration}), and State and Territory
-(referred to as \emph{STT} ). The two attributes are crossed, but none
-are nested within the others. At the bottom level, the data are
+(referred to as \emph{STT} ). At the bottom level, the data are
 disaggregated by both attributes. We refer to the bottom level as the
 \emph{Duration} \(\times\) \emph{STT} level. Specifically, there are six
 different groups of job search duration, under 1 month, 1--3 months,
@@ -1443,7 +1444,7 @@ of the top series, six series at the Duration level, eight series at the
 STT level, and \(48\) series at the Duration \(\times\) STT level,
 giving \(63\) time series in total, each of length \(163\) observations.
 
-\begin{figure}[!htb]
+\begin{figure}
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-labour-data-1.pdf}
 
@@ -1456,70 +1457,44 @@ disaggregated by state and territory, and by duration of job search.}
 
 The top panel in Figure~\ref{fig-labour-data} shows the total number of
 unemployed persons in Australia from January 2010 to July 2023,
-representing the top-level series in the grouped hierarchical structure.
-The monthly series shows strong seasonality within each year, marked by
-prominent peaks occurring every January, possibly attributable to people
-waiting to start new jobs. In addition, lower peaks occur in July,
-impacted by the timing of school holidays. Amidst the backdrop of
-COVID-19's non-essential service shutdowns and trading restrictions,
-March and April of 2020 saw a notable surge in unemployment. However, as
-coronavirus cases dwindled significantly and restrictions eased in the
-aftermath, employment made a remarkable recovery, leading to a
-subsequent decline in unemployment. The bottom-left panel displays the
-breakdown of unemployed individuals by state and territory, while the
-bottom-right panel presents the breakdown by the duration of job search.
-The plots display diverse and rich dynamics both within and between
-different levels of the hierarchy. For example, there was noticeable
-growth observed during 2020 for some states such as NSW, VIC, and QLD,
-whereas other states did not experience such significant growth.
-Additionally, there is a resemblance in the seasonal patterns between
-NSW and QLD, while the seasonal pattern in VIC appears relatively
-different. When comparing the series at the STT level and Duration
-level, we notice that the seasonal patterns in the Duration-level series
-is more consistent and potentially easier to forecast.
+representing the top-level series in the hierarchical structure. The
+monthly series shows strong seasonality within each year, marked by
+prominent peaks occurring every January, attributable to school-leavers.
+Lower peaks occur in July, perhaps impacted by the start of the
+financial year. Amidst the backdrop of COVID-19's non-essential service
+shutdowns and trading restrictions, March and April of 2020 saw a
+notable surge in unemployment. However, as coronavirus cases dwindled
+significantly and restrictions eased in the aftermath, employment made a
+remarkable recovery, leading to a subsequent decline in unemployment.
+The bottom-left panel displays the breakdown of unemployed individuals
+by state and territory, while the bottom-right panel presents the
+breakdown by the duration of job search. The plots display diverse and
+rich dynamics both within and between different levels of the hierarchy.
+For example, there was noticeable growth observed during 2020 for some
+states such as NSW, VIC, and QLD, whereas other states did not
+experience such significant growth. Additionally, there is a resemblance
+in the seasonal patterns between NSW and QLD, while the seasonal pattern
+in VIC differs. When comparing the series at the STT level and Duration
+level, the seasonal patterns in the Duration-level series is more
+consistent and potentially easier to forecast.
 
 We assess the forecast accuracy of base forecasts and various
 reconciliation methods through a rolling forecast origin approach. Our
-aim is to generate \(1\)- to \(12\)-steps-ahead forecasts for each of
-the \(63\) series while ensuring coherence. Given the limited data
-compared to the forecast horizon, we initiate the process with a
-training set of \(139\) observations for each series. The training set
-is used to select the optimal ETS model with the automatic algorithm
-implemented in the \textbf{forecast} package for R. Using these fitted
-ETS models, we generate base forecasts, and then perform diverse
-forecast reconciliation methods. Following this, we roll the forecast
-origin forward by one month and repeat the process until July 2022. We
-note that it may be challenging to identify the series with ``poor''
-forecasts due to structural changes in the data caused by the COVID-19
-pandemic, which affect the accuracy of forecasts across all time series.
-
-The average results are presented in Table~\ref{tbl-labour-rmse-avg}.
-The MinT method and the respective proposed methods are not considered
-due to their poor performance, attributed to the poor sample covariance
-estimator when the sample size is slightly larger than the number of
-series in the structure. The Subset methods using different estimators
-of \(\bm{G}\) generally improve forecast accuracy over their respective
-benchmark methods overall, particularly when focusing on aggregation
-levels, which are typically of paramount concern to practitioners. The
-only one exception is the WLSs-subset method, which returns reduced
-accuracy for longer horizons overall. However, it still demonstrates
-improvements in top-level forecasts, and other levels remains within a
-reasonable range. Moreover, the Intuitive and Lasso methods almost
-always yield results identical to the corresponding benchmark methods.
-This is because they tend to provide dense estimates, and ETS models
-typically do not result in extremely poor forecasts. The only exception
-is OLS-intuitive, which shows improved forecast accuracy at the top
-level but deterioration at other levels. When we drop the unbiasedness
-assumption, EMinT is the worst performing method across all levels
-because it relies on the assumption that the series in the hierarchy are
-jointly weakly stationary, which is evidently not the case in the
-application. Elasso significantly improves the quality of forecasts over
-EMinT, with the most accurate coherent forecasts observed at the top
-level and STT level. Overall, Elasso performs well for longer forecast
-horizons, but it is less effective for one-step-ahead forecasts.
+aim is to generate \(1\)- to \(12\)-step-ahead forecasts for each of the
+\(63\) series while ensuring coherence. Given the limited data compared
+to the forecast horizon, we initiate the process with a training set of
+\(139\) observations for each series. The training set is used to select
+the optimal ETS model with the automatic algorithm implemented in the
+\textbf{forecast} package for R \citep{HK08}. Using these fitted ETS
+models, we generate base forecasts, and perform diverse forecast
+reconciliation methods. Then we roll the forecast origin forward by one
+month and repeat the process, until July 2022. We note that it may be
+challenging to identify the series with ``poor'' forecasts due to
+structural changes in the data caused by the COVID-19 pandemic, which
+affect the accuracy of forecasts across all time series.
 
 \hypertarget{tbl-labour-rmse-avg}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-labour-rmse-avg}Average out-of-sample forecast results for Australian labour force data. }\tabularnewline
 
 \centering
@@ -1565,25 +1540,32 @@ EMinT & 43.1 & 17.6 & 9.9 & 10.2 & 36.8 & 25.2 & 27.9 & 24.1 & 16.8 & 15.1 & 6.2
 \end{threeparttable}}
 \end{table}
 
-We also provide the results based on the final test set spanning from
-August 2022 to July 2023 in Table~\ref{tbl-labour-rmse}. We consider
-this period because it is the latest available data, enabling us to use
-more data for model training to get more knowledge about the post-COVID
-pattern. The results indicate that all Subset methods using different
-estimators of \(\bm{W}\), i.e., OLS-subset, WLSs-subset, WLSv-subset,
-and MinTs-subset, produce improved or comparable reconciled forecasts
-compared to their respective benchmark methods. The improvements in
-forecast accuracy become more noticeable for longer forecast horizons.
-Similar to the average results in Table~\ref{tbl-labour-rmse-avg}, the
-Intuitive and Lasso methods yield results identical to the benchmark
-methods due to their tendency to offer dense estimates. Surprisingly,
-when relaxing the unbiasedness constraint, the Elasso method ranks the
-best and demonstrates significant improvement compared to the EMinT
-method, and outperforms other methods across almost all levels except
-for the top level.
+The average results are presented in Table~\ref{tbl-labour-rmse-avg}.
+The poor performance of the MinT method and associated methods can be
+attributed to the poor sample covariance estimator when the sample size
+is only slightly larger than the number of series in the structure. The
+Subset methods using different estimators of \(\bm{G}\) generally
+improve forecast accuracy over their benchmark methods, particularly
+when focusing on aggregation levels, which are typically of paramount
+concern to practitioners. The only exception is the WLSs-subset method,
+which returns reduced accuracy for longer horizons. However, it still
+demonstrates improvements in top-level forecasts. Moreover, the
+Intuitive and Lasso methods almost always yield results identical to the
+corresponding benchmark methods, because they tend to provide dense
+estimates, and ETS models typically do not result in extremely poor
+forecasts. The only exception is OLS-intuitive, which shows improved
+forecast accuracy at the top level but deterioration at other levels.
+When we drop the unbiasedness assumption, EMinT is the worst performing
+method across all levels because it relies on the assumption that the
+series in the hierarchy are jointly weakly stationary, which is
+evidently not the case in the application. Elasso significantly improves
+the quality of forecasts over EMinT, with the most accurate coherent
+forecasts observed at the top level and STT level. Overall, Elasso
+performs well for longer forecast horizons, but it is less effective for
+one-step-ahead forecasts.
 
 \hypertarget{tbl-labour-rmse}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-labour-rmse}Out-of-sample forecast results on a single test set (from August 2022 to
 July 2023) for Australian labour force data. }\tabularnewline
 
@@ -1630,26 +1612,23 @@ EMinT & --60.4 & --14.0 & 1.4 & --29.9 & --6.0 & 12.0 & 10.7 & --6.7 & 16.7 & --
 \end{threeparttable}}
 \end{table}
 
-Furthermore, based on the final test set, we present the number of
-series selected at each level and the optimal tuning parameter values
-obtained using different proposed methods, as shown in
-Table~\ref{tbl-labour-info}. Here, we only showcase results from the
-Subset and Elasso methods, as they prove to be valuable in the labour
-force application in terms of the RMSE results. Note that the variation
-in the scale of the optimal parameters for different methods comes from
-the difference in the scales of objective. Table~\ref{tbl-labour-info}
-shows that all Subset methods exclude some series when performing
-forecast reconciliation. Remarkably, the Elasso method consistently
-outperforms the others overall, even though it uses only \(11\) series
-for forecast reconciliation. Additionally, it is worth noting that most
-of the series at the STT level are removed, while the majority of series
-at the Duration level are retained. This aligns with our data
-description, highlighting that the seasonal patterns in the Duration
-level series is more consistent and potentially easier to forecast
-compared to those at the STT level.
+We provide results based on the final test set spanning from August 2022
+to July 2023 in Table~\ref{tbl-labour-rmse}. This is the latest
+available data, enabling us to use more data for model training and
+explore the post-COVID pattern. All Subset methods (using different
+estimators of \(\bm{W}\)) produce improved or comparable reconciled
+forecasts compared to their benchmark methods. The improvements in
+forecast accuracy become more noticeable for longer forecast horizons.
+Similar to the average results in Table~\ref{tbl-labour-rmse-avg}, the
+Intuitive and Lasso methods yield results identical to the benchmark
+methods due to their tendency to offer dense estimates. Surprisingly,
+when relaxing the unbiasedness constraint, the Elasso method ranks the
+best and demonstrates significant improvement compared to the EMinT
+method, and outperforms other methods across almost all levels except
+for the top level.
 
 \hypertarget{tbl-labour-info}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-labour-info}Number of time series selected using different proposed methods and the
 optimal parameter values identified in the labour application,
 considering a single test set (from August 2022 to July 2023). The None
@@ -1674,26 +1653,35 @@ Elasso & 1 & 5 & 2 & 3 & 11 & 213.59 & - & -\\
 \endgroup{}
 \end{table}
 
+Table~\ref{tbl-labour-info} presents the number of series selected at
+each level and the optimal tuning parameter values obtained using
+different proposed methods. We only show results from the Subset and
+Elasso methods, as they had the best RMSE results. The variation in the
+scale of the optimal parameters for different methods comes from the
+difference in the scales of the objective function.
+Table~\ref{tbl-labour-info} shows that all Subset methods exclude some
+series. Remarkably, the Elasso method consistently outperforms the
+others overall, even though it uses only \(11\) series for forecast
+reconciliation. Most of the series at the STT level are removed, while
+the majority of series at the Duration level are retained. This aligns
+with our data description, highlighting that the seasonal patterns in
+the Duration level series is more consistent and potentially easier to
+forecast compared to those at the STT level.
+
 \hypertarget{sec-tourism}{%
 \subsection{Forecasting Australian domestic tourism}\label{sec-tourism}}
 
-In this section we consider Australian domestic tourism flows, measured
-as the number of overnight trips Australians spend away from home, and
-create a hierarchical structure using geographic divisions. The data are
-sourced from the National Visitor Survey and collected through
-computer-assisted telephone interviews involving approximately
-\(120,000\) Australian residents aged \(15\) years and older. The
-hierarchical structure starts with the national total tourism flow as
-the top-level aggregation, then disaggregates it into seven states and
-territories (referred to as \emph{State} level hereafter), further
-divides them into \(27\) zones, and finally, into \(76\) regions, thus
-forming a natural geographical hierarchy.
-
-Therefore, the hierarchy under consideration involves \(76\) monthly
-time series at the bottom level and \(111\) monthly series in total,
-i.e., \(n_b=76\) and \(n=111\). Each series in the hierarchy spans the
-period from January 1998 to December 2017, with a total of \(240\)
-observations.
+Australian domestic tourism flows are measured as the number of
+overnight trips Australians spend away from home. The data are sourced
+from the National Visitor Survey and collected through computer-assisted
+telephone interviews involving approximately \(120,000\) Australian
+residents aged \(15\) years and older. The data follow a geographic
+structure, with national total tourism flows in the top-level
+aggregation, then disaggregated into seven states and territories
+(referred to as \emph{State} level hereafter), further dividing into
+\(27\) zones, and finally, into \(76\) regions. Thus, \(n_b=76\) and
+\(n=111\). Each series in the hierarchy spans the period from January
+1998 to December 2017, with a total of \(240\) observations.
 
 Figure~\ref{fig-tourism-data} shows the aggregate tourism flows for
 Australia as well as individual states, revealing pronounced seasonal
@@ -1701,10 +1689,10 @@ patterns across the national total and states, albeit with varying
 seasonal patterns among the series. Notably, there was a significant
 growth starting from around 2010 for the national total flow and some
 states such as NSW, VIC, QLD, and WA. While flows are relatively flat
-for SA, TAS, and NT. Moreover, the time plot displays that there was a
-large decrease in tourism flows for WA occurred in 2016.
+for SA, TAS, and NT. Moreover, the time plot displays that a large
+decrease in tourism flows for WA occurred in 2016.
 
-\begin{figure}[!htb]
+\begin{figure}
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-data-1.pdf}
 
@@ -1717,18 +1705,16 @@ large decrease in tourism flows for WA occurred in 2016.
 
 Our objective is to forecast tourism flows for each series in the
 geographical hierarchy while ensuring coherence across all levels. We
-adopt the rolling forecast origin approach to evaluate the forecast
-accuracy of different methods. We start with a training set of \(216\)
-months for each series to generate base forecasts by fitting the optimal
-ETS model. We then roll the forecast origin forward by one month and
-repeat the process until December 2016. The base forecasts are
-reconciled using our proposed methods and some state-of-the-art
-reconciliation methods.
+use a rolling forecast origin to evaluate the forecast accuracy of
+different methods. We start with a training set of \(216\) months for
+each series, and compute base forecasts from optimal ETS models. We then
+roll the forecast origin forward, month by month, until December 2016.
+The base forecasts are reconciled using our proposed methods and some
+existing reconciliation methods.
 
 Table~\ref{tbl-tourism-rmse-avg} reports the average RMSE values for
 base forecasts generated by ETS models, along with the percentage
-relative improvements in average RMSE obtained by a particular
-reconciliation method relative to the base forecasts. Similar to
+relative improvements obtained by each reconciliation method. Similar to
 Section~\ref{sec-labour}, the MinT method and the respective proposed
 methods are not considered due to their poor performance. The results
 show that the OLS method outperforms other benchmark methods like WLSs,
@@ -1752,7 +1738,7 @@ to the EMinT method, and it also outperforms other methods across almost
 all levels except for the bottom level.
 
 \hypertarget{tbl-tourism-rmse-avg}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-tourism-rmse-avg}Average out-of-sample forecast results for Australian domestic tourism
 data. }\tabularnewline
 
@@ -1808,7 +1794,7 @@ to the average results described above, indicating relatively
 high-quality forecasts from the Subset and Elasso methods.
 
 \hypertarget{tbl-tourism-rmse}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-tourism-rmse}Out-of-sample forecast results on a single test set (from January 2017
 to December 2017) for Australian domestic tourism data. }\tabularnewline
 
@@ -1855,7 +1841,7 @@ EMinT & 116.5 & 97.8 & --15.8 & --13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 6
 \end{threeparttable}}
 \end{table}
 
-\begin{figure}[!htb]
+\begin{figure}
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-rmse-1.pdf}
 
@@ -1887,7 +1873,7 @@ Elasso performs exceptionally well despite using only \(13\) series for
 reconciliation.
 
 \hypertarget{tbl-tourism-info}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-tourism-info}Number of time series selected using different proposed methods and the
 optimal parameter values identified in the tourism application,
 considering a single test set (from January 2017 to December 2017). The
@@ -1997,7 +1983,7 @@ The section provides additional results for the simulation data in
 Section~\ref{sec-simulations}.
 
 \hypertarget{tbl-s2-rmse}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-s2-rmse}Out-of-sample forecast results for the simulated data in Scenario B,
 Setup 1. }\tabularnewline
 
@@ -2050,7 +2036,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 
 \end{table}
 
 \hypertarget{tbl-s3-rmse}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-s3-rmse}Out-of-sample forecast results for the simulated data in Scenario C,
 Setup 1. }\tabularnewline
 
@@ -2103,7 +2089,7 @@ EMinT & --60.7 & --63.5 & --58.2 & --51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 
 \end{table}
 
 \hypertarget{tbl-s2-selection}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-s2-selection}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Scenario B, Setup 1. }\tabularnewline
 
@@ -2145,7 +2131,7 @@ Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \end{table}
 
 \hypertarget{tbl-s3-selection}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-s3-selection}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Scenario C, Setup 1. }\tabularnewline
 
@@ -2187,7 +2173,7 @@ Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \end{table}
 
 \hypertarget{tbl-corr-selection-pos}{}
-\begin{table}[!h]
+\begin{table}
 \caption{\label{tbl-corr-selection-pos}Proportion of time series being selected after using the proposed
 reconciliation methods with selection in Setup 2, with the error
 correlation being 0.8. }\tabularnewline
