@@ -248,7 +248,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, breakable, interior hidden, frame hidden, sharp corners, enhanced]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, frame hidden, interior hidden, sharp corners, enhanced, breakable]}{\end{tcolorbox}}\fi
 
 \spacing{1.65}
 
@@ -1683,15 +1683,6 @@ aggregation, then disaggregated into seven states and territories
 \(n=111\). Each series in the hierarchy spans the period from January
 1998 to December 2017, with a total of \(240\) observations.
 
-Figure~\ref{fig-tourism-data} shows the aggregate tourism flows for
-Australia as well as individual states, revealing pronounced seasonal
-patterns across the national total and states, albeit with varying
-seasonal patterns among the series. Notably, there was a significant
-growth starting from around 2010 for the national total flow and some
-states such as NSW, VIC, QLD, and WA. While flows are relatively flat
-for SA, TAS, and NT. Moreover, the time plot displays that a large
-decrease in tourism flows for WA occurred in 2016.
-
 \begin{figure}
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-data-1.pdf}
@@ -1702,6 +1693,15 @@ decrease in tourism flows for WA occurred in 2016.
 1998 to December 2017 for the whole of Australia as well as the states.}
 
 \end{figure}
+
+Figure~\ref{fig-tourism-data} shows the aggregate tourism flows for
+Australia as well as individual states, revealing pronounced seasonal
+patterns across the national total and states, albeit with varying
+seasonal patterns among the series. Notably, there was a significant
+growth starting from around 2010 for the national total flow and some
+states such as NSW, VIC, QLD, and WA. While flows are relatively flat
+for SA, TAS, and NT. Moreover, the time plot displays that a large
+decrease in tourism flows for WA occurred in 2016.
 
 Our objective is to forecast tourism flows for each series in the
 geographical hierarchy while ensuring coherence across all levels. We
@@ -1901,41 +1901,34 @@ Elasso & 1 & 4 & 0 & 8 & 13 & 71759.21 & - & -\\
 \hypertarget{sec-conclusion}{%
 \section{Conclusion}\label{sec-conclusion}}
 
-In the existing literature on hierarchical or grouped time series when
-we perform linear forecast reconciliation, we map all base forecasts
-into bottom-level disaggregated forecasts, which are then summed up by a
-summing matrix to yield coherent forecasts for the entire structure.
-Hence, the mapping step in forecast reconciliation can be conceptually
-regarded as a forecast combination. In practical applications, it is
-common that the base forecasts for some time series in the structure may
-perform poorly, especially in the context of large structures. This may
-reduce the overall effectiveness of forecast reconciliation methods. In
-this paper, we aimed to address this issue by introducing a selection
-mechanism in forecast reconciliation, i.e., incorparating time series
-selection when reconciling forecasts for hierarchical or grouped time
-series, while ensuring the generation of coherent forecasts for all
-series.
+In the existing literature on forecast reconciliation, we map all base
+forecasts into bottom-level disaggregated forecasts, which are then
+summed to yield coherent forecasts for the entire structure. The mapping
+step can be conceptually regarded as a forecast combination. It is
+common that the base forecasts for some time series perform poorly. This
+may reduce the overall effectiveness of forecast reconciliation methods.
+In this paper, we have addressed this issue by introducing a selection
+mechanism to forecast reconciliation; i.e., incorparating time series
+selection when reconciling forecasts, while ensuring the generation of
+coherent forecasts for all series.
 
 Under the unbiasedness constraint, we developed three reconciliation
-methods with selection mechanisms to keep forecasts for an automatically
-selected set of series unused in forming reconciled forecasts. These
-methods include group best-subset selection with ridge regularization
-(Subset), intuitive method with \(L_0\) regularization (Intuitive), and
-group lasso method (Lasso). These methods formulated the problem based
-on out-of-sample base forecasts using different penalty functions
-designed to penalize the columns of the weighting matrix, \(\bm{G}\),
-towards zero. Additionally, we relaxed the unbiasedness constraint and
-proposed the empirical group lasso method (Elasso) which selects series
-based on in-sample observations and fitted values.
+methods with selection mechanisms to automatically remove some base
+forecasts when forming reconciled forecasts. These methods include group
+best-subset selection with ridge regularization (Subset), an intuitive
+method with \(L_0\) regularization (Intuitive), and a group lasso method
+(Lasso). These methods use different penalty functions designed to
+penalize the columns of the weighting matrix, \(\bm{G}\), towards zero.
+Additionally, we relaxed the unbiasedness constraint and proposed the
+empirical group lasso method (Elasso) which selects series based on
+in-sample observations and fitted values.
 
-Simulation experiments and two empirical applications demonstrated the
-superiority of the proposed methods over the reconciliation methods that
-do not involve series selection. Our methods were preferred,
-particularly when the error correlation within the hierarchical
-structure is negative. Furthermore, when model misspecification was
-introduced for some series in the hierarchy, our proposed methods
-guaranteed coherent forecasts that outperformed or, at the very least,
-matched their respective benchmark methods in the minimum trace
+Simulation experiments and two empirical applications have demonstrated
+the superiority of the proposed methods over existing reconciliation
+methods that do not involve series selection. When model
+misspecification was introduced for some series in the hierarchy, our
+proposed methods guaranteed coherent forecasts that outperformed or, at
+least, matched their respective benchmark methods in the minimum trace
 reconciliation framework. In both empirical applications, where no
 apparent model misspecification was present, the Subset and Elasso
 methods were always preferred, particularly for aggregation levels and
@@ -1949,15 +1942,14 @@ forecast error covariance matrix, thereby mitigating the challenges
 associated with estimator selection, which is a prominent issue within
 the field of forecast reconciliation research.
 
-In our study, we use Gurobi, one of the widely used commercial solvers,
-to address NP-Hard MIP problems.
-
-As the structure of consideration gets bigger, solving these problems
-efficiently becomes challenging. Exact computation of these estimators
-remains a major hurdle. Despite various efforts in developing MIP-based
-approaches for solving \(L_0\)-regularized regression problems,
-extending these methods to incorporate additional constraints remains a
-challenge. We leave this aspect to be addressed in future research.
+As the number of series grows, solving these problems efficiently
+becomes challenging, and exact computation of these estimators remains a
+hurdle. In our study, we have used Gurobi, one of the widely used
+commercial solvers, to address NP-Hard MIP problems. Despite various
+efforts in developing MIP-based approaches for solving
+\(L_0\)-regularized regression problems, extending these methods to
+incorporate additional constraints remains a challenge. We leave this
+aspect to be addressed in future research.
 
 \hypertarget{references}{%
 \section*{References}\label{references}}
