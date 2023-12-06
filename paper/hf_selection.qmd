@@ -48,7 +48,7 @@ source("../R/analysis.R") # Other functions used for analysis
 #theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 ```
 
-\spacingset{1.65}
+\spacing{1.65}
 
 ## Introduction {#sec-introduction}
 
@@ -428,7 +428,6 @@ For each time series at the bottom level, we generate a total of $101$ observati
 #| results: hide
 #| fig-width: 9
 #| fig-height: 7
-#| fig-pos: "!b"
 #| fig-cap: An example hierarchical time series and its in-sample residuals in Setup 2.
 
 data <- readRDS("results/corr_data_neg.rds")
@@ -555,7 +554,6 @@ We construct a grouped hierarchy by disaggregating the number of unemployed pers
 #| results: hide
 #| fig-width: 10
 #| fig-height: 6.5
-#| fig-pos: "!htb"
 #| fig-cap: Australia unemployed persons, disaggregated by state and territory, and by duration of job search.
 
 labour_ts <- readRDS("results/labour_gts.rds")
@@ -655,7 +653,7 @@ labour_info |>
         align = rep("r", 8),
         escape = FALSE,
         linesep = "") |>
-  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 10) |>
+  kable_styling(latex_options = c("repeat_header"), font_size = 10) |>
   add_header_above(c("", "Number of time series retained" = 5,
                      "Optimal parameters" = 3),
                    align = "c")
@@ -677,7 +675,6 @@ Therefore, the hierarchy under consideration involves $76$ monthly time series a
 #| results: hide
 #| fig-width: 9
 #| fig-height: 7
-#| fig-pos: "!htb"
 #| fig-cap: Domestic tourism flows from January 1998 to December 2017 for the whole of Australia as well as the states.
 tourism_ts <- readRDS("results/tourism_hts.rds")
 tourism_ts |>
@@ -734,7 +731,6 @@ latex_table(rmse_tourism)
 #| results: hide
 #| fig-width: 10
 #| fig-height: 4
-#| fig-pos: "!htb"
 #| fig-cap: Average out-of-sample forecasting performance, measured in terms of RMSE (from 1- to 12-step-ahead), for each series across different reconciliation methods. Time series are arranged along the horizontal axis.
 
 tourism_heatmap <- readRDS("results/tourism_heatmap.rds")
@@ -787,7 +783,7 @@ tourism_info |>
         align = rep("r", 8),
         escape = FALSE,
         linesep = "") |>
-  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 10) |>
+  kable_styling(latex_options = c("repeat_header"), font_size = 10) |>
   add_header_above(c("", "Number of time series retained" = 5,
                      "Optimal parameters" = 3),
                    align = "c")

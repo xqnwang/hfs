@@ -101,7 +101,7 @@ latex_table <- function(out_all) {
     row_spec(2 + 4 * (0:length(candidates)), hline_after = TRUE) |>
     kable_paper(full_width = FALSE) |>
     kable_styling(
-      latex_options = c("hold_position", "repeat_header", "scale_down"),
+      latex_options = c("repeat_header", "scale_down"),
       font_size = 11
     ) |>
     row_spec(
@@ -277,7 +277,7 @@ latex_sim_nos_table <- function(z_out, n_out, label_out) {
       linesep = ""
     ) |>
     kable_styling(
-      latex_options = c("hold_position", "repeat_header"),
+      latex_options = c("repeat_header"),
       font_size = 11
     ) |>
     kable_paper(full_width = FALSE) |>
@@ -394,7 +394,7 @@ latex_corr_table <- function(out_all) {
     row_spec(2 + 4 * (0:length(candidates)), hline_after = TRUE) |>
     kable_paper(full_width = FALSE) |>
     kable_styling(
-      latex_options = c("hold_position", "repeat_header", "scale_down"),
+      latex_options = c("repeat_header", "scale_down"),
       font_size = 11
     ) |>
     row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(),

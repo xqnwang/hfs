@@ -12,4 +12,14 @@
 \usepackage{threeparttable}
 \makeatletter
 \g@addto@macro\TPT@defaults{\linespread{1}\selectfont}
+\def\fps@table{!tbh}
+\def\fps@figure{!tbh}
 \makeatother
+
+%% CAPTIONS
+\usepackage{setspace}
+\usepackage{caption}
+\DeclareCaptionStyle{italic}[justification=centering]
+ {labelfont={bf},textfont={it},labelsep=colon}
+\captionsetup[figure]{style=italic,format=hang,singlelinecheck=true,font=singlespacing}
+\captionsetup[table]{style=italic,format=hang,singlelinecheck=true,font=singlespacing}
