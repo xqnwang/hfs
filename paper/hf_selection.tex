@@ -4,8 +4,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-  12pt,
-  11pt]{article}
+  12pt]{article}
 
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
@@ -87,9 +86,9 @@
 \usepackage[margin = 2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
-\clubpenalty = 10000
-\widowpenalty = 10000
-\brokenpenalty = 10000
+%\clubpenalty = 10000
+%\widowpenalty = 10000
+%\brokenpenalty = 10000
 \usepackage{microtype}
 \usepackage[onlyrefs]{mathtools}
 \setlength{\tabcolsep}{0.11cm}
@@ -205,7 +204,7 @@ Linear forecast reconciliation, Optimization problem},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{December 6, 2023}
+\date{December 8, 2023}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.}\\
@@ -248,9 +247,9 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, frame hidden, breakable, enhanced, sharp corners, interior hidden]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, interior hidden, boxrule=0pt, frame hidden, borderline west={3pt}{0pt}{shadecolor}, enhanced, breakable]}{\end{tcolorbox}}\fi
 
-\spacing{1.65}
+\spacing{1.8}
 
 \hypertarget{sec-introduction}{%
 \section{Introduction}\label{sec-introduction}}
@@ -262,15 +261,14 @@ regional unemployment forecasts should be equal to the national
 unemployment forecast.
 
 \citet{Hyndman2011-sd} introduced optimal forecast reconciliation,
-whereby''base'' forecasts of all series are generated independently.
-These are then adjusted to satisfy the constraints, leading to a set of
+whereby ``base'' forecasts of all series are generated independently,
+and then adjusted to satisfy the constraints, leading to a set of
 coherent reconciled forecasts. Subsequent research has extended and
 developed the idea in the context of cross-sectional data
 \citep{Hyndman2016-cz, Wickramasuriya2019-fc, Panagiotelis2021-mf},
-temporal data \citep{Athanasopoulos2017-jj, Nystrup2020-di}, and
-cross-temporal data \citep{Di_Fonzo2023-vo}. Please refer to
-\citet{Athanasopoulos2023-sm} for a comprehensive introduction to the
-forecast reconciliation literature.
+temporal data \citep{Athanasopoulos2017-jj}, and cross-temporal data
+\citep{Di_Fonzo2023-vo}. \citet{Athanasopoulos2023-sm} provides a
+comprehensive introduction to the forecast reconciliation literature.
 
 Reconciliation is known to improve overall forecast accuracy in
 collections of time series with aggregation constraints. On average,
@@ -343,7 +341,7 @@ where \(\bm{A}\) is an \(n_a \times n_b\) \emph{aggregation matrix} with
 \(n = n_a + n_b\), and \(\bm{I}_{n_b}\) is an \(n_b\)-dimensional
 identity matrix.
 
-\begin{figure}
+\begin{figure}[!t]
 
 {\centering \includegraphics[width=0.4\textwidth,height=\textheight]{figs/hts_example.pdf}
 
@@ -393,17 +391,17 @@ weighting matrix and \(\bm{S}\) is an \(n \times n_b\) summing matrix
 reconciliation}\label{minimum-trace-reconciliation}}
 \addcontentsline{toc}{subsubsection}{Minimum trace reconciliation}
 
-Let the \(h\)-step-ahead in-sample \emph{base forecast errors} be
-defined as
-\(\hat{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h \mid t}\),
-and the \(h\)-step-ahead \emph{reconciled forecast errors} be given by
+Let
+\(\hat{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h \mid t}\)
+denote the \(h\)-step-ahead in-sample \emph{base forecast errors}, and
 \(\tilde{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h \mid t}\)
-for \(t = 1,2,\ldots,T-h\). \citet{Wickramasuriya2019-fc} formulated the
+denote the \(h\)-step-ahead \emph{reconciled forecast errors}, for
+\(t = 1,2,\ldots,T-h\). \citet{Wickramasuriya2019-fc} formulated the
 reconciliation problem as minimizing the trace (MinT) of the
 \(h\)-step-ahead covariance matrix of the reconciled forecast errors,
 \(\operatorname{Var}(\tilde{\bm{e}}_{t+h \mid t})\). Assuming the base
 forecasts are unbiased, and that we want the reconciled forecasts to be
-unbiased, the unique solution of the minimization problem is given by
+unbiased, the unique solution of the minimization problem is
 \begin{equation}\protect\hypertarget{eq-mint}{}{
 \bm{G}_h=\left(\bm{S}^{\prime} \bm{W}_h^{-1} \bm{S}\right)^{-1} \bm{S}^{\prime} \bm{W}_h^{-1},
 }\label{eq-mint}\end{equation} where \(\bm{W}_h\) is the positive
@@ -617,7 +615,7 @@ high-dimensional problem in which the number of features, denoted as}
 \(p = n_b \times n\)\emph{, is much larger than the number of
 observations,} \(n\)\emph{.}
 
-\emph{Proof.} We have\vspace{-0.4cm}\enlargethispage{0.4cm} \[
+\emph{Proof.} We have\vspace*{-0.4cm}\enlargethispage{0.4cm} \[
 \begin{aligned}
 & \operatorname{vec}\left(\hat{\bm{y}}\right) = \hat{\bm{y}}, \\
 & \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
@@ -1240,7 +1238,7 @@ observations, with the last observation serving as the test set, i.e.,
 obtained by aggregating the bottom-level series. The process is repeated
 \(500\) times for each candidate correlation, \(\rho\).
 
-\begin{figure}
+\begin{figure}[!b]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-corr-data-1.pdf}
 
@@ -1444,7 +1442,7 @@ of the top series, six series at the Duration level, eight series at the
 STT level, and \(48\) series at the Duration \(\times\) STT level,
 giving \(63\) time series in total, each of length \(163\) observations.
 
-\begin{figure}
+\begin{figure}[!t]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-labour-data-1.pdf}
 
@@ -1683,7 +1681,7 @@ aggregation, then disaggregated into seven states and territories
 \(n=111\). Each series in the hierarchy spans the period from January
 1998 to December 2017, with a total of \(240\) observations.
 
-\begin{figure}
+\begin{figure}[!b]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-data-1.pdf}
 
@@ -1936,11 +1934,11 @@ longer forecast horizons, while the Intuitive and Lasso methods yield
 results identical to the corresponding benchmark methods, as they tend
 to provide dense estimates.
 
-A remarkable feature of the proposed methods is their ability to reduce
-the disparities arising from using different estimates of the base
-forecast error covariance matrix, thereby mitigating the challenges
-associated with estimator selection, which is a prominent issue within
-the field of forecast reconciliation research.
+A feature of the proposed methods is their ability to reduce the
+disparities arising from using different estimates of the base forecast
+error covariance matrix, thereby mitigating the challenges associated
+with estimator selection, which is a prominent issue within the field of
+forecast reconciliation research.
 
 As the number of series grows, solving these problems efficiently
 becomes challenging, and exact computation of these estimators remains a

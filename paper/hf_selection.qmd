@@ -16,7 +16,7 @@ format:
   asa-pdf:
     keep-tex: true
     pdf-engine: pdflatex
-    classoption: 11pt
+    classoption: 12pt
     journal:
       blinded: false
 include-in-header: preamble.tex
@@ -48,13 +48,13 @@ source("../R/analysis.R") # Other functions used for analysis
 #theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 ```
 
-\spacing{1.65}
+\spacing{1.8}
 
 ## Introduction {#sec-introduction}
 
 Forecast reconciliation is a post-processing method that ensures forecasts of multivariate time series adhere to known linear constraints [@Hyndman2011-sd;@Wickramasuriya2019-fc]. For example, the sum of regional unemployment forecasts should be equal to the national unemployment forecast.
 
-@Hyndman2011-sd introduced optimal forecast reconciliation, whereby"base" forecasts of all series are generated independently. These are then adjusted to satisfy the constraints, leading to a set of coherent reconciled forecasts. Subsequent research has extended and developed the idea in the context of cross-sectional data [@Hyndman2016-cz; @Wickramasuriya2019-fc; @Panagiotelis2021-mf], temporal data [@Athanasopoulos2017-jj; @Nystrup2020-di], and cross-temporal data [@Di_Fonzo2023-vo]. Please refer to @Athanasopoulos2023-sm for a comprehensive introduction to the forecast reconciliation literature.
+@Hyndman2011-sd introduced optimal forecast reconciliation, whereby "base" forecasts of all series are generated independently, and then adjusted to satisfy the constraints, leading to a set of coherent reconciled forecasts. Subsequent research has extended and developed the idea in the context of cross-sectional data [@Hyndman2016-cz; @Wickramasuriya2019-fc; @Panagiotelis2021-mf], temporal data [@Athanasopoulos2017-jj], and cross-temporal data [@Di_Fonzo2023-vo]. @Athanasopoulos2023-sm provides a comprehensive introduction to the forecast reconciliation literature.
 
 Reconciliation is known to improve overall forecast accuracy in collections of time series with aggregation constraints. On average, when the base forecasts are unbiased, the mean squared reconciled forecast error from the minimum trace reconciliation method [@Wickramasuriya2019-fc] is lower than that from the base forecasts [@Wickramasuriya2021-am]. Most of the improvements attributed to reconciliation are observed in series with initially poor-performing base forecasts [@Athanasopoulos2017-jj]. In practice, it is not uncommon for some series to have poor base forecasts due to challenges such as model misspecification or low signal-to-noise ratio. In such cases, it may be advantageous to exclude the worst base forecasts when performing reconciliation. This is the motivation for our proposed methods.
 
@@ -72,7 +72,7 @@ $$
 $$
 for $t=1,2,\ldots,T$, where $T$ is the length of the time series, and $\bm{S}$ is an $n \times n_b$ *summing matrix* that defines the aggregation constraints. We can write the summing matrix as $\bm{S} = \left[\begin{array}{c}\bm{A} \\ \bm{I}_{n_b}\end{array}\right]$, where $\bm{A}$ is an $n_a \times n_b$ *aggregation matrix* with $n = n_a + n_b$, and $\bm{I}_{n_b}$ is an $n_b$-dimensional identity matrix.
 
-![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="40%"}
+![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="40%" fig-pos="!t"}
 
 For example, @fig-hts shows a simple hierarchy with $n = 7$, $n_b = 4$, $n_a = 3$, $\bm{y}_t = [y_{\text{Total},t}, y_{\text{A},t}, y_{\text{B},t}, y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, $\bm{b}_t = [y_{\text{AA},t}, y_{\text{AB},t}, y_{\text{BA},t}, y_{\text{BB},t}]^{\prime}$, and
 $$
@@ -97,7 +97,7 @@ where $\bm{G}_h$ is an $n_b \times n$ weighting matrix and $\bm{S}$ is an $n \ti
 
 #### Minimum trace reconciliation {-}
 
-Let the $h$-step-ahead in-sample *base forecast errors* be defined as $\hat{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h \mid t}$, and the $h$-step-ahead *reconciled forecast errors* be given by $\tilde{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h \mid t}$ for $t = 1,2,\ldots,T-h$. @Wickramasuriya2019-fc formulated the reconciliation problem as minimizing the trace (MinT) of the $h$-step-ahead covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\bm{e}}_{t+h \mid t})$. Assuming the base forecasts are unbiased, and that we want the reconciled forecasts to be unbiased, the unique solution of the minimization problem is given by
+Let $\hat{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h \mid t}$ denote the $h$-step-ahead in-sample *base forecast errors*, and $\tilde{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h \mid t}$ denote the $h$-step-ahead *reconciled forecast errors*, for $t = 1,2,\ldots,T-h$. @Wickramasuriya2019-fc formulated the reconciliation problem as minimizing the trace (MinT) of the $h$-step-ahead covariance matrix of the reconciled forecast errors, $\operatorname{Var}(\tilde{\bm{e}}_{t+h \mid t})$. Assuming the base forecasts are unbiased, and that we want the reconciled forecasts to be unbiased, the unique solution of the minimization problem is
 $$
 \bm{G}_h=\left(\bm{S}^{\prime} \bm{W}_h^{-1} \bm{S}\right)^{-1} \bm{S}^{\prime} \bm{W}_h^{-1},
 $$ {#eq-mint}
@@ -207,7 +207,7 @@ $$
 $$ {#eq-op_u_reg}
 *which is characterized as a high-dimensional problem in which the number of features, denoted as* $p = n_b \times n$*, is much larger than the number of observations,* $n$*.*
 
-*Proof.* We have\vspace{-0.4cm}\enlargethispage{0.4cm}
+*Proof.* We have\vspace*{-0.4cm}\enlargethispage{0.4cm}
 $$
 \begin{aligned}
 & \operatorname{vec}\left(\hat{\bm{y}}\right) = \hat{\bm{y}}, \\
@@ -427,6 +427,7 @@ For each time series at the bottom level, we generate a total of $101$ observati
 #| results: hide
 #| fig-width: 9
 #| fig-height: 7
+#| fig-pos: "!b"
 #| fig-cap: An example hierarchical time series and its in-sample residuals in Setup 2.
 
 data <- readRDS("results/corr_data_neg.rds")
@@ -553,6 +554,7 @@ We construct a grouped hierarchy by disaggregating the number of unemployed pers
 #| results: hide
 #| fig-width: 10
 #| fig-height: 6.5
+#| fig-pos: "!t"
 #| fig-cap: Australia unemployed persons, disaggregated by state and territory, and by duration of job search.
 
 labour_ts <- readRDS("results/labour_gts.rds")
@@ -670,6 +672,7 @@ Australian domestic tourism flows are measured as the number of overnight trips 
 #| results: hide
 #| fig-width: 9
 #| fig-height: 7
+#| fig-pos: "!b"
 #| fig-cap: Domestic tourism flows from January 1998 to December 2017 for the whole of Australia as well as the states.
 tourism_ts <- readRDS("results/tourism_hts.rds")
 tourism_ts |>
@@ -794,7 +797,7 @@ Under the unbiasedness constraint, we developed three reconciliation methods wit
 
 Simulation experiments and two empirical applications have demonstrated the superiority of the proposed methods over existing reconciliation methods that do not involve series selection. When model misspecification was introduced for some series in the hierarchy, our proposed methods guaranteed coherent forecasts that outperformed or, at least, matched their respective benchmark methods in the minimum trace reconciliation framework. In both empirical applications, where no apparent model misspecification was present, the Subset and Elasso methods were always preferred, particularly for aggregation levels and longer forecast horizons, while the Intuitive and Lasso methods yield results identical to the corresponding benchmark methods, as they tend to provide dense estimates.
 
-A remarkable feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue within the field of forecast reconciliation research.
+A feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue within the field of forecast reconciliation research.
 
 
 As the number of series grows, solving these problems efficiently becomes challenging, and exact computation of these estimators remains a hurdle. In our study, we have used Gurobi, one of the widely used commercial solvers, to address NP-Hard MIP problems. Despite various efforts in developing MIP-based approaches for solving $L_0$-regularized regression problems, extending these methods to incorporate additional constraints remains a challenge. We leave this aspect to be addressed in future research.
