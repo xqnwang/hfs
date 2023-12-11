@@ -801,6 +801,10 @@ A feature of the proposed methods is their ability to reduce the disparities ari
 
 As the number of series grows, solving these problems efficiently becomes challenging, and the exact computation of these estimators remains a hurdle. In our study, we have used Gurobi, one of the most widely used commercial solvers, to address NP-hard MIP problems. Despite various efforts to develop MIP-based approaches for solving $L_0$-regularized regression problems, extending these methods to incorporate additional constraints remains a challenge. We leave this aspect to be addressed in future research.
 
+## Conflict of Interest {.unnumbered}
+
+The authors report there are no competing interests to declare.
+
 ## References {.unnumbered}
 
 ::: {#refs}
