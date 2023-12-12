@@ -1,5 +1,6 @@
 \usepackage{bm}
 \usepackage{mathptmx}
+\usepackage[]{natbib}
 %\usepackage[margin = 2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
@@ -8,6 +9,14 @@
 %\brokenpenalty = 10000
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{15pt}
+\expandafter\def\expandafter\normalsize\expandafter{%
+  \normalsize  
+  \setlength\abovedisplayskip{1ex}
+  \setlength\belowdisplayskip{1ex}
+  \setlength\abovedisplayshortskip{1ex}
+  \setlength\belowdisplayshortskip{1ex}
+}
+\setlength{\bibsep}{0pt plus 0.3ex}
 \usepackage{microtype}
 \usepackage[onlyrefs]{mathtools}
 \setlength{\tabcolsep}{0.11cm}

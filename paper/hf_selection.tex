@@ -83,6 +83,7 @@
 \addtolength{\topmargin}{-1in}%
 \usepackage{bm}
 \usepackage{mathptmx}
+\usepackage[]{natbib}
 %\usepackage[margin = 2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
@@ -91,6 +92,14 @@
 %\brokenpenalty = 10000
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{15pt}
+\expandafter\def\expandafter\normalsize\expandafter{%
+  \normalsize  
+  \setlength\abovedisplayskip{1ex}
+  \setlength\belowdisplayskip{1ex}
+  \setlength\abovedisplayshortskip{1ex}
+  \setlength\belowdisplayshortskip{1ex}
+}
+\setlength{\bibsep}{0pt plus 0.3ex}
 \usepackage{microtype}
 \usepackage[onlyrefs]{mathtools}
 \setlength{\tabcolsep}{0.11cm}
@@ -254,7 +263,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, frame hidden, interior hidden, sharp corners, breakable, enhanced]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, borderline west={3pt}{0pt}{shadecolor}, frame hidden, breakable, sharp corners, enhanced, boxrule=0pt]}{\end{tcolorbox}}\fi
 
 \spacing{1.8}
 
@@ -263,9 +272,8 @@ Linear forecast reconciliation, Optimization problem
 
 Forecast reconciliation is a post-processing method that ensures
 forecasts of multivariate time series adhere to known linear constraints
-\citep{Hyndman2011-sd, Wickramasuriya2019-fc}. For example, the sum of
-regional unemployment forecasts should be equal to the national
-unemployment forecast.
+\citep{Hyndman2011-sd}. For example, the sum of regional unemployment
+forecasts should be equal to the national unemployment forecast.
 
 \citet{Hyndman2011-sd} introduced optimal forecast reconciliation,
 whereby ``base'' forecasts of all series are generated independently,
@@ -390,8 +398,7 @@ generate these forecasts, but in general they will not be coherent
 \begin{equation}\protect\hypertarget{eq-lr}{}{
 \tilde{\bm{y}}_{T+h \mid T} = \bm{S}\bm{G}_h\hat{\bm{y}}_{T+h \mid T},
 }\label{eq-lr}\end{equation} where \(\bm{G}_h\) is an \(n_b \times n\)
-weighting matrix and \(\bm{S}\) is an \(n \times n_b\) summing matrix
-\citep{Wickramasuriya2019-fc}.
+weighting matrix and \(\bm{S}\) is an \(n \times n_b\) summing matrix.
 
 \hypertarget{minimum-trace-reconciliation}{%
 \subsubsection*{Minimum trace
@@ -414,9 +421,8 @@ unbiased, the unique solution to the minimization problem is
 }\label{eq-mint}\end{equation} where \(\bm{W}_h\) is the positive
 definite covariance matrix of the \(h\)-step-ahead base forecast errors.
 
-The trace minimization problem can be reformulated as a least squares
-problem with linear constraints:
-\begin{equation}\protect\hypertarget{eq-mint_op}{}{
+The MinT problem can be reformulated as a least squares problem with
+linear constraints: \begin{equation}\protect\hypertarget{eq-mint_op}{}{
 \min_{\tilde{\bm{y}}_{T+h \mid T}} \quad \frac{1}{2}(\hat{\bm{y}}_{T+h \mid T}-\tilde{\bm{y}}_{T+h \mid T})^{\prime} \bm{W}_{h}^{-1}(\hat{\bm{y}}_{T+h \mid T}-\tilde{\bm{y}}_{T+h \mid T})
  \qquad \text{s.t.} \quad \tilde{\bm{y}}_{T+h \mid T}=\bm{S}\tilde{\bm{b}}_{T+h \mid T},
 }\label{eq-mint_op}\end{equation} where
@@ -657,17 +663,17 @@ regularization, and \(\|\cdot\|_2\) is the \(L_2\) norm. In a
 hierarchical or grouped time series context,
 \(\operatorname{vec}(\bm{G})\) has an inherent non-overlapping grouping
 structure, wherein each group corresponds to a single column of
-\(\bm{G}\), each of size \(n_b\). Therefore, we call this reconciliation
+\(\bm{G}\), each of size \(n_b\). Hence, we call this reconciliation
 method \emph{group best-subset selection with ridge regularization}. In
 the results that follow, we label the \textbf{Subset} method differently
-based on various estimators for \(\bm{W}\), referring to them as
+based on various \(\bm{W}\) estimators, referring to them as
 \textbf{OLS-subset}, \textbf{WLSs-subset}, \textbf{WLSv-subset},
 \textbf{MinT-subset}, and \textbf{MinTs-subset}, respectively.
 
 The inclusion of the ridge term in Equation \ref{eq-subset} is motivated
 by earlier work on best-subset selection
 \citep[e.g.,][]{Hazimeh2020-xd, Mazumder2022-hx}, which suggests that
-additional ridge regularization can mitigate the poor predictive
+additional ridge regularization helps mitigate the poor predictive
 performance of best-subset selection method in low SNR regimes.
 
 We present a Big-M based mixed integer programming (MIP) formulation for
@@ -711,9 +717,9 @@ For the parameter \(\lambda_0\), we consider a grid of \(k+1\) values,
 for \(j \in [k]\). So \(\lambda_{0}^{1},\dots,\lambda_{0}^{k}\) is a
 sequence decreasing on the log scale. We use a grid of six values for
 the parameter \(\lambda_2\),
-\(\{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}\). Therefore, we tune
-over a two-dimensional grid of \((k+1) \times 6\) values to find the
-optimal combination of \(\lambda_0\) and \(\lambda_2\).
+\(\{0, 10^{-2}, 10^{-1}, 10^{0}, 10^{1}, 10^{2}\}\). Thus, we tune over
+a two-dimensional grid of \((k+1) \times 6\) values to find the optimal
+combination of \(\lambda_0\) and \(\lambda_2\).
 
 \textbf{Computation details.} The MIQP problem in Equation
 \ref{eq-subset_mip} is NP-hard and computationally intensive.
@@ -723,17 +729,16 @@ larger instances, there has been impressive work on developing MIP-based
 approaches for solving \(L_0\)-regularized regression problem; e.g.,
 \citet{Bertsimas2016-ig}, \citet{Hazimeh2020-xd}, and
 \citet{Hazimeh2022-hc}. However, it is challenging to extend these
-approaches to accommodate additional constraints within the optimization
-problem. Despite the potential sluggishness of handling large instances
-with commercial MIP solvers, in our experiments, we use Gurobi to solve
-our problem in Equation \ref{eq-subset_mip} by configuring parameters
-such as MIPGap = \(0.001\) and TimeLimit = \(600\) seconds for cases
-with \(p > 1000\). This enables us to terminate the solver before
-reaching the global optimum and return a suboptimal solution instead.
-This strategy is motivated by our need to consider numerous parameter
-candidates, and the final solution will be validated against the
-training set, which prevents the utilization of a poor estimate of
-\(\bm{G}\).
+approaches to accommodate additional constraints in the optimization
+problem. Despite potential challenges in handling large instances with
+commercial MIP solvers, in our experiments, we use Gurobi to solve
+Equation \ref{eq-subset_mip} by configuring parameters such as MIPGap =
+\(0.001\) and TimeLimit = \(600\) seconds for cases with \(p > 1000\).
+This allows to terminate the solver before reaching the global optimum
+and return a suboptimal solution instead. This strategy is motivated by
+our need to consider numerous parameter candidates, and the final
+solution will be validated against the training set, which prevents the
+use of a poor estimate of \(\bm{G}\).
 
 \hypertarget{intuitive-method-with-l_0-regularization}{%
 \subsubsection*{\texorpdfstring{Intuitive method with \(L_0\)
@@ -751,12 +756,11 @@ either equal to 0 or 1. Taking the MinT solution in
 Equation~\ref{eq-mint}, we have
 \(\bar{\bm{G}} = (\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S})^{-1}\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\).
 Given fixed \(\bm{S}\) and estimation of \(\bm{W}\), \(\bar{\bm{G}}\) is
-entirely determined by \(\bm{A}\). By this way, when the \(j\)th
-diagonal element of \(\bm{A}\) equals zero, the \(j\)th column of
-\(\bar{\bm{G}}\) becomes entirely composed of zeros. Therefore, the
-optimization problem can be reduced to an integer quadratic programming
-(IQP) problem in which all of the variables are restricted to being
-integers: \begin{align*}
+entirely determined by \(\bm{A}\). Thus, when the \(j\)th diagonal
+element of \(\bm{A}\) is zero, the \(j\)th column of \(\bar{\bm{G}}\)
+becomes entirely composed of zeros. Therefore, the optimization problem
+can be reduced to an integer quadratic programming (IQP) problem where
+all of the variables are restricted to being integers: \begin{align*}
 \min_{\bm{A}} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\bm{S}\bar{\bm{G}}\hat{\bm{y}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\bm{S}\bar{\bm{G}}\hat{\bm{y}}\right) + \lambda_0 \sum_{j=1}^n \bm{A}_{jj} \\
 \text{s.t.} \quad & \bar{\bm{G}} = (\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S})^{-1}\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1} \qquad\text{and}\qquad \bar{\bm{G}}\bm{S} = \bm{I},
 \end{align*} where \(\lambda_0 \geq 0\) controls the number of nonzero
@@ -864,11 +868,11 @@ account for variations in scale across different time series in the
 structure.
 
 We compute the group lasso over \(k+1\) values of the tuning parameter
-\(\lambda\), and select the tuning parameter by optimizing the sum of
-squared reconciled forecast errors on a truncated training set,
-consisting only of \(\max\{h, s\}\) observations occurred prior to the
-forecast origin. The collection of candidate values for \(\lambda\)
-under consideration is \(\{\lambda^{1},\dots,\lambda^{k}, 0\}\), where
+\(\lambda\), and select the parameter by optimizing the sum of squared
+reconciled forecast errors on a truncated training set, consisting only
+of \(\max\{h, s\}\) observations occurred prior to the forecast origin.
+The collection of candidate values for \(\lambda\) is
+\(\{\lambda^{1},\dots,\lambda^{k}, 0\}\), where
 \(\lambda^{1} = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j\),
 \(\lambda^{k} = 0.0001\lambda^{1}\), and
 \(\lambda^{j} = \lambda^{1}(\lambda^{k} / \lambda^{1})^{(j-1) / (k-1)}\)
@@ -927,12 +931,11 @@ model. We rewrite the problem as \[
 \(\bm{S} \otimes \hat{\bm{Y}}\) as the covariate matrix. We denote this
 as \textbf{Elasso} in the results that follow.
 
-Upon relaxing the unbiasedness constraint, the number of non-zero column
-entries in the solution for \(\bm{G}\) may be less than the number of
-time series at the bottom level. This differs from the series selection
-methods with an unbiasedness constraint that we introduced in
-Section~\ref{sec-constrained}. In an extreme scenario, it can happen
-that the solution takes the form of a top-down
+Relaxing the unbiasedness constraint may result in fewer non-zero column
+entries in the \(\bm{G}\) solution than the number of series at the
+bottom level. This differs from constrained reconciliation methods
+detailed in Section~\ref{sec-constrained}. In an extreme scenario, the
+solution may take the form of a top-down
 \(\bm{G}_{TD}=[\bm{p} \mid \bm{O}_{n_b \times (n-1)}]\), where only the
 column corresponding to the top level (most aggregated level) retains
 non-zero values, and \(\bm{p} = (p_1, p_2, \ldots, p_{n_b})\) is a
@@ -941,33 +944,33 @@ errors.
 
 We also explored the empirical version of group best-subset selection
 with ridge regularization and the intuitive method with \(L_0\)
-regularization in which we do not impose the unbiasedness constraint. It
-is worth mentioning that \citet{Hazimeh2023-ie} presented a new
-algorithmic framework for formulating the group \(L_0\) problem with
-ridge regularization and provided the \textbf{L0Group} Python package
-for implementation. However, our experiments showed that this algorithm
-can not terminate within five hours for typical instances with
+regularization in which we omit the unbiasedness constraint. It is worth
+mentioning that \citet{Hazimeh2023-ie} presented an algorithmic
+framework for formulating the group \(L_0\) problem with ridge
+regularization and provided the \textbf{L0Group} Python package for
+implementation. However, our experiments showed that this algorithm can
+not terminate within five hours for typical instances with
 \(p \sim 10^4\). Therefore, in this paper, we only present the empirical
 group lasso method for series selection without the unbiasedness
 constraint.
 
-\textbf{Penalty weights and parameter tuning.} Similarly to the setup in
+\textbf{Penalty weights and parameter tuning.} Similar to the setup in
 the group lasso method, we assign different penalty weights to each
 group by setting \(w_j = 1/\|\bm{G}_{\cdot j}^{\text{OLS}}\|_2\), where
 \(\bm{G}^{\text{OLS}}\) is the solution obtained by the OLS estimator of
-\(\bm{W}\). Given a fixed tuning parameter value, we solve the target
+\(\bm{W}\). Given a fixed tuning parameter, we solve the target
 optimization problem by considering the initial \(T-T_v\) observations,
 where \(T_v = \max\{h, s\}\) for seasonal time series and
 \(T_v = \lfloor \frac{1}{10}T \rfloor\) for non-seasonal time series.
-Then we select the tuning parameter, \(\lambda\), by minimizing the sum
-of squared reconciled forecast errors on a truncated training set,
+Then the tuning parameter, \(\lambda\), is selected by minimizing the
+sum of squared reconciled forecast errors on a truncated training set,
 comprising only the \(T_v\) observations closest to the forecast origin.
-Specifically, we form the set of candidate values for \(\lambda\) as
+Specifically, for \(\lambda\) values, we consider
 \(\{\lambda^{1},\dots,\lambda^{k}, 0\}\), where
 \(\lambda^{1} = \max_{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\bm{S} \otimes \hat{\bm{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\bm{Y})\right\|_2 / w_j\),
 \(\lambda^{k} = 0.0001\lambda^{1}\), and
 \(\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}\)
-for \(j \in [k]\). Following the same derivation as in the proof of
+for \(j \in [k]\). Following the derivation in the proof of
 \textbf{Proposition 3}, \(\lambda^{1}\) is the smallest \(\lambda\)
 value such that all predictors in the empirical group lasso problem have
 zero coefficients, i.e., \(\bm{G} = \bm{O}\). Note that we need to
@@ -987,14 +990,14 @@ unbiasedness constraint.
 \hypertarget{sec-simulations}{%
 \section{Monte Carlo simulations}\label{sec-simulations}}
 
-To evaluate the performance of the proposed reconciliation methods with
-time series selection outlined in Section~\ref{sec-methodology}, we
-carry out two simulations with different designs. In both simulations,
-we consider a hierarchy comprising two levels of aggregation, as shown
-in Figure~\ref{fig-hts}. Specifically, the structure has four series at
-the bottom level, and seven series in total; i.e., \(n_b = 4\), and
-\(n = 7\). The bottom-level series are first generated and then summed
-to obtain aggregated series at higher levels.
+To assess the proposed reconciliation methods with time series selection
+outlined in Section~\ref{sec-methodology}, we carry out two simulations
+with different designs. Both simulations consider a hierarchy comprising
+two levels of aggregation, as shown in Figure~\ref{fig-hts}.
+Specifically, the structure has four series at the bottom level, and
+seven series in total; i.e., \(n_b = 4\), and \(n = 7\). The
+bottom-level series are first generated and then summed to obtain
+aggregated series at higher levels.
 
 Section~\ref{sec-sim1} considers a setup where the bottom-level series
 are generated using a structural time series model, but model
@@ -1016,13 +1019,13 @@ components defined by \begin{align*}
 \bm{v}_t & =\bm{v}_{t-1}+\bm{\zeta}_t, &&& \bm{\zeta}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\zeta^2 \bm{I}_4\right), \\
 \bm{\gamma}_t & =-\sum_{i=1}^{s-1} \bm{\gamma}_{t-i}+\bm{\omega}_t, &&& \bm{\omega}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\omega^2 \bm{I}_4\right),
 \end{align*} \(\bm{\varrho}_t\), \(\bm{\zeta}_t\), and \(\bm{\omega}_t\)
-are error terms independent of each other and over time, and the error
-term \(\bm{\eta}_t\) is generated independently from an
+are error terms independent of each other and over time, and
+\(\bm{\eta}_t\) is generated independently from an
 \(\text{ARIMA}(p,0,q)\) process, where \(p\) and \(q\) take values of
-\(0\) or \(1\) with equal probability. The coefficients in the ARIMA
-process are sampled randomly from a uniform distribution within the
-range \([0.5, 0.7]\), and the contemporaneous error covariance matrix is
-given by \[
+\(0\) or \(1\) with equal probability. Coefficients in the ARIMA process
+are randomly sampled from a uniform distribution within the range
+\([0.5, 0.7]\), and the contemporaneous error covariance matrix is given
+by \[
 \left[\begin{array}{llll}
 5 & 3 & 2 & 1 \\
 3 & 4 & 2 & 1 \\
@@ -1032,41 +1035,39 @@ given by \[
 \] which enables correlations among time series in a hierarchical
 structure.
 
-We set \(s = 4\) for quarterly data, with error variances
+We set \(s = 4\) for quarterly data with error variances
 \(\sigma_{\varrho}^2=2\), \(\sigma_\zeta^2=0.007\), and
-\(\sigma_\omega^2=7\). The initial values for \(\bm{\mu}_0\),
-\(\bm{v}_0\), \(\bm{\gamma}_0\), \(\bm{\gamma}_1\), and
-\(\bm{\gamma}_2\) are generated independently from a multivariate normal
-distribution with zero mean and identity covariance matrix. For each
-series at the bottom level, we generate a total of \(T+h = 180\)
-observations, with the last \(h = 16\) observations serving as the test
-set. Recall that the bottom-level series are aggregated to obtain the
-data for the aggregated levels. This process is repeated \(500\) times.
+\(\sigma_\omega^2=7\). Initial values for \(\bm{\mu}_0\), \(\bm{v}_0\),
+\(\bm{\gamma}_0\), \(\bm{\gamma}_1\), and \(\bm{\gamma}_2\) are
+generated independently from a multivariate normal distribution with
+zero mean and identity covariance matrix. For each bottom-level series,
+we generate a total of \(T+h = 180\) observations, with the last
+\(h = 16\) observations forming the test set. The bottom-level series
+are aggregated for data at higher levels. This process is repeated
+\(500\) times.
 
-We use ETS models to generate base forecasts for all time series in the
-hierarchy, using the default settings as implemented in the
-\textbf{forecast} R package \citep{Hyndman2023-fc}. To introduce model
-misspecification into our experiment, we deliberately undermine the
-quality of in-sample and out-of-sample forecasts (i.e., fitted values
-and base forecasts) for some specific time series. Specifically, we
-investigate three scenarios characterized by artificial model
-misspecifications, where a 1.5 multiplier is applied to in-sample and
-out-of-sample forecasts for a single series in each scenario; i.e.,
-series AA at the bottom level, series A at the middle level, and series
-Total at the top level, resulting in Scenarios A--C, respectively.
+We use ETS models to generate base forecasts in the hierarchy with the
+default settings from the \textbf{forecast} R package
+\citep{Hyndman2023-fc}. To introduce model misspecification, we
+deliberately undermine in-sample and out-of-sample forecasts (i.e.,
+fitted values and base forecasts) for specific time series in three
+scenarios. In each scenario, a 1.5 multiplier is applied to in-sample
+and out-of-sample forecasts for a single series; i.e., series AA at the
+bottom level, series A at the middle level, and series Total at the top
+level, resulting in Scenarios A--C, respectively.
 
-The results are summarized in Table~\ref{tbl-s1-rmse},
-Table~\ref{tbl-s2-rmse}, and Table~\ref{tbl-s3-rmse}, with each table
-reporting the average root mean squared error (RMSE) for each level as
-well as the whole structure (denoted as \emph{Average}). The \emph{Base}
-row shows the average RMSE of base forecasts, while entries below this
-row report the percentage decrease (negative) or increase (positive) in
-the average RMSE of reconciled forecasts compared to base forecasts. The
-\emph{BU} row uses a ``bottom-up'' approach, aggregating bottom-level
-base forecasts to form forecasts for the aggregated series. Notably, in
-each scenario, the largest improvements occur at the respective
-hierarchical level where model misspecification is introduced, while
-slightly deteriorating the performance at other levels.
+Table~\ref{tbl-s1-rmse}, Table~\ref{tbl-s2-rmse}, and
+Table~\ref{tbl-s3-rmse} summarize the results, each reporting the
+average root mean squared error (RMSE) for each level as well as the
+whole structure (denoted as \emph{Average}). The \emph{Base} row shows
+average RMSE of base forecasts, while entries below report the
+percentage decrease (negative) or increase (positive) in average RMSE of
+reconciled forecasts compared to base forecasts. The \emph{BU} row uses
+a ``bottom-up'' approach, aggregating bottom-level base forecasts to
+form higher level forecasts. Notably, in each scenario, the largest
+improvements occur at the respective hierarchical level with model
+misspecification, while slightly deteriorating the performance at other
+levels.
 
 \hypertarget{tbl-s1-rmse}{}
 \begin{table}
@@ -1194,21 +1195,20 @@ Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \end{table}
 
 In addition, we report the proportion of time series being selected from
-the implementation of our proposed methods in 500 simulation instances,
-as shown in Table~\ref{tbl-s1-selection}, Table~\ref{tbl-s2-selection},
-and Table~\ref{tbl-s3-selection}. Clearly, our proposed methods select
-fewer time series, and generally improve forecast accuracy, compared to
-the benchmark methods. Furthermore, we observe that the Subset methods
-tend to return fewer time series compared to the Intuitive and Lasso
-methods, which aligns with our expectations that the Intuitive and Lasso
-methods tend to produce dense estimates. Most importantly, depending on
-the scenario considered, the time series with model misspecification has
-been selected less often than others. For example, considering Scenario
-A, series AA is expected to be removed, while AB is expected to be
-retained. This allows us to obtain series AA via operations such as
+our proposed methods in 500 simulation instances, as shown in
+Table~\ref{tbl-s1-selection}, Table~\ref{tbl-s2-selection}, and
+Table~\ref{tbl-s3-selection}. Clearly, our methods select fewer time
+series, while enhancing forecast accuracy compared to benchmarks. Subset
+methods, in particular, tend to return fewer time series compared to the
+Intuitive and Lasso methods, which aligns with our expectations that the
+Intuitive and Lasso methods tend to produce dense estimates. Most
+importantly, depending on the scenario considered, the time series with
+model misspecification has been selected less often than others. For
+example, in Scenario A, series AA is expected to be removed while
+retaining AB. This allows obtaining series AA via operations such as
 A\(-\)AB, Total\(-\)B\(-\)AB, or Total\(-\)AB\(-\)BA\(-\)BB. The results
-in Table~\ref{tbl-s1-selection} align with our expectations, and show
-that series AA is dropped often, whereas AB is selected all the time.
+in Table~\ref{tbl-s1-selection} align with our expectations, showing
+frequent exclusion of series AA and consistent selection of AB.
 
 \hypertarget{sec-sim2}{%
 \subsection{Setup 2: Exploring the effect of
@@ -1418,15 +1418,14 @@ domestic tourism flows with a natural geographic hierarchy.
 
 The dataset from the Labour Force Survey was released by the Australian
 Bureau of Statistics, and comprises monthly data on the number of
-unemployed persons in Australia for the period from January 2010 to July
+unemployed persons in Australia from January 2010 to July
 2023\footnote{The Labour Force Survey data is publicly available at
   \url{https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023}.}.
-To deal with the few missing observations, we use linear interpolation
-between observations. Analysis of unemployment data by labour market
-region and duration of job search can provide valuable insights into
-regional disparities, and the structural nuances underlying
-unemployment. Forecast reconciliation is crucial in such a case to
-ensure aligned decision making.
+To deal with the few missing observations, we use linear interpolation.
+Analyzing unemployment data by labour market region and duration of job
+search offers valuable insights into regional disparities, and the
+structural nuances underlying unemployment. Forecast reconciliation is
+crucial in such a case to ensure aligned decision making.
 
 We construct a grouped hierarchy by disaggregating the number of
 unemployed persons over two independent attributes, duration of job
@@ -1655,10 +1654,9 @@ Elasso & 1 & 5 & 2 & 3 & 11 & 213.59 & - & -\\
 
 Table~\ref{tbl-labour-info} presents the number of series selected at
 each level and the optimal tuning parameter values obtained using
-different proposed methods. We only show results from the Subset and
-Elasso methods, as they had the best RMSE results. The variation in the
-scale of the optimal parameters for different methods comes from the
-difference in the scales of the objective function.
+proposed methods. We only show results from Subset and Elasso methods,
+as they return the best RMSE results. The scale variation in optimal
+parameters for different methods is due to objective function scales.
 Table~\ref{tbl-labour-info} shows that all Subset methods exclude some
 series. Remarkably, the Elasso method consistently outperforms the
 others overall, even though it uses only \(11\) series for forecast
@@ -1674,14 +1672,13 @@ forecast compared to those at the STT level.
 Australian domestic tourism flows are measured as the number of
 overnight trips Australians spend away from home. The data are sourced
 from the National Visitor Survey and collected through computer-assisted
-telephone interviews involving approximately \(120,000\) Australian
-residents aged \(15\) years and older. The data follow a geographic
-structure, with national total tourism flows in the top-level
-aggregation, then disaggregated into seven states and territories
-(referred to as \emph{State} level hereafter), further dividing into
-\(27\) zones, and finally, into \(76\) regions. Thus, \(n_b=76\) and
-\(n=111\). Each series in the hierarchy spans the period from January
-1998 to December 2017, with a total of \(240\) observations.
+telephone interviews with approximately \(120,000\) residents aged
+\(15\) years and older. The data follow a geographic structure, with
+national total tourism flows at the top level, then disaggregated into
+seven states and territories (referred to as \emph{State} level
+hereafter), further dividing into \(27\) zones, and finally into \(76\)
+regions. Thus, \(n_b=76\) and \(n=111\). Each series spans January 1998
+to December 2017, with a total of \(240\) observations.
 
 \begin{figure}[!b]
 
@@ -1694,14 +1691,13 @@ aggregation, then disaggregated into seven states and territories
 
 \end{figure}
 
-Figure~\ref{fig-tourism-data} shows the aggregate tourism flows for
-Australia as well as individual states, revealing pronounced seasonal
-patterns across the national total and states, albeit with varying
-seasonal patterns among the series. Notably, there was significant
-growth starting from around 2010 for the national total flow and some
-states such as NSW, VIC, QLD, and WA. While flows are relatively flat
-for SA, TAS, and NT. Moreover, the time plot displays that a large
-decrease in tourism flows for WA occurred in 2016.
+Figure~\ref{fig-tourism-data} shows aggregate tourism flows for
+Australia and individual states, revealing pronounced seasonal patterns
+across the national total and states, albeit with varying seasonal
+patterns among series. Notably, significant growth began around 2010 for
+the national total flow and some states such as NSW, VIC, QLD, and WA.
+While flows are relatively flat for SA, TAS, and NT. Moreover, the time
+plot displays a large decrease in tourism flows for WA in 2016.
 
 Our objective is to forecast tourism flows for each series in the
 geographic hierarchy while ensuring coherence across all levels. We use
@@ -1712,15 +1708,15 @@ forecast origin forward, month by month, until December 2016. The base
 forecasts are reconciled using our proposed methods and some existing
 reconciliation methods.
 
-Table~\ref{tbl-tourism-rmse-avg} reports the average RMSE values for
-base forecasts generated by ETS models, along with the percentage
-relative improvements obtained by each reconciliation method. Similar to
-Section~\ref{sec-labour}, the MinT method and the respective proposed
-methods are not considered due to their poor performance. The results
-show that the OLS method outperforms other benchmark methods like WLSs,
-WLSv and MinTs, despite the fact that WLSv and MinTs account for the
-in-sample covariance of base forecast errors. This highlights the
-effectiveness of the OLS method despite its simplicity.
+Table~\ref{tbl-tourism-rmse-avg} reports average RMSE values for base
+forecasts generated by ETS models, along with the percentage relative
+improvements obtained by each reconciliation method. Similar to
+Section~\ref{sec-labour}, MinT and the respective proposed methods are
+not considered due to their poor performance. The results show that the
+OLS method outperforms other benchmark methods like WLSs, WLSv and
+MinTs, despite the fact that WLSv and MinTs account for the in-sample
+covariance of base forecast errors. This highlights the effectiveness of
+the OLS method despite its simplicity.
 
 Overall, the Subset methods outperform their respective benchmark
 methods, especially for aggregation levels and longer forecast horizons.
@@ -1785,13 +1781,12 @@ EMinT & --2.3 & 24.3 & 58.8 & 59.7 & 36.9 & 56.0 & 68.4 & 70.4 & 51.4 & 64.6 & 7
 \end{threeparttable}}
 \end{table}
 
-We also present the results based on the last one training set spanning
-from January 2017 to December 2017 in Table~\ref{tbl-tourism-rmse}. The
-reconciliation errors across each of the \(111\) series and across the
-four levels in the hierarchy are displayed in
-Figure~\ref{fig-tourism-rmse}. The results show a similar performance to
-the average results described above, indicating relatively high-quality
-forecasts from the Subset and Elasso methods.
+Table~\ref{tbl-tourism-rmse} present the results based on the last one
+training set spanning from January 2017 to December 2017. The
+reconciliation errors across \(111\) series and across four hierarchy
+levels are displayed in Figure~\ref{fig-tourism-rmse}. The results show
+a similar performance to the average results described above, indicating
+relatively high-quality forecasts from Subset and Elasso methods.
 
 \hypertarget{tbl-tourism-rmse}{}
 \begin{table}
@@ -1923,18 +1918,17 @@ Additionally, we relaxed the unbiasedness constraint and proposed the
 empirical group lasso method (Elasso) which selects series based on
 in-sample observations and fitted values.
 
-Simulation experiments and two empirical applications have demonstrated
-the superiority of the proposed methods over existing reconciliation
-methods that do not involve series selection. When model
-misspecification was introduced for some series in the hierarchy, our
-proposed methods guaranteed coherent forecasts that outperformed or, at
-least, matched their respective benchmark methods in the minimum trace
-reconciliation framework. In both empirical applications, where no
-apparent model misspecification was present, the Subset and Elasso
-methods were always preferred, particularly for aggregation levels and
-longer forecast horizons, while the Intuitive and Lasso methods yield
-results identical to the corresponding benchmark methods, as they tend
-to provide dense estimates.
+Simulation experiments and two empirical applications demonstrated the
+superiority of the proposed methods over existing reconciliation methods
+without series selection. When model misspecification was introduced for
+some series in the hierarchy, our proposed methods ensured coherent
+forecasts that outperformed or, at least, matched their respective
+benchmarks in the minimum trace reconciliation framework. In both
+empirical applications, where no apparent model misspecification was
+present, Subset and Elasso methods were always preferred, especially for
+aggregation levels and longer forecast horizons, while Intuitive and
+Lasso methods yielded results identical to corresponding benchmarks, as
+they tend to provide dense estimates.
 
 A feature of the proposed methods is their ability to reduce the
 disparities arising from using different estimates of the base forecast
@@ -1951,11 +1945,13 @@ various efforts to develop MIP-based approaches for solving
 incorporate additional constraints remains a challenge. We leave this
 aspect to be addressed in future research.
 
-\hypertarget{conflict-of-interest}{%
-\section*{Conflict of Interest}\label{conflict-of-interest}}
-\addcontentsline{toc}{section}{Conflict of Interest}
+\hypertarget{supplementary-materials}{%
+\section*{Supplementary materials}\label{supplementary-materials}}
+\addcontentsline{toc}{section}{Supplementary materials}
 
-The authors report there are no competing interests to declare.
+\textbf{Appendix:} Summary of notation, proofs, additional results
+obtained in Sections 4 and 5, and a description of the hierarchy used in
+Section 5.(.pdf file)
 
 \hypertarget{references}{%
 \section*{References}\label{references}}
