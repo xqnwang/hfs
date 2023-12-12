@@ -25,9 +25,9 @@ $else$
 \title{\bf $title$}
 \author{
 $for(by-author)$
-$it.name.literal$$if(it.acknowledgements)$\thanks{$it.acknowledgements$}$endif$\\
-$for(it.affiliations)$$if(it.department)$$it.department$$if(it.name)$, $endif$$endif$$if(it.name)$$it.name$$endif$$if(it.department)$\\$elseif(it.name)$\\$endif$
-$endfor$$sep$and\\$endfor$}
+$it.name.literal$$if(it.acknowledgements)$\thanks{$it.acknowledgements$}$endif$ \vspace{0.2em}\\
+$for(it.affiliations)$$if(it.department)$$it.department$$if(it.name)$, $endif$$endif$$if(it.name)$$it.name$$endif$$if(it.department)$ \vspace{0.2em}\\$elseif(it.name)$\\$endif$
+$endfor$$sep$and \vspace{0.2em}\\$endfor$}
 \maketitle
 $endif$
 

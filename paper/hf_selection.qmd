@@ -4,7 +4,13 @@ author:
 - name: Xiaoqian Wang
   acknowledgements: |
       Corresponding author.
+  affiliations:
+    - name: Monash University
+      department: Department of Econometrics \& Business Statistics
 - name: Rob J Hyndman
+  affiliations:
+    - name: Monash University
+      department: Department of Econometrics \& Business Statistics
 - name: Shanika L Wickramasuriya
   affiliations:
     - name: Monash University
