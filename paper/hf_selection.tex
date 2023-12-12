@@ -263,7 +263,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, borderline west={3pt}{0pt}{shadecolor}, frame hidden, breakable, sharp corners, enhanced, boxrule=0pt]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, borderline west={3pt}{0pt}{shadecolor}, interior hidden, enhanced, sharp corners, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
 
 \spacing{1.8}
 
@@ -1345,21 +1345,20 @@ upon request.
 
 In Table~\ref{tbl-corr-selection-neg} and
 Table~\ref{tbl-corr-selection-pos}, we present the proportion of time
-series being selected by applying our proposed methods. As observed in
-Table~\ref{tbl-corr-selection-neg}, for OLS, WLSs, and WLSv estimators,
-the Subset and Intuitive methods are still able to exclude the series
+series being selected using our proposed methods.
+Table~\ref{tbl-corr-selection-neg} shows that, for OLS, WLSs, and WLSv
+estimators, Subset and Intuitive methods are able to exclude the series
 Total, A, and BA in some instances, in which small biases are introduced
-in model fitting, while essentially retaining the remaining series in
-the hierarchy. The Subset methods perform better than the Intuitive
-method in selection. The Lasso methods typically select all bottom-level
-series since they tend to yield dense estimates as discussed in
-Section~\ref{sec-constrained}. Elasso also selects all bottom-level
-series. When dealing with a high positive error correlation,
-Table~\ref{tbl-corr-selection-pos} shows that our methods still have the
-potential to do some selection but it becomes somewhat challenging to
-identify and exclude the series that should be omitted in
-reconciliation. Hence, our methods are preferred, particularly when the
-error correlation within the hierarchical structure is negative.
+in model fitting, while essentially retaining the remaining series.
+Subset methods outperform Intuitive methods in selection. Lasso methods
+typically select all bottom-level series, given their tendency to yield
+dense estimates, as discussed in Section~\ref{sec-constrained}. Elasso
+also selects all bottom-level series. When dealing with a high positive
+error correlation, Table~\ref{tbl-corr-selection-pos} shows that our
+methods still show potential for selection but it becomes somewhat
+challenging to identify and exclude the series that should be omitted in
+reconciliation. Hence, our methods are preferred, especially when the
+error correlation within the structure is negative.
 
 \hypertarget{tbl-corr-selection-neg}{}
 \begin{table}
@@ -1543,7 +1542,7 @@ EMinT & 43.1 & 17.6 & 9.9 & 10.2 & 36.8 & 25.2 & 27.9 & 24.1 & 16.8 & 15.1 & 6.2
 The average results are presented in Table~\ref{tbl-labour-rmse-avg}.
 The poor performance of the MinT method and associated methods can be
 attributed to the poor sample covariance estimator when the sample size
-is only slightly larger than the number of series in the structure. The
+is only slightly larger than the number of series in the structure.
 Subset methods using different estimators of \(\bm{G}\) generally
 improve forecast accuracy over their benchmark methods, particularly
 when focusing on aggregation levels, which are typically of paramount
@@ -1564,54 +1563,6 @@ forecasts observed at the top level and STT level. Overall, Elasso
 performs well for longer forecast horizons, but it is less effective for
 one-step-ahead forecasts.
 
-\hypertarget{tbl-labour-rmse}{}
-\begin{table}
-\caption{\label{tbl-labour-rmse}Out-of-sample forecast results on a single test set (from August 2022 to
-July 2023) for Australian labour force data. }\tabularnewline
-
-\centering
-\resizebox{\linewidth}{!}{
-\fontsize{11}{13}\selectfont
-\begin{threeparttable}
-\begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Duration} & \multicolumn{4}{c}{STT} & \multicolumn{4}{c}{Duration x STT} & \multicolumn{4}{c}{Average} \\
-\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17} \cmidrule(l{3pt}r{3pt}){18-21}
-Method & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12\\
-\midrule
-Base & 18.5 & 13.6 & 18.3 & 28.3 & 11.8 & 12.7 & 13.9 & 16.9 & 6.7 & 6.0 & 6.0 & 6.3 & 2.3 & 2.6 & 2.7 & 2.9 & 4.1 & 4.1 & 4.4 & 5.1\\
-BU & \textcolor{blue}{\textbf{--81.5}} & 33.4 & --19.9 & --45.0 & \textcolor{blue}{\textbf{--30.7}} & --9.2 & --7.9 & --10.1 & --12.9 & --10.4 & --13.4 & --13.5 & 0.0 & 0.0 & 0.0 & 0.0 & \textcolor{blue}{\textbf{--17.1}} & --2.8 & --5.9 & --9.3\\
-\midrule
-OLS & --16.2 & --14.2 & --13.4 & --10.4 & 2.5 & --2.6 & --2.7 & --0.6 & --1.8 & --0.9 & --1.9 & 0.3 & 6.7 & 5.1 & 5.1 & 4.9 & 2.1 & 0.7 & 0.4 & 1.1\\
-\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.0}} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--31.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--38.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.0}} & \cellcolor[HTML]{e6e3e3}{--1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{5.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.7}} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{--79.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--31.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--13.0}} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.9}} & \cellcolor[HTML]{e6e3e3}{4.9} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{13.2} & \cellcolor[HTML]{e6e3e3}{\textbf{  6.3}} & \cellcolor[HTML]{e6e3e3}{12.3} & \cellcolor[HTML]{e6e3e3}{12.4} & \cellcolor[HTML]{e6e3e3}{11.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.5}} & \cellcolor[HTML]{e6e3e3}{5.6} & \cellcolor[HTML]{e6e3e3}{4.7} & \cellcolor[HTML]{e6e3e3}{4.4}\\
-\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{--16.2} & \cellcolor[HTML]{e6e3e3}{--14.2} & \cellcolor[HTML]{e6e3e3}{--13.4} & \cellcolor[HTML]{e6e3e3}{--10.4} & \cellcolor[HTML]{e6e3e3}{2.5} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.9} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{5.1} & \cellcolor[HTML]{e6e3e3}{5.1} & \cellcolor[HTML]{e6e3e3}{4.9} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{1.1}\\
-\midrule
-WLSs & --60.6 & --29.4 & --44.0 & --38.6 & --12.0 & --7.6 & --6.9 & --5.9 & --6.5 & --8.1 & --9.4 & --8.0 & 3.2 & 1.7 & 1.7 & 1.6 & --7.7 & --4.4 & --5.8 & --5.9\\
-\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--61.6}} & \cellcolor[HTML]{e6e3e3}{--22.4} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--47.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--50.4}}} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--8.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{5.6} & \cellcolor[HTML]{e6e3e3}{4.1} & \cellcolor[HTML]{e6e3e3}{5.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.4}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.4} & \cellcolor[HTML]{e6e3e3}{--44.0} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--6.9} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--6.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--9.4} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--7.7} & \cellcolor[HTML]{e6e3e3}{--4.4} & \cellcolor[HTML]{e6e3e3}{--5.8} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.4} & \cellcolor[HTML]{e6e3e3}{--44.0} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--6.9} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--6.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--9.4} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--7.7} & \cellcolor[HTML]{e6e3e3}{--4.4} & \cellcolor[HTML]{e6e3e3}{--5.8} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
-\midrule
-WLSv & --60.6 & --29.1 & --41.4 & --36.6 & --14.5 & --8.7 & --5.6 & --4.8 & --3.3 & --6.8 & --8.0 & --7.0 & 5.5 & 2.6 & 2.6 & 3.1 & --6.7 & --4.0 & --4.5 & --4.6\\
-\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{--51.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--32.7}}} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--29.6} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--9.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}} & \cellcolor[HTML]{e6e3e3}{--1.1} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--4.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.1} & \cellcolor[HTML]{e6e3e3}{--41.4} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--8.7} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.0} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.1} & \cellcolor[HTML]{e6e3e3}{--41.4} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--8.7} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.0} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
-\midrule
-MinTs & --27.0 & --21.1 & --22.9 & --21.8 & --9.1 & --7.9 & --6.7 & --4.6 & --3.6 & --9.0 & --10.5 & --7.6 & 7.7 & 3.7 & 3.0 & 3.4 & --1.9 & --3.3 & --3.9 & --3.1\\
-\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--41.4}} & \cellcolor[HTML]{e6e3e3}{--9.3} & \cellcolor[HTML]{e6e3e3}{--17.8} & \cellcolor[HTML]{e6e3e3}{\textbf{--45.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.2}} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.8}} & \cellcolor[HTML]{e6e3e3}{--7.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  5.3}} & \cellcolor[HTML]{e6e3e3}{4.7} & \cellcolor[HTML]{e6e3e3}{3.8} & \cellcolor[HTML]{e6e3e3}{3.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.3}} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.1}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{--27.0} & \cellcolor[HTML]{e6e3e3}{--21.1} & \cellcolor[HTML]{e6e3e3}{--22.9} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--9.1} & \cellcolor[HTML]{e6e3e3}{--7.9} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--3.6} & \cellcolor[HTML]{e6e3e3}{--9.0} & \cellcolor[HTML]{e6e3e3}{--10.5} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{7.7} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{3.0} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{--27.0} & \cellcolor[HTML]{e6e3e3}{--21.1} & \cellcolor[HTML]{e6e3e3}{--22.9} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--9.1} & \cellcolor[HTML]{e6e3e3}{--7.9} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--3.6} & \cellcolor[HTML]{e6e3e3}{--9.0} & \cellcolor[HTML]{e6e3e3}{--10.5} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{7.7} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{3.0} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
-\midrule
-EMinT & --60.4 & --14.0 & 1.4 & --29.9 & --6.0 & 12.0 & 10.7 & --6.7 & 16.7 & --0.9 & --12.4 & \textcolor{blue}{\textbf{--21.0}} & 23.3 & 17.2 & 16.7 & 10.1 & 7.7 & 10.8 & 9.0 & --3.7\\
-\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.3}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--25.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--0.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--4.9}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--13.2}}}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
-\end{table}
-
 We provide results based on the final test set spanning from August 2022
 to July 2023 in Table~\ref{tbl-labour-rmse}. This is the latest
 available data, enabling us to use more data for model training and
@@ -1625,32 +1576,6 @@ tendency to offer dense estimates. Surprisingly, when relaxing the
 unbiasedness constraint, Elasso ranks the best and demonstrates
 significant improvement over EMinT, and outperforms other methods across
 almost all levels except for the top level.
-
-\hypertarget{tbl-labour-info}{}
-\begin{table}
-\caption{\label{tbl-labour-info}Number of time series selected using different proposed methods and the
-optimal parameter values identified in the labour application,
-considering a single test set (from August 2022 to July 2023). The None
-row shows the original number of series in the structure. }\tabularnewline
-
-\centering\begingroup\fontsize{10}{12}\selectfont
-
-\begin{tabular}{lrrrrrrrr}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{5}{c}{Number of time series retained} & \multicolumn{3}{c}{Optimal parameters} \\
-\cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
-  & Top & Duration & STT & Duration x STT & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
-\midrule
-None & 1 & 6 & 8 & 48 & 63 & - & - & -\\
-OLS-subset & 0 & 5 & 1 & 48 & 54 & - & 4.16 & 1.00\\
-WLSs-subset & 0 & 5 & 1 & 46 & 52 & - & 0.38 & 0.10\\
-WLSv-subset & 1 & 5 & 7 & 48 & 61 & - & 0.51 & 1.00\\
-MinTs-subset & 0 & 1 & 1 & 47 & 49 & - & 0.03 & 0.01\\
-Elasso & 1 & 5 & 2 & 3 & 11 & 213.59 & - & -\\
-\bottomrule
-\end{tabular}
-\endgroup{}
-\end{table}
 
 Table~\ref{tbl-labour-info} presents the number of series selected at
 each level and the optimal tuning parameter values obtained using
@@ -1680,7 +1605,7 @@ hereafter), further dividing into \(27\) zones, and finally into \(76\)
 regions. Thus, \(n_b=76\) and \(n=111\). Each series spans January 1998
 to December 2017, with a total of \(240\) observations.
 
-\begin{figure}[!b]
+\begin{figure}
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-data-1.pdf}
 
@@ -1713,24 +1638,23 @@ forecasts generated by ETS models, along with the percentage relative
 improvements obtained by each reconciliation method. Similar to
 Section~\ref{sec-labour}, MinT and the respective proposed methods are
 not considered due to their poor performance. The results show that the
-OLS method outperforms other benchmark methods like WLSs, WLSv and
-MinTs, despite the fact that WLSv and MinTs account for the in-sample
+OLS method outperforms other benchmarks like WLSs, WLSv and MinTs,
+despite the fact that WLSv and MinTs account for the in-sample
 covariance of base forecast errors. This highlights the effectiveness of
 the OLS method despite its simplicity.
 
 Overall, the Subset methods outperform their respective benchmark
-methods, especially for aggregation levels and longer forecast horizons.
-The only exception is the OLS-subset method, which slightly reduces
-overall accuracy while still improving top-level forecasts. Moreover,
-the Intuitive and Lasso methods produce results almost identical to the
-corresponding benchmark methods, which is not surprising as ETS models
-typically do not yield extremely poor forecasts, making them challenging
-to be selected out using methods that tend to return dense estimates.
-When we relax the unbiasedness constraint, EMinT consistently performs
-the worst across all levels due to the evident lack of joint weak
-stationarity among the series in the hierarchy. The Elasso method
-presents significant improvement compared to the EMinT method, and it
-also outperforms other methods across almost all levels except for the
+methods, especially for aggregation levels and longer horizons. The only
+exception is the OLS-subset method, which slightly reduces overall
+accuracy while improving top-level forecasts. Intuitive and Lasso
+methods produce results almost identical to the corresponding
+benchmarks, which is not surprising as ETS models rarely yield extremely
+poor forecasts, making them challenging to be selected out using methods
+that tend to return dense estimates. When we relax the unbiasedness
+constraint, EMinT consistently performs the worst across all levels due
+to the evident lack of joint weak stationarity among the series in the
+hierarchy. The Elasso method shows significant improvement compared to
+EMinT, and outperforms other methods across almost all levels except the
 bottom level.
 
 \hypertarget{tbl-tourism-rmse-avg}{}
@@ -1788,55 +1712,7 @@ levels are displayed in Figure~\ref{fig-tourism-rmse}. The results show
 a similar performance to the average results described above, indicating
 relatively high-quality forecasts from Subset and Elasso methods.
 
-\hypertarget{tbl-tourism-rmse}{}
-\begin{table}
-\caption{\label{tbl-tourism-rmse}Out-of-sample forecast results on a single test set (from January 2017
-to December 2017) for Australian domestic tourism data. }\tabularnewline
-
-\centering
-\resizebox{\linewidth}{!}{
-\fontsize{11}{13}\selectfont
-\begin{threeparttable}
-\begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{State} & \multicolumn{4}{c}{Zone} & \multicolumn{4}{c}{Region} & \multicolumn{4}{c}{Average} \\
-\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17} \cmidrule(l{3pt}r{3pt}){18-21}
-Method & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12\\
-\midrule
-Base & 1158.2 & 716.6 & 1279.5 & 1907.6 & 452.7 & 323.3 & 349.9 & 424.8 & 165.5 & 163.6 & 160.7 & 179.7 & 100.8 & 89.4 & 88.2 & 94.1 & 148.3 & 127.9 & 133.1 & 152.1\\
-BU & 89.1 & 132.8 & 53.4 & 42.0 & --4.6 & 10.3 & 17.0 & 19.7 & 1.1 & --2.4 & 0.4 & 1.0 & 0.0 & 0.0 & 0.0 & 0.0 & 5.7 & 7.6 & 7.6 & 8.5\\
-\midrule
-OLS & --4.7 & --0.4 & 0.5 & 1.4 & --3.0 & --3.9 & --1.6 & --1.5 & --2.1 & --4.2 & --5.6 & --7.5 & 1.0 & --0.4 & --1.9 & --3.2 & --1.0 & --2.1 & --2.7 & --3.6\\
-\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{  --1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --14.1}} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.9}} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--3.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.7}} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{--2.3} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{--1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
-\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
-\midrule
-WLSs & 25.1 & 55.2 & 20.8 & 19.1 & --15.8 & --5.0 & 3.5 & 6.2 & --5.9 & --5.4 & --4.7 & --5.0 & --0.2 & --0.8 & --1.6 & --2.2 & --3.0 & --0.1 & 0.3 & 0.9\\
-\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 18.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{   0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{  --7.8}} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.2}} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.5}} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.5}} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.5}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{55.2} & \cellcolor[HTML]{e6e3e3}{20.8} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--5.4} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.9}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{55.2} & \cellcolor[HTML]{e6e3e3}{20.8} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--5.4} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.9}\\
-\midrule
-WLSv & 38.2 & 76.2 & 29.6 & 25.6 & --17.4 & --3.1 & 7.0 & 9.9 & --5.0 & --4.3 & --3.1 & --3.2 & --4.2 & --1.6 & --1.8 & --2.1 & --3.9 & 1.3 & 2.0 & 2.8\\
-\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 34.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{  10.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{   8.5}} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.4}} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.7}} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.4}} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.2}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{76.2} & \cellcolor[HTML]{e6e3e3}{29.6} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{2.8}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{76.2} & \cellcolor[HTML]{e6e3e3}{29.6} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{2.8}\\
-\midrule
-MinTs & 20.6 & 53.6 & 21.6 & 19.0 & \textcolor{blue}{\textbf{--22.2}} & --7.2 & 3.5 & 6.3 & \textcolor{blue}{\textbf{--12.1}} & --6.6 & --5.1 & --5.3 & \textcolor{blue}{\textbf{ --5.3}} & --2.6 & --2.8 & --3.1 & --8.6 & --1.8 & --0.3 & 0.4\\
-\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 20.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{   6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{   5.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.1}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --2.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.9}}} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --4.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --3.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.3}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{53.6} & \cellcolor[HTML]{e6e3e3}{21.6} & \cellcolor[HTML]{e6e3e3}{19.0} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{--6.6} & \cellcolor[HTML]{e6e3e3}{--5.1} & \cellcolor[HTML]{e6e3e3}{--5.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{0.4}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{53.6} & \cellcolor[HTML]{e6e3e3}{21.6} & \cellcolor[HTML]{e6e3e3}{19.0} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{--6.6} & \cellcolor[HTML]{e6e3e3}{--5.1} & \cellcolor[HTML]{e6e3e3}{--5.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{0.4}\\
-\midrule
-EMinT & 116.5 & 97.8 & --15.8 & --13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 68.4 & 60.6 & 54.2 & 122.1 & 103.1 & 90.2 & 78.2 & 123.2 & 93.9 & 67.9 & 55.5\\
-\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --84.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--50.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --16.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --16.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --9.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --8.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --7.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.4}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --3.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --6.7}}}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
-\end{table}
-
-\begin{figure}
+\begin{figure}[!t]
 
 {\centering \includegraphics{hf_selection_files/figure-pdf/fig-tourism-rmse-1.pdf}
 
@@ -1849,63 +1725,34 @@ arranged along the horizontal axis.}
 
 \end{figure}
 
-Additionally, Table~\ref{tbl-tourism-info} presents a summary of the
-number of series selected using different proposed methods for each
-level as well as the optimal tuning parameter values identified. Here we
-only give the results of the Subset and Elasso methods since they are
-useful in the tourism application. Note that the variation in the scale
-of the optimal parameters for different methods comes from the
-difference in the scales of the objective. We observe that the
-OLS-subset and WLSs-subset methods exclude some series at the State and
-Zone levels for forecast reconciliation. In contrast, the WLSv and MinTs
-methods retain all series, which is reasonable because they take into
-account the in-sample covariance, making themselves allow for larger
-adjustments made to series with large in-sample forecast error variances
-in forecast reconciliation. Nonetheless, the WLSv and MinTs methods can
-still enhance the quality of reconciled forecasts due to the inclusion
-of shrinkage through additional ridge regularization. It is surprising
+Additionally, Table~\ref{tbl-tourism-info} summarizes the number of
+series selected using proposed methods as well as the optimal tuning
+parameter values identified. Here we focus on the Subset and Elasso
+methods since they are useful in the tourism application. Note that the
+scale variation in optimal parameters for different methods comes from
+to objective function scales. We observe that the OLS-subset and
+WLSs-subset methods exclude some series at the State and Zone levels for
+reconciliation. In contrast, the WLSv and MinTs methods retain all
+series, benefiting from the consideration of in-sample covariance, which
+enables larger adjustments made to series with large in-sample forecast
+error variances during reconciliation. Nonetheless, the WLSv and MinTs
+methods can still enhance the quality of reconciled forecasts due to the
+inclusion of shrinkage through ridge regularization. It is surprising
 that Elasso performs exceptionally well despite using only \(13\) series
 for reconciliation.
-
-\hypertarget{tbl-tourism-info}{}
-\begin{table}
-\caption{\label{tbl-tourism-info}Number of time series selected using different proposed methods and the
-optimal parameter values identified in the tourism application,
-considering a single test set (from January 2017 to December 2017). The
-None row shows the original number of series in the structure. }\tabularnewline
-
-\centering\begingroup\fontsize{10}{12}\selectfont
-
-\begin{tabular}{lrrrrrrrr}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{5}{c}{Number of time series retained} & \multicolumn{3}{c}{Optimal parameters} \\
-\cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
-  & Top & State & Zone & Region & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
-\midrule
-None & 1 & 7 & 27 & 76 & 111 & - & - & -\\
-OLS-subset & 1 & 2 & 13 & 76 & 92 & - & 27.98 & 10.00\\
-WLSs-subset & 1 & 1 & 15 & 76 & 93 & - & 18.73 & 10.00\\
-WLSv-subset & 1 & 7 & 27 & 76 & 111 & - & 0.03 & 0.01\\
-MinTs-subset & 1 & 7 & 27 & 76 & 111 & - & 0.05 & 0.01\\
-Elasso & 1 & 4 & 0 & 8 & 13 & 71759.21 & - & -\\
-\bottomrule
-\end{tabular}
-\endgroup{}
-\end{table}
 
 \hypertarget{sec-conclusion}{%
 \section{Conclusion}\label{sec-conclusion}}
 
-In the existing literature on forecast reconciliation, we map all base
+In existing forecast reconciliation literature, we map all base
 forecasts into bottom-level disaggregated forecasts, which are then
 summed to yield coherent forecasts for the entire structure. The mapping
 step can be conceptually regarded as a forecast combination. It is
 common that the base forecasts for some time series perform poorly. This
-may reduce the overall effectiveness of forecast reconciliation methods.
-In this paper, we have addressed this issue by introducing a selection
-mechanism to forecast reconciliation; i.e., incorporating time series
-selection when reconciling forecasts, while ensuring the generation of
-coherent forecasts for all series.
+may reduce overall reconciliation effectiveness. In this paper, we have
+addressed this issue by introducing a selection mechanism to forecast
+reconciliation; i.e., incorporating time series selection when
+reconciling forecasts, while ensuring coherent forecasts for all series.
 
 Under the unbiasedness constraint, we developed three reconciliation
 methods with selection mechanisms to automatically remove some base
@@ -1949,9 +1796,9 @@ aspect to be addressed in future research.
 \section*{Supplementary materials}\label{supplementary-materials}}
 \addcontentsline{toc}{section}{Supplementary materials}
 
-\textbf{Appendix:} Summary of notation, proofs, additional results
-obtained in Sections 4 and 5, and a description of the hierarchy used in
-Section 5.(.pdf file)
+\textbf{Appendix:} Additional results obtained in
+Section~\ref{sec-simulations} and Section~\ref{sec-applications}. (.pdf
+file)
 
 \hypertarget{references}{%
 \section*{References}\label{references}}
@@ -1973,8 +1820,8 @@ Section 5.(.pdf file)
 \section*{Appendix}\label{appendix}}
 \addcontentsline{toc}{section}{Appendix}
 
-The section provides additional results for the simulation data in
-Section~\ref{sec-simulations}.
+The section provides additional results obtained in
+Section~\ref{sec-simulations} and Section~\ref{sec-applications}.
 
 \hypertarget{tbl-s2-rmse}{}
 \begin{table}
@@ -2206,6 +2053,154 @@ Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width
 \item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
 \end{tablenotes}
 \end{threeparttable}
+\endgroup{}
+\end{table}
+
+\hypertarget{tbl-labour-rmse}{}
+\begin{table}
+\caption{\label{tbl-labour-rmse}Out-of-sample forecast results on a single test set (from August 2022 to
+July 2023) for Australian labour force data. }\tabularnewline
+
+\centering
+\resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
+\begin{threeparttable}
+\begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Duration} & \multicolumn{4}{c}{STT} & \multicolumn{4}{c}{Duration x STT} & \multicolumn{4}{c}{Average} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17} \cmidrule(l{3pt}r{3pt}){18-21}
+Method & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12\\
+\midrule
+Base & 18.5 & 13.6 & 18.3 & 28.3 & 11.8 & 12.7 & 13.9 & 16.9 & 6.7 & 6.0 & 6.0 & 6.3 & 2.3 & 2.6 & 2.7 & 2.9 & 4.1 & 4.1 & 4.4 & 5.1\\
+BU & \textcolor{blue}{\textbf{--81.5}} & 33.4 & --19.9 & --45.0 & \textcolor{blue}{\textbf{--30.7}} & --9.2 & --7.9 & --10.1 & --12.9 & --10.4 & --13.4 & --13.5 & 0.0 & 0.0 & 0.0 & 0.0 & \textcolor{blue}{\textbf{--17.1}} & --2.8 & --5.9 & --9.3\\
+\midrule
+OLS & --16.2 & --14.2 & --13.4 & --10.4 & 2.5 & --2.6 & --2.7 & --0.6 & --1.8 & --0.9 & --1.9 & 0.3 & 6.7 & 5.1 & 5.1 & 4.9 & 2.1 & 0.7 & 0.4 & 1.1\\
+\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.0}} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--31.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--38.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.0}} & \cellcolor[HTML]{e6e3e3}{--1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{5.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.7}} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{--79.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--31.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--13.0}} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.9}} & \cellcolor[HTML]{e6e3e3}{4.9} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{13.2} & \cellcolor[HTML]{e6e3e3}{\textbf{  6.3}} & \cellcolor[HTML]{e6e3e3}{12.3} & \cellcolor[HTML]{e6e3e3}{12.4} & \cellcolor[HTML]{e6e3e3}{11.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.5}} & \cellcolor[HTML]{e6e3e3}{5.6} & \cellcolor[HTML]{e6e3e3}{4.7} & \cellcolor[HTML]{e6e3e3}{4.4}\\
+\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{--16.2} & \cellcolor[HTML]{e6e3e3}{--14.2} & \cellcolor[HTML]{e6e3e3}{--13.4} & \cellcolor[HTML]{e6e3e3}{--10.4} & \cellcolor[HTML]{e6e3e3}{2.5} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.9} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{5.1} & \cellcolor[HTML]{e6e3e3}{5.1} & \cellcolor[HTML]{e6e3e3}{4.9} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{1.1}\\
+\midrule
+WLSs & --60.6 & --29.4 & --44.0 & --38.6 & --12.0 & --7.6 & --6.9 & --5.9 & --6.5 & --8.1 & --9.4 & --8.0 & 3.2 & 1.7 & 1.7 & 1.6 & --7.7 & --4.4 & --5.8 & --5.9\\
+\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--61.6}} & \cellcolor[HTML]{e6e3e3}{--22.4} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--47.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--50.4}}} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--8.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{5.6} & \cellcolor[HTML]{e6e3e3}{4.1} & \cellcolor[HTML]{e6e3e3}{5.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.4}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.4} & \cellcolor[HTML]{e6e3e3}{--44.0} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--6.9} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--6.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--9.4} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--7.7} & \cellcolor[HTML]{e6e3e3}{--4.4} & \cellcolor[HTML]{e6e3e3}{--5.8} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.4} & \cellcolor[HTML]{e6e3e3}{--44.0} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--6.9} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--6.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--9.4} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--7.7} & \cellcolor[HTML]{e6e3e3}{--4.4} & \cellcolor[HTML]{e6e3e3}{--5.8} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
+\midrule
+WLSv & --60.6 & --29.1 & --41.4 & --36.6 & --14.5 & --8.7 & --5.6 & --4.8 & --3.3 & --6.8 & --8.0 & --7.0 & 5.5 & 2.6 & 2.6 & 3.1 & --6.7 & --4.0 & --4.5 & --4.6\\
+\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{--51.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--32.7}}} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--29.6} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--9.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}} & \cellcolor[HTML]{e6e3e3}{--1.1} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--4.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.1} & \cellcolor[HTML]{e6e3e3}{--41.4} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--8.7} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.0} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.1} & \cellcolor[HTML]{e6e3e3}{--41.4} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--8.7} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.0} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
+\midrule
+MinTs & --27.0 & --21.1 & --22.9 & --21.8 & --9.1 & --7.9 & --6.7 & --4.6 & --3.6 & --9.0 & --10.5 & --7.6 & 7.7 & 3.7 & 3.0 & 3.4 & --1.9 & --3.3 & --3.9 & --3.1\\
+\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--41.4}} & \cellcolor[HTML]{e6e3e3}{--9.3} & \cellcolor[HTML]{e6e3e3}{--17.8} & \cellcolor[HTML]{e6e3e3}{\textbf{--45.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.2}} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.8}} & \cellcolor[HTML]{e6e3e3}{--7.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  5.3}} & \cellcolor[HTML]{e6e3e3}{4.7} & \cellcolor[HTML]{e6e3e3}{3.8} & \cellcolor[HTML]{e6e3e3}{3.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.3}} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.1}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{--27.0} & \cellcolor[HTML]{e6e3e3}{--21.1} & \cellcolor[HTML]{e6e3e3}{--22.9} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--9.1} & \cellcolor[HTML]{e6e3e3}{--7.9} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--3.6} & \cellcolor[HTML]{e6e3e3}{--9.0} & \cellcolor[HTML]{e6e3e3}{--10.5} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{7.7} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{3.0} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{--27.0} & \cellcolor[HTML]{e6e3e3}{--21.1} & \cellcolor[HTML]{e6e3e3}{--22.9} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--9.1} & \cellcolor[HTML]{e6e3e3}{--7.9} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--3.6} & \cellcolor[HTML]{e6e3e3}{--9.0} & \cellcolor[HTML]{e6e3e3}{--10.5} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{7.7} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{3.0} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
+\midrule
+EMinT & --60.4 & --14.0 & 1.4 & --29.9 & --6.0 & 12.0 & 10.7 & --6.7 & 16.7 & --0.9 & --12.4 & \textcolor{blue}{\textbf{--21.0}} & 23.3 & 17.2 & 16.7 & 10.1 & 7.7 & 10.8 & 9.0 & --3.7\\
+\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.3}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--25.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--0.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--4.9}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--13.2}}}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}
+
+\hypertarget{tbl-labour-info}{}
+\begin{table}
+\caption{\label{tbl-labour-info}Number of time series selected using different proposed methods and the
+optimal parameter values identified in the labour application,
+considering a single test set (from August 2022 to July 2023). The None
+row shows the original number of series in the structure. }\tabularnewline
+
+\centering\begingroup\fontsize{10}{12}\selectfont
+
+\begin{tabular}{lrrrrrrrr}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{5}{c}{Number of time series retained} & \multicolumn{3}{c}{Optimal parameters} \\
+\cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
+  & Top & Duration & STT & Duration x STT & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
+\midrule
+None & 1 & 6 & 8 & 48 & 63 & - & - & -\\
+OLS-subset & 0 & 5 & 1 & 48 & 54 & - & 4.16 & 1.00\\
+WLSs-subset & 0 & 5 & 1 & 46 & 52 & - & 0.38 & 0.10\\
+WLSv-subset & 1 & 5 & 7 & 48 & 61 & - & 0.51 & 1.00\\
+MinTs-subset & 0 & 1 & 1 & 47 & 49 & - & 0.03 & 0.01\\
+Elasso & 1 & 5 & 2 & 3 & 11 & 213.59 & - & -\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\hypertarget{tbl-tourism-rmse}{}
+\begin{table}
+\caption{\label{tbl-tourism-rmse}Out-of-sample forecast results on a single test set (from January 2017
+to December 2017) for Australian domestic tourism data. }\tabularnewline
+
+\centering
+\resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
+\begin{threeparttable}
+\begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{State} & \multicolumn{4}{c}{Zone} & \multicolumn{4}{c}{Region} & \multicolumn{4}{c}{Average} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17} \cmidrule(l{3pt}r{3pt}){18-21}
+Method & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12\\
+\midrule
+Base & 1158.2 & 716.6 & 1279.5 & 1907.6 & 452.7 & 323.3 & 349.9 & 424.8 & 165.5 & 163.6 & 160.7 & 179.7 & 100.8 & 89.4 & 88.2 & 94.1 & 148.3 & 127.9 & 133.1 & 152.1\\
+BU & 89.1 & 132.8 & 53.4 & 42.0 & --4.6 & 10.3 & 17.0 & 19.7 & 1.1 & --2.4 & 0.4 & 1.0 & 0.0 & 0.0 & 0.0 & 0.0 & 5.7 & 7.6 & 7.6 & 8.5\\
+\midrule
+OLS & --4.7 & --0.4 & 0.5 & 1.4 & --3.0 & --3.9 & --1.6 & --1.5 & --2.1 & --4.2 & --5.6 & --7.5 & 1.0 & --0.4 & --1.9 & --3.2 & --1.0 & --2.1 & --2.7 & --3.6\\
+\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{  --1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --14.1}} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.9}} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--3.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.7}} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{--2.3} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{--1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
+\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
+\midrule
+WLSs & 25.1 & 55.2 & 20.8 & 19.1 & --15.8 & --5.0 & 3.5 & 6.2 & --5.9 & --5.4 & --4.7 & --5.0 & --0.2 & --0.8 & --1.6 & --2.2 & --3.0 & --0.1 & 0.3 & 0.9\\
+\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 18.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{   0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{  --7.8}} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.2}} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.5}} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.5}} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.5}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{55.2} & \cellcolor[HTML]{e6e3e3}{20.8} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--5.4} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.9}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{55.2} & \cellcolor[HTML]{e6e3e3}{20.8} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--5.4} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.9}\\
+\midrule
+WLSv & 38.2 & 76.2 & 29.6 & 25.6 & --17.4 & --3.1 & 7.0 & 9.9 & --5.0 & --4.3 & --3.1 & --3.2 & --4.2 & --1.6 & --1.8 & --2.1 & --3.9 & 1.3 & 2.0 & 2.8\\
+\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 34.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{  10.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{   8.5}} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.4}} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.7}} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.4}} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.2}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{76.2} & \cellcolor[HTML]{e6e3e3}{29.6} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{2.8}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{76.2} & \cellcolor[HTML]{e6e3e3}{29.6} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{2.8}\\
+\midrule
+MinTs & 20.6 & 53.6 & 21.6 & 19.0 & \textcolor{blue}{\textbf{--22.2}} & --7.2 & 3.5 & 6.3 & \textcolor{blue}{\textbf{--12.1}} & --6.6 & --5.1 & --5.3 & \textcolor{blue}{\textbf{ --5.3}} & --2.6 & --2.8 & --3.1 & --8.6 & --1.8 & --0.3 & 0.4\\
+\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 20.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{   6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{   5.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.1}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --2.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.9}}} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --4.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --3.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.3}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{53.6} & \cellcolor[HTML]{e6e3e3}{21.6} & \cellcolor[HTML]{e6e3e3}{19.0} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{--6.6} & \cellcolor[HTML]{e6e3e3}{--5.1} & \cellcolor[HTML]{e6e3e3}{--5.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{0.4}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{53.6} & \cellcolor[HTML]{e6e3e3}{21.6} & \cellcolor[HTML]{e6e3e3}{19.0} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{--6.6} & \cellcolor[HTML]{e6e3e3}{--5.1} & \cellcolor[HTML]{e6e3e3}{--5.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{0.4}\\
+\midrule
+EMinT & 116.5 & 97.8 & --15.8 & --13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 68.4 & 60.6 & 54.2 & 122.1 & 103.1 & 90.2 & 78.2 & 123.2 & 93.9 & 67.9 & 55.5\\
+\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --84.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--50.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --16.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --16.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --9.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --8.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --7.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.4}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --3.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --6.7}}}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}
+
+\hypertarget{tbl-tourism-info}{}
+\begin{table}
+\caption{\label{tbl-tourism-info}Number of time series selected using different proposed methods and the
+optimal parameter values identified in the tourism application,
+considering a single test set (from January 2017 to December 2017). The
+None row shows the original number of series in the structure. }\tabularnewline
+
+\centering\begingroup\fontsize{10}{12}\selectfont
+
+\begin{tabular}{lrrrrrrrr}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{5}{c}{Number of time series retained} & \multicolumn{3}{c}{Optimal parameters} \\
+\cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
+  & Top & State & Zone & Region & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
+\midrule
+None & 1 & 7 & 27 & 76 & 111 & - & - & -\\
+OLS-subset & 1 & 2 & 13 & 76 & 92 & - & 27.98 & 10.00\\
+WLSs-subset & 1 & 1 & 15 & 76 & 93 & - & 18.73 & 10.00\\
+WLSv-subset & 1 & 7 & 27 & 76 & 111 & - & 0.03 & 0.01\\
+MinTs-subset & 1 & 7 & 27 & 76 & 111 & - & 0.05 & 0.01\\
+Elasso & 1 & 4 & 0 & 8 & 13 & 71759.21 & - & -\\
+\bottomrule
+\end{tabular}
 \endgroup{}
 \end{table}
 
