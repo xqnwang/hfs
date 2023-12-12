@@ -235,26 +235,25 @@ University \vspace{0.2em}\\
 \begin{abstract}
 Forecast reconciliation ensures forecasts of time series in a hierarchy
 adhere to aggregation constraints, enabling aligned decision making.
-While forecast reconciliation can improve overall accuracy in
+While forecast reconciliation can enhance overall accuracy in
 hierarchical or grouped structures, the most substantial improvements
-occur in series with initially poor-performing base forecasts, and some
-series may still experience a deterioration in reconciled forecasts.
-However, in practice, some series in a structure often have poor base
-forecasts due to model misspecification or low forecastability. To
-address this, we propose two categories of forecast reconciliation
-methods that incorporate time series selection based on out-of-sample
-and in-sample information, respectively. Our methods keep ``poor'' base
-forecasts of some series unused in forming reconciled forecasts,
-preventing their negative impact on reconciliation. This process adjusts
-weights allocated to the remaining series accordingly when generating
-bottom-level reconciled forecasts. Additionally, our methods mitigate
-disparities arising from using different estimates of the base forecast
-error covariance matrix, thus alleviating the challenge of estimator
-selection. We evaluate the proposed methods through two simulation
-studies and empirical applications using Australian labour force data
-and domestic tourism data, showing improved accuracy compared to
-alternative methods, especially for higher aggregation levels, longer
-forecast horizons, and model misspecification.
+occur in series with initially poor-performing base forecasts.
+Nevertheless, certain series may experience deteriorations in reconciled
+forecasts. In practical settings, series in a structure often exhibit
+poor base forecasts due to model misspecification or low
+forecastability. To prevent their negative impact, we propose two
+categories of forecast reconciliation methods that incorporate time
+series selection based on out-of-sample and in-sample information,
+respectively. These methods keep ``poor'' base forecasts unused in
+forming reconciled forecasts, while adjusting weights allocated to the
+remaining series accordingly when generating bottom-level reconciled
+forecasts. Additionally, our methods ameliorate disparities stemming
+from varied estimates of the base forecast error covariance matrix,
+alleviating challenges associated with estimator selection. Empirical
+evaluations through two simulation studies and applications using
+Australian labour force and domestic tourism data demonstrate improved
+forecast accuracy, particularly evident in higher aggregation levels,
+longer forecast horizons, and cases involving model misspecification.
 \end{abstract}
 
 \noindent%
@@ -263,7 +262,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, borderline west={3pt}{0pt}{shadecolor}, interior hidden, enhanced, sharp corners, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, enhanced, breakable, interior hidden, sharp corners, frame hidden, borderline west={3pt}{0pt}{shadecolor}]}{\end{tcolorbox}}\fi
 
 \spacing{1.8}
 
