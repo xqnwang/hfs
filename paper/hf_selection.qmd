@@ -746,6 +746,7 @@ As the number of series grows, solving these problems efficiently becomes challe
 ```{=tex}
 \newpage
 \appendix
+\pagenumbering{arabic}% resets `page` counter to 1
 \setcounter{section}{0}
 \renewcommand{\thesection}{\Alph{section}}
 \renewcommand{\thefigure}{A\arabic{figure}}
