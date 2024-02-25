@@ -262,7 +262,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, enhanced, breakable, borderline west={3pt}{0pt}{shadecolor}, frame hidden, sharp corners, boxrule=0pt]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, sharp corners, interior hidden, borderline west={3pt}{0pt}{shadecolor}, frame hidden, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
 
 \spacing{1.8}
 
@@ -1109,11 +1109,20 @@ Table~\ref{tbl-s1-rmse}, Table~\ref{tbl-s2-rmse}, and
 Table~\ref{tbl-s3-rmse} summarize the results, each reporting the
 average root mean squared error (RMSE) for each level as well as the
 whole structure (denoted as \emph{Average}). The \emph{Base} row shows
-average RMSE of base forecasts, while entries below report the
-percentage decrease (negative) or increase (positive) in average RMSE of
-reconciled forecasts compared to base forecasts. The \emph{BU} row uses
-a ``bottom-up'' approach, aggregating bottom-level base forecasts to
-form higher level forecasts. Notably, in each scenario, the largest
+average RMSE of base forecasts, specifically ETS forecasts in this
+setup. Entries below report the percentage decrease (negative) or
+increase (positive) in average RMSE of reconciled forecasts compared to
+base forecasts. The \emph{BU} row uses a ``bottom-up'' approach,
+aggregating bottom-level base forecasts to form higher level forecasts.
+The \emph{OLS}, \emph{WLS}, \emph{WLSv}, \emph{MinT}, and \emph{MinTs}
+rows use the MinT method with different estimators of \(\bm{W}\) in
+Table \ref{tbl-bench} being used, respectively. The \emph{OLS-},
+\emph{WLS-}, \emph{WLSv-}, \emph{MinT-}, and \emph{MinTs-} rows use the
+three methods introduced in \citet{sec}--constrained with different
+estimators of \(\bm{W}\) being used, respectively. The \emph{EMinT} row
+uses the empirical MinT method, while the \emph{Elasso} row uses the
+empirical group lasso method proposed in
+Section~\ref{sec-unconstrained}. Notably, in each scenario, the largest
 improvements occur at the respective hierarchical level with model
 misspecification, while slightly deteriorating the performance at other
 levels.
