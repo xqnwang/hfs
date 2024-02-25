@@ -262,7 +262,7 @@ Linear forecast reconciliation, Optimization problem
 \vfill
 
 \newpage
-\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, frame hidden, interior hidden, enhanced, sharp corners, borderline west={3pt}{0pt}{shadecolor}, breakable]}{\end{tcolorbox}}\fi
+\spacingset{1.8} % DON'T change the spacing!\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, enhanced, breakable, borderline west={3pt}{0pt}{shadecolor}, frame hidden, sharp corners, boxrule=0pt]}{\end{tcolorbox}}\fi
 
 \spacing{1.8}
 
@@ -526,6 +526,16 @@ uses in-sample observations and base forecasts, while ERM relies on
 observations and base forecasts from a holdout validation set. Both ERM
 and EMinT consider an estimate of \(\bm{G}\) that changes over the
 forecast horizon, which is why we keep the subscript \(h\) here.
+
+In practical settings, some series in a structure could have poor base
+forecasts due to model misspecification or low forecastability.
+Specifically, within a hierarchical structure, the influence of
+unforeseen events may prompt a forecaster to make a bad decision,
+leading to the use of a misspecified forecasting model for a specific
+time series and, consequently, yielding inferior forecasts. Lower-level
+time series are normally characterized by less apparent trend and
+seasonality, large intermittence, and volatility, rendering them more
+challenging to predict and resulting in poor forecasts.
 
 A challenge in forecast reconciliation arises when some base forecasts
 perform poorly, as the role of the weighting matrix \(\bm{G}\) is to
