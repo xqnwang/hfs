@@ -22,7 +22,7 @@ format:
   asa-pdf:
     keep-tex: true
     pdf-engine: pdflatex
-    classoption: 12pt
+    classoption: 11pt
     journal:
       blinded: false
 include-in-header: preamble.tex
@@ -54,7 +54,6 @@ source("../R/analysis.R") # Other functions used for analysis
 #theme_set(theme_get() + theme(text = element_text(family = "Source Sans Pro")))
 ```
 
-\spacing{1.8}
 
 ## Introduction {#sec-introduction}
 
@@ -743,6 +742,9 @@ As the number of series grows, solving these problems efficiently becomes challe
 ## Supplementary materials {.unnumbered}
 
 **Appendix:** Additional results obtained in @sec-simulations and @sec-applications. (.pdf file)
+
+## Acknowledgments {.unnumbered}
+Rob J Hyndman was funded by the Australian Research Council Industrial Transformation Training Centre in Optimisation Technologies, Integrated Methodologies, and Applications (OPTIMA), Project ID IC200100009.
 
 ## References {.unnumbered}
 

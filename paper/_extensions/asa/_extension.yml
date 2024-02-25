@@ -16,7 +16,7 @@ contributes:
         - partials/_include-in-header.tex
       documentclass: article
       classoption:
-        - 12pt
+        - 11pt
       # This format use a bst file with natbib
       biblio-style: agsm
       cite-method: natbib
