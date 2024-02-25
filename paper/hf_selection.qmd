@@ -92,6 +92,8 @@ $$
 $$
 The notation is general enough to include aggregation constraints that are non-hierarchical. Please refer to @Hyndman2021-fo for further details.
 
+Hierarchical forecasting methods are extensively applied across diverse domains, including but not limited to retail demand, economics, energy, and tourism. For instance, forecast reconciliation is widely implemented in tourism data [@Athanasopoulos2009-ps], where hierarchical time series arise due to geographic divisions. Total overnight trips for a whole nation can be disaggregated to states, further subdivided into regions. In the context of a grocery retailer, the total sales of the "food" category can be subdivided into various subcategories and subsequently into distinct items [@Zhang2023-op]. An illustrative data example for hierarchical forecasting of electricity load involves the electricity consumption measured by a lot of smart meters with a comprehensive geographic hierarchy [@Taieb2021-tc]. For additional interesting application examples, , please refer to @Athanasopoulos2023-sm.
+
 ### Linear forecast reconciliation
 
 Let $\hat{\bm{y}}_{T+h \mid T} \in \mathbb{R}^n$ be a vector of $h$-step-ahead *base forecasts* for all time series in the structure, given observations up to and including time $T$, and stacked in the same order as $\bm{y}_t$. We can use any method to generate these forecasts, but in general they will not be coherent (i.e., they won't satisfy the constraints).
