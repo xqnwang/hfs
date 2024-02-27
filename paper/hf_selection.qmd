@@ -119,27 +119,36 @@ where $\tilde{\bm{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}$ comprises the $h$-step-
 
 It is challenging to estimate $\bm{W}_h$, especially for $h > 1$. It is common to assume $\bm{W}_h = k_h\bm{W}_1$, $\forall h$, where $k_h > 0$; then the MinT solution of $\bm{G}$ does not change with the forecast horizon, $h$. Hence, we will drop the subscript $h$ for ease of exposition. Table \ref{tbl-bench} lists the most popularly used candidate estimators for $\bm{W}_h$.
 
-```{=tex}
-\begin{table}[!h]
-\caption{Forecast reconciliation methods for which different estimators of $\bm{W}$ are used.}\label{tbl-bench}
-\centering
-\begin{threeparttable}
-\begin{tabular}{p{0.7\linewidth}r}
-\toprule
-Reconciliation method & $\bm{W}_h \propto$\\
-\midrule
-\textbf{OLS} \citep{Hyndman2011-sd} & $\bm{I}$\\
-\textbf{WLSs} \citep{Athanasopoulos2017-jj} & $\operatorname{diag}(\bm{S} \bm{1})$\\
-\textbf{WLSv} \citep{Hyndman2016-cz} & $\operatorname{Diag}(\hat{\bm{W}}_1)$\\
-\textbf{MinT} \citep{Wickramasuriya2019-fc} & $\hat{\bm{W}}_1$\\
-\textbf{MinTs} \citep{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\bm{W}}_1) + (1-\lambda)\hat{\bm{W}}_1$\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: $\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
+```{r}
+#| label: tbl-bench
+#| tbl-cap: Forecast reconciliation methods for which different estimators of $\bm{W}$ are used.
+#| tbl-pos: "!h"
+tbl <- tibble::tribble(
+    ~method, ~cite, ~W,
+    "OLS", "Hyndman2011-sd", "$\\bm{I}$",
+    "WLSs", "Athanasopoulos2017-jj", "$\\operatorname{diag}(\\bm{S} \\bm{1})$",
+    "WLSv", "Hyndman2016-cz", "$\\operatorname{Diag}(\\hat{\\bm{W}}_1)$",
+    "MinT", "Wickramasuriya2019-fc", "$\\hat{\\bm{W}}_1$",
+    "MinTs", "Wickramasuriya2019-fc", "$\\lambda\\operatorname{Diag}(\\hat{\\bm{W}}_1) + (1-\\lambda)\\hat{\\bm{W}}_1$"
+  ) |>
+  dplyr::mutate(
+    method = glue::glue("\\textbf{{{method}}} \\citep{{{cite}}}"),
+  ) |>
+  dplyr::select(-cite)
+kable(tbl,
+    format = "latex",
+    align = c("p{0.7\\linewidth}","r"),
+    booktabs = TRUE,
+    col.names = c("Reconciliation method",
+    "$\\bm{W}_h\\propto$"),
+    escape = FALSE
+  ) |>
+  footnote(
+    general = "Note: $\\\\bm{1}$ is a vector of 1s of size $n_b$, $\\\\operatorname{diag}(\\\\cdot)$ constructs a diagonal matrix using a given vector, $\\\\hat{\\\\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\\\\operatorname{Diag}(\\\\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.",
+    general_title = "",
+    escape = FALSE,
+    threeparttable = TRUE
+  )
 ```
 
 <!-- @Pritularga2021-lz demonstrated that the performance of forecast reconciliation is affected by two sources of uncertainties: the base forecast uncertainty and the reconciliation weight uncertainty. Recall that the uncertainty in the MinT solution in @eq-mint is introduced by the uncertainty in the weighting matrix as the summing matrix is fixed for a given structure. This indicates that OLS and WLSs estimators for $\bm{W}$ may lead to less volatile reconciliation performance compared to WLSv, MinT, and MinTs estimators. @Panagiotelis2021-mf provided a geometric intuition for reconciliation and showed that, when considering the Euclidean distance loss function, OLS reconciliation yields results that are at least as favorable as the base forecasts, whereas MinT reconciliation performs poorly relative to the base forecasts. However, when considering the expected Euclidean distance of the reconciled forecast error, @Wickramasuriya2021-am indicated that MinT reconciliation is better than OLS reconciliation. Therefore, which estimator for $\bm{W}$ to use hinges on the specific time series structure of interest, the targeted level or series, and the selected loss function. -->
