@@ -123,6 +123,7 @@ It is challenging to estimate $\bm{W}_h$, especially for $h > 1$. It is common t
 #| label: tbl-bench
 #| tbl-cap: Forecast reconciliation methods for which different estimators of $\bm{W}$ are used.
 #| tbl-pos: "!h"
+
 tbl <- tibble::tribble(
     ~method, ~cite, ~W,
     "OLS", "Hyndman2011-sd", "$\\bm{I}$",
@@ -143,6 +144,7 @@ kable(tbl,
     "$\\bm{W}_h\\propto$"),
     escape = FALSE
   ) |>
+  kable_paper(full_width = FALSE) |>
   footnote(
     general = "Note: $\\\\bm{1}$ is a vector of 1s of size $n_b$, $\\\\operatorname{diag}(\\\\cdot)$ constructs a diagonal matrix using a given vector, $\\\\hat{\\\\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\\\\operatorname{Diag}(\\\\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.",
     general_title = "",
