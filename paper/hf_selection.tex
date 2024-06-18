@@ -83,6 +83,7 @@
 \addtolength{\topmargin}{-1in}%
 \usepackage{bm}
 \usepackage{mathptmx}
+\usepackage{amsmath} % Ensure amsmath is included for \eqref
 \usepackage[]{natbib}
 \usepackage[margin = 2.5cm]{geometry}
 \allowdisplaybreaks
@@ -184,8 +185,8 @@
 \hypersetup{
   pdftitle={Optimal forecast reconciliation with time series selection},
   pdfauthor={Xiaoqian Wang; Rob J Hyndman; Shanika L Wickramasuriya},
-  pdfkeywords={Forecasting, Hierarchical time series, Grouped time
-series, Linear forecast reconciliation, Integer programming},
+  pdfkeywords={Forecasting, Hierarchical time series, Linear forecast
+reconciliation, Variable selection, Integer programming},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -246,8 +247,8 @@ longer forecast horizons, and cases involving model misspecification.
 \end{abstract}
 
 \noindent%
-{\it Keywords:} Forecasting, Hierarchical time series, Grouped time
-series, Linear forecast reconciliation, Integer programming
+{\it Keywords:} Forecasting, Hierarchical time series, Linear forecast
+reconciliation, Variable selection, Integer programming
 \vfill
 
 \newpage
@@ -587,7 +588,7 @@ constraint}\label{sec-constrained}
 
 As \(\bm{S}\) is fixed and \(\hat{\bm{y}}_{T+h \mid T}\) is given,
 \(\bm{G}_h\) determines the linear reconciliation performance, as shown
-in Equation~\ref{eq-lr}. We drop the subscript \(h\) here as we assume
+in Equation \eqref{eq-lr}. We drop the subscript \(h\) here as we assume
 \(\bm{W}\) and \(\bm{G}\) do not vary with the forecast horizon. A
 natural way to remove forecasts of some series is by controlling the
 number of nonzero column entries in \(\bm{G}\). This leads to a
@@ -603,14 +604,14 @@ corresponding to a column of \(\bm{G}\). The constraint,
 \(\bm{G}\bm{S}=\bm{I}\), ensures that the reconciled forecasts are
 unbiased if the base forecasts are unbiased
 \citep{Wickramasuriya2019-fc}. When \(\lambda = 0\), the problem reduces
-to the MinT optimization problem in Equation~\ref{eq-mint_op} with a
-closed-form solution given by Equation~\ref{eq-mint}.
+to the MinT optimization problem in Equation \eqref{eq-mint_op} with a
+closed-form solution given by Equation \eqref{eq-mint}.
 
 \textbf{Proposition 1.} \emph{Under the assumption of unbiasedness, the
 count of nonzero column entries of} \(\bm{G}\) (\emph{i.e., the number
 of time series selected for reconciliation}), \emph{derived through
-solving Equation~\ref{eq-op_u}, is at least equal to the number of time
-series at the bottom level. In addition, we can restore the full
+solving Equation \eqref{eq-op_u}, is at least equal to the number of
+time series at the bottom level. In addition, we can restore the full
 hierarchical structure by aggregating/disaggregating the selected time
 series.}
 
@@ -628,9 +629,8 @@ size of the set \(\mathbb{S}\). Similarly, let
 denote the submatrix of \(\bm{X}\) whose rows are indexed by a set
 \(\mathbb{S}\) (and when \(\mathbb{S} = \{i\}\), we simply use
 \(\bm{X}_{i\cdot}\)). Assuming that the set \(\mathbb{S}\) consists of
-the indices of nonzero columns in the solution to
-Equation~\ref{eq-op_u}, \(\hat{\bm{G}}\), the following equations hold:
-\[
+the indices of nonzero columns in the solution to Equation
+\eqref{eq-op_u}, \(\hat{\bm{G}}\), the following equations hold: \[
 \bm{G}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I},
 \qquad\text{and}\qquad
 \min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
@@ -650,9 +650,9 @@ reconciliation methods with selection to simultaneously zero out columns
 of \(\bm{G}\) associated with series AA and AB. However, it is possible
 to zero out columns related to series AA and BA simultaneously.
 
-\textbf{Proposition 2.} \emph{The optimization problem in
-Equation~\ref{eq-op_u} can be reformulated as a least squares problem
-with regularization and linear equality constraint as follows:}
+\textbf{Proposition 2.} \emph{The optimization problem in Equation
+\eqref{eq-op_u} can be reformulated as a least squares problem with
+regularization and linear equality constraint as follows:}
 \begin{equation}\phantomsection\label{eq-op_u_reg}{
 \begin{aligned}
 & \min_{\operatorname{vec}(\bm{G})} \quad \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\bm{G})\right) \\
@@ -668,10 +668,10 @@ observations,} \(n\)\emph{.}
 & \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
 & \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
 \end{aligned}
-\] Substituting these into Equation~\ref{eq-op_u}, the previous problem
-now takes the form of a regression problem with an additional
+\] Substituting these into Equation \eqref{eq-op_u}, the previous
+problem now takes the form of a regression problem with an additional
 regularization term and an equality constraint on the coefficients, as
-shown in Equation~\ref{eq-op_u_reg}.
+shown in Equation \eqref{eq-op_u_reg}.
 
 Next, we present three classes of regularizations that allow forecast
 reconciliation with series selection, resulting in three optimization
@@ -705,14 +705,14 @@ based on various \(\bm{W}\) estimators, referring to them as
 \textbf{OLS-subset}, \textbf{WLSs-subset}, \textbf{WLSv-subset},
 \textbf{MinT-subset}, and \textbf{MinTs-subset}, respectively.
 
-The inclusion of the ridge term in Equation \ref{eq-subset} is motivated
-by earlier work on best-subset selection
+The inclusion of the ridge term in Equation \eqref{eq-subset} is
+motivated by earlier work on best-subset selection
 \citep[e.g.,][]{Hazimeh2020-xd, Mazumder2022-hx}, which suggests that
 additional ridge regularization helps mitigate the poor predictive
 performance of best-subset selection method in low SNR regimes.
 
 We present a Big-M based mixed integer programming (MIP) formulation for
-the problem in Equation \ref{eq-subset}:
+the problem in Equation \eqref{eq-subset}:
 \begin{align} \label{eq-subset_mip}
 \min_{\operatorname{vec}(\bm{G}), \bm{z}, \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}^{-1}\check{\bm{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \bm{g}^{+\prime}\bm{g}^{+} \\
 \text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right)\nonumber \\
@@ -723,7 +723,7 @@ the problem in Equation \ref{eq-subset}:
 & z_j \in\{0,1\}, \quad j \in[n], \nonumber
 \end{align} where \(\mathcal{M}\) is a Big-M parameter (specified
 a-priori) that is sufficiently large that the optimal solution to
-Equation \ref{eq-subset_mip}, \(\bm{g}^{+*}\), satisfies
+Equation \eqref{eq-subset_mip}, \(\bm{g}^{+*}\), satisfies
 \(\max_{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\).
 The binary variable \(z_j=0\) implies that \(\bm{G}_{\cdot j}=\bm{0}\),
 and \(z_j=1\) implies that
@@ -744,9 +744,10 @@ non-seasonal data. Let
 \(\lambda_{0}^{1} = \frac{1}{2}\left(\hat{\bm{y}}-\tilde{\bm{y}}^{\text{bench}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\tilde{\bm{y}}^{\text{bench}}\right)\),
 which captures the scale of the first term in the objective function,
 where \(\tilde{\bm{y}}^{\text{bench}}\) is a vector of reconciled
-forecasts obtained using Equation~\ref{eq-mint} with the same estimator
-of \(\bm{W}\), and define \(\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}\).
-For the parameter \(\lambda_0\), we consider a grid of \(k+1\) values,
+forecasts obtained using Equation \eqref{eq-mint} with the same
+estimator of \(\bm{W}\), and define
+\(\lambda_{0}^{k} = 0.0001\lambda_{0}^{1}\). For the parameter
+\(\lambda_0\), we consider a grid of \(k+1\) values,
 \(\{\lambda_{0}^{1},\dots,\lambda_{0}^{k}, 0\}\), where
 \(\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\). So \(\lambda_{0}^{1},\dots,\lambda_{0}^{k}\) is a
@@ -757,7 +758,7 @@ a two-dimensional grid of \((k+1) \times 6\) values to find the optimal
 combination of \(\lambda_0\) and \(\lambda_2\).
 
 \textbf{Computation details.} The MIQP problem in Equation
-\ref{eq-subset_mip} is NP-hard and computationally intensive.
+\eqref{eq-subset_mip} is NP-hard and computationally intensive.
 \citet{Bertsimas2016-ig} showed that commercial MIP solvers are capable
 of tackling problem instances for \(p\) up to a thousand. To address
 larger instances, there has been impressive work on developing MIP-based
@@ -767,8 +768,8 @@ approaches for solving \(L_0\)-regularized regression problem; e.g.,
 approaches to accommodate additional constraints in the optimization
 problem. Despite potential challenges in handling large instances with
 commercial MIP solvers, in our experiments, we use Gurobi to solve
-Equation \ref{eq-subset_mip} by configuring parameters such as MIPGap =
-\(0.001\) and TimeLimit = \(600\) seconds for cases with \(p > 1000\).
+Equation \eqref{eq-subset_mip} by configuring parameters such as MIPGap
+= \(0.001\) and TimeLimit = \(600\) seconds for cases with \(p > 1000\).
 This allows to terminate the solver before reaching the global optimum
 and return a suboptimal solution instead. This strategy is motivated by
 our need to consider numerous parameter candidates, and the final
@@ -781,13 +782,13 @@ regularization}{Intuitive method with L\_0 regularization}}\label{intuitive-meth
 regularization}
 
 Instead of estimating the entire matrix \(\bm{G}\) as above, we leverage
-the MinT solution in Equation~\ref{eq-mint} to streamline the
+the MinT solution in Equation \eqref{eq-mint} to streamline the
 optimization problem under consideration. Specifically, we define
 \(\bar{\bm{S}} = \bm{A}\bm{S}\), where
 \(\bm{A} = \operatorname{diag}(\bm{z})\) is an \(n \times n\) diagonal
 matrix, and \(\bm{z}\) is an \(n\)-dimensional vector with elements
-either equal to 0 or 1. Taking the MinT solution in
-Equation~\ref{eq-mint}, we have
+either equal to 0 or 1. Taking the MinT solution in Equation
+\eqref{eq-mint}, we have
 \(\bar{\bm{G}} = (\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S})^{-1}\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\).
 Given fixed \(\bm{S}\) and estimation of \(\bm{W}\), \(\bar{\bm{G}}\) is
 entirely determined by \(\bm{A}\). Thus, when the \(j\)th diagonal
@@ -840,9 +841,9 @@ candidate values for \(\lambda_0\) we consider is
 for \(j \in [k]\).
 
 \textbf{Computation details.} Following a setup akin to that in the
-group best-subset selection, we employ Gurobi to solve
-Equation~\ref{eq-intuitive_mip} by configuring parameters such as MIPGap
-= \(0.001\) and TimeLimit = \(600\) seconds for problems with
+group best-subset selection, we employ Gurobi to solve Equation
+\eqref{eq-intuitive_mip} by configuring parameters such as MIPGap =
+\(0.001\) and TimeLimit = \(600\) seconds for problems with
 \(p > 1000\).
 
 \subsubsection*{Group lasso method}\label{group-lasso-method}
@@ -874,7 +875,7 @@ for the group lasso based estimators given by \begin{align}
 \text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right) \nonumber \\
 & \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}) = \check{\bm{e}} \nonumber \\
 & c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n]. \nonumber
-\end{align} Equation \ref{eq-lasso_socp} includes additional auxiliary
+\end{align} Equation \eqref{eq-lasso_socp} includes additional auxiliary
 variables \(c_j \in \mathbb{R}_{\geq 0}\), \(j \in [n]\), and second
 order cone constraints,
 \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\) for
@@ -920,7 +921,7 @@ coefficients. Then we have} \[
 \(j\)\emph{th column of} \(\bm{G}\)\emph{.}
 
 \emph{Proof.} Denote \(\bm{\beta} = \operatorname{vec}(\bm{G})\), and
-the first term in the objective of Equation~\ref{eq-lasso} as
+the first term in the objective of Equation \eqref{eq-lasso} as
 \(L\left(\bm{\beta} \mid \bm{D}\right)\), where \(\bm{D}\) is the
 working data
 \(\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}\). Ignoring
@@ -1015,7 +1016,7 @@ for the parameter, \(\lambda\), our experiments observed that, using the
 \textbf{gglasso} R package, we can not obtain a solution within five
 hours for typical instances with \(p \sim 10^4\). Instead, we use Gurobi
 to solve the problem using the SOCP formulation for the empirical group
-lasso which aligns with Equation \ref{eq-lasso_socp} but omits the
+lasso which aligns with Equation \eqref{eq-lasso_socp} but omits the
 unbiasedness constraint.
 
 \section{Monte Carlo simulations}\label{sec-simulations}
