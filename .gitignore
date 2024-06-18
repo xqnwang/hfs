@@ -3,6 +3,9 @@
 *.csv
 !paper/results/*.rds
 
+# Review comments
+reviews/
+
 # References
 refs/
 L0Group/

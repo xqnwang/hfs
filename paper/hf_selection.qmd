@@ -232,8 +232,7 @@ $$ {#eq-op_u_reg}
 *Proof.* We have\vspace*{-0.4cm}\enlargethispage{0.4cm}
 $$
 \begin{aligned}
-& \operatorname{vec}\left(\hat{\bm{y}}\right) = \hat{\bm{y}}, \\
-& \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
+& \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
 & \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
 \end{aligned}
 $$
