@@ -166,6 +166,15 @@
 \@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
 \floatname{codelisting}{Listing}
 \newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}[section]
+\theoremstyle{remark}
+\AtBeginDocument{\renewcommand*{\proofname}{Proof}}
+\newtheorem*{remark}{Remark}
+\newtheorem*{solution}{Solution}
+\newtheorem{refremark}{Remark}[section]
+\newtheorem{refsolution}{Solution}[section]
 \makeatother
 \makeatletter
 \makeatother
@@ -205,7 +214,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{June 18, 2024}
+\date{June 19, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -330,11 +339,13 @@ time series that adheres to known linear constraints. Let
 all time series in the hierarchy at time \(t\), and
 \(\bm{b}_t \in \mathbb{R}^{n_b}\) be a vector comprising observations of
 only the most disaggregated (``bottom-level'') time series at time
-\(t\). The full hierarchy at time \(t\) can be written as \[
+\(t\). The full hierarchy at time \(t\) can be written as
+\begin{equation}\phantomsection\label{eq-fh}{
 \bm{y}_t = \bm{S}\bm{b}_t,
-\] for \(t=1,2,\ldots,T\), where \(T\) is the length of the time series,
-and \(\bm{S}\) is an \(n \times n_b\) \emph{summing matrix} that defines
-the aggregation constraints. We can write the summing matrix as
+}\end{equation} for \(t=1,2,\ldots,T\), where \(T\) is the length of the
+time series, and \(\bm{S}\) is an \(n \times n_b\) \emph{summing matrix}
+that defines the aggregation constraints. We can write the summing
+matrix as
 \(\bm{S} = \left[\begin{array}{c}\bm{A} \\ \bm{I}_{n_b}\end{array}\right]\),
 where \(\bm{A}\) is an \(n_a \times n_b\) \emph{aggregation matrix} with
 \(n = n_a + n_b\), and \(\bm{I}_{n_b}\) is an \(n_b\)-dimensional
@@ -607,63 +618,71 @@ unbiased if the base forecasts are unbiased
 to the MinT optimization problem in Equation \eqref{eq-mint_op} with a
 closed-form solution given by Equation \eqref{eq-mint}.
 
-\textbf{Proposition 1.} \emph{Under the assumption of unbiasedness, the
-count of nonzero column entries of} \(\bm{G}\) (\emph{i.e., the number
-of time series selected for reconciliation}), \emph{derived through
-solving Equation \eqref{eq-op_u}, is at least equal to the number of
-time series at the bottom level. In addition, we can restore the full
-hierarchical structure by aggregating/disaggregating the selected time
-series.}
+\begin{proposition}[]\protect\hypertarget{prp-1}{}\label{prp-1}
 
-\emph{Proof}. Under unbiasedness, \(\bm{G}\bm{S}=\bm{I}\), and \[
-\min \left(\operatorname{rank}(\bm{G}), \operatorname{rank}(\bm{S})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b,
-\] which indicates that the count of nonzero column entries of
-\(\bm{G}\) is at least equal to \(n_b\).
+If the assumption that forecast reconciliation preserves unbiasedness is
+imposed by enforcing \(\bm{GS}=\bm{I}\), then the number of nonzero
+column entries of \(\hat{\bm{G}}\) (the solution to Equation
+\eqref{eq-op_u}) will be no less than \(n_b\). Moreover, the constraint
+\(\bm{GS}=\bm{I}\) enforces that the selected columns of
+\(\hat{\bm{G}}\) will correspond to variables that can ``restore'' the
+hierarchy.
 
-Let \(\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
-denote the submatrix of the \(r \times c\) matrix \(\bm{X}\) with column
-indices forming a set \(\mathbb{S}\) (and when \(\mathbb{S} = \{j\}\),
-we simply use \(\bm{X}_{\cdot j}\)), where \(|\mathbb{S}|\) denotes the
-size of the set \(\mathbb{S}\). Similarly, let
-\(\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}\)
-denote the submatrix of \(\bm{X}\) whose rows are indexed by a set
-\(\mathbb{S}\) (and when \(\mathbb{S} = \{i\}\), we simply use
-\(\bm{X}_{i\cdot}\)). Assuming that the set \(\mathbb{S}\) consists of
-the indices of nonzero columns in the solution to Equation
-\eqref{eq-op_u}, \(\hat{\bm{G}}\), the following equations hold: \[
+\end{proposition}
+
+\begin{proof}
+Let \(\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times c}\) denote the
+matrix \(\bm{X}\) with the columns indexed by the set \(\mathbb{S}\) set
+to zeros, and let
+\(\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{r \times c}\) denote the
+matrix \(\bm{X}\) with the rows indexed by \(\mathbb{S}\) set to zeros.
+If \(\mathbb{S}\) is the set of indices of nonzero columns in the
+solution \(\hat{\bm{G}}\) to Equation \eqref{eq-op_u}, then the
+following equations hold: \[
 \bm{G}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I},
 \qquad\text{and}\qquad
 \min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
-\] Additionally, we have
-\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b\) as \(\bm{S}\)
-has \(n_b\) columns. Therefore, we can conclude that
-\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b\). Moreover, we
-have \[
-\bm{y}_t = \bm{S}\bm{b}_t = \bm{S}\bm{G}\bm{S}\bm{b}_t=\bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{S}_{\mathbb{S}\cdot}\bm{b}_t=\bm{S}\hat{\bm{G}}_{\cdot \mathbb{S}}(\bm{y}_t)_{\mathbb{S}},
-\] which implies that the hierarchical structure can be fully restored
-by aggregating/disaggregating the selected time series denoted by
-\((\bm{y}_{t})_{\mathbb{S}}\).
+\] This indicates that the number of nonzero columns of \(\hat{\bm{G}}\)
+is no less than \(n_b\).
+
+Moreover, based on Equation \eqref{eq-fh}, we have \[
+\bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{y}_{\mathbb{S}\cdot} = \bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{y} = \bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{Sb} = \bm{Sb} = \bm{y},
+\] as the solution \(\hat{\bm{G}}\) is obtained by imposing
+\(\bm{GS}=\bm{I}\). Therefore, the constraint \(\bm{GS}=\bm{I}\) ensures
+that the selected columns of \(\hat{\bm{G}}\) correspond to variables
+capable of ``restoring'' the hierarchy.
+\end{proof}
 
 For example, consider the simple hierarchy shown in
-Figure~\ref{fig-hts}, it is not possible for our constrained
-reconciliation methods with selection to simultaneously zero out columns
-of \(\bm{G}\) associated with series AA and AB. However, it is possible
-to zero out columns related to series AA and BA simultaneously.
+Figure~\ref{fig-hts}. Our constrained reconciliation methods might
+simultaneously zero out the columns of \(\bm{G}\) corresponding to
+series AA and BA, but not to series AA and AB. If the solution to
+Equation \eqref{eq-op_u} yields a \(\hat{\bm{G}}\) with exactly \(n_b\)
+nonzero columns, these correspond to base forecasts from which the full
+hierarchy can be obtained using nothing but the information embedded in
+the aggregation constraints. However, if the solution yields a
+\(\hat{\bm{G}}\) with more than \(n_b\) nonzero columns, while a
+coherent forecast can be restored using the the aggregation constraints,
+it cannot be done uniquely due to the excess of series.
 
-\textbf{Proposition 2.} \emph{The optimization problem in Equation
-\eqref{eq-op_u} can be reformulated as a least squares problem with
-regularization and linear equality constraint as follows:}
+\begin{proposition}[]\protect\hypertarget{prp-2}{}\label{prp-2}
+
+The optimization problem in Equation \eqref{eq-op_u} can be reformulated
+as a least squares problem with regularization and linear equality
+constraint as follows:
 \begin{equation}\phantomsection\label{eq-op_u_reg}{
 \begin{aligned}
 & \min_{\operatorname{vec}(\bm{G})} \quad \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda\mathfrak{g}\left(\operatorname{vec}(\bm{G})\right) \\
 & \text{s.t.} \quad \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}(\bm{I}_{n_b}),
 \end{aligned}
-}\end{equation} \emph{which is characterized as a high-dimensional
-problem in which the number of features, denoted as}
-\(p = n_b \times n\)\emph{, is much larger than the number of
-observations,} \(n\)\emph{.}
+}\end{equation} which is characterized as a high-dimensional problem in
+which the number of features, denoted as \(p = n_b \times n\), is much
+larger than the number of observations, \(n\).
 
-\emph{Proof.} We have\vspace*{-0.4cm}\enlargethispage{0.4cm} \[
+\end{proposition}
+
+\begin{proof}
+We have\vspace*{-0.4cm}\enlargethispage{0.4cm} \[
 \begin{aligned}
 & \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
 & \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
@@ -672,6 +691,7 @@ observations,} \(n\)\emph{.}
 problem now takes the form of a regression problem with an additional
 regularization term and an equality constraint on the coefficients, as
 shown in Equation \eqref{eq-op_u_reg}.
+\end{proof}
 
 Next, we present three classes of regularizations that allow forecast
 reconciliation with series selection, resulting in three optimization
@@ -911,17 +931,21 @@ The collection of candidate values for \(\lambda\) is
 \(\lambda^{j} = \lambda^{1}(\lambda^{k} / \lambda^{1})^{(j-1) / (k-1)}\)
 for \(j \in [k]\).
 
-\textbf{Proposition 3.} \emph{Ignoring the unbiasedness constraint, we
-define} \(\lambda^{1}\) \emph{as the smallest} \(\lambda\) \emph{value
-such that all predictors in the group lasso problem have zero
-coefficients. Then we have} \[
-\lambda^{1} = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j,
-\] \emph{where} \(j^{*}\) \emph{denotes the column index of}
-\(\hat{\bm{y}}^{\prime} \otimes \bm{S}\) \emph{that corresponds to the}
-\(j\)\emph{th column of} \(\bm{G}\)\emph{.}
+\begin{proposition}[]\protect\hypertarget{prp-3}{}\label{prp-3}
 
-\emph{Proof.} Denote \(\bm{\beta} = \operatorname{vec}(\bm{G})\), and
-the first term in the objective of Equation \eqref{eq-lasso} as
+Ignoring the unbiasedness constraint, we define \(\lambda^{1}\) as the
+smallest \(\lambda\) value such that all predictors in the group lasso
+problem have zero coefficients. Then we have \[
+\lambda^{1} = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j,
+\] where \(j^{*}\) denotes the column index of
+\(\hat{\bm{y}}^{\prime} \otimes \bm{S}\) that corresponds to the \(j\)th
+column of \(\bm{G}\).
+
+\end{proposition}
+
+\begin{proof}
+Denote \(\bm{\beta} = \operatorname{vec}(\bm{G})\), and the first term
+in the objective of Equation \eqref{eq-lasso} as
 \(L\left(\bm{\beta} \mid \bm{D}\right)\), where \(\bm{D}\) is the
 working data
 \(\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}\). Ignoring
@@ -934,6 +958,7 @@ problem.) Under the Karush-Kuhn-Tucker conditions, we have \[
  = \max_{j=1, \ldots, n}\big\|\big[\nabla L(\hat{\bm{\beta}}^{1} \mid \bm{D})\big]^{(j)}\big\|_2 / w_j
  = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j.
 \]
+\end{proof}
 
 \textbf{Computation details.} Due to the incorporation of the
 unbiasedness constraint, we can not directly use some open-source
@@ -1003,7 +1028,7 @@ Specifically, for \(\lambda\) values, we consider
 \(\lambda^{k} = 0.0001\lambda^{1}\), and
 \(\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\). Following the derivation in the proof of
-\textbf{Proposition 3}, \(\lambda^{1}\) is the smallest \(\lambda\)
+Proposition~\ref{prp-3}, \(\lambda^{1}\) is the smallest \(\lambda\)
 value such that all predictors in the empirical group lasso problem have
 zero coefficients, i.e., \(\bm{G} = \bm{O}\). Note that we need to
 resolve the optimization problem based on the whole training set by
