@@ -71,7 +71,7 @@ The remainder of the paper is structured as follows. @sec-preliminaries presents
 
 A *hierarchical time series* is an $n$-dimensional multivariate time series that adheres to known linear constraints. Let $\bm{y}_t \in \mathbb{R}^n$ be a vector comprising observations from all time series in the hierarchy at time $t$, and $\bm{b}_t \in \mathbb{R}^{n_b}$ be a vector comprising observations of only the most disaggregated ("bottom-level") time series at time $t$. The full hierarchy at time $t$ can be written as $$
 \bm{y}_t = \bm{S}\bm{b}_t,
-$$ {#eq-fh} for $t=1,2,\ldots,T$, where $T$ is the length of the time series, and $\bm{S}$ is an $n \times n_b$ *summing matrix* that defines the aggregation constraints. We can write the summing matrix as $\bm{S} = \left[\begin{array}{c}\bm{A} \\ \bm{I}_{n_b}\end{array}\right]$, where $\bm{A}$ is an $n_a \times n_b$ *aggregation matrix* with $n = n_a + n_b$, and $\bm{I}_{n_b}$ is an $n_b$-dimensional identity matrix.
+$$ for $t=1,2,\ldots,T$, where $T$ is the length of the time series, and $\bm{S}$ is an $n \times n_b$ *summing matrix* that defines the aggregation constraints. We can write the summing matrix as $\bm{S} = \left[\begin{array}{c}\bm{A} \\ \bm{I}_{n_b}\end{array}\right]$, where $\bm{A}$ is an $n_a \times n_b$ *aggregation matrix* with $n = n_a + n_b$, and $\bm{I}_{n_b}$ is an $n_b$-dimensional identity matrix.
 
 ![An example of a two-level hierarchical time series.](figs/hts_example.pdf){#fig-hts fig-align="center" width="35%" fig-pos="!t"}
 
@@ -181,20 +181,17 @@ $$ {#eq-op_u} where $\hat{\bm{y}}:=\hat{\bm{y}}_{T+1 \mid T}$, $\mathfrak{g}(\cd
 If the assumption that forecast reconciliation preserves unbiasedness is imposed by enforcing $\bm{GS}=\bm{I}$, then the number of nonzero column entries of $\hat{\bm{G}}$ (the solution to Equation \eqref{eq-op_u}) will be no less than $n_b$. Moreover, the constraint $\bm{GS}=\bm{I}$ enforces that the selected columns of $\hat{\bm{G}}$ will correspond to variables that can "restore" the hierarchy.
 :::
 
-::: {.proof}
-Let $\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times c}$ denote the matrix $\bm{X}$ with the columns indexed by the set $\mathbb{S}$ set to zeros, and let $\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{r \times c}$ denote the matrix $\bm{X}$ with the rows indexed by $\mathbb{S}$ set to zeros. If $\mathbb{S}$ is the set of indices of nonzero columns in the solution $\hat{\bm{G}}$ to Equation \eqref{eq-op_u}, then the following equations hold: $$
-\bm{G}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I},
+::: proof
+Let $\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}$ denote the submatrix of the $r \times c$ matrix $\bm{X}$ with the columns indexed by the set $\mathbb{S}$. Similarly, let $\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}$ denote the submatrix of $\bm{X}$ with the rows indexed by $\mathbb{S}$, where $|\mathbb{S}|$ is the cardinality of the set $\mathbb{S}$. If $\mathbb{S}$ is the set of indices of nonzero columns in the solution $\hat{\bm{G}}$ to Equation \eqref{eq-op_u}, then the following equations hold: $$
+\hat{\bm{G}}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I}_{n_b},
 \qquad\text{and}\qquad
 \min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
-$$ This indicates that the number of nonzero columns of $\hat{\bm{G}}$ is no less than $n_b$.
+$$ This indicates that the number of nonzero columns of $\hat{\bm{G}}$ is no less than $n_b$, i.e., $|\mathbb{S}| \geq n_b$.
 
-Moreover, based on Equation \eqref{eq-fh}, we have $$
-\bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{y}_{\mathbb{S}\cdot} = \bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{y} = \bm{S}\hat{\bm{G}}_{\cdot\mathbb{S}}\bm{Sb} = \bm{Sb} = \bm{y},
-$$
-as the solution $\hat{\bm{G}}$ is subject to $\bm{GS}=\bm{I}$. Therefore, the constraint $\bm{GS}=\bm{I}$ ensures that the selected columns of $\hat{\bm{G}}$ correspond to variables capable of "restoring" the hierarchy.
+Moreover, we have $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b$ because $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b$, given that $\bm{S}$ has $n_b$ columns. If the solution to Equation \eqref{eq-op_u} yields a $\hat{\bm{G}}$ with exactly $n_b$ nonzero columns (i.e., $|\mathbb{S}|=n_b$), then $\bm{S}_{\mathbb{S}\cdot}$ is a full rank square matrix and thus invertible. According to Theorem 2 in @Zhang2023-op, $\bm{y}_{\mathbb{S}\cdot}$ is valid for constructing the full hierarchy. If the solution yields a $\hat{\bm{G}}$ with more than $n_b$ nonzero columns, we should be able to find a subset $\mathbb{S}^* \subset \mathbb{S}$ with $|\mathbb{S}^*|=n_b$ to construct a full rank square matrix $\bm{S}_{\mathbb{S}^{*}\cdot}$ and thus restore the full hierarchy using a valid $\bm{y}_{\mathbb{S}^{*}\cdot}$. Therefore, the constraint $\bm{GS}=\bm{I}$ ensures that the selected columns of $\hat{\bm{G}}$ correspond to variables that can restore the hierarchy.
 :::
 
-For example, consider the simple hierarchy shown in @fig-hts. Our constrained reconciliation methods might simultaneously zero out the columns of $\bm{G}$ corresponding to series AA and BA, but not to series AA and AB. If the solution to Equation \eqref{eq-op_u} yields a $\hat{\bm{G}}$ with exactly $n_b$ nonzero columns, these correspond to base forecasts from which the full hierarchy can be obtained using nothing but the information embedded in the aggregation constraints. However, if the solution yields a $\hat{\bm{G}}$ with more than $n_b$ nonzero columns, while a coherent forecast can be restored using the the aggregation constraints, it cannot be done uniquely due to the excess of series.
+For example, consider the simple hierarchy shown in @fig-hts. Our constrained reconciliation methods might simultaneously zero out the columns of $\bm{G}$ corresponding to series AA and BA, but not to series AA and AB.
 
 ::: {#prp-2}
 The optimization problem in Equation \eqref{eq-op_u} can be reformulated as a least squares problem with regularization and linear equality constraint as follows: $$
@@ -205,7 +202,7 @@ The optimization problem in Equation \eqref{eq-op_u} can be reformulated as a le
 $$ {#eq-op_u_reg} which is characterized as a high-dimensional problem in which the number of features, denoted as $p = n_b \times n$, is much larger than the number of observations, $n$.
 :::
 
-::: {.proof}
+::: proof
 We have\vspace*{-0.4cm}\enlargethispage{0.4cm} $$
 \begin{aligned}
 & \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
@@ -291,7 +288,7 @@ Ignoring the unbiasedness constraint, we define $\lambda^{1}$ as the smallest $\
 $$ where $j^{*}$ denotes the column index of $\hat{\bm{y}}^{\prime} \otimes \bm{S}$ that corresponds to the $j$th column of $\bm{G}$.
 :::
 
-::: {.proof}
+::: proof
 Denote $\bm{\beta} = \operatorname{vec}(\bm{G})$, and the first term in the objective of Equation \eqref{eq-lasso} as $L\left(\bm{\beta} \mid \bm{D}\right)$, where $\bm{D}$ is the working data $\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}$. Ignoring the unbiasedness constraint, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\bm{\beta}}^{1}=\bm{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have $$
 \lambda^{1}
  = \max_{j=1, \ldots, n}\big\|\big[\nabla L(\hat{\bm{\beta}}^{1} \mid \bm{D})\big]^{(j)}\big\|_2 / w_j
