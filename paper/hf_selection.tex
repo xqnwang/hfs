@@ -214,7 +214,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{June 19, 2024}
+\date{July 8, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -631,10 +631,10 @@ hierarchy.
 \begin{proof}
 Let \(\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
 denote the submatrix of the \(r \times c\) matrix \(\bm{X}\) with the
-columns indexed by the set \(\mathbb{S}\). Similarly, let
+columns indexed by the set \(\mathbb{S}\), where \(|\mathbb{S}|\) is the
+cardinality of the set \(\mathbb{S}\). Similarly, let
 \(\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}\)
 denote the submatrix of \(\bm{X}\) with the rows indexed by
-\(\mathbb{S}\), where \(|\mathbb{S}|\) is the cardinality of the set
 \(\mathbb{S}\). If \(\mathbb{S}\) is the set of indices of nonzero
 columns in the solution \(\hat{\bm{G}}\) to Equation \eqref{eq-op_u},
 then the following equations hold: \[
@@ -642,7 +642,7 @@ then the following equations hold: \[
 \qquad\text{and}\qquad
 \min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
 \] This indicates that the number of nonzero columns of \(\hat{\bm{G}}\)
-is no less than \(n_b\), i.e., \(|\mathbb{S}| \geq n_b\).
+should be no less than \(n_b\), i.e., \(|\mathbb{S}| \geq n_b\).
 
 Moreover, we have
 \(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b\) because
@@ -650,22 +650,25 @@ Moreover, we have
 \(\bm{S}\) has \(n_b\) columns. If the solution to Equation
 \eqref{eq-op_u} yields a \(\hat{\bm{G}}\) with exactly \(n_b\) nonzero
 columns (i.e., \(|\mathbb{S}|=n_b\)), then \(\bm{S}_{\mathbb{S}\cdot}\)
-is a full rank square matrix and thus invertible. According to Theorem 2
-in \citet{Zhang2023-op}, \(\bm{y}_{\mathbb{S}\cdot}\) is valid for
-constructing the full hierarchy. If the solution yields a
+is a full rank square matrix and thus invertible. Applying Theorem 2 in
+\citet{Zhang2023-op}, \(\bm{y}_{\mathbb{S}\cdot}\) is valid for
+constructing the full hierarchy using nothing but the information
+embedded in the aggregation constraints. If the solution yields a
 \(\hat{\bm{G}}\) with more than \(n_b\) nonzero columns, we should be
-able to find at least one subset \(\mathbb{S}^* \subset \mathbb{S}\)
-with \(|\mathbb{S}^*|=n_b\) to construct an invertible square matrix
-\(\bm{S}_{\mathbb{S}^{*}\cdot}\) and thus restore the full hierarchy
-using a valid \(\bm{y}_{\mathbb{S}^{*}\cdot}\). Therefore, the
-constraint \(\bm{GS}=\bm{I}\) ensures that the selected columns of
-\(\hat{\bm{G}}\) correspond to variables that can restore the hierarchy.
+able to identify more than one subset
+\(\mathbb{S}^* \subset \mathbb{S}\) with \(|\mathbb{S}^*|=n_b\) to
+construct an invertible square matrix \(\bm{S}_{\mathbb{S}^{*}\cdot}\)
+and thereby restore the full hierarchy using a valid
+\(\bm{y}_{\mathbb{S}^{*}\cdot}\). Therefore, the constraint
+\(\bm{GS}=\bm{I}\) ensures that the selected columns of \(\hat{\bm{G}}\)
+correspond to variables that can restore the full hierarchy.
 \end{proof}
 
-For example, consider the simple hierarchy shown in
-Figure~\ref{fig-hts}. Our constrained reconciliation methods might
-simultaneously zero out the columns of \(\bm{G}\) corresponding to
-series AA and BA, but not to series AA and AB.
+For example, in the simple hierarchy shown in Figure~\ref{fig-hts}, the
+selected columns of \(\hat{\bm{G}}\) will be at least \(n_b=4\). Our
+constrained reconciliation methods might simultaneously zero out the
+columns of \(\bm{G}\) corresponding to series AA and BA, but not to
+series AA and AB.
 
 \begin{proposition}[]\protect\hypertarget{prp-2}{}\label{prp-2}
 
@@ -1141,8 +1144,8 @@ simulated data in Scenario A, Setup 1.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
@@ -1153,12 +1156,12 @@ Method & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1-
 \midrule
 Base & 9.6 & 10.7 & 12.6 & 15.6 & 6.3 & 7.3 & 8.6 & 10.8 & 6.4 & 7.5 & 8.3 & 9.8 & 6.8 & 7.9 & 9.0 & 10.9\\
 BU & 57.8 & 68.5 & 53.7 & 38.9 & 58.2 & 61.8 & 48.1 & 34.4 & 0.0 & 0.0 & 0.0 & 0.0 & 27.0 & 29.6 & 23.8 & 17.7\\
-\midrule\\
+\midrule
 OLS & 0.6 & 2.2 & 1.8 & 1.4 & 7.1 & 6.4 & 4.6 & 3.1 & --7.6 & --8.6 & --8.2 & --7.3 & --2.1 & --2.5 & --2.7 & --2.6\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{7.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.1}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{7.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 6.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{2.2} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{7.4} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{4.8} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--8.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.5}\\
-\midrule\\
+\midrule
 WLSs & 7.3 & 10.6 & 8.1 & 5.9 & 15.6 & 16.0 & 11.8 & 8.0 & --6.9 & --7.8 & --7.4 & --6.4 & 1.9 & 2.0 & 1.0 & 0.2\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{12.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{10.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{16.5} & \cellcolor[HTML]{e6e3e3}{\textbf{15.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{11.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.9}} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.4}}\\
@@ -1230,7 +1233,7 @@ in Scenario A, Setup 1.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
@@ -1240,23 +1243,23 @@ in Scenario A, Setup 1.}
 OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
 OLS-intuitive & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-intuitive.png}\\
 OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-lasso.png}\\
-\midrule\\
+\midrule
 WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-subset.png}\\
 WLSs-intuitive & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-intuitive.png}\\
 WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-lasso.png}\\
-\midrule\\
+\midrule
 WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-subset.png}\\
 WLSv-intuitive & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-intuitive.png}\\
 WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-lasso.png}\\
-\midrule\\
+\midrule
 MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-subset.png}\\
 MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-intuitive.png}\\
 MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-lasso.png}\\
-\midrule\\
+\midrule
 MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-subset.png}\\
 MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-intuitive.png}\\
 MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-lasso.png}\\
-\midrule\\
+\midrule
 Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_Elasso.png}\\
 \bottomrule
 \end{tabular}
@@ -1353,8 +1356,8 @@ various error correlations for simulation in Setup 2.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
@@ -1365,7 +1368,7 @@ Method & $\rho$=--0.8 & --0.4 & 0 & 0.4 & 0.8 & $\rho$=--0.8 & --0.4 & 0 & 0.4 &
 \midrule
 Base & 2.4 & 2.9 & 3.4 & 4.1 & 4.0 & 1.5 & 1.8 & 2.1 & 2.4 & 2.5 & 1.5 & 1.5 & 1.5 & 1.5 & 1.4 & 1.6 & 1.8 & 2.0 & 2.1 & 2.1\\
 BU & --17.0 & --9.0 & --6.7 & --7.0 & --7.4 & --6.8 & 0.4 & 4.8 & 5.7 & 2.8 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & --5.3 & --1.9 & --0.2 & --0.1 & --1.0\\
-\midrule\\
+\midrule
 OLS & --11.0 & --8.2 & --7.7 & --8.2 & --8.0 & --3.5 & --0.7 & 3.1 & 2.5 & 0.8 & 0.7 & --0.6 & --2.0 & --2.3 & --2.1 & --2.8 & --2.4 & --1.8 & --2.4 & --2.7\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.7}} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{2.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.8}} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.9}} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.2}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.6}} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{2.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.0}} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.8}}\\
@@ -1450,7 +1453,7 @@ in Setup 2, with the error correlation being -0.8.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
@@ -1460,23 +1463,23 @@ in Setup 2, with the error correlation being -0.8.}
 OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-subset.png}\\
 OLS-intuitive & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-intuitive.png}\\
 OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-lasso.png}\\
-\midrule\\
+\midrule
 WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-subset.png}\\
 WLSs-intuitive & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-intuitive.png}\\
 WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-lasso.png}\\
-\midrule\\
+\midrule
 WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-subset.png}\\
 WLSv-intuitive & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-intuitive.png}\\
 WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-lasso.png}\\
-\midrule\\
+\midrule
 MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-subset.png}\\
 MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-intuitive.png}\\
 MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-lasso.png}\\
-\midrule\\
+\midrule
 MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-subset.png}\\
 MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-intuitive.png}\\
 MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-lasso.png}\\
-\midrule\\
+\midrule
 Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_Elasso.png}\\
 \bottomrule
 \end{tabular}
@@ -1586,8 +1589,8 @@ results for Australian labour force data.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
@@ -1598,12 +1601,12 @@ Method & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1-
 \midrule
 Base & 29.4 & 44.9 & 58.6 & 67.6 & 10.1 & 14.2 & 16.3 & 18.1 & 6.6 & 8.4 & 9.9 & 10.7 & 2.3 & 2.9 & 3.1 & 3.3 & 4.0 & 5.3 & 6.1 & 6.6\\
 BU & 46.7 & 34.1 & 29.3 & 24.2 & 7.4 & 2.3 & 0.8 & 0.8 & 5.1 & 9.8 & 10.5 & 10.4 & 0.0 & 0.0 & 0.0 & 0.0 & 8.4 & 7.1 & 6.8 & 6.3\\
-\midrule\\
+\midrule
 OLS & 2.0 & 1.7 & 1.5 & 1.0 & 0.6 & --4.2 & --4.3 & --3.3 & --0.7 & 0.4 & 0.0 & --0.1 & 1.9 & 0.7 & 0.8 & 0.7 & 1.0 & --0.5 & --0.6 & --0.5\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.0}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--4.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.0}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.2}} & \cellcolor[HTML]{e6e3e3}{1.9} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.5}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.6}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.9}} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.3}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.1}}} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{--0.2}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.5} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.0} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{1.9} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.5} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{--0.5}\\
-\midrule\\
+\midrule
 WLSs & 16.9 & 10.8 & 9.0 & 7.0 & --0.7 & --4.8 & --5.0 & --4.3 & --3.0 & 0.6 & 1.4 & 1.6 & --1.3 & \textcolor{blue}{\textbf{--1.7}} & \textcolor{blue}{\textbf{--1.5}} & \textcolor{blue}{\textbf{--1.6}} & 0.6 & --0.3 & --0.2 & --0.3\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{14.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 9.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.2}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.6}}} & \cellcolor[HTML]{e6e3e3}{--3.7} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{--3.4} & \cellcolor[HTML]{e6e3e3}{--2.3} & \cellcolor[HTML]{e6e3e3}{1.5} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.1}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{16.9} & \cellcolor[HTML]{e6e3e3}{10.8} & \cellcolor[HTML]{e6e3e3}{9.0} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.7}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.6}}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--0.3}\\
@@ -1758,8 +1761,8 @@ results for Australian domestic tourism data.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
@@ -1770,7 +1773,7 @@ Method & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1-
 \midrule
 Base & 1565.8 & 1520.2 & 1548.3 & 1773.1 & 366.0 & 406.1 & 421.4 & 442.0 & 142.5 & 170.8 & 178.5 & 185.3 & 72.1 & 86.4 & 90.9 & 94.4 & 121.2 & 140.0 & 146.2 & 153.6\\
 BU & 14.3 & 38.8 & 42.0 & 38.8 & 4.6 & 10.3 & 13.8 & 15.7 & --0.1 & 0.9 & 1.3 & 1.6 & 0.0 & 0.0 & 0.0 & 0.0 & 2.5 & 6.0 & 6.9 & 7.4\\
-\midrule\\
+\midrule
 OLS & --0.6 & 1.1 & 1.8 & 1.9 & --1.2 & --1.0 & --1.0 & --1.3 & --2.8 & --4.0 & --4.8 & --5.6 & --0.1 & --0.8 & --1.6 & --2.4 & --1.1 & --1.6 & --2.1 & --2.7\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{  --1.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  --4.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  --3.0}} & \cellcolor[HTML]{e6e3e3}{--1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.2}} & \cellcolor[HTML]{e6e3e3}{1.5} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--0.5} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--1.1} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{--0.2}\\
 \cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{1.9} & \cellcolor[HTML]{e6e3e3}{--1.2} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{--4.0} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--1.1} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--2.7}\\
@@ -1785,7 +1788,7 @@ WLSv & 6.2 & 22.3 & 25.0 & 23.6 & 1.1 & 3.7 & 6.3 & 7.9 & --2.6 & --2.4 & --2.4 
 \cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{   0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{   4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{   4.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{   5.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.9}} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--1.2} & \cellcolor[HTML]{e6e3e3}{--1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.7}}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{22.3} & \cellcolor[HTML]{e6e3e3}{25.0} & \cellcolor[HTML]{e6e3e3}{23.6} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{7.9} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--0.5} & \cellcolor[HTML]{e6e3e3}{1.5} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{2.4}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{22.3} & \cellcolor[HTML]{e6e3e3}{25.0} & \cellcolor[HTML]{e6e3e3}{23.6} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{7.9} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--0.5} & \cellcolor[HTML]{e6e3e3}{1.5} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{2.4}\\
-\midrule\\
+\midrule
 MinTs & 5.1 & 17.2 & 19.7 & 18.6 & 0.1 & 1.9 & 4.4 & 5.7 & --3.5 & --3.3 & --3.4 & --3.4 & \textcolor{blue}{\textbf{--1.9}} & \textcolor{blue}{\textbf{--2.0}} & \textcolor{blue}{\textbf{--2.4}} & \textcolor{blue}{\textbf{--2.7}} & --1.2 & 0.2 & 0.7 & 0.9\\
 \cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{   1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{   1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{   2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{   3.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.4}} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--2.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.5}}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{5.1} & \cellcolor[HTML]{e6e3e3}{17.2} & \cellcolor[HTML]{e6e3e3}{19.7} & \cellcolor[HTML]{e6e3e3}{18.6} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{1.9} & \cellcolor[HTML]{e6e3e3}{4.4} & \cellcolor[HTML]{e6e3e3}{5.7} & \cellcolor[HTML]{e6e3e3}{--3.5} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--3.4} & \cellcolor[HTML]{e6e3e3}{--3.4} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.7}}} & \cellcolor[HTML]{e6e3e3}{--1.2} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.9}\\
@@ -1936,8 +1939,8 @@ simulated data in Scenario B, Setup 1.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
@@ -1994,8 +1997,8 @@ simulated data in Scenario C, Setup 1.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
@@ -2053,7 +2056,7 @@ in Scenario B, Setup 1.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
@@ -2063,23 +2066,23 @@ in Scenario B, Setup 1.}
 OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
 OLS-intuitive & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-intuitive.png}\\
 OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
-\midrule\\
+\midrule
 WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
 WLSs-intuitive & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-intuitive.png}\\
 WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
-\midrule\\
+\midrule
 WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
 WLSv-intuitive & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-intuitive.png}\\
 WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
-\midrule\\
+\midrule
 MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
 MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-intuitive.png}\\
 MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
-\midrule\\
+\midrule
 MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
 MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-intuitive.png}\\
 MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
-\midrule\\
+\midrule
 Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
 \bottomrule
 \end{tabular}
@@ -2101,7 +2104,7 @@ in Scenario C, Setup 1.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
@@ -2111,23 +2114,23 @@ in Scenario C, Setup 1.}
 OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
 OLS-intuitive & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-intuitive.png}\\
 OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-lasso.png}\\
-\midrule\\
+\midrule
 WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-subset.png}\\
 WLSs-intuitive & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-intuitive.png}\\
 WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-lasso.png}\\
-\midrule\\
+\midrule
 WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-subset.png}\\
 WLSv-intuitive & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-intuitive.png}\\
 WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-lasso.png}\\
-\midrule\\
+\midrule
 MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-subset.png}\\
 MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-intuitive.png}\\
 MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-lasso.png}\\
-\midrule\\
+\midrule
 MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-subset.png}\\
 MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-intuitive.png}\\
 MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-lasso.png}\\
-\midrule\\
+\midrule
 Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_Elasso.png}\\
 \bottomrule
 \end{tabular}
@@ -2149,7 +2152,7 @@ in Setup 2, with the error correlation being 0.8.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{11}{13}\selectfont
 
 \begin{threeparttable}
 \begin{tabular}{llrrrrrr>{}r}
@@ -2159,23 +2162,23 @@ in Setup 2, with the error correlation being 0.8.}
 OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-subset.png}\\
 OLS-intuitive & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-intuitive.png}\\
 OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-lasso.png}\\
-\midrule\\
+\midrule
 WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-subset.png}\\
 WLSs-intuitive & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-intuitive.png}\\
 WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-lasso.png}\\
-\midrule\\
+\midrule
 WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-subset.png}\\
 WLSv-intuitive & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-intuitive.png}\\
 WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-lasso.png}\\
-\midrule\\
+\midrule
 MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-subset.png}\\
 MinT-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-intuitive.png}\\
 MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-lasso.png}\\
-\midrule\\
+\midrule
 MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-subset.png}\\
 MinTs-intuitive & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-intuitive.png}\\
 MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-lasso.png}\\
-\midrule\\
+\midrule
 Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_Elasso.png}\\
 \bottomrule
 \end{tabular}
@@ -2197,8 +2200,8 @@ force data.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
@@ -2214,22 +2217,22 @@ OLS & --16.2 & --14.2 & --13.4 & --10.4 & 2.5 & --2.6 & --2.7 & --0.6 & --1.8 & 
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.0}} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--31.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--38.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.0}} & \cellcolor[HTML]{e6e3e3}{--1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{5.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.7}} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{\textbf{--79.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--31.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--13.0}} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.9}} & \cellcolor[HTML]{e6e3e3}{4.9} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{13.2} & \cellcolor[HTML]{e6e3e3}{\textbf{  6.3}} & \cellcolor[HTML]{e6e3e3}{12.3} & \cellcolor[HTML]{e6e3e3}{12.4} & \cellcolor[HTML]{e6e3e3}{11.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.5}} & \cellcolor[HTML]{e6e3e3}{5.6} & \cellcolor[HTML]{e6e3e3}{4.7} & \cellcolor[HTML]{e6e3e3}{4.4}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{--16.2} & \cellcolor[HTML]{e6e3e3}{--14.2} & \cellcolor[HTML]{e6e3e3}{--13.4} & \cellcolor[HTML]{e6e3e3}{--10.4} & \cellcolor[HTML]{e6e3e3}{2.5} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.9} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{5.1} & \cellcolor[HTML]{e6e3e3}{5.1} & \cellcolor[HTML]{e6e3e3}{4.9} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{1.1}\\
-\midrule\\
+\midrule
 WLSs & --60.6 & --29.4 & --44.0 & --38.6 & --12.0 & --7.6 & --6.9 & --5.9 & --6.5 & --8.1 & --9.4 & --8.0 & 3.2 & 1.7 & 1.7 & 1.6 & --7.7 & --4.4 & --5.8 & --5.9\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--61.6}} & \cellcolor[HTML]{e6e3e3}{--22.4} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--47.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--50.4}}} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--8.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{5.6} & \cellcolor[HTML]{e6e3e3}{4.1} & \cellcolor[HTML]{e6e3e3}{5.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.4}}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.4} & \cellcolor[HTML]{e6e3e3}{--44.0} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--6.9} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--6.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--9.4} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--7.7} & \cellcolor[HTML]{e6e3e3}{--4.4} & \cellcolor[HTML]{e6e3e3}{--5.8} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.4} & \cellcolor[HTML]{e6e3e3}{--44.0} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--12.0} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--6.9} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--6.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--9.4} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--7.7} & \cellcolor[HTML]{e6e3e3}{--4.4} & \cellcolor[HTML]{e6e3e3}{--5.8} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
-\midrule\\
+\midrule
 WLSv & --60.6 & --29.1 & --41.4 & --36.6 & --14.5 & --8.7 & --5.6 & --4.8 & --3.3 & --6.8 & --8.0 & --7.0 & 5.5 & 2.6 & 2.6 & 3.1 & --6.7 & --4.0 & --4.5 & --4.6\\
 \cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{--51.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--32.7}}} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--29.6} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--9.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}} & \cellcolor[HTML]{e6e3e3}{--1.1} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--4.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.1} & \cellcolor[HTML]{e6e3e3}{--41.4} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--8.7} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.0} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{--60.6} & \cellcolor[HTML]{e6e3e3}{--29.1} & \cellcolor[HTML]{e6e3e3}{--41.4} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--8.7} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.0} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
-\midrule\\
+\midrule
 MinTs & --27.0 & --21.1 & --22.9 & --21.8 & --9.1 & --7.9 & --6.7 & --4.6 & --3.6 & --9.0 & --10.5 & --7.6 & 7.7 & 3.7 & 3.0 & 3.4 & --1.9 & --3.3 & --3.9 & --3.1\\
 \cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--41.4}} & \cellcolor[HTML]{e6e3e3}{--9.3} & \cellcolor[HTML]{e6e3e3}{--17.8} & \cellcolor[HTML]{e6e3e3}{\textbf{--45.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.2}} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.8}} & \cellcolor[HTML]{e6e3e3}{--7.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  5.3}} & \cellcolor[HTML]{e6e3e3}{4.7} & \cellcolor[HTML]{e6e3e3}{3.8} & \cellcolor[HTML]{e6e3e3}{3.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.3}} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.1}}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{--27.0} & \cellcolor[HTML]{e6e3e3}{--21.1} & \cellcolor[HTML]{e6e3e3}{--22.9} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--9.1} & \cellcolor[HTML]{e6e3e3}{--7.9} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--3.6} & \cellcolor[HTML]{e6e3e3}{--9.0} & \cellcolor[HTML]{e6e3e3}{--10.5} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{7.7} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{3.0} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{--27.0} & \cellcolor[HTML]{e6e3e3}{--21.1} & \cellcolor[HTML]{e6e3e3}{--22.9} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--9.1} & \cellcolor[HTML]{e6e3e3}{--7.9} & \cellcolor[HTML]{e6e3e3}{--6.7} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--3.6} & \cellcolor[HTML]{e6e3e3}{--9.0} & \cellcolor[HTML]{e6e3e3}{--10.5} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{7.7} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{3.0} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
-\midrule\\
+\midrule
 EMinT & --60.4 & --14.0 & 1.4 & --29.9 & --6.0 & 12.0 & 10.7 & --6.7 & 16.7 & --0.9 & --12.4 & \textcolor{blue}{\textbf{--21.0}} & 23.3 & 17.2 & 16.7 & 10.1 & 7.7 & 10.8 & 9.0 & --3.7\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.3}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--25.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--0.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--4.9}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--13.2}}}\\
 \bottomrule
@@ -2283,8 +2286,8 @@ domestic tourism data.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
 \begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
@@ -2295,22 +2298,22 @@ Method & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1--8 & 1--12 & h=1 & 1--4 & 1-
 \midrule
 Base & 1158.2 & 716.6 & 1279.5 & 1907.6 & 452.7 & 323.3 & 349.9 & 424.8 & 165.5 & 163.6 & 160.7 & 179.7 & 100.8 & 89.4 & 88.2 & 94.1 & 148.3 & 127.9 & 133.1 & 152.1\\
 BU & 89.1 & 132.8 & 53.4 & 42.0 & --4.6 & 10.3 & 17.0 & 19.7 & 1.1 & --2.4 & 0.4 & 1.0 & 0.0 & 0.0 & 0.0 & 0.0 & 5.7 & 7.6 & 7.6 & 8.5\\
-\midrule\\
+\midrule
 OLS & --4.7 & --0.4 & 0.5 & 1.4 & --3.0 & --3.9 & --1.6 & --1.5 & --2.1 & --4.2 & --5.6 & --7.5 & 1.0 & --0.4 & --1.9 & --3.2 & --1.0 & --2.1 & --2.7 & --3.6\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{  --1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --14.1}} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.9}} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--3.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.7}} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{--2.3} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{--1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-intuitive} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
-\midrule\\
+\midrule
 WLSs & 25.1 & 55.2 & 20.8 & 19.1 & --15.8 & --5.0 & 3.5 & 6.2 & --5.9 & --5.4 & --4.7 & --5.0 & --0.2 & --0.8 & --1.6 & --2.2 & --3.0 & --0.1 & 0.3 & 0.9\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 18.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{   0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{  --7.8}} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--2.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.2}} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.5}} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--1.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.5}} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.5}}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-intuitive} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{55.2} & \cellcolor[HTML]{e6e3e3}{20.8} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--5.4} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.9}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{25.1} & \cellcolor[HTML]{e6e3e3}{55.2} & \cellcolor[HTML]{e6e3e3}{20.8} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{--15.8} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--5.4} & \cellcolor[HTML]{e6e3e3}{--4.7} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--3.0} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.9}\\
-\midrule\\
+\midrule
 WLSv & 38.2 & 76.2 & 29.6 & 25.6 & --17.4 & --3.1 & 7.0 & 9.9 & --5.0 & --4.3 & --3.1 & --3.2 & --4.2 & --1.6 & --1.8 & --2.1 & --3.9 & 1.3 & 2.0 & 2.8\\
 \cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 34.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{  10.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{   8.5}} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.4}} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.7}} & \cellcolor[HTML]{e6e3e3}{--4.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.4}} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.2}}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-intuitive} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{76.2} & \cellcolor[HTML]{e6e3e3}{29.6} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{2.8}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{38.2} & \cellcolor[HTML]{e6e3e3}{76.2} & \cellcolor[HTML]{e6e3e3}{29.6} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{--17.4} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--3.9} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{2.8}\\
-\midrule\\
+\midrule
 MinTs & 20.6 & 53.6 & 21.6 & 19.0 & \textcolor{blue}{\textbf{--22.2}} & --7.2 & 3.5 & 6.3 & \textcolor{blue}{\textbf{--12.1}} & --6.6 & --5.1 & --5.3 & \textcolor{blue}{\textbf{ --5.3}} & --2.6 & --2.8 & --3.1 & --8.6 & --1.8 & --0.3 & 0.4\\
 \cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 20.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{   6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{   5.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.1}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --2.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.9}}} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --4.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --3.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.3}}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-intuitive} & \cellcolor[HTML]{e6e3e3}{20.6} & \cellcolor[HTML]{e6e3e3}{53.6} & \cellcolor[HTML]{e6e3e3}{21.6} & \cellcolor[HTML]{e6e3e3}{19.0} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.2}}} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{3.5} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.1}}} & \cellcolor[HTML]{e6e3e3}{--6.6} & \cellcolor[HTML]{e6e3e3}{--5.1} & \cellcolor[HTML]{e6e3e3}{--5.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --5.3}}} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.8} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{--8.6} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{0.4}\\
