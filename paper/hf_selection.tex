@@ -854,8 +854,8 @@ Given fixed \(\bm{S}\) and estimation of \(\bm{W}\), \(\bar{\bm{G}}\) is
 entirely determined by \(\bm{A}\). Thus, when the \(j\)th diagonal
 element of \(\bm{A}\) is zero, the \(j\)th column of \(\bar{\bm{G}}\)
 becomes entirely composed of zeros. Therefore, the optimization problem
-can be reduced to an integer quadratic programming (IQP) problem where
-all of the variables are restricted to being integers: \begin{align*}
+can be reduced to an integer quadratic programming problem where all of
+the variables are restricted to being integers: \begin{align*}
 \min_{\bm{A}} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\bm{S}\bar{\bm{G}}\hat{\bm{y}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\bm{S}\bar{\bm{G}}\hat{\bm{y}}\right) + \lambda_0 \sum_{j=1}^n \bm{A}_{jj} \\
 \text{s.t.} \quad & \bar{\bm{G}} = (\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S})^{-1}\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1} \qquad\text{and}\qquad \bar{\bm{G}}\bm{S} = \bm{I},
 \end{align*} where \(\lambda_0 \geq 0\) controls the number of nonzero
@@ -869,11 +869,11 @@ parameters. In the results that follow, we label the
 \textbf{WLSs-parsim}, \textbf{WLSv-parsim}, \textbf{MinT-parsim}, and
 \textbf{MinTs-parsim}, respectively.
 
-We should note that implementing grouped variable selection with this
-optimization problem can be challenging because it imposes restrictions
-\(\bar{\bm{G}}\) to ensure it adheres rigorously to the analytical
-solution of MinT while making the selection. Therefore, the resulting
-solution tends to be dense and may not have zero columns.
+We should note that achieving time series selection with this
+optimization problem can be challenging, as identifying a solution
+\(\hat{\bm{A}}\) with some zero diagonal elements while satisfying both
+the MinT solution and the constraint may be difficult. Thus, the
+resulting solution tends to be dense and may not have zero columns.
 
 To ensure the invertibility of
 \(\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S}\), and make the
