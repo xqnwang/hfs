@@ -435,8 +435,8 @@ denote the \(h\)-step-ahead in-sample \emph{base forecast errors}, and
 denote the \(h\)-step-ahead \emph{reconciled forecast errors}, for
 \(t = 1,2,\ldots,T-h\). Assuming the base forecasts are unbiased and
 imposing the constraint \(\bm{G_h S}=\bm{I_{n_b}}\) to preserve the
-unbiasedness of the reconciled forecasts, \citet{Wickramasuriya2019-fc}
-eliminated out the bias term in Equation \eqref{eq-loss} and formulated
+unbiasedness of the reconciled forecasts, the bias term in Equation
+\eqref{eq-loss} cancels. \citet{Wickramasuriya2019-fc} thus formulated
 the reconciliation problem as minimizing the trace (MinT) of the
 \(h\)-step-ahead covariance matrix of the reconciled forecast errors,
 \(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\). This leads to the
@@ -635,12 +635,17 @@ zero, and \(\lambda\) is a penalty parameter. The methods developed
 within this framework are ``out‑of‑sample'' in the sense that
 \(\hat{\bm{y}}\) are genuine one-step-ahead forecasts. This can be
 considered \emph{a grouped variable selection problem}, with each group
-corresponding to a column of \(\bm{G}\). The constraint,
-\(\bm{G}\bm{S}=\bm{I}\), ensures that the reconciled forecasts are
-unbiased if the base forecasts are unbiased. When \(\lambda = 0\), the
+corresponding to a column of \(\bm{G}\). When \(\lambda = 0\), the
 problem reduces to the MinT optimization problem in Equation
 \eqref{eq-mint_op} with a closed-form solution given by Equation
 \eqref{eq-mint}.
+
+The constraint \(\bm{G}\bm{S}=\bm{I}\) guarantees that the reconciled
+forecasts remain unbiased if the base forecasts are unbiased. Under this
+assumption and constraint, minimizing the loss function in Equation
+\eqref{eq-loss} simplifies to the MinT problem formulated in Equation
+\eqref{eq-mint_op}, which underpins the constrained ``out-of-sample''
+reconciliation methods within the framework in equation \eqref{eq-op_u}.
 
 \begin{proposition}[]\protect\hypertarget{prp-1}{}\label{prp-1}
 
@@ -725,10 +730,10 @@ shown in Equation \eqref{eq-op_u_reg}.
 \end{proof}
 
 Next, we present three classes of regularizations that allow forecast
-reconciliation with series selection, resulting in three optimization
-problems: (i) group best-subset selection with ridge regularization,
-(ii) intuitive method with \(L_0\) regularization, and (iii) group lasso
-method.
+reconciliation with series selection under the unbiasedness assumption,
+resulting in three optimization problems: (i) group best-subset
+selection with ridge regularization, (ii) parsimonious method with
+\(L_0\) regularization, and (iii) group lasso method.
 
 \subsubsection*{Group best-subset selection with ridge
 regularization}\label{group-best-subset-selection-with-ridge-regularization}
@@ -831,9 +836,9 @@ our need to consider numerous parameter candidates, and the final
 solution will be validated against the training set, which prevents the
 use of a poor estimate of \(\bm{G}\).
 
-\subsubsection*{\texorpdfstring{Intuitive method with \(L_0\)
-regularization}{Intuitive method with L\_0 regularization}}\label{intuitive-method-with-l_0-regularization}
-\addcontentsline{toc}{subsubsection}{Intuitive method with \(L_0\)
+\subsubsection*{\texorpdfstring{Parsimonious method with \(L_0\)
+regularization}{Parsimonious method with L\_0 regularization}}\label{parsimonious-method-with-l_0-regularization}
+\addcontentsline{toc}{subsubsection}{Parsimonious method with \(L_0\)
 regularization}
 
 Instead of estimating the entire matrix \(\bm{G}\) as above, we leverage
@@ -856,12 +861,13 @@ all of the variables are restricted to being integers: \begin{align*}
 \end{align*} where \(\lambda_0 \geq 0\) controls the number of nonzero
 diagonal elements in \(\bm{A}\), consequently affecting the number of
 nonzero columns (i.e., selected time series) in \(\bm{G}\). We call this
-reconciliation method the \emph{intuitive method with} \(L_0\)
-\emph{regularization}. In the results that follow, we label the
-\textbf{Intuitive} method differently based on various estimators for
-\(\bm{W}\), referring to them as \textbf{OLS-intuitive},
-\textbf{WLSs-intuitive}, \textbf{WLSv-intuitive},
-\textbf{MinT-intuitive}, and \textbf{MinTs-intuitive}, respectively.
+reconciliation method the \emph{parsimonious method with} \(L_0\)
+\emph{regularization} due to its appeal in reducing the number of
+parameters. In the results that follow, we label the
+\textbf{Parsimonious} method differently based on various estimators for
+\(\bm{W}\), referring to them as \textbf{OLS-parsim},
+\textbf{WLSs-parsim}, \textbf{WLSv-parsim}, \textbf{MinT-parsim}, and
+\textbf{MinTs-parsim}, respectively.
 
 We should note that implementing grouped variable selection with this
 optimization problem can be challenging because it imposes restrictions
@@ -872,7 +878,7 @@ solution tends to be dense and may not have zero columns.
 To ensure the invertibility of
 \(\bm{S}^{\prime}\bm{A}^{\prime}\bm{W}^{-1}\bm{A}\bm{S}\), and make the
 problem compatible with Gurobi, we reformulate the problem as
-\begin{equation}\phantomsection\label{eq-intuitive_mip}{
+\begin{equation}\phantomsection\label{eq-parsimonious_mip}{
 \begin{aligned}
 \min_{\bm{A},\bar{\bm{G}},\bm{C},\check{\bm{e}},\bm{z}} \quad & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}^{-1}\check{\bm{e}} + \lambda_0 \sum_{j=1}^n z_j \\
 \text{s.t.} \quad & \bar{\bm{G}}\bm{S} = \bm{I} \\
@@ -897,7 +903,7 @@ for \(j \in [k]\).
 
 \textbf{Computation details.} Following a setup akin to that in the
 group best-subset selection, we employ Gurobi to solve Equation
-\eqref{eq-intuitive_mip} by configuring parameters such as MIPGap =
+\eqref{eq-parsimonious_mip} by configuring parameters such as MIPGap =
 \(0.001\) and TimeLimit = \(600\) seconds for problems with
 \(p > 1000\).
 
@@ -1031,11 +1037,11 @@ Similar to EMinT, Elasso operates as an ``in-sample'' method because
 \(\hat{\bm{Y}}\) are predictions in the form of fitted values (i.e.,
 \(\bm{Y}\) is in training data when base forecasts are computed). Thus,
 both EMinT and Elasso require only a single round of model training.
-Although Subset, Intuitive, and Lasso methods introduced in
+Although Subset, Parsimonious, and Lasso methods introduced in
 Section~\ref{sec-constrained} necessitate genuine forecasts, they still
 only require one round of model training and a single forecasting phase.
 To ensure a fair comparison, we will exclude the ``out-of-sample'' RERM
-and ERM methods from our simulation studies and empirical results due to
+and ERM methods from simulation studies and empirical results due to
 their iterative approach of generating out-of-sample forecasts using
 expanding windows, which is highly time-consuming.
 
@@ -1051,7 +1057,7 @@ proportionality vector obtained based on in-sample reconciled forecast
 errors.
 
 We also explored the empirical version of group best-subset selection
-with ridge regularization and the intuitive method with \(L_0\)
+with ridge regularization and the parsimonious method with \(L_0\)
 regularization in which we omit the unbiasedness assumption. It is worth
 mentioning that \citet{Hazimeh2023-ie} presented an algorithmic
 framework for formulating the group \(L_0\) problem with ridge
@@ -1325,8 +1331,8 @@ Table~\ref{tbl-s1-selection}, Table~\ref{tbl-s2-selection}, and
 Table~\ref{tbl-s3-selection}. Clearly, our methods select fewer time
 series, while enhancing forecast accuracy compared to benchmarks. Subset
 methods, in particular, tend to return fewer time series compared to the
-Intuitive and Lasso methods, which aligns with our expectations that the
-Intuitive and Lasso methods tend to produce dense estimates. Most
+Parsimonious and Lasso methods, which aligns with our expectations that
+the Parsimonious and Lasso methods tend to produce dense estimates. Most
 importantly, depending on the scenario considered, the time series with
 model misspecification has been selected less often than others. For
 example, in Scenario A, series AA is expected to be removed while
@@ -1478,18 +1484,19 @@ In Table~\ref{tbl-corr-selection-neg} and
 Table~\ref{tbl-corr-selection-pos}, we present the proportion of time
 series being selected using our proposed methods.
 Table~\ref{tbl-corr-selection-neg} shows that, for OLS, WLSs, and WLSv
-estimators, Subset and Intuitive methods are able to exclude the series
-Total, A, and BA in some instances, in which small biases are introduced
-in model fitting, while essentially retaining the remaining series.
-Subset methods outperform Intuitive methods in selection. Lasso methods
-typically select all bottom-level series, given their tendency to yield
-dense estimates, as discussed in Section~\ref{sec-constrained}. Elasso
-also selects all bottom-level series. When dealing with a high positive
-error correlation, Table~\ref{tbl-corr-selection-pos} shows that our
-methods still show potential for selection but it becomes somewhat
-challenging to identify and exclude the series that should be omitted in
-reconciliation. Hence, our methods are preferred, especially when the
-error correlation within the structure is negative.
+estimators, Subset and Parsimonious methods are able to exclude the
+series Total, A, and BA in some instances, in which small biases are
+introduced in model fitting, while essentially retaining the remaining
+series. Subset methods outperform Parsimonious methods in selection.
+Lasso methods typically select all bottom-level series, given their
+tendency to yield dense estimates, as discussed in
+Section~\ref{sec-constrained}. Elasso also selects all bottom-level
+series. When dealing with a high positive error correlation,
+Table~\ref{tbl-corr-selection-pos} shows that our methods still show
+potential for selection but it becomes somewhat challenging to identify
+and exclude the series that should be omitted in reconciliation. Hence,
+our methods are preferred, especially when the error correlation within
+the structure is negative.
 
 \begin{table}
 
@@ -1691,10 +1698,10 @@ when focusing on aggregation levels, which are typically of paramount
 concern to practitioners. The only exception is the WLSs-subset method,
 which returns reduced accuracy for longer horizons. However, it still
 demonstrates improvements in top-level forecasts. Moreover, the
-Intuitive and Lasso methods almost always yield results identical to the
-corresponding benchmark methods, because they tend to provide dense
+Parsimonious and Lasso methods almost always yield results identical to
+the corresponding benchmark methods, because they tend to provide dense
 estimates, and ETS models typically do not result in extremely poor
-forecasts. The only exception is OLS-intuitive, which shows improved
+forecasts. The only exception is OLS-parsim, which shows improved
 forecast accuracy at the top level but deterioration at other levels.
 When we drop the unbiasedness assumption, EMinT is the worst-performing
 method across all levels because it relies on the assumption that the
@@ -1712,7 +1719,7 @@ explore the post-COVID pattern. All Subset methods (using various
 estimators of \(\bm{W}\)) produce improved or comparable reconciled
 forecasts compared to their benchmarks. The accuracy improvements become
 more noticeable for longer forecast horizons. Similar to the average
-results in Table~\ref{tbl-labour-rmse-avg}, the Intuitive and Lasso
+results in Table~\ref{tbl-labour-rmse-avg}, the Parsimonious and Lasso
 methods yield results identical to the benchmark methods due to their
 tendency to offer dense estimates. Surprisingly, when relaxing the
 unbiasedness assumption, Elasso ranks the best and demonstrates
@@ -1789,7 +1796,7 @@ the OLS method despite its simplicity.
 Overall, the Subset methods outperform their respective benchmark
 methods, especially for aggregation levels and longer horizons. The only
 exception is the OLS-subset method, which slightly reduces overall
-accuracy while improving top-level forecasts. Intuitive and Lasso
+accuracy while improving top-level forecasts. Parsimonious and Lasso
 methods produce results almost identical to the corresponding
 benchmarks, which is not surprising as ETS models rarely yield extremely
 poor forecasts, making them challenging to be selected out using methods
@@ -1906,13 +1913,13 @@ reconciling forecasts, while ensuring coherent forecasts for all series.
 Under the unbiasedness assumption, we developed three reconciliation
 methods with selection mechanisms to automatically remove some base
 forecasts when forming reconciled forecasts. These methods include group
-best-subset selection with ridge regularization (Subset), an intuitive
-method with \(L_0\) regularization (Intuitive), and a group lasso method
-(Lasso). These methods use different penalty functions designed to
-penalize the columns of the weighting matrix, \(\bm{G}\), towards zero.
-Additionally, we relaxed the unbiasedness assumption and proposed the
-empirical group lasso method (Elasso) which selects series based on
-in-sample observations and fitted values.
+best-subset selection with ridge regularization (Subset), an
+parsimonious method with \(L_0\) regularization (Parsimonious), and a
+group lasso method (Lasso). These methods use different penalty
+functions designed to penalize the columns of the weighting matrix,
+\(\bm{G}\), towards zero. Additionally, we relaxed the unbiasedness
+assumption and proposed the empirical group lasso method (Elasso) which
+selects series based on in-sample observations and fitted values.
 
 Simulation experiments and two empirical applications demonstrated the
 superiority of the proposed methods over existing reconciliation methods
@@ -1922,7 +1929,7 @@ forecasts that outperformed or, at least, matched their respective
 benchmarks in the minimum trace reconciliation framework. In both
 empirical applications, where no apparent model misspecification was
 present, Subset and Elasso methods were always preferred, especially for
-aggregation levels and longer forecast horizons, while Intuitive and
+aggregation levels and longer forecast horizons, while Parsimonious and
 Lasso methods yielded results identical to corresponding benchmarks, as
 they tend to provide dense estimates.
 
