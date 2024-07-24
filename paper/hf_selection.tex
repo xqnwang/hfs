@@ -81,6 +81,7 @@
 \addtolength{\textwidth}{1in}%
 \addtolength{\textheight}{1.7in}%
 \addtolength{\topmargin}{-1in}%
+\usepackage{todonotes}
 \usepackage{bm}
 \usepackage{mathptmx}
 \usepackage{amsmath} % Ensure amsmath is included for \eqref
@@ -214,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{July 8, 2024}
+\date{July 24, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -305,18 +306,22 @@ structure by aggregating/disaggregating the selected series. Second, we
 relax the unbiasedness assumption and introduce an additional
 reconciliation method with selection, utilizing in-sample observations
 and their fitted values. This enables us to use the in-sample
-reconciliation performance for selection purposes. In this case, it may
-happen that fewer than the number of series at the bottom level are used
-for reconciliation. Through simulation experiments and two empirical
-applications, we demonstrate that our proposed methods guarantee
-coherent forecasts that outperform or match their respective benchmark
-methods. The improvements are particularly pronounced when focusing on
-higher aggregation levels, longer forecast horizons, and cases of model
-misspecification. A remarkable feature of the proposed methods is their
-ability to diminish disparities arising from using different estimates
-of the base forecast error covariance matrix, thereby mitigating
-challenges associated with estimator selection, which is a prominent
-concern in the field of forecast reconciliation research.
+reconciliation performance for selection purposes. In this case, it is
+possible that fewer than the number of series at the bottom level are
+used for reconciliation. In an extreme scenario, the solution may
+resemble the traditional top-down approach. Through simulation
+experiments and two empirical applications, we demonstrate that our
+proposed methods guarantee coherent forecasts that outperform or match
+their respective benchmark methods.
+\todo[inline]{Reconsider the wording.} The improvements are particularly
+pronounced when focusing on higher aggregation levels, longer forecast
+horizons, and cases of model misspecification. A remarkable feature of
+the proposed methods is their ability to diminish disparities arising
+from using different estimates of the base forecast error covariance
+matrix, thereby mitigating challenges associated with estimator
+selection, which is a prominent concern in the field of forecast
+reconciliation research.
+\todo[inline]{What about other concerns in forecast reconciliation research? It would be good to summarize these and address areas where the proposed methodology could support such concerns.}
 
 The remainder of the paper is structured as follows.
 Section~\ref{sec-preliminaries} presents the notations and a review of
@@ -400,13 +405,24 @@ Let \(\hat{\bm{y}}_{T+h \mid T} \in \mathbb{R}^n\) be a vector of
 structure, given observations up to and including time \(T\), and
 stacked in the same order as \(\bm{y}_t\). We can use any method to
 generate these forecasts, but in general they will not be coherent
-(i.e., they won't satisfy the constraints). Let
+(i.e., they won't satisfy the aggregation constraints). Let
 \(\tilde{\bm{y}}_{T+h \mid T} \in \mathbb{R}^n\) denote a vector of
 \(h\)-step-ahead \emph{reconciled forecasts} given by
 \begin{equation}\phantomsection\label{eq-lr}{
 \tilde{\bm{y}}_{T+h \mid T} = \bm{S}\bm{G}_h\hat{\bm{y}}_{T+h \mid T},
-}\end{equation} where \(\bm{G}_h\) is an \(n_b \times n\) weighting
-matrix and \(\bm{S}\) is an \(n \times n_b\) summing matrix.
+}\end{equation} where \(\bm{G}_h\) is an \(n_b \times n\)
+\emph{weighting matrix} and \(\bm{S}\) is an \(n \times n_b\)
+\emph{summing matrix}.
+
+In general, forecast reconciliation methods consider the loss function
+given by \begin{equation}\phantomsection\label{eq-loss}{
+\begin{aligned}
+& \mathrm{E}\left[\left\|\bm{y}_{T+h}-\tilde{\bm{y}}_{T+h \mid T}\right\|_2^2 \mid \bm{I}_T\right] \\
+& =\underbrace{\left\|\bm{S G_h}\left(\mathrm{E}\left[\hat{\bm{y}}_{T+h \mid T} \mid \bm{I}_T\right]-\mathrm{E}\left[\bm{y}_{T+h} \mid \bm{I}_T\right]\right)+(\bm{S}-\bm{S G_h S}) \mathrm{E}\left[\bm{b}_{T+h} \mid \bm{I}_T\right]\right\|_2^2}_{\text{bias}} +\underbrace{\operatorname{Tr}\left(\operatorname{Var}\left[\bm{y}_{T+h}-\tilde{\bm{y}}_{T+h \mid T} \mid \bm{I}_T\right]\right)}_{\text{variance}},
+\end{aligned}
+}\end{equation} which includes two parts in its decomposition, bias and
+variance of the reconciled forecasts \(\tilde{\bm{y}}_{T+h \mid T}\)
+\citep{Ben_Taieb2019-be}.
 
 \subsubsection*{Minimum trace
 reconciliation}\label{minimum-trace-reconciliation}
@@ -417,13 +433,14 @@ Let
 denote the \(h\)-step-ahead in-sample \emph{base forecast errors}, and
 \(\tilde{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h \mid t}\)
 denote the \(h\)-step-ahead \emph{reconciled forecast errors}, for
-\(t = 1,2,\ldots,T-h\). \citet{Wickramasuriya2019-fc} formulated the
-reconciliation problem as minimizing the trace (MinT) of the
+\(t = 1,2,\ldots,T-h\). Assuming the base forecasts are unbiased and
+imposing the constraint \(\bm{G_h S}=\bm{I_{n_b}}\) to preserve the
+unbiasedness of the reconciled forecasts, \citet{Wickramasuriya2019-fc}
+eliminated out the bias term in Equation \eqref{eq-loss} and formulated
+the reconciliation problem as minimizing the trace (MinT) of the
 \(h\)-step-ahead covariance matrix of the reconciled forecast errors,
-\(\operatorname{Var}(\tilde{\bm{e}}_{t+h \mid t})\). Assuming the base
-forecasts are unbiased, and that we want the reconciled forecasts to be
-unbiased, the unique solution to the minimization problem is
-\begin{equation}\phantomsection\label{eq-mint}{
+\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\). This leads to the
+unique solution given by \begin{equation}\phantomsection\label{eq-mint}{
 \bm{G}_h=\left(\bm{S}^{\prime} \bm{W}_h^{-1} \bm{S}\right)^{-1} \bm{S}^{\prime} \bm{W}_h^{-1},
 }\end{equation} where \(\bm{W}_h\) is the positive definite covariance
 matrix of the \(h\)-step-ahead base forecast errors.
@@ -444,12 +461,16 @@ is common to assume \(\bm{W}_h = k_h\bm{W}_1\), \(\forall h\), where
 \(k_h > 0\); then the MinT solution of \(\bm{G}\) does not change with
 the forecast horizon, \(h\). Hence, we will drop the subscript \(h\) for
 ease of exposition. Table~\ref{tbl-bench} lists the most popularly used
-candidate estimators for \(\bm{W}_h\).
+candidate estimators for \(\bm{W}_h\). In principle, all optimization
+methods could use either an in-sample or out-of-sample approach. The
+methods discussed here are considered ``out-of-sample'' as they use
+genuine forecasts, \(\hat{\bm{y}}_{T+h \mid T}\), rather than fitted
+values, in the optimization problem.
 
 \begin{table}[!h]
 
 \caption{\label{tbl-bench}Forecast reconciliation methods for which
-different estimators of \(\bm{W}\) are used.}
+different estimators of \(\bm{W}_h\) are used.}
 
 \centering{
 
@@ -480,13 +501,13 @@ assumptions}\label{relaxation-of-the-unbiasedness-assumptions}
 \addcontentsline{toc}{subsubsection}{Relaxation of the unbiasedness
 assumptions}
 
-Both \citet{Hyndman2011-sd} and \citet{Wickramasuriya2019-fc} imposed
-unbiasedness conditions on the base forecasts and the reconciled
-forecasts. \citet{Ben_Taieb2019-be} proposed a reconciliation method
-relaxing the assumption of unbiasedness. Specifically, by expanding the
-training window incrementally, one observation at a time, they
-formulated the reconciliation problem as a regularized empirical risk
-minimization (RERM) problem given by \[
+\citet{Ben_Taieb2019-be} proposed a reconciliation method relaxing the
+assumption of unbiasedness. Their goal was to achieve a tradeoff between
+bias and variance by directly minimizing the mean squared reconciled
+forecast errors, as described in Equation \eqref{eq-loss}. Specifically,
+by expanding the training window incrementally, one observation at a
+time, they formulated the reconciliation problem as a regularized
+empirical risk minimization (RERM) problem given by \[
 \min_{\bm{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\bm{Y}_{h}^{*}-\hat{\bm{Y}}_{h}^{*} \bm{G}_{h}^{\prime} \bm{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \bm{G}_h)\|_1,
 \] where \(T_1\) denotes the minimum number of observations used for
 model training, \(\left\| \cdot \right\|_F\) is the Frobenius norm,
@@ -511,21 +532,24 @@ If \(\hat{\bm{Y}}_{h}^{*\prime}\hat{\bm{Y}}_{h}^{*}\) is not invertible,
 introduce sparsity and reduce estimation variance, albeit at the cost of
 introducing some bias.
 
+Relaxing the assumption of unbiasedness of base forecasts,
 \citet{Wickramasuriya2021-am} proposed an empirical MinT
-(\textbf{EMinT}) solution without the unbiasedness constraint by
-minimizing the trace of the covariance matrix of the reconciled forecast
-errors, \(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\). Assuming
-the series are jointly weakly stationary, she derived the solution \[
+(\textbf{EMinT}) solution by minimizing the trace of the covariance
+matrix of the reconciled forecast errors,
+\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\). Assuming the series
+are jointly weakly stationary, the solution is given by \[
 \hat{\bm{G}}_{h} = \bm{B}_{h}^{\prime}\hat{\bm{Y}}_{h}\left(\hat{\bm{Y}}_{h}^{\prime}\hat{\bm{Y}}_{h}\right)^{-1},
 \] where
 \(\bm{B}_{h}=\left[\bm{b}_{h}, \ldots, \bm{b}_T\right]^{\prime}\), and
 \(\hat{\bm{Y}}_{h}=\left[\hat{\bm{y}}_{h \mid 0}, \ldots, \hat{\bm{y}}_{T \mid T-h}\right]^{\prime}\).
 
-The difference between EMinT and ERM lies in the data sources, as EMinT
-uses in-sample observations and base forecasts, while ERM relies on
-observations and base forecasts from a holdout validation set. Both ERM
-and EMinT consider an estimate of \(\bm{G}\) that changes over the
-forecast horizon, which is why we keep the subscript \(h\) here.
+The difference between EMinT and ERM lies in the data sources. EMinT is
+an ``in-sample'' method in the sense that \(\hat{\bm{Y}}_{h}\) are
+predictions in the form of fitted values, while ERM (and also RERM) is
+an ``out-of-sample'' method, with \(\hat{\bm{Y}}_{h}^{*}\) being genuine
+forecasts generated on a holdout validation set. Both EMinT and ERM
+consider an estimate of \(\bm{G}\) that changes over the forecast
+horizon, which is why we keep the subscript \(h\) here.
 
 In practical settings, some series in a structure could have poor base
 forecasts due to model misspecification or low forecastability.
@@ -585,15 +609,15 @@ produced with a ``poor'' choice of \(\bm{W}\).
 selection}\label{sec-methodology}
 
 In this section, we introduce our methods for forecast reconciliation
-while automatically avoiding the use of poor base forecasts.
-Section~\ref{sec-constrained} introduces constrained reconciliation
-methods in a formulation of the problem based on out-of-sample base
-forecasts, while Section~\ref{sec-unconstrained} presents an
-unconstrained reconciliation method, where we formulate the problem
-based on in-sample observations and base forecasts.
+while automatically achieving time series selection.
+Section~\ref{sec-constrained} introduces constrained ``out-of-sample''
+reconciliation methods, formulated based on genuine forecasts, while
+Section~\ref{sec-unconstrained} presents an unconstrained ``in-sample''
+reconciliation method, where the problem is formulated using in-sample
+observations and predictions in the form of fitted values.
 
-\subsection{Series selection with unbiasedness
-constraint}\label{sec-constrained}
+\subsection{Series selection under the unbiasedness
+assumption}\label{sec-constrained}
 
 As \(\bm{S}\) is fixed and \(\hat{\bm{y}}_{T+h \mid T}\) is given,
 \(\bm{G}_h\) determines the linear reconciliation performance, as shown
@@ -607,14 +631,16 @@ penalty term: \begin{equation}\phantomsection\label{eq-op_u}{
 + \lambda\mathfrak{g}(\bm{G}) \qquad \text{s.t.} \quad \bm{G}\bm{S}=\bm{I},
 }\end{equation} where \(\hat{\bm{y}}:=\hat{\bm{y}}_{T+1 \mid T}\),
 \(\mathfrak{g}(\cdot)\) penalizes the columns of \(\bm{G}\) towards
-zero, and \(\lambda\) is a penalty parameter. This can be considered
-\emph{a grouped variable selection problem}, with each group
+zero, and \(\lambda\) is a penalty parameter. The methods developed
+within this framework are ``out‑of‑sample'' in the sense that
+\(\hat{\bm{y}}\) are genuine one-step-ahead forecasts. This can be
+considered \emph{a grouped variable selection problem}, with each group
 corresponding to a column of \(\bm{G}\). The constraint,
 \(\bm{G}\bm{S}=\bm{I}\), ensures that the reconciled forecasts are
-unbiased if the base forecasts are unbiased
-\citep{Wickramasuriya2019-fc}. When \(\lambda = 0\), the problem reduces
-to the MinT optimization problem in Equation \eqref{eq-mint_op} with a
-closed-form solution given by Equation \eqref{eq-mint}.
+unbiased if the base forecasts are unbiased. When \(\lambda = 0\), the
+problem reduces to the MinT optimization problem in Equation
+\eqref{eq-mint_op} with a closed-form solution given by Equation
+\eqref{eq-mint}.
 
 \begin{proposition}[]\protect\hypertarget{prp-1}{}\label{prp-1}
 
@@ -658,13 +684,13 @@ embedded in the aggregation constraints. If the solution yields a
 able to identify more than one subset
 \(\mathbb{S}^* \subset \mathbb{S}\) with \(|\mathbb{S}^*|=n_b\) to
 construct an invertible square matrix \(\bm{S}_{\mathbb{S}^{*}\cdot}\)
-and thereby restore the full hierarchy using a valid
+and thereby restore the full hierarchy using the valid
 \(\bm{y}_{\mathbb{S}^{*}\cdot}\). Therefore, the constraint
 \(\bm{GS}=\bm{I}\) ensures that the selected columns of \(\hat{\bm{G}}\)
 correspond to variables that can restore the full hierarchy.
 \end{proof}
 
-For example, in the simple hierarchy shown in Figure~\ref{fig-hts}, the
+For example, for the simple hierarchy shown in Figure~\ref{fig-hts}, the
 selected columns of \(\hat{\bm{G}}\) will be at least \(n_b=4\). Our
 constrained reconciliation methods might simultaneously zero out the
 columns of \(\bm{G}\) corresponding to series AA and BA, but not to
@@ -701,8 +727,8 @@ shown in Equation \eqref{eq-op_u_reg}.
 Next, we present three classes of regularizations that allow forecast
 reconciliation with series selection, resulting in three optimization
 problems: (i) group best-subset selection with ridge regularization,
-(ii) an intuitive method with \(L_0\) regularization, and (iii) a group
-lasso method.
+(ii) intuitive method with \(L_0\) regularization, and (iii) group lasso
+method.
 
 \subsubsection*{Group best-subset selection with ridge
 regularization}\label{group-best-subset-selection-with-ridge-regularization}
@@ -713,10 +739,12 @@ In a high-dimensional context with \(p \gg n\), it is common to assume
 that the true regression coefficient (i.e.,
 \(\operatorname{vec}(\bm{G})\) in our problem) is sparse. We apply a
 combination of \(L_0\) and \(L_2\) regularization to control the nonzero
-column entries in \(\bm{G}\): \begin{align}
-\min_{\operatorname{vec}(\bm{G})} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda_0 \sum_{j=1}^n 1\left(\bm{G}_{\cdot j} \neq \bm{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\bm{G}\right)\right\|_2^2 \nonumber\\
-\text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}(\bm{I}_{n_b}), \label{eq-subset}
-\end{align} where \(1(\cdot)\) is the indicator function,
+column entries in \(\bm{G}\):
+\begin{equation}\phantomsection\label{eq-subset}{ \begin{aligned}
+\min_{\operatorname{vec}(\bm{G})} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda_0 \sum_{j=1}^n 1\left(\bm{G}_{\cdot j} \neq \bm{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\bm{G}\right)\right\|_2^2 \\
+\text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}(\bm{I}_{n_b}),
+\end{aligned}
+}\end{equation} where \(1(\cdot)\) is the indicator function,
 \(\lambda_0 \geq 0\) controls the number of nonzero columns of
 \(\bm{G}\), \(\lambda_2 \geq 0\) controls the strength of the ridge
 regularization, and \(\|\cdot\|_2\) is the \(L_2\) norm. In a
@@ -738,15 +766,17 @@ performance of best-subset selection method in low SNR regimes.
 
 We present a Big-M based mixed integer programming (MIP) formulation for
 the problem in Equation \eqref{eq-subset}:
-\begin{align} \label{eq-subset_mip}
+\begin{equation}\phantomsection\label{eq-subset_mip}{
+\begin{aligned}
 \min_{\operatorname{vec}(\bm{G}), \bm{z}, \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}^{-1}\check{\bm{e}} + \lambda_0 \sum_{j=1}^n z_j + \lambda_2 \bm{g}^{+\prime}\bm{g}^{+} \\
-\text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right)\nonumber \\
-& \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right)\operatorname{vec}(\bm{G}) = \check{\bm{e}} \nonumber\\
-& \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \nonumber\\
-& \bm{g}^{+} \geqslant \operatorname{vec}(\bm{G}) \nonumber\\
-& \bm{g}^{+} \geqslant-\operatorname{vec}(\bm{G}) \nonumber\\
-& z_j \in\{0,1\}, \quad j \in[n], \nonumber
-\end{align} where \(\mathcal{M}\) is a Big-M parameter (specified
+\text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right) \\
+& \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right)\operatorname{vec}(\bm{G}) = \check{\bm{e}} \\
+& \sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M} z_j, \quad j \in[n] \\
+& \bm{g}^{+} \geqslant \operatorname{vec}(\bm{G}) \\
+& \bm{g}^{+} \geqslant-\operatorname{vec}(\bm{G}) \\
+& z_j \in\{0,1\}, \quad j \in[n],
+\end{aligned}
+}\end{equation} where \(\mathcal{M}\) is a Big-M parameter (specified
 a-priori) that is sufficiently large that the optimal solution to
 Equation \eqref{eq-subset_mip}, \(\bm{g}^{+*}\), satisfies
 \(\max_{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\).
@@ -895,14 +925,17 @@ method based on various estimators for \(\bm{W}\), referring to them as
 \textbf{MinT-lasso}, and \textbf{MinTs-lasso}, respectively.
 
 Next, we present the second order cone programming (SOCP) formulation
-for the group lasso based estimators given by \begin{align}
-\min_{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \label{eq-lasso_socp}\\
-\text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right) \nonumber \\
-& \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}) = \check{\bm{e}} \nonumber \\
-& c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n]. \nonumber
-\end{align} Equation \eqref{eq-lasso_socp} includes additional auxiliary
-variables \(c_j \in \mathbb{R}_{\geq 0}\), \(j \in [n]\), and second
-order cone constraints,
+for the group lasso based estimators given by
+\begin{equation}\phantomsection\label{eq-lasso_socp}{
+\begin{aligned}
+\min_{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \\
+\text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}\left(\bm{I}_{n_b}\right) \\
+& \hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}) = \check{\bm{e}} \\
+& c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}, \quad j \in[n].
+\end{aligned}
+}\end{equation} Equation \eqref{eq-lasso_socp} includes additional
+auxiliary variables \(c_j \in \mathbb{R}_{\geq 0}\), \(j \in [n]\), and
+second order cone constraints,
 \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\) for
 \(j \in[n]\).
 
@@ -938,9 +971,10 @@ for \(j \in [k]\).
 
 \begin{proposition}[]\protect\hypertarget{prp-3}{}\label{prp-3}
 
-Ignoring the unbiasedness constraint, we define \(\lambda^{1}\) as the
-smallest \(\lambda\) value such that all predictors in the group lasso
-problem have zero coefficients. Then we have \[
+Ignoring the constraint \(\bm{G_h S}=\bm{I_{n_b}}\), we define
+\(\lambda^{1}\) as the smallest \(\lambda\) value such that all
+predictors in the group lasso problem have zero coefficients. Then we
+have \[
 \lambda^{1} = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j,
 \] where \(j^{*}\) denotes the column index of
 \(\hat{\bm{y}}^{\prime} \otimes \bm{S}\) that corresponds to the \(j\)th
@@ -954,11 +988,12 @@ in the objective of Equation \eqref{eq-lasso} as
 \(L\left(\bm{\beta} \mid \bm{D}\right)\), where \(\bm{D}\) is the
 working data
 \(\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}\). Ignoring
-the unbiasedness constraint, we define \(\lambda^{1}\) as the smallest
-\(\lambda\) value such that all predictors in the group lasso problem
-have zero coefficients, i.e., the solution at \(\lambda^{1}\) is
-\(\hat{\bm{\beta}}^{1}=\bm{0}\). (Note that there is no intercept in our
-problem.) Under the Karush-Kuhn-Tucker conditions, we have \[
+the constraint \(\bm{G_h S}=\bm{I_{n_b}}\), we define \(\lambda^{1}\) as
+the smallest \(\lambda\) value such that all predictors in the group
+lasso problem have zero coefficients, i.e., the solution at
+\(\lambda^{1}\) is \(\hat{\bm{\beta}}^{1}=\bm{0}\). (Note that there is
+no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions,
+we have \[
 \lambda^{1}
  = \max_{j=1, \ldots, n}\big\|\big[\nabla L(\hat{\bm{\beta}}^{1} \mid \bm{D})\big]^{(j)}\big\|_2 / w_j
  = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j.
@@ -966,17 +1001,16 @@ problem.) Under the Karush-Kuhn-Tucker conditions, we have \[
 \end{proof}
 
 \textbf{Computation details.} Due to the incorporation of the
-unbiasedness constraint, we can not directly use some open-source
-packages designed for group lasso. Consequently, we employ Gurobi to
-solve the SOCP problem, configuring it by setting OptimalityTol =
-\(0.0001\).
+constraint, we can not directly use some open-source packages designed
+for group lasso. Consequently, we employ Gurobi to solve the SOCP
+problem, configuring it by setting OptimalityTol = \(0.0001\).
 
-\subsection{Series selection method without unbiasedness
-constraint}\label{sec-unconstrained}
+\subsection{Series selection relaxing the unbiasedness
+assumption}\label{sec-unconstrained}
 
-In this section, we relax the unbiasedness constraint,
-\(\bm{G}\bm{S} = \bm{I}\), and introduce a reconciliation method with
-selection that relies on in-sample observations and fitted values. Let
+In this section, we relax the unbiasedness assumption, and introduce a
+reconciliation method with selection that relies on in-sample
+observations and fitted values. Let
 \(\bm{Y} \in \mathbb{R}^{T \times n}\) denote a matrix comprising
 observations from all time series on the training set in the structure,
 and \(\hat{\bm{Y}} \in \mathbb{R}^{T \times n}\) denote a matrix of
@@ -993,7 +1027,19 @@ model. We rewrite the problem as \[
 \(\bm{S} \otimes \hat{\bm{Y}}\) as the covariate matrix. We denote this
 as \textbf{Elasso} in the results that follow.
 
-Relaxing the unbiasedness constraint may result in fewer non-zero column
+Similar to EMinT, Elasso operates as an ``in-sample'' method because
+\(\hat{\bm{Y}}\) are predictions in the form of fitted values (i.e.,
+\(\bm{Y}\) is in training data when base forecasts are computed). Thus,
+both EMinT and Elasso require only a single round of model training.
+Although Subset, Intuitive, and Lasso methods introduced in
+Section~\ref{sec-constrained} necessitate genuine forecasts, they still
+only require one round of model training and a single forecasting phase.
+To ensure a fair comparison, we will exclude the ``out-of-sample'' RERM
+and ERM methods from our simulation studies and empirical results due to
+their iterative approach of generating out-of-sample forecasts using
+expanding windows, which is highly time-consuming.
+
+Relaxing the unbiasedness assumption may result in fewer non-zero column
 entries in the \(\bm{G}\) solution than the number of series at the
 bottom level. This differs from constrained reconciliation methods
 detailed in Section~\ref{sec-constrained}. In an extreme scenario, the
@@ -1006,7 +1052,7 @@ errors.
 
 We also explored the empirical version of group best-subset selection
 with ridge regularization and the intuitive method with \(L_0\)
-regularization in which we omit the unbiasedness constraint. It is worth
+regularization in which we omit the unbiasedness assumption. It is worth
 mentioning that \citet{Hazimeh2023-ie} presented an algorithmic
 framework for formulating the group \(L_0\) problem with ridge
 regularization and provided the \textbf{L0Group} Python package for
@@ -1014,7 +1060,7 @@ implementation. However, our experiments showed that this algorithm can
 not terminate within five hours for typical instances with
 \(p \sim 10^4\). Therefore, in this paper, we only present the empirical
 group lasso method for series selection without the unbiasedness
-constraint.
+assumption.
 
 \textbf{Penalty weights and parameter tuning.} Similar to the setup in
 the group lasso method, we assign different penalty weights to each
@@ -1047,7 +1093,7 @@ for the parameter, \(\lambda\), our experiments observed that, using the
 hours for typical instances with \(p \sim 10^4\). Instead, we use Gurobi
 to solve the problem using the SOCP formulation for the empirical group
 lasso which aligns with Equation \eqref{eq-lasso_socp} but omits the
-unbiasedness constraint.
+constraint.
 
 \section{Monte Carlo simulations}\label{sec-simulations}
 
@@ -1669,7 +1715,7 @@ more noticeable for longer forecast horizons. Similar to the average
 results in Table~\ref{tbl-labour-rmse-avg}, the Intuitive and Lasso
 methods yield results identical to the benchmark methods due to their
 tendency to offer dense estimates. Surprisingly, when relaxing the
-unbiasedness constraint, Elasso ranks the best and demonstrates
+unbiasedness assumption, Elasso ranks the best and demonstrates
 significant improvement over EMinT, and outperforms other methods across
 almost all levels except for the top level.
 
@@ -1748,7 +1794,7 @@ methods produce results almost identical to the corresponding
 benchmarks, which is not surprising as ETS models rarely yield extremely
 poor forecasts, making them challenging to be selected out using methods
 that tend to return dense estimates. When we relax the unbiasedness
-constraint, EMinT consistently performs the worst across all levels due
+assumption, EMinT consistently performs the worst across all levels due
 to the evident lack of joint weak stationarity among the series in the
 hierarchy. The Elasso method shows significant improvement compared to
 EMinT, and outperforms other methods across almost all levels except the
@@ -1857,14 +1903,14 @@ addressed this issue by introducing a selection mechanism to forecast
 reconciliation; i.e., incorporating time series selection when
 reconciling forecasts, while ensuring coherent forecasts for all series.
 
-Under the unbiasedness constraint, we developed three reconciliation
+Under the unbiasedness assumption, we developed three reconciliation
 methods with selection mechanisms to automatically remove some base
 forecasts when forming reconciled forecasts. These methods include group
 best-subset selection with ridge regularization (Subset), an intuitive
 method with \(L_0\) regularization (Intuitive), and a group lasso method
 (Lasso). These methods use different penalty functions designed to
 penalize the columns of the weighting matrix, \(\bm{G}\), towards zero.
-Additionally, we relaxed the unbiasedness constraint and proposed the
+Additionally, we relaxed the unbiasedness assumption and proposed the
 empirical group lasso method (Elasso) which selects series based on
 in-sample observations and fitted values.
 
