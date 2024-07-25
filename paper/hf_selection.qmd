@@ -220,7 +220,7 @@ We have\vspace*{-0.4cm}\enlargethispage{0.4cm} $$
 $$ Substituting these into Equation \eqref{eq-op_u}, the previous problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in Equation \eqref{eq-op_u_reg}.
 :::
 
-Next, we present three classes of regularizations that allow forecast reconciliation with series selection under the unbiasedness assumption, resulting in three optimization problems: (i) group best-subset selection with ridge regularization, (ii) parsimonious method with $L_0$ regularization, and (iii) group lasso method.
+Next, we present three constrained "out-of-sample" reconciliation methods: (i) group best-subset selection with ridge regularization, (ii) parsimonious method with $L_0$ regularization, and (iii) group lasso method. These methods perform forecast reconciliation with series selection under the unbiasedness assumption, differing only in the regularization term employed.
 
 #### Group best-subset selection with ridge regularization {.unnumbered}
 
@@ -320,7 +320,11 @@ $$ where $\lambda \geq 0$ is a tuning parameter, $w_j \neq 0$ is the penalty wei
 \min_{\operatorname{vec}(\bm{G})} \quad \frac{1}{2 T} \left\|\operatorname{vec}(\bm{Y})-(\bm{S} \otimes \hat{\bm{Y}}) \operatorname{vec}\left(\bm{G}^{\prime}\right)\right\|_2^2 + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
 $$ which becomes a standard group lasso problem, with $\operatorname{vec}(\bm{Y})$ serving as the dependent variable and $\bm{S} \otimes \hat{\bm{Y}}$ as the covariate matrix. We denote this as **Elasso** in the results that follow.
 
+\todo[inline]{Why a W matrix is not used in the Elasso method.}
+
 Similar to EMinT, Elasso operates as an "in-sample" method because $\hat{\bm{Y}}$ are predictions in the form of fitted values (i.e., $\bm{Y}$ is in training data when base forecasts are computed). Thus, both EMinT and Elasso require only a single round of model training. Although Subset, Parsimonious, and Lasso methods introduced in @sec-constrained necessitate genuine forecasts, they still only require one round of model training and a single forecasting phase. To ensure a fair comparison, we will exclude the "out-of-sample" RERM and ERM methods from simulation studies and empirical results due to their iterative approach of generating out-of-sample forecasts using expanding windows, which is highly time-consuming.
+
+\todo[inline]{Elasso and OLS‑lasso.}
 
 Relaxing the unbiasedness assumption may result in fewer non-zero column entries in the $\bm{G}$ solution than the number of series at the bottom level. This differs from constrained reconciliation methods detailed in @sec-constrained. In an extreme scenario, the solution may take the form of a top-down $\bm{G}_{TD}=[\bm{p} \mid \bm{O}_{n_b \times (n-1)}]$, where only the column corresponding to the top level (most aggregated level) retains non-zero values, and $\bm{p} = (p_1, p_2, \ldots, p_{n_b})$ is a proportionality vector obtained based on in-sample reconciled forecast errors.
 

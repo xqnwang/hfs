@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{July 24, 2024}
+\date{July 25, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -729,11 +729,12 @@ regularization term and an equality constraint on the coefficients, as
 shown in Equation \eqref{eq-op_u_reg}.
 \end{proof}
 
-Next, we present three classes of regularizations that allow forecast
-reconciliation with series selection under the unbiasedness assumption,
-resulting in three optimization problems: (i) group best-subset
-selection with ridge regularization, (ii) parsimonious method with
-\(L_0\) regularization, and (iii) group lasso method.
+Next, we present three constrained ``out-of-sample'' reconciliation
+methods: (i) group best-subset selection with ridge regularization, (ii)
+parsimonious method with \(L_0\) regularization, and (iii) group lasso
+method. These methods perform forecast reconciliation with series
+selection under the unbiasedness assumption, differing only in the
+regularization term employed.
 
 \subsubsection*{Group best-subset selection with ridge
 regularization}\label{group-best-subset-selection-with-ridge-regularization}
@@ -1033,6 +1034,8 @@ model. We rewrite the problem as \[
 \(\bm{S} \otimes \hat{\bm{Y}}\) as the covariate matrix. We denote this
 as \textbf{Elasso} in the results that follow.
 
+\todo[inline]{Why a W matrix is not used in the Elasso method.}
+
 Similar to EMinT, Elasso operates as an ``in-sample'' method because
 \(\hat{\bm{Y}}\) are predictions in the form of fitted values (i.e.,
 \(\bm{Y}\) is in training data when base forecasts are computed). Thus,
@@ -1044,6 +1047,8 @@ To ensure a fair comparison, we will exclude the ``out-of-sample'' RERM
 and ERM methods from simulation studies and empirical results due to
 their iterative approach of generating out-of-sample forecasts using
 expanding windows, which is highly time-consuming.
+
+\todo[inline]{Elasso and OLS‑lasso.}
 
 Relaxing the unbiasedness assumption may result in fewer non-zero column
 entries in the \(\bm{G}\) solution than the number of series at the
