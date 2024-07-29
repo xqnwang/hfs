@@ -439,8 +439,9 @@ unbiasedness of the reconciled forecasts, the bias term in Equation
 \eqref{eq-loss} cancels. \citet{Wickramasuriya2019-fc} thus formulated
 the reconciliation problem as minimizing the trace (MinT) of the
 \(h\)-step-ahead covariance matrix of the reconciled forecast errors,
-\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\). This leads to the
-unique solution given by \begin{equation}\phantomsection\label{eq-mint}{
+\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})=\bm{S}\bm{G}_h\bm{W}_h\bm{G}^{\prime}_h\bm{S}^{\prime}\).
+This leads to the unique solution given by
+\begin{equation}\phantomsection\label{eq-mint}{
 \bm{G}_h=\left(\bm{S}^{\prime} \bm{W}_h^{-1} \bm{S}\right)^{-1} \bm{S}^{\prime} \bm{W}_h^{-1},
 }\end{equation} where \(\bm{W}_h\) is the positive definite covariance
 matrix of the \(h\)-step-ahead base forecast errors.
@@ -1042,8 +1043,12 @@ form of fitted values (i.e., \(\bm{Y}\) is in training data when base
 forecasts are computed). Thus Elasso aims to directly minimize the mean
 squared reconciled forecast errors, as described in Equation
 \eqref{eq-loss}, rather than focusing solely on the variance term. This
-explains why the Elasso method does not use a \(\bm{W}\) matrix and
-omits the \(\bm{GS}=\bm{I}\) constraint.
+clarifies two points: (1) why the Elasso method omits the
+\(\bm{GS}=\bm{I}\) constraint, which ensures the unbiasedness of
+reconciled forecasts when base forecasts are unbiased, and (2) why the
+Elasso method does not use a \(\bm{W}\) matrix, which is introduced when
+deriving from \(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\) under
+the constraint \(\bm{GS}=\bm{I}\).
 
 We note that both the ``in-sample'' Elasso and EMinT methods require
 only one round of model training. Similarly, the Subset, Parsimonious,
