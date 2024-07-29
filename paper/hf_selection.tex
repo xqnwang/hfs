@@ -1924,8 +1924,6 @@ for reconciliation.
 
 - discuss the practical repercussions of this work as well as the potential limitations it faces.
 
-- Elasso: (1) W, (2) bias
-
 }
 
 Relaxing the assumption of unbiasedness of base forecasts, we introduce
@@ -1946,6 +1944,18 @@ Conversely, Elasso and other proposed methods currently treat reconciled
 forecast errors equally across different series. This suggests a
 potential new direction for research that differs from the problems
 addressed in this paper.
+
+\citet{Panagiotelis2021-mf} highlighted the critical need for bias
+correction prior to forecast reconciliation when dealing with biased
+forecasts. Given that the unbiasedness preserving property is dropped in
+the Elasso method, a possible direction for future research could be to
+extend Elasso by including a bias correction mechanism. This can be
+achieved by formulating the optimization problem as follows: \[
+\min_{\bm{G}} \quad \frac{1}{2 T} \left\|\bm{Y}-\left(\bm{D} + \hat{\bm{Y}} \bm{G}^{\prime}\right)\bm{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
+\] where \(\bm{D} \in \mathbb{R}^{T \times n_b}\) is a shift parameter,
+with each row equal to an \(n_b\)-dimensional \(\bm{d}\). This vector
+\(\bm{d}\) can be trained alongside \(\bm{G}\) and act as a bias
+correction.
 
 \section{Conclusion}\label{sec-conclusion}
 

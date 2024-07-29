@@ -713,13 +713,15 @@ Additionally, @tbl-tourism-info summarizes the number of series selected using p
 
 - discuss the practical repercussions of this work as well as the potential limitations it faces.
 
-- Elasso: (1) W, (2) bias
-
 }
 
 Relaxing the assumption of unbiasedness of base forecasts, we introduce the Elasso method, which directly minimizes the mean squared reconciled forecast errors while incorporating regularization terms for time series selection. Unlike constrained "out-of-sample" reconciliation methods, Elasso does not use a $\bm{W}$ matrix in its optimization problem as $\bm{W}$ is introduced when deriving the loss function (Equation \eqref{eq-loss}) under the unbiasedness condition for both base and reconciled forecasts. Future research could explore including a $\bm{W}$ matrix in the Elasso method by considering the following optimization problem $$
 \min_{\bm{G}} \quad \frac{1}{2 T} \operatorname{Tr}\left( \left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)\bm{W}^{-1}\left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)^{\prime}\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
 $$ where $\operatorname{Tr}(\cdot)$ denotes the trace of a matrix. In this context, $\bm{W}$ assigns different weights to reconciled forecast errors of various series in the hierarchical structure. Conversely, Elasso and other proposed methods currently treat reconciled forecast errors equally across different series. This suggests a potential new direction for research that differs from the problems addressed in this paper.
+
+@Panagiotelis2021-mf highlighted the critical need for bias correction prior to forecast reconciliation when dealing with biased forecasts. Given that the unbiasedness preserving property is dropped in the Elasso method, a possible direction for future research could be to extend Elasso by including a bias correction mechanism. This can be achieved by formulating the optimization problem as follows: $$
+\min_{\bm{G}} \quad \frac{1}{2 T} \left\|\bm{Y}-\left(\bm{D} + \hat{\bm{Y}} \bm{G}^{\prime}\right)\bm{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
+$$ where $\bm{D} \in \mathbb{R}^{T \times n_b}$ is a shift parameter, with each row equal to an $n_b$-dimensional $\bm{d}$. This vector $\bm{d}$ can be trained alongside $\bm{G}$ and act as a bias correction.
 
 ## Conclusion {#sec-conclusion}
 
