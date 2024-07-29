@@ -608,7 +608,7 @@ The average results are presented in @tbl-labour-rmse-avg. The poor performance 
 
 We provide results based on the final test set spanning from August 2022 to July 2023 in @tbl-labour-rmse. This is the latest available data, enabling us to use more data for model training and explore the post-COVID pattern. All Subset methods (using various estimators of $\bm{W}$) produce improved or comparable reconciled forecasts compared to their benchmarks. The accuracy improvements become more noticeable for longer forecast horizons. Similar to the average results in @tbl-labour-rmse-avg, the Parsimonious and Lasso methods yield results identical to the benchmark methods due to their tendency to offer dense estimates. Surprisingly, when relaxing the unbiasedness assumption, Elasso ranks the best and demonstrates significant improvement over EMinT, and outperforms other methods across almost all levels except for the top level.
 
-@tbl-labour-info presents the number of series selected at each level and the optimal tuning parameter values obtained using proposed methods. We only show results from Subset and Elasso methods, as they return the best RMSE results. The scale variation in optimal parameters for different methods is due to objective function scales. @tbl-labour-info shows that all Subset methods exclude some series. Remarkably, the Elasso method consistently outperforms the others overall, even though it uses only $11$ series for forecast reconciliation. Most of the series at the STT level are removed, while the majority of series at the Duration level are retained. This aligns with our data description, highlighting that the seasonal patterns in the Duration level series are more consistent and potentially easier to forecast compared to those at the STT level.
+@tbl-labour-info presents the number of series selected at each level and the optimal tuning parameter values obtained using proposed methods. We only show results from Subset and Elasso methods, as they return the best RMSE results. The scale variation in optimal parameters for different methods is due to objective function scales. @tbl-labour-info shows that all Subset methods exclude some series. Remarkably, the Elasso method consistently outperforms the others when evaluated on average results across the entire hierarchy and forecast horizon, even though it uses only $11$ series for forecast reconciliation. Most of the series at the STT level are removed, while the majority of series at the Duration level are retained. This aligns with our data description, highlighting that the seasonal patterns in the Duration level series are more consistent and potentially easier to forecast compared to those at the STT level.
 
 ### Forecasting Australian domestic tourism {#sec-tourism}
 
@@ -706,6 +706,8 @@ Additionally, @tbl-tourism-info summarizes the number of series selected using p
 ## Discussion {#sec-discussion}
 
 \todo[inline]{
+
+- Zhang et al. (2023)
 
 - list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
 
