@@ -60,7 +60,7 @@ Reconciliation is known to improve overall forecast accuracy in collections of t
 
 First, we propose forecast reconciliation methods that incorporate time series selection based on out-of-sample information, assuming unbiased base forecasts. We formulate this as an optimization problem, using diverse penalty functions to control the number of nonzero column entries in the weighting matrix for linear forecast reconciliation. We show that the number of selected time series is at least equal to the number of series at the bottom level, and we can reconstruct the entire structure by aggregating/disaggregating the selected series. Second, we relax the unbiasedness assumption and introduce an additional reconciliation method with selection, utilizing in-sample observations and their fitted values. This enables us to use the in-sample reconciliation performance for selection purposes. In this case, it is possible that fewer than the number of series at the bottom level are used for reconciliation. In an extreme scenario, the solution may resemble the traditional top-down approach. Through simulation experiments and two empirical applications, we demonstrate that our proposed methods guarantee coherent forecasts that outperform or match their respective benchmark methods. \todo[inline]{Reconsider the wording.} The improvements are particularly pronounced when focusing on higher aggregation levels, longer forecast horizons, and cases of model misspecification. A remarkable feature of the proposed methods is their ability to diminish disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating challenges associated with estimator selection, which is a prominent concern in the field of forecast reconciliation research. \todo[inline]{What about other concerns in forecast reconciliation research? It would be good to summarize these and address areas where the proposed methodology could support such concerns.}
 
-The remainder of the paper is structured as follows. @sec-preliminaries presents the notations and a review of linear forecast reconciliation methods. @sec-methodology introduces our proposed methods to achieve time series selection in reconciliation, and provides some theoretical insights. @sec-simulations and @sec-applications show the results from simulations and two real-world datasets, respectively, followed by concluding remarks in @sec-conclusion. The R code for reproducing the results is available at <https://github.com/xqnwang/hfs>.
+The remainder of the paper is structured as follows. @sec-preliminaries presents the notations and a review of linear forecast reconciliation methods. @sec-methodology introduces our proposed methods to achieve time series selection in reconciliation, and provides some theoretical insights. @sec-simulations and @sec-applications show the results from simulations and two real-world datasets, respectively. @sec-discussion provides disucussions and thoughts on future research, followed by concluding remarks in @sec-conclusion. The R code for reproducing the results is available at <https://github.com/xqnwang/hfs>.
 
 ## Preliminaries {#sec-preliminaries}
 
@@ -703,7 +703,27 @@ ggplot(tourism_heatmap, aes(x = Series, y = Method, fill = RMSE)) +
 
 Additionally, @tbl-tourism-info summarizes the number of series selected using proposed methods as well as the optimal tuning parameter values identified. Here we focus on the Subset and Elasso methods since they are useful in the tourism application. Note that the scale variation in optimal parameters for different methods comes from to objective function scales. We observe that the OLS-subset and WLSs-subset methods exclude some series at the State and Zone levels for reconciliation. In contrast, the WLSv and MinTs methods retain all series, benefiting from the consideration of in-sample covariance, which enables larger adjustments made to series with large in-sample forecast error variances during reconciliation. Nonetheless, the WLSv and MinTs methods can still enhance the quality of reconciled forecasts due to the inclusion of shrinkage through ridge regularization. It is surprising that Elasso performs exceptionally well despite using only $13$ series for reconciliation.
 
+## Discussion {#sec-discussion}
+
+\todo[inline]{
+
+- list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
+
+- emphasize the contributions of the current paper. also discuss the practical significance of the current paper.
+
+- discuss the practical repercussions of this work as well as the potential limitations it faces.
+
+- Elasso: (1) W, (2) bias
+
+}
+
+Relaxing the assumption of unbiasedness of base forecasts, we introduce the Elasso method, which directly minimizes the mean squared reconciled forecast errors while incorporating regularization terms for time series selection. Unlike constrained "out-of-sample" reconciliation methods, Elasso does not use a $\bm{W}$ matrix in its optimization problem as $\bm{W}$ is introduced when deriving the loss function (Equation \eqref{eq-loss}) under the unbiasedness condition for both base and reconciled forecasts. Future research could explore including a $\bm{W}$ matrix in the Elasso method by considering the following optimization problem $$
+\min_{\bm{G}} \quad \frac{1}{2 T} \operatorname{Tr}\left( \left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)\bm{W}^{-1}\left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)^{\prime}\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
+$$ where $\operatorname{Tr}(\cdot)$ denotes the trace of a matrix. In this context, $\bm{W}$ assigns different weights to reconciled forecast errors of various series in the hierarchical structure. Conversely, Elasso and other proposed methods currently treat reconciled forecast errors equally across different series. This suggests a potential new direction for research that differs from the problems addressed in this paper.
+
 ## Conclusion {#sec-conclusion}
+
+\todo[inline]{Tighten up conclusions.}
 
 In existing forecast reconciliation literature, we map all base forecasts into bottom-level disaggregated forecasts, which are then summed to yield coherent forecasts for the entire structure. The mapping step can be conceptually regarded as a forecast combination. It is common that the base forecasts for some time series perform poorly. This may reduce overall reconciliation effectiveness. In this paper, we have addressed this issue by introducing a selection mechanism to forecast reconciliation; i.e., incorporating time series selection when reconciling forecasts, while ensuring coherent forecasts for all series.
 

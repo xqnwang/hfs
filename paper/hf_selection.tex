@@ -329,10 +329,11 @@ linear forecast reconciliation methods. Section~\ref{sec-methodology}
 introduces our proposed methods to achieve time series selection in
 reconciliation, and provides some theoretical insights.
 Section~\ref{sec-simulations} and Section~\ref{sec-applications} show
-the results from simulations and two real-world datasets, respectively,
-followed by concluding remarks in Section~\ref{sec-conclusion}. The R
-code for reproducing the results is available at
-\url{https://github.com/xqnwang/hfs}.
+the results from simulations and two real-world datasets, respectively.
+Section~\ref{sec-discussion} provides disucussions and thoughts on
+future research, followed by concluding remarks in
+Section~\ref{sec-conclusion}. The R code for reproducing the results is
+available at \url{https://github.com/xqnwang/hfs}.
 
 \section{Preliminaries}\label{sec-preliminaries}
 
@@ -1913,7 +1914,42 @@ inclusion of shrinkage through ridge regularization. It is surprising
 that Elasso performs exceptionally well despite using only \(13\) series
 for reconciliation.
 
+\section{Discussion}\label{sec-discussion}
+
+\todo[inline]{
+
+- list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
+
+- emphasize the contributions of the current paper. also discuss the practical significance of the current paper.
+
+- discuss the practical repercussions of this work as well as the potential limitations it faces.
+
+- Elasso: (1) W, (2) bias
+
+}
+
+Relaxing the assumption of unbiasedness of base forecasts, we introduce
+the Elasso method, which directly minimizes the mean squared reconciled
+forecast errors while incorporating regularization terms for time series
+selection. Unlike constrained ``out-of-sample'' reconciliation methods,
+Elasso does not use a \(\bm{W}\) matrix in its optimization problem as
+\(\bm{W}\) is introduced when deriving the loss function (Equation
+\eqref{eq-loss}) under the unbiasedness condition for both base and
+reconciled forecasts. Future research could explore including a
+\(\bm{W}\) matrix in the Elasso method by considering the following
+optimization problem \[
+\min_{\bm{G}} \quad \frac{1}{2 T} \operatorname{Tr}\left( \left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)\bm{W}^{-1}\left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)^{\prime}\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
+\] where \(\operatorname{Tr}(\cdot)\) denotes the trace of a matrix. In
+this context, \(\bm{W}\) assigns different weights to reconciled
+forecast errors of various series in the hierarchical structure.
+Conversely, Elasso and other proposed methods currently treat reconciled
+forecast errors equally across different series. This suggests a
+potential new direction for research that differs from the problems
+addressed in this paper.
+
 \section{Conclusion}\label{sec-conclusion}
+
+\todo[inline]{Tighten up conclusions.}
 
 In existing forecast reconciliation literature, we map all base
 forecasts into bottom-level disaggregated forecasts, which are then
