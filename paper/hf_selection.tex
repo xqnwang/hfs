@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{July 25, 2024}
+\date{July 29, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -1034,21 +1034,26 @@ model. We rewrite the problem as \[
 \(\bm{S} \otimes \hat{\bm{Y}}\) as the covariate matrix. We denote this
 as \textbf{Elasso} in the results that follow.
 
-\todo[inline]{Why a W matrix is not used in the Elasso method.}
+Unlike the Subset, Parsimonious, and Lasso methods introduced in
+Section~\ref{sec-constrained}, Elasso relaxes the unbiasedness
+conditions on both base and reconciled forecasts and operates as an
+``in-sample'' method because \(\hat{\bm{Y}}\) are predictions in the
+form of fitted values (i.e., \(\bm{Y}\) is in training data when base
+forecasts are computed). Thus Elasso aims to directly minimize the mean
+squared reconciled forecast errors, as described in Equation
+\eqref{eq-loss}, rather than focusing solely on the variance term. This
+explains why the Elasso method does not use a \(\bm{W}\) matrix and
+omits the \(\bm{GS}=\bm{I}\) constraint.
 
-Similar to EMinT, Elasso operates as an ``in-sample'' method because
-\(\hat{\bm{Y}}\) are predictions in the form of fitted values (i.e.,
-\(\bm{Y}\) is in training data when base forecasts are computed). Thus,
-both EMinT and Elasso require only a single round of model training.
-Although Subset, Parsimonious, and Lasso methods introduced in
-Section~\ref{sec-constrained} necessitate genuine forecasts, they still
-only require one round of model training and a single forecasting phase.
-To ensure a fair comparison, we will exclude the ``out-of-sample'' RERM
-and ERM methods from simulation studies and empirical results due to
-their iterative approach of generating out-of-sample forecasts using
-expanding windows, which is highly time-consuming.
-
-\todo[inline]{Elasso and OLS‑lasso.}
+We note that both the ``in-sample'' Elasso and EMinT methods require
+only one round of model training. Similarly, the Subset, Parsimonious,
+and Lasso methods also need only one round of training and forecasting,
+despite their reliance on genuine out-of-sample forecasts. In contrast,
+the ``out-of-sample'' RERM and ERM methods use an iterative approach
+with expanding windows for out-of-sample forecasts, demanding extensive
+rounds of model training and significant computation time. To ensure a
+fair comparison, we exclude RERM and ERM methods from simulation studies
+and empirical results.
 
 Relaxing the unbiasedness assumption may result in fewer non-zero column
 entries in the \(\bm{G}\) solution than the number of series at the
