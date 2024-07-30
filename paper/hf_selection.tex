@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{July 29, 2024}
+\date{July 30, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -1748,9 +1748,9 @@ proposed methods. We only show results from Subset and Elasso methods,
 as they return the best RMSE results. The scale variation in optimal
 parameters for different methods is due to objective function scales.
 Table~\ref{tbl-labour-info} shows that all Subset methods exclude some
-series. Remarkably, the Elasso method consistently outperforms the
-others when evaluated on average results across the entire hierarchy and
-forecast horizon, even though it uses only \(11\) series for forecast
+series. Remarkably, the Elasso method outperforms the others when
+evaluated on average results across the entire hierarchy and forecast
+horizon, even though it uses only \(11\) series for forecast
 reconciliation. Most of the series at the STT level are removed, while
 the majority of series at the Duration level are retained. This aligns
 with our data description, highlighting that the seasonal patterns in
@@ -1919,24 +1919,48 @@ for reconciliation.
 
 \todo[inline]{
 
+- Zhang et al. (2023)
+
 - list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
 
-- emphasize the contributions of the current paper. also discuss the practical significance of the current paper.
+- emphasize the contributions of the current paper. (Grouped hierarchy. The selected series in our proposed method may come from different levels of the hierarchy.
+It preserves the unbiasedness of forecasts, is able to restore the hierarchy.) Discuss the practical (OR) significance of the current paper. Unused series. Practical scenario in demand forecasting where intermittent series predominate at the most disaggregated level and their forecasts are worse.
 
-- discuss the practical repercussions of this work as well as the potential limitations it faces.
+- discuss the practical repercussions of this work as well as the potential limitations it faces. Probabilistic forecasting.
 
 }
 
-Relaxing the assumption of unbiasedness of base forecasts, we introduce
-the Elasso method, which directly minimizes the mean squared reconciled
-forecast errors while incorporating regularization terms for time series
-selection. Unlike constrained ``out-of-sample'' reconciliation methods,
-Elasso does not use a \(\bm{W}\) matrix in its optimization problem as
-\(\bm{W}\) is introduced when deriving the loss function (Equation
-\eqref{eq-loss}) under the unbiasedness condition for both base and
-reconciled forecasts. Future research could explore including a
-\(\bm{W}\) matrix in the Elasso method by considering the following
-optimization problem \[
+While our proposed methods opt to leave ``poor'' base forecasts unused
+in forming reconciled forecasts, the approach by \citet{Zhang2023-op} is
+primarily focused on keeping ``good'' base forecasts unchanged after
+reconciliation. Both methods frame the problem as a quadratic
+programming problem to enhance reconciled forecast performance by
+somehow managing the impact of some time series during the process,
+ultimately providing reconciled forecasts for all series in the
+hierarchy. However, our methods differ from the approach by
+\citet{Zhang2023-op} in four main ways. First, our proposed methods
+alter the poor-performing base forecasts, ensuring these do not
+influence other nodes, whereas the approach by \citet{Zhang2023-op}
+keeps the forecasts of certain nodes immutable, which then impact
+others. Second, our methods automate the selection of series unused
+during reconciliation, while the latter method requires an additional,
+yet-to-be-determined procedure to identify the immutable set of series.
+Third, we use only base forecasts of the selected series for
+reconciliation, while \citet{Zhang2023-op} use base forecasts of all
+series, even though some remain unchanged after reconciliation. Finally,
+beyond preserving the unbiasedness of forecasts, we also relax the
+unbiasedness assumption and propose an unconstrained ``in-sample''
+reconciliation method.
+
+Relaxing the assumption of unbiasedness of base forecasts, the Elasso
+method directly minimizes the mean squared reconciled forecast errors
+while incorporating regularization terms for time series selection.
+Unlike constrained ``out-of-sample'' reconciliation methods, Elasso does
+not use a \(\bm{W}\) matrix in its optimization problem as \(\bm{W}\) is
+introduced when deriving the loss function (Equation \eqref{eq-loss})
+under the unbiasedness condition for both base and reconciled forecasts.
+Future research could explore including a \(\bm{W}\) matrix in the
+Elasso method by considering the following optimization problem \[
 \min_{\bm{G}} \quad \frac{1}{2 T} \operatorname{Tr}\left( \left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)\bm{W}^{-1}\left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)^{\prime}\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
 \] where \(\operatorname{Tr}(\cdot)\) denotes the trace of a matrix. In
 this context, \(\bm{W}\) assigns different weights to reconciled
