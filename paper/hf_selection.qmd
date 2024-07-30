@@ -728,6 +728,8 @@ $$ where $\operatorname{Tr}(\cdot)$ denotes the trace of a matrix. In this conte
 \min_{\bm{G}} \quad \frac{1}{2 T} \left\|\bm{Y}-\left(\bm{D} + \hat{\bm{Y}} \bm{G}^{\prime}\right)\bm{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
 $$ where $\bm{D} \in \mathbb{R}^{T \times n_b}$ is a shift parameter, with each row equal to an $n_b$-dimensional $\bm{d}$. This vector $\bm{d}$ can be trained alongside $\bm{G}$ and act as a bias correction.
 
+Additionally, the concept of bi-level variable selection can be applied to enhance the methodology's capabilities. Such methodologies are well‑documented in the literature, including the sparse group lasso [@Simon2013-sp], hierarchical lasso [@Zhou2010-vs], and group bridge [@Huang2009-vs]. By treating each column of $\bm{G}$ as a group and its elements as individuals, we have introduced group‑wise sparsity in our methods through column-wise shrinkage towards zero. In this case, within-group sparsity can be achieved by simply including an additional lasso penalty to shrink individual elements, as suggested in @Simon2013-sp. This bi-level selection mechanism could potentially offer deeper insights into the contributions of individual base forecasts, particularly regarding their significance when mapped to bottom‑level disaggregated forecasts.
+
 ## Conclusion {#sec-conclusion}
 
 \todo[inline]{Tighten up conclusions.}
