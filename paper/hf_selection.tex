@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{July 30, 2024}
+\date{July 31, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -766,11 +766,18 @@ based on various \(\bm{W}\) estimators, referring to them as
 \textbf{OLS-subset}, \textbf{WLSs-subset}, \textbf{WLSv-subset},
 \textbf{MinT-subset}, and \textbf{MinTs-subset}, respectively.
 
-The inclusion of the ridge term in Equation \eqref{eq-subset} is
-motivated by earlier work on best-subset selection
-\citep[e.g.,][]{Hazimeh2020-xd, Mazumder2022-hx}, which suggests that
-additional ridge regularization helps mitigate the poor predictive
-performance of best-subset selection method in low SNR regimes.
+The best-subsets estimator, derived from an \(L_0\)-regularized least
+squares problem, is a natural and direct candidate for sparse learning.
+Its statistical properties have been extensively studied; see, for
+example, \citet{Greenshtein2004-be}, \citet{Zhang2012-ge}, and the
+references therein. However, \citet{Mazumder2022-hx} argued that the
+vanilla \(L_0\) penalization could suffer from overfitting in low SNR
+settings. To address the issue, we incorporate a ridge regularization in
+Equation \eqref{eq-subset}, motivated by earlier work on best-subset
+selection \citep[e.g.,][]{Hazimeh2020-xd, Mazumder2022-hx}, which
+suggests that additional ridge regularization helps mitigate the poor
+predictive performance of best-subset selection method in low SNR
+regimes.
 
 We present a Big-M based mixed integer programming (MIP) formulation for
 the problem in Equation \eqref{eq-subset}:
