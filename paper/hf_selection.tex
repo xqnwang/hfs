@@ -925,11 +925,23 @@ group best-subset selection, we employ Gurobi to solve Equation
 \subsubsection*{Group lasso method}\label{group-lasso-method}
 \addcontentsline{toc}{subsubsection}{Group lasso method}
 
-Lasso is another popular method for the selection and estimation of
-parameters in the context of linear regression. \citet{Yuan2006-mw}
-introduced the group lasso method that can be used when there is a
-grouped structure among the variables. Here, we consider \emph{a group
-lasso problem under the unbiasedness assumption} given by
+\citet{Yuan2006-mw} introduced the group lasso method, which extends
+lasso to situations with a grouped structure among variables. Similar to
+lasso, group lasso induces sparsity, but at the group level, leading to
+more interpretable models by reducing the number of non-zero groups of
+coefficients. \citet{Lounici2011-or} demonstrated that group lasso
+enhances prediction and estimation properties compared to the
+traditional lasso method. The statistical properties of the group-lasso
+estimator have been extensively studied in the literature
+\citep[e.g.,][]{Nardi2008-asymptotic}.
+
+When the problem of forecast reconciliation with time series selection
+is reframed as a least squares problem, our goal is to perform
+group-wise variable selection. Specifically, the unknown paramter
+\(\operatorname{vec}(\bm{G})\) possesses an inherent grouping structure,
+with each group corresponding to a single column of \(\bm{G}\), each of
+size \(n_b\). Thus, we consider \emph{a group lasso problem under the
+unbiasedness assumption} given by
 \begin{equation}\phantomsection\label{eq-lasso}{
 \begin{aligned}
 \min_{\bm{G}} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2 \\
@@ -1048,20 +1060,20 @@ model. We rewrite the problem as \[
 \(\bm{S} \otimes \hat{\bm{Y}}\) as the covariate matrix. We denote this
 as \textbf{Elasso} in the results that follow.
 
-Unlike the Subset, Parsimonious, and Lasso methods introduced in
-Section~\ref{sec-constrained}, Elasso relaxes the unbiasedness
-conditions on both base and reconciled forecasts and operates as an
-``in-sample'' method because \(\hat{\bm{Y}}\) are predictions in the
-form of fitted values (i.e., \(\bm{Y}\) is in training data when base
-forecasts are computed). Thus Elasso aims to directly minimize the mean
-squared reconciled forecast errors, as described in Equation
-\eqref{eq-loss}, rather than focusing solely on the variance term. This
-clarifies two points: (1) why the Elasso method omits the
-\(\bm{GS}=\bm{I}\) constraint, which ensures the unbiasedness of
-reconciled forecasts when base forecasts are unbiased, and (2) why the
-Elasso method does not use a \(\bm{W}\) matrix, which is introduced when
-deriving from \(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\) under
-the constraint \(\bm{GS}=\bm{I}\).
+Unlike the methods introduced in Section~\ref{sec-constrained}, Elasso
+relaxes the unbiasedness conditions on both base and reconciled
+forecasts and operates as an ``in-sample'' method because
+\(\hat{\bm{Y}}\) are predictions in the form of fitted values (i.e.,
+\(\bm{Y}\) is in training data when base forecasts are computed). Thus
+Elasso aims to directly minimize the mean squared reconciled forecast
+errors, as described in Equation \eqref{eq-loss}, rather than focusing
+solely on the variance term. This clarifies two points: (1) why the
+Elasso method omits the \(\bm{GS}=\bm{I}\) constraint, which ensures the
+unbiasedness of reconciled forecasts when base forecasts are unbiased,
+and (2) why the Elasso method does not use a \(\bm{W}\) matrix, which is
+introduced when deriving from
+\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\) under the constraint
+\(\bm{GS}=\bm{I}\).
 
 We note that both the ``in-sample'' Elasso and EMinT methods require
 only one round of model training. Similarly, the Subset, Parsimonious,
