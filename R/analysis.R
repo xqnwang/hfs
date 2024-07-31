@@ -70,7 +70,7 @@ latex_table <- function(out_all) {
   names(header) <- c("", levels)
   candidates <- out_all$candidates
 
-  # Red entries identify the best performing approaches
+  # Blue entries identify the best performing approaches
   # Bold entries identify methods that perform better than the corresponding benchmark method
   out[, -1] <- lapply(out[, -1], function(x) {
     x <- round(x, 1)
@@ -318,7 +318,6 @@ combine_corr_table <- function(data_label, methods, corr, index, measure) {
         sapply(function(lentry) as.numeric(lentry[[level]]))
     })
     out <- data.frame(method, do.call(cbind, out))
-    # colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, paste0("$\\rho$=", -0.8), corr[index])) |> rep(length(levels)))
     colnames(out) <- c("Method", c(ifelse(corr[index] == -0.8, "$\\rho$=--0.8", sub("-", "--", corr[index]))) |> rep(length(levels)))
     assign(paste0(data_label, "_", method_label), out)
   }
@@ -366,7 +365,7 @@ latex_corr_table <- function(out_all) {
   names(header) <- c("", levels)
   candidates <- out_all$candidates
 
-  # Red entries identify the best performing approaches
+  # Blue entries identify the best performing approaches
   # Bold entries identify methods that perform better than the corresponding benchmark method
   out[, -1] <- lapply(out[, -1], function(x) {
     x <- round(x, 1)
