@@ -49,9 +49,11 @@ if (data_label == "simulation"){
   # Reconciliation methods considered
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
-  if (method_label == "lasso") methods <- c(methods, "Elasso")
-  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
-                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso") 
+    methods <- c(methods, "Elasso")
+  if (method_label == "subset") 
+    methods <- c(methods[1:2], "EMinT",
+                 sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
@@ -83,9 +85,11 @@ if (grepl("corr", data_label)){
   # Reconciliation methods considered
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
-  if (method_label == "lasso") methods <- c(methods, "Elasso")
-  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
-                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso") 
+    methods <- c(methods, "Elasso")
+  if (method_label == "subset") 
+    methods <- c(methods[1:2], "EMinT",
+                 sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
@@ -119,9 +123,11 @@ if (grepl("tourism", data_label)){
   # Reconciliation methods considered
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
-  if (method_label == "lasso") methods <- c(methods, "Elasso")
-  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
-                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso")
+    methods <- c(methods, "Elasso")
+  if (method_label == "subset")
+    methods <- c(methods[1:2], "EMinT",
+                 sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
@@ -156,9 +162,11 @@ if (grepl("labour", data_label)){
   # Reconciliation methods considered
   methods <- c("Base", "BU", 
                sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
-  if (method_label == "lasso") methods <- c(methods, "Elasso")
-  if (method_label == "subset") methods <- c(methods[1:2], "EMinT",
-                                             sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
+  if (method_label == "lasso")
+    methods <- c(methods, "Elasso")
+  if (method_label == "subset")
+    methods <- c(methods[1:2], "EMinT",
+                 sapply(method, function(l) c(l, paste0(l, "_", method_label))) |> as.character())
   reconcile_methods <- grep(method_label, methods, value = TRUE)
 }
 
@@ -177,7 +185,7 @@ for(method in methods) {
 }
 
 #################################################
-# Calculate RMSE & MASE values
+# Calculate mean RMSE & MASE values
 #################################################
 for(h in horizon){
   rmse <- lapply(methods, function(lmethod){
