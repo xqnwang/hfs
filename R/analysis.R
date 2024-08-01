@@ -156,6 +156,23 @@ calc_rmse <- function(fc, test, h) {
   return(rmse)
 }
 
+calc_rmse_series <- function(fc, test, h){
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  err <- cbind(err, Index = subset(test, select = Index))
+  rmse <- err |> 
+    as_tibble() |> 
+    group_by(Index) |> 
+    mutate(Horizon = row_number()) |> 
+    filter(Horizon <= h) |>
+    summarise_at(1:NCOL(err), function(x) sqrt(mean(x^2))) |>
+    ungroup() |>
+    select(!c("Index", "Horizon")) |>
+    rowwise() |>
+    mutate(Average = mean(c_across(1:(NCOL(err)-1)))) |>
+    pull(Average)
+  return(rmse)
+}
+
 #--------------------------------------------------------------------
 # Calculate MASE
 #--------------------------------------------------------------------

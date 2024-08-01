@@ -38,6 +38,43 @@ series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
 simulation_info <- combine_z(data_label, methods, scenarios, series_name)
 saveRDS(simulation_info, file = "paper/results/sim_selection.rds")
 
+h <- 16
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+target <- sapply(highlight, function(len){
+  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
+}) |> as.vector()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
+
+par(mfrow=c(1, length(scenarios)),
+    mar=c(2,0.1,0.1,0.3)
+)
+for (scenario in scenarios) {
+  for (method in methods){
+    readRDS(paste0("data_new/", data_label, "_", method, "_reconsf_", scenario, "_rmse_hts_", h, ".rds")) |>
+      assign(method, value = _)
+  }
+  rmse_hfs <- cbind(subset,
+                    intuitive[, grepl("intuitive", colnames(intuitive))],
+                    lasso[, grepl("lasso", colnames(lasso))])
+  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
+  rmse_hfs <- rmse_hfs[, target]
+  # saveRDS(rmse_hfs, file = paste0("data_new/", data_label, "_", scenario, "_rmse_hts_", h, ".rds"))
+  if (scenario == "s1"){
+    title <- "Scenario A"
+  } else if (scenario == "s2"){
+    title <- "Scenario B"
+  } else if (scenario == "s3"){
+    title <- "Scenario C"
+  }
+  nemenyi(rmse_hfs, conf.level = 0.95, plottype = "vmcb",
+          sort = FALSE, 
+          shadow = FALSE,
+          group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+          Title = title,
+          Xlab = "Mean ranks",
+          Ylab = "")
+}
+
 #----------------------------------------------------------------------
 # Simulation setup 2
 # Exploring the effect of correlation

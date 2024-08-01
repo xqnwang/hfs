@@ -273,6 +273,20 @@ for(h in horizon){
   }
 }
 
+# mean RMSE values for each hierarchy
+for(h in horizon){
+  rmse_series <- lapply(methods, function(lmethod){
+    calc_rmse_series(fc = get(tolower(lmethod)), test = test, h = h)
+  })
+  names(rmse_series) <- methods
+  out <- bind_rows(rmse_series, .id = "Method")
+  if (is.null(scenario)){
+    saveRDS(out, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_rmse_hts_", h, ".rds"))
+  } else{
+    saveRDS(out, file = paste0("data_new/", data_label, "_", method_label, "_reconsf_", scenario, "_rmse_hts_", h, ".rds"))
+  }
+}
+
 #################################################
 # Extract z
 #################################################
