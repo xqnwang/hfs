@@ -337,7 +337,7 @@ We also explored the empirical version of group best-subset selection with ridge
 
 ## Monte Carlo simulations {#sec-simulations}
 
-To assess the proposed reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. Both simulations consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. Specifically, the structure has four series at the bottom level, and seven series in total; i.e., $n_b = 4$, and $n = 7$. The bottom-level series are first generated and then summed to obtain aggregated series at higher levels.
+To assess the proposed reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. Both simulations consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. The bottom-level series are first generated and then summed to obtain aggregated series at higher levels.
 
 @sec-sim1 considers a setup where the bottom-level series are generated using a structural time series model, but model misspecification exists for some series within the structure. @sec-sim2 explores the impact of the correlation between series on the performance of reconciled forecasts.
 
@@ -349,7 +349,7 @@ $$ where $\bm{\mu}_t$ and $\bm{\gamma}_t$ are trend and seasonal components defi
 \bm{\mu}_t & =\bm{\mu}_{t-1}+\bm{v}_t+\bm{\varrho}_t, &&& \bm{\varrho}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_{\varrho}^2 \bm{I}_4\right), \\
 \bm{v}_t & =\bm{v}_{t-1}+\bm{\zeta}_t, &&& \bm{\zeta}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\zeta^2 \bm{I}_4\right), \\
 \bm{\gamma}_t & =-\sum_{i=1}^{s-1} \bm{\gamma}_{t-i}+\bm{\omega}_t, &&& \bm{\omega}_t & \sim \mathcal{N}\left(\bm{0}, \sigma_\omega^2 \bm{I}_4\right),
-\end{align*} $\bm{\varrho}_t$, $\bm{\zeta}_t$, and $\bm{\omega}_t$ are error terms independent of each other and over time, and $\bm{\eta}_t$ is generated independently from an $\text{ARIMA}(p,0,q)$ process, where $p$ and $q$ take values of $0$ or $1$ with equal probability. Coefficients in the ARIMA process are randomly sampled from a uniform distribution within the range $[0.5, 0.7]$, and the contemporaneous error covariance matrix is given by $$
+\end{align*} $\bm{\varrho}_t$, $\bm{\zeta}_t$, and $\bm{\omega}_t$ are error terms independent of each other and over time, and $\bm{\eta}_t$ is generated independently from an $\text{ARIMA}(p,0,q)$ process, where $p$ and $q$ take values of $0$ or $1$ with equal probability. Coefficients in the ARIMA process are randomly sampled from a uniform distribution $U(0.5, 0.7)$, and the contemporaneous error covariance matrix is given by $$
 \left[\begin{array}{llll}
 5 & 3 & 2 & 1 \\
 3 & 4 & 2 & 1 \\
@@ -358,11 +358,11 @@ $$ where $\bm{\mu}_t$ and $\bm{\gamma}_t$ are trend and seasonal components defi
 \end{array}\right],
 $$ which enables correlations among time series in a hierarchical structure.
 
-We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $\sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$. Initial values for $\bm{\mu}_0$, $\bm{v}_0$, $\bm{\gamma}_0$, $\bm{\gamma}_1$, and $\bm{\gamma}_2$ are generated independently from a multivariate normal distribution with zero mean and identity covariance matrix. For each bottom-level series, we generate a total of $T+h = 180$ observations, with the last $h = 16$ observations forming the test set. The bottom-level series are aggregated for data at higher levels. This process is repeated $500$ times.
+We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $\sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$. Initial values for $\bm{\mu}_0$, $\bm{v}_0$, $\bm{\gamma}_0$, $\bm{\gamma}_1$, and $\bm{\gamma}_2$ are generated independently from a multivariate normal distribution with zero mean and identity covariance matrix. For each bottom-level series, we generate a total of $T+h = 180$ observations, with the last $h = 16$ observations forming the test set. The bottom-level series are then aggregated higher level data. This entire process is repeated $500$ times.
 
-We use ETS models to generate base forecasts in the hierarchy with the default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we deliberately undermine in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for specific time series in three scenarios. In each scenario, a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for a single series; i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenarios A--C, respectively.
+We use ETS models to generate base forecasts for the hierarchy using the default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we deliberately undermine in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for specific time series in three scenarios. In each scenario, a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for a single series; i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenarios A--C, respectively.
 
-@tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse summarize the results, each reporting the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as *Average*). The *Base* row shows average RMSE of base forecasts, specifically ETS forecasts in this setup. Entries below report the percentage decrease (negative) or increase (positive) in average RMSE of reconciled forecasts compared to base forecasts. The *BU* row uses a "bottom-up" approach, aggregating bottom-level base forecasts to form higher level forecasts. The *OLS*, *WLS*, *WLSv*, *MinT*, and *MinTs* rows all use the MinT method with different estimators of $\bm{W}$ (as per @tbl-bench) being used. The *OLS-*, *WLS-*, *WLSv-*, *MinT-*, and *MinTs-* rows use the three methods introduced in @sec-constrained with same different estimators of $\bm{W}$ being used. The *EMinT* row uses the empirical MinT method, while the *Elasso* row uses the empirical group lasso method proposed in @sec-unconstrained. Notably, in each scenario, the largest improvements occur at the hierarchical level with model misspecification, while slightly deteriorating the performance at other levels.
+@tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse summarize the results under different scenarios, each reporting the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as *Average*). The *BU* row uses a "bottom-up" approach, aggregating bottom-level base forecasts to form higher level forecasts. The rows labeled *OLS*, *WLS*, *WLSv*, *MinT*, and *MinTs* represent the MinT method using various estimators of $\bm{W}$ (as per @tbl-bench), while the rows *OLS-*, *WLS-*, *WLSv-*, *MinT-*, and *MinTs-* denote the three methods proposed in @sec-constrained, using the corresponding $\bm{W}$ estimators. The *EMinT* row applies the empirical MinT method, while the *Elasso* row uses the empirical group lasso method proposed in @sec-unconstrained. Notably, in each scenario, the largest improvements occur at the level with model misspecification, though this occasionally results in slight performance declines at other levels.
 
 ```{r}
 #| label: tbl-s1-rmse
@@ -393,7 +393,6 @@ In addition, we report the proportion of time series being selected from our pro
 #| results: hide
 #| fig-width: 13
 #| fig-height: 4
-#| fig-pos: "!b"
 #| fig-cap: MCB test results.
 
 scenarios <- c("s1", "s2", "s3")

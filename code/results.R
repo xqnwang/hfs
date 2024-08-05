@@ -29,6 +29,7 @@ methods <- c("subset", "intuitive", "lasso")
 for (i in 1:3){
   scenario <- paste0("s", i)
   out_all <- combine_table(data_label, methods, measure, scenario = scenario, horizons)
+  out_all$table_out$Method <- gsub("intuitive", "parsim", out_all$table_out$Method)
   saveRDS(out_all, file = paste0("paper/results/sim_rmse_", scenario, ".rds"))
 }
 
@@ -36,6 +37,11 @@ for (i in 1:3){
 scenarios <- c("s1", "s2", "s3")
 series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
 simulation_info <- combine_z(data_label, methods, scenarios, series_name)
+simulation_info <- lapply(simulation_info, function(len){
+  len$n$Method <- gsub("intuitive", "parsim", len$n$Method)
+  rownames(len$z) <- gsub("intuitive", "parsim", rownames(len$z))
+  return(len)
+})
 saveRDS(simulation_info, file = "paper/results/sim_selection.rds")
 
 # MCB tests for each scenario
@@ -54,7 +60,8 @@ for (scenario in scenarios) {
                     intuitive[, grepl("intuitive", colnames(intuitive))],
                     lasso[, grepl("lasso", colnames(lasso))])
   colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
-  rmse_hfs <- rmse_hfs[, target]
+  colnames(rmse_hfs) <- gsub("intuitive", "parsim", colnames(rmse_hfs))
+  rmse_hfs <- rmse_hfs[, gsub("intuitive", "parsim", target)]
   saveRDS(rmse_hfs, file = paste0("paper/results/sim_rmse_mcb_", scenario, ".rds"))
 }
 
@@ -113,14 +120,23 @@ index <- c(1, 3, 5, 7, 9)
 methods <- c("subset", "intuitive", "lasso")
 
 out_all <- combine_corr_table(data_label, methods, corr, index, measure)
+out_all$table_out$Method <- gsub("intuitive", "parsim", out_all$table_out$Method)
 saveRDS(out_all, file = "paper/results/corr_rmse.rds")
 
 # Selection ratio table
-methods <- c("subset", "intuitive", "lasso")
 series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
 corr_info_neg <- combine_z("corr_1", methods, scenarios = "s0", series_name)
 corr_info_pos <- combine_z("corr_9", methods, scenarios = "s0", series_name)
-
+corr_info_neg <- lapply(corr_info_neg, function(len){
+  len$n$Method <- gsub("intuitive", "parsim", len$n$Method)
+  rownames(len$z) <- gsub("intuitive", "parsim", rownames(len$z))
+  return(len)
+})
+corr_info_pos <- lapply(corr_info_pos, function(len){
+  len$n$Method <- gsub("intuitive", "parsim", len$n$Method)
+  rownames(len$z) <- gsub("intuitive", "parsim", rownames(len$z))
+  return(len)
+})
 saveRDS(corr_info_neg, file = "paper/results/corr_selection_neg.rds")
 saveRDS(corr_info_pos, file = "paper/results/corr_selection_pos.rds")
 
@@ -176,6 +192,7 @@ for (method_label in methods){
 }
 
 out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+out_all$table_out$Method <- gsub("intuitive", "parsim", out_all$table_out$Method)
 saveRDS(out_all, file = paste0("paper/results/tourism_rmse.rds"))
 
 # RMSE table - the last window
@@ -186,6 +203,7 @@ horizons <- c(1, 4, 8, 12)
 methods <- c("subset", "intuitive", "lasso")
 
 out_1_all <- combine_table(data_label, methods, measure, scenario, horizons)
+out_1_all$table_out$Method <- gsub("intuitive", "parsim", out_1_all$table_out$Method)
 saveRDS(out_1_all, file = "paper/results/tourism_1_rmse.rds")
 
 # Series retained table
@@ -338,6 +356,7 @@ for (method_label in methods){
 }
 
 out_all <- combine_table(data_label, methods, measure, scenario, horizons)
+out_all$table_out$Method <- gsub("intuitive", "parsim", out_all$table_out$Method)
 saveRDS(out_all, file = paste0("paper/results/labour_rmse.rds"))
 
 # RMSE table - the last window
@@ -348,6 +367,7 @@ horizons <- c(1, 4, 8, 12)
 methods <- c("subset", "intuitive", "lasso")
 
 out_1_all <- combine_table(data_label, methods, measure, scenario, horizons)
+out_1_all$table_out$Method <- gsub("intuitive", "parsim", out_1_all$table_out$Method)
 saveRDS(out_1_all, file = "paper/results/labour_1_rmse.rds")
 
 # Series retained table

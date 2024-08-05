@@ -243,7 +243,7 @@ combine_z <- function(data_label, methods, scenarios, series_name) {
 latex_sim_nos_table <- function(z_out, n_out, label_out) {
   candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
   target <- sapply(candidates, function(len) {
-    c(paste0(len, "-", c("subset", "intuitive", "lasso")))
+    c(paste0(len, "-", c("subset", "parsim", "lasso")))
   }) |> as.vector()
   target <- c(target, "Elasso")
   z_out <- z_out[match(target, row.names(z_out)), ] / 500
