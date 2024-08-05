@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{August 5, 2024}
+\date{August 6, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -1150,12 +1150,6 @@ two levels of aggregation, as shown in Figure~\ref{fig-hts}. The
 bottom-level series are first generated and then summed to obtain
 aggregated series at higher levels.
 
-Section~\ref{sec-sim1} considers a setup where the bottom-level series
-are generated using a structural time series model, but model
-misspecification exists for some series within the structure.
-Section~\ref{sec-sim2} explores the impact of the correlation between
-series on the performance of reconciled forecasts.
-
 \subsection{Setup 1: Exploring the effect of model
 misspecification}\label{sec-sim1}
 
@@ -1190,10 +1184,9 @@ We set \(s = 4\) for quarterly data with error variances
 \(\bm{\gamma}_0\), \(\bm{\gamma}_1\), and \(\bm{\gamma}_2\) are
 generated independently from a multivariate normal distribution with
 zero mean and identity covariance matrix. For each bottom-level series,
-we generate a total of \(T+h = 180\) observations, with the last
-\(h = 16\) observations forming the test set. The bottom-level series
-are then aggregated higher level data. This entire process is repeated
-\(500\) times.
+we generate \(180\) observations, with the last \(h = 16\) observations
+forming the test set. The bottom-level series are then aggregated higher
+level data. This entire process is repeated \(500\) times.
 
 We use ETS models to generate base forecasts for the hierarchy using the
 default settings from the \textbf{forecast} R package
@@ -1208,20 +1201,11 @@ level, resulting in Scenarios A--C, respectively.
 Table~\ref{tbl-s1-rmse}, Table~\ref{tbl-s2-rmse}, and
 Table~\ref{tbl-s3-rmse} summarize the results under different scenarios,
 each reporting the average root mean squared error (RMSE) for each level
-as well as the whole structure (denoted as \emph{Average}). The
-\emph{BU} row uses a ``bottom-up'' approach, aggregating bottom-level
-base forecasts to form higher level forecasts. The rows labeled
-\emph{OLS}, \emph{WLS}, \emph{WLSv}, \emph{MinT}, and \emph{MinTs}
-represent the MinT method using various estimators of \(\bm{W}\) (as per
-Table~\ref{tbl-bench}), while the rows \emph{OLS-}, \emph{WLS-},
-\emph{WLSv-}, \emph{MinT-}, and \emph{MinTs-} denote the three methods
-proposed in Section~\ref{sec-constrained}, using the corresponding
-\(\bm{W}\) estimators. The \emph{EMinT} row applies the empirical MinT
-method, while the \emph{Elasso} row uses the empirical group lasso
-method proposed in Section~\ref{sec-unconstrained}. Notably, in each
-scenario, the largest improvements occur at the level with model
-misspecification, though this occasionally results in slight performance
-declines at other levels.
+as well as the whole structure (denoted as Average).
+
+Notably, in each scenario, the largest improvements occur at the level
+with model misspecification, though this occasionally results in slight
+performance declines at other levels.
 
 \begin{table}
 
@@ -1273,7 +1257,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & --31.9 & --32.3 & --27.5
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 
@@ -1282,19 +1266,20 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & --31.9 & --32.3 & --27.5
 \end{table}%
 
 Focusing on the results of benchmark reconciliation methods, we find
-that the BU approach performs the best in Scenarios B and C but ranks as
-the worst overall in Scenario A. This is not surprising, as bottom-level
-base forecasts are deteriorated in Scenario A, while higher-level base
-forecasts are deteriorated in Scenarios B and C. Moreover, WLSv, MinT,
-and MinTs perform especially well in Setup 1, benefiting from their
-ability to consider in-sample covariance of base forecast errors,
-allowing for a larger range of adjustments in reconciliation for base
-forecasts with higher estimated error variance. EMinT also provides
-accurate reconciled forecasts in our setup, where the in-sample
-forecasts for specific series are intentionally undermined, a situation
-that can be detected by the in-sample information based EMinT method.
-However, OLS and WLSs significantly underperform other benchmark methods
-in this simulation design.
+that the BU (bottom-up) method performs the best in Scenarios B and C
+but ranks as the worst overall in Scenario A. This is not surprising, as
+bottom-level base forecasts are deteriorated in Scenario A, while
+higher-level base forecasts are deteriorated in Scenarios B and C.
+Moreover, WLSv, MinT, and MinTs perform especially well in Setup 1.
+Their effectiveness stems from their ability to consider in-sample
+covariance of base forecast errors, allowing for a larger range of
+adjustments in reconciliation for base forecasts with higher estimated
+error variance. EMinT also provides accurate reconciled forecasts in our
+setup, where the in-sample forecasts for specific series are
+intentionally undermined, a situation that can be detected by the
+in-sample information based EMinT method. However, OLS and WLSs
+significantly underperform other benchmark methods in this simulation
+design.
 
 In all three scenarios, our proposed methods consistently produce either
 improved or comparable reconciled forecasts compared to their respective
@@ -1350,7 +1335,7 @@ Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -1497,7 +1482,7 @@ EMinT & \textcolor{blue}{\textbf{--31.2}} & \textcolor{blue}{\textbf{--19.8}} & 
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 
@@ -1583,7 +1568,7 @@ Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -1726,7 +1711,7 @@ EMinT & 43.1 & 17.6 & 9.9 & 10.2 & 36.8 & 25.2 & 27.9 & 24.1 & 16.8 & 15.1 & 6.2
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 
@@ -1899,7 +1884,7 @@ EMinT & --2.3 & 24.3 & 58.8 & 59.7 & 36.9 & 56.0 & 68.4 & 70.4 & 51.4 & 64.6 & 7
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 
@@ -2165,7 +2150,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 
@@ -2223,7 +2208,7 @@ EMinT & --60.7 & --63.5 & --58.2 & --51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 
@@ -2270,7 +2255,7 @@ Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -2318,7 +2303,7 @@ Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -2366,7 +2351,7 @@ Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.
+\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -2421,7 +2406,7 @@ EMinT & --60.4 & --14.0 & 1.4 & --29.9 & --6.0 & 12.0 & 10.7 & --6.7 & 16.7 & --
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 
@@ -2507,7 +2492,7 @@ EMinT & 116.5 & 97.8 & --15.8 & --13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 6
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.
+\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
 \end{tablenotes}
 \end{threeparttable}}
 

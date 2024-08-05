@@ -111,7 +111,7 @@ latex_table <- function(out_all) {
     add_header_above(header, align = "c") |>
     footnote(
       general_title = "",
-      general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.",
+      general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.",
       footnote_as_chunk = TRUE,
       threeparttable = TRUE,
       fixed_small_size = FALSE
@@ -301,7 +301,7 @@ latex_sim_nos_table <- function(z_out, n_out, label_out) {
     row_spec(3 * (1:length(candidates)), hline_after = TRUE) |>
     footnote(
       general_title = "",
-      general = "Note: the last column displays a stacked barplot for each method, based on the total number of selected series data from 500 simulation instances, with a darker sub-bar indicating a larger number.",
+      general = "Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.",
       escape = TRUE,
       footnote_as_chunk = TRUE,
       threeparttable = TRUE,
@@ -419,7 +419,7 @@ latex_corr_table <- function(out_all) {
     add_header_above(header, align = "c") |>
     footnote(
       general_title = "",
-      general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The entries with the lowest values in each column are highlighted in blue. In each panel, the proposed methods are indicated with a gray background, and methods that outperform the benchmark method are marked in bold.",
+      general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.",
       footnote_as_chunk = TRUE,
       threeparttable = TRUE,
       fixed_small_size = FALSE
