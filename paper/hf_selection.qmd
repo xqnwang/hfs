@@ -48,6 +48,7 @@ library(latex2exp)
 
 source(here::here("R/nemenyi.R")) # MCB test
 source(here::here("R/analysis.R")) # Other functions used for analysis
+options(knitr.kable.NA = '-')
 ```
 
 ## Introduction {#sec-introduction}
@@ -856,7 +857,6 @@ latex_table(rmse_labour)
 
 labour_info <- readRDS(here::here("paper/results/labour_info.rds"))
 
-options(knitr.kable.NA = '-')
 labour_info |>
   kable(format = "latex",
         booktabs = TRUE,
@@ -892,7 +892,6 @@ latex_table(rmse_tourism)
 
 tourism_info <- readRDS(here::here("paper/results/tourism_info.rds"))
 
-options(knitr.kable.NA = '-')
 tourism_info |>
   kable(format = "latex",
         booktabs = TRUE,
