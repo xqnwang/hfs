@@ -46,8 +46,8 @@ library(knitr)
 library(kableExtra)
 library(latex2exp)
 
-source("../R/nemenyi.R") # MCB test
-source("../R/analysis.R") # Other functions used for analysis
+source(here::here("R/nemenyi.R")) # MCB test
+source(here::here("R/analysis.R")) # Other functions used for analysis
 ```
 
 ## Introduction {#sec-introduction}
@@ -371,7 +371,7 @@ We use ETS models to generate base forecasts in the hierarchy with the default s
 #| results: asis
 #| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario A, Setup 1.
 
-rmse_s1 <- readRDS("results/sim_rmse_s1.rds")
+rmse_s1 <- readRDS(here::here("paper/results/sim_rmse_s1.rds"))
 latex_table(rmse_s1)
 ```
 
@@ -387,7 +387,7 @@ In all three scenarios, our proposed methods consistently produce either improve
 #| results: asis
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario A, Setup 1.
 
-selection_sim <- readRDS("results/sim_selection.rds")
+selection_sim <- readRDS(here::here("paper/results/sim_selection.rds"))
 latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n, "s1")
 ```
 
@@ -419,8 +419,8 @@ For each time series at the bottom level, we generate a total of $101$ observati
 #| fig-pos: "!b"
 #| fig-cap: An example hierarchical time series and its in-sample residuals in Setup 2.
 
-data <- readRDS("results/corr_data_neg.rds")
-resid <- readRDS("results/corr_resid_neg.rds")
+data <- readRDS(here::here("paper/results/corr_data_neg.rds"))
+resid <- readRDS(here::here("paper/results/corr_resid_neg.rds"))
 
 theme_plot <- theme_bw() +
   theme(legend.position="bottom",
@@ -500,7 +500,7 @@ For each series, base forecasts are generated from ARMA models. We identify the 
 #| results: asis
 #| tbl-cap: Out-of-sample forecast results across various error correlations for simulation in Setup 2.
 
-rmse_corr <- readRDS("results/corr_rmse.rds")
+rmse_corr <- readRDS(here::here("paper/results/corr_rmse.rds"))
 latex_corr_table(rmse_corr)
 ```
 
@@ -516,7 +516,7 @@ In @tbl-corr-selection-neg and @tbl-corr-selection-pos, we present the proportio
 #| results: asis
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being -0.8.
 
-selection_corr_neg <- readRDS("results/corr_selection_neg.rds")
+selection_corr_neg <- readRDS(here::here("paper/results/corr_selection_neg.rds"))
 latex_sim_nos_table(selection_corr_neg$out_s0$z,
                     selection_corr_neg$out_s0$n,
                     "corr_neg")
@@ -545,7 +545,7 @@ We construct a grouped hierarchy by disaggregating the number of unemployed pers
 #| fig-pos: "!t"
 #| fig-cap: Australia unemployed persons, disaggregated by state and territory, and by duration of job search.
 
-labour_ts <- readRDS("results/labour_gts.rds")
+labour_ts <- readRDS(here::here("paper/results/labour_gts.rds"))
 
 p1 <- labour_ts |>
   filter(Series == "Total") |>
@@ -602,7 +602,7 @@ We assess the forecast accuracy of base forecasts and various reconciliation met
 #| results: asis
 #| tbl-cap: Average out-of-sample forecast results for Australian labour force data.
 
-rmse_labour_avg <- readRDS("results/labour_rmse.rds")
+rmse_labour_avg <- readRDS(here::here("paper/results/labour_rmse.rds"))
 latex_table(rmse_labour_avg)
 ```
 
@@ -625,7 +625,7 @@ Australian domestic tourism flows are measured as the number of overnight trips 
 #| fig-width: 9
 #| fig-height: 6
 #| fig-cap: Domestic tourism flows from January 1998 to December 2017 for the whole of Australia as well as the states.
-tourism_ts <- readRDS("results/tourism_hts.rds")
+tourism_ts <- readRDS(here::here("paper/results/tourism_hts.rds"))
 tourism_ts |>
   autoplot(Value) +
   facet_wrap(vars(Series), scales = "free_y", ncol = 2) +
@@ -656,7 +656,7 @@ Overall, the Subset methods outperform their respective benchmark methods, espec
 #| results: asis
 #| tbl-cap: Average out-of-sample forecast results for Australian domestic tourism data.
 
-rmse_tourism_avg <- readRDS("results/tourism_rmse.rds")
+rmse_tourism_avg <- readRDS(here::here("paper/results/tourism_rmse.rds"))
 latex_table(rmse_tourism_avg)
 ```
 
@@ -673,7 +673,7 @@ latex_table(rmse_tourism_avg)
 #| fig-pos: "!t"
 #| fig-cap: Average out-of-sample forecasting performance, measured in terms of RMSE (from 1- to 12-step-ahead), for each series across different reconciliation methods. Time series are arranged along the horizontal axis.
 
-tourism_heatmap <- readRDS("results/tourism_heatmap.rds")
+tourism_heatmap <- readRDS(here::here("paper/results/tourism_heatmap.rds"))
 ggplot(tourism_heatmap, aes(x = Series, y = Method, fill = RMSE)) +
   geom_tile() +
   geom_vline(xintercept = c(1.5, 8.5, 35.5), linetype = "dashed", linewidth = 0.5) +
@@ -782,7 +782,7 @@ The section provides additional results obtained in @sec-simulations and @sec-ap
 #| results: asis
 #| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario B, Setup 1.
 
-rmse_s2 <- readRDS("results/sim_rmse_s2.rds")
+rmse_s2 <- readRDS(here::here("paper/results/sim_rmse_s2.rds"))
 latex_table(rmse_s2)
 ```
 
@@ -794,7 +794,7 @@ latex_table(rmse_s2)
 #| results: asis
 #| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario C, Setup 1.
 
-rmse_s3 <- readRDS("results/sim_rmse_s3.rds")
+rmse_s3 <- readRDS(here::here("paper/results/sim_rmse_s3.rds"))
 latex_table(rmse_s3)
 ```
 
@@ -828,7 +828,7 @@ latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n, "s3")
 #| results: asis
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being 0.8.
 
-selection_corr_pos <- readRDS("results/corr_selection_pos.rds")
+selection_corr_pos <- readRDS(here::here("paper/results/corr_selection_pos.rds"))
 latex_sim_nos_table(selection_corr_pos$out_s0$z,
                     selection_corr_pos$out_s0$n,
                     "corr_pos")
@@ -842,7 +842,7 @@ latex_sim_nos_table(selection_corr_pos$out_s0$z,
 #| results: asis
 #| tbl-cap: Out-of-sample forecast results on a single test set (from August 2022 to July 2023) for Australian labour force data.
 
-rmse_labour <- readRDS("results/labour_1_rmse.rds")
+rmse_labour <- readRDS(here::here("paper/results/labour_1_rmse.rds"))
 latex_table(rmse_labour)
 ```
 
@@ -854,7 +854,7 @@ latex_table(rmse_labour)
 #| results: asis
 #| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the labour application, considering a single test set (from August 2022 to July 2023). The None row shows the original number of series in the structure.
 
-labour_info <- readRDS("results/labour_info.rds")
+labour_info <- readRDS(here::here("paper/results/labour_info.rds"))
 
 options(knitr.kable.NA = '-')
 labour_info |>
@@ -878,7 +878,7 @@ labour_info |>
 #| results: asis
 #| tbl-cap: Out-of-sample forecast results on a single test set (from January 2017 to December 2017) for Australian domestic tourism data.
 
-rmse_tourism <- readRDS("results/tourism_1_rmse.rds")
+rmse_tourism <- readRDS(here::here("paper/results/tourism_1_rmse.rds"))
 latex_table(rmse_tourism)
 ```
 
@@ -890,7 +890,7 @@ latex_table(rmse_tourism)
 #| results: asis
 #| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the tourism application, considering a single test set (from  January 2017 to December 2017). The None row shows the original number of series in the structure.
 
-tourism_info <- readRDS("results/tourism_info.rds")
+tourism_info <- readRDS(here::here("paper/results/tourism_info.rds"))
 
 options(knitr.kable.NA = '-')
 tourism_info |>
