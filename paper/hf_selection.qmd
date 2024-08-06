@@ -387,7 +387,9 @@ In all three scenarios, our proposed methods consistently produce either improve
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario A, Setup 1.
 
 selection_sim <- readRDS(here::here("paper/results/sim_selection.rds"))
-latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n, "s1")
+mase_sim <- readRDS(here::here("paper/results/sim_series_mase.rds"))
+
+latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n, mase_sim$out_s1, "s1")
 ```
 
 In addition, we report the proportion of time series being selected from our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection. Clearly, our methods select fewer time series, while enhancing forecast accuracy compared to benchmarks. Subset methods, in particular, tend to return fewer time series compared to the Parsimonious and Lasso methods, which aligns with our expectations that the Parsimonious and Lasso methods tend to produce dense estimates. Most importantly, depending on the scenario considered, the time series with model misspecification has been selected less often than others. For example, in Scenario A, series AA is expected to be removed while retaining AB. This allows obtaining series AA via operations such as A$-$AB, Total$-$B$-$AB, or Total$-$AB$-$BA$-$BB. The results in @tbl-s1-selection align with our expectations, showing frequent exclusion of series AA and consistent selection of AB.
@@ -537,8 +539,10 @@ In @tbl-corr-selection-neg and @tbl-corr-selection-pos, we present the proportio
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being -0.8.
 
 selection_corr_neg <- readRDS(here::here("paper/results/corr_selection_neg.rds"))
+mase_corr_neg <- readRDS(here::here("paper/results/corr_series_mase_neg.rds"))
 latex_sim_nos_table(selection_corr_neg$out_s0$z,
                     selection_corr_neg$out_s0$n,
+                    mase_corr_neg$out_s0,
                     "corr_neg")
 ```
 
@@ -802,7 +806,7 @@ latex_table(rmse_s3)
 #| results: asis
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario B, Setup 1.
 
-latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n, "s2")
+latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n, mase_sim$out_s2, "s2")
 ```
 
 ```{r}
@@ -810,7 +814,7 @@ latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n, "s2")
 #| results: asis
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario C, Setup 1.
 
-latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n, "s3")
+latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n, mase_sim$out_s3, "s3")
 ```
 
 ```{r}
@@ -819,8 +823,10 @@ latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n, "s3")
 #| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being 0.8.
 
 selection_corr_pos <- readRDS(here::here("paper/results/corr_selection_pos.rds"))
+mase_corr_pos <- readRDS(here::here("paper/results/corr_series_mase_pos.rds"))
 latex_sim_nos_table(selection_corr_pos$out_s0$z,
                     selection_corr_pos$out_s0$n,
+                    mase_corr_pos$out_s0,
                     "corr_pos")
 ```
 

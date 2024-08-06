@@ -44,6 +44,45 @@ simulation_info <- lapply(simulation_info, function(len){
 })
 saveRDS(simulation_info, file = "paper/results/sim_selection.rds")
 
+# Forecast variance (MASE)
+data_label <- "simulation"
+scenarios <- c("s1", "s2", "s3")
+freq <- 4; h <- 1
+train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+indices <- unique(test$Index)
+simulation_series_mase <- lapply(scenarios, function(scenario) {
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf_", scenario, ".rds"))
+  fc <- indices |>
+    purrr::map(\(index)
+               extract_element(data = reconsf, index = index,
+                               method = "Base", element = "y_tilde")) %>% 
+    do.call(rbind, .)
+  return(calc_mase(fc, train, test, freq, h))
+})
+names(simulation_series_mase) <- paste0("out_", scenarios)
+saveRDS(simulation_series_mase, file = "paper/results/sim_series_mase.rds")
+
+# for (scenario in scenarios) {
+#   reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf_", scenario, ".rds"))
+#   fc <- indices |>
+#     purrr::map(\(index)
+#                extract_element(data = reconsf, index = index,
+#                                method = "Base", element = "y_tilde")) %>% 
+#     do.call(rbind, .)
+#   calc_mase(fc, train, test, freq, h)
+#   # err <- subset(test, select = -Index) - subset(fc, select = -Index)
+#   # err <- cbind(err, Index = subset(test, select = Index))
+#   # err |>
+#   #   as_tibble() |>
+#   #   group_by(Index) |>
+#   #   mutate(Horizon = row_number()) |>
+#   #   filter(Horizon <= h) |>
+#   #   ungroup() |>
+#   #   select(!c("Index", "Horizon")) |>
+#   #   summarise_all(function(x) mean(x^2)) |> print()
+# }
+
 # MCB tests for each scenario
 h <- 16
 highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
@@ -139,6 +178,55 @@ corr_info_pos <- lapply(corr_info_pos, function(len){
 })
 saveRDS(corr_info_neg, file = "paper/results/corr_selection_neg.rds")
 saveRDS(corr_info_pos, file = "paper/results/corr_selection_pos.rds")
+
+# Forecast variance (MASE)
+freq <- 1; h <- 1
+for (i in c(1, 9)){
+  train <- readRDS(file = paste0("data/", data_label, "_", i, "_train.rds"))
+  test <- readRDS(file = paste0("data/", data_label, "_", i, "_test.rds"))
+  indices <- unique(test$Index)
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_", i, "_subset_reconsf.rds"))
+  fc <- indices |>
+    purrr::map(\(index)
+               extract_element(data = reconsf, index = index,
+                               method = "Base", element = "y_tilde")) %>% 
+    do.call(rbind, .)
+  corr_series_mase <- list(out_s0 = calc_mase(fc, train, test, freq, h))
+  saveRDS(corr_series_mase, file = paste0("paper/results/corr_series_mase_",
+                                          ifelse(i==1, "neg", "pos"),
+                                          ".rds"))
+}
+
+# MCB tests for each error correlation
+h <- 1
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+target <- sapply(highlight, function(len){
+  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
+}) |> as.vector()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
+
+par(mfrow=c(1, length(index)),
+    mar=c(4,0,0.1,0.3)
+)
+for (i in index) {
+  for (method in methods){
+    readRDS(paste0("data_new/", data_label, "_", i, "_", method, "_reconsf_rmse_hts_", h, ".rds")) |>
+      assign(method, value = _)
+  }
+  rmse_hfs <- cbind(subset,
+                    intuitive[, grepl("intuitive", colnames(intuitive))],
+                    lasso[, grepl("lasso", colnames(lasso))])
+  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
+  rmse_hfs <- rmse_hfs[, target]
+  # saveRDS(rmse_hfs, file = paste0("paper/results/corr_", "i", "_", "rmse_mcb.rds"))
+  nemenyi(rmse_hfs, conf.level = 0.95, plottype = "vmcb",
+          sort = FALSE,
+          shadow = FALSE,
+          group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+          Title = TeX(sprintf(r'($\rho = %f$)', corr[i])),
+          Xlab = "Mean ranks",
+          Ylab = "")
+}
 
 #----------------------------------------------------------------------
 # Tourism application

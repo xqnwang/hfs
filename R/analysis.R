@@ -240,14 +240,17 @@ combine_z <- function(data_label, methods, scenarios, series_name) {
 #--------------------------------------------------------------------
 # Output table latex for number of time series retained after subset selection for the simulation data
 #--------------------------------------------------------------------
-latex_sim_nos_table <- function(z_out, n_out, label_out) {
+latex_sim_nos_table <- function(z_out, n_out, mase_out, label_out) {
   candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
   target <- sapply(candidates, function(len) {
     c(paste0(len, "-", c("subset", "parsim", "lasso")))
   }) |> as.vector()
   target <- c(target, "Elasso")
   z_out <- z_out[match(target, row.names(z_out)), ] / 500
-  z_out <- data.frame(z_out, Summary = "")
+  z_out <- data.frame(row.names(z_out), z_out, Summary = "")
+  header <- c("", colnames(z_out)[-1])
+  colnames(z_out) <- c("(MASE)", paste0("(", format(round(as.numeric(mase_out), digits = 2), 2), ")"), "")
+  row.names(z_out) <- NULL
   n_img <- split(n_out$Total, n_out$Method)
   n_img <- n_img[match(target, names(n_img))]
   n_img <- lapply(n_img, function(N) data.frame(table(N), Method = "method"))
@@ -279,7 +282,8 @@ latex_sim_nos_table <- function(z_out, n_out, label_out) {
     ggsave(
       filename = paste0(label_out, "_", names(n_img)[i], ".png"),
       path = "_figs/",
-      plot = inline_bars[[i]], height = 1.5, width = 7, dpi = 300
+      plot = inline_bars[[i]], height = 1.5, width = 7, dpi = 300,
+      create.dir = TRUE
     )
   })
   ls_inline_plots <- file.path(getwd(), paste0("_figs/", label_out, "_", names(n_img), ".png"))
@@ -289,14 +293,12 @@ latex_sim_nos_table <- function(z_out, n_out, label_out) {
       format = "latex",
       booktabs = TRUE,
       digits = 2,
-      align = c("l", rep("r", NCOL(z_out))),
+      align = c("l", rep("r", NCOL(z_out)-1)),
       escape = FALSE,
       linesep = ""
     ) |>
-    kable_styling(
-      latex_options = c("repeat_header"),
-      font_size = 11
-    ) |>
+    add_header_above(header, line = FALSE) |>
+    kable_styling(font_size = 11) |>
     kable_paper(full_width = FALSE) |>
     row_spec(3 * (1:length(candidates)), hline_after = TRUE) |>
     footnote(
@@ -307,8 +309,8 @@ latex_sim_nos_table <- function(z_out, n_out, label_out) {
       threeparttable = TRUE,
       fixed_small_size = FALSE
     ) |>
-    column_spec(NCOL(z_out) + 1,
-      image = spec_image(ls_inline_plots, width = 140, height = 30)
+    column_spec(NCOL(z_out),
+                     image = spec_image(ls_inline_plots, width = 140, height = 30)
     )
 }
 
