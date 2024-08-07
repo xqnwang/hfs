@@ -293,37 +293,6 @@ out_1_all <- combine_table(data_label, methods, measure, scenario, horizons)
 out_1_all$table_out$Method <- gsub("intuitive", "parsim", out_1_all$table_out$Method)
 saveRDS(out_1_all, file = "paper/results/tourism_1_rmse.rds")
 
-# MCB test
-h <- 12
-highlight <- c("OLS", "WLSs", "WLSv", "MinTs")
-target <- sapply(highlight, function(len){
-  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
-}) |> as.vector()
-target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
-
-rmse_all <- NULL
-for (i in test_indices) {
-  for (method in methods){
-    readRDS(paste0("data_new/", data_label, "_", i, "_", method, "_reconsf_rmse_hts_", h, ".rds")) |>
-      assign(method, value = _)
-  }
-  rmse_hfs <- cbind(subset,
-                    intuitive[, grepl("intuitive", colnames(intuitive))],
-                    lasso[, grepl("lasso", colnames(lasso))])
-  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
-  rmse_hfs <- rmse_hfs[, target]
-  rmse_all <- rbind(rmse_all, rmse_hfs)
-}
-
-saveRDS(rmse_all, file = paste0("paper/results/tourism_rmse_mcb.rds"))
-nemenyi(rmse_all, conf.level = 0.95, plottype = "vmcb",
-        sort = FALSE,
-        shadow = FALSE,
-        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:20),
-        Title = "",
-        Xlab = "Mean ranks",
-        Ylab = "")
-
 # Series retained table
 tourism_subset_reconsf <- readRDS(file = "data_new/tourism_1_subset_reconsf.rds")
 tourism_lasso_reconsf <- readRDS(file = "data_new/tourism_1_lasso_reconsf.rds")
@@ -505,37 +474,6 @@ out_all <- combine_table(data_label, methods, measure, scenario, horizons)
 out_all$table_out$Method <- gsub("intuitive", "parsim", out_all$table_out$Method)
 saveRDS(out_all, file = paste0("paper/results/labour_rmse.rds"))
 
-# MCB test
-h <- 12
-highlight <- c("OLS", "WLSs", "WLSv", "MinTs")
-target <- sapply(highlight, function(len){
-  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
-}) |> as.vector()
-target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
-
-rmse_all <- NULL
-for (i in test_indices) {
-  for (method in methods){
-    readRDS(paste0("data_new/", data_label, "_", i, "_", method, "_reconsf_rmse_hts_", h, ".rds")) |>
-      assign(method, value = _)
-  }
-  rmse_hfs <- cbind(subset,
-                    intuitive[, grepl("intuitive", colnames(intuitive))],
-                    lasso[, grepl("lasso", colnames(lasso))])
-  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
-  rmse_hfs <- rmse_hfs[, target]
-  rmse_all <- rbind(rmse_all, rmse_hfs)
-}
-
-saveRDS(rmse_all, file = paste0("paper/results/labour_rmse_mcb.rds"))
-nemenyi(rmse_all, conf.level = 0.95, plottype = "vmcb",
-        sort = FALSE,
-        shadow = FALSE,
-        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:20),
-        Title = "",
-        Xlab = "Mean ranks",
-        Ylab = "")
-
 # RMSE table - the last window
 measure <- "rmse"
 data_label <- "labour_1"
@@ -576,4 +514,33 @@ labour_subset_info <- apply(labour_subset_info, 1, function(lentry){
 rownames(labour_subset_info) <- sub("_", "-", rownames(labour_subset_info))
 colnames(labour_subset_info) <- sub("Duration_STT", "Duration x STT", colnames(labour_subset_info))
 saveRDS(labour_subset_info, "paper/results/labour_info.rds")
+
+# Forecast variance (MASE) - the last window
+freq <- 12; h <- 12
+data_label <- "labour_1"
+train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+indices <- unique(test$Index)
+reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf.rds"))
+fc <- indices |>
+  purrr::map(\(index)
+             extract_element(data = reconsf, index = index,
+                             method = "Base", element = "y_tilde")) %>% 
+  do.call(rbind, .)
+labour_series_mase <- calc_mase(fc, train, test, freq, h) |> as.matrix()
+labour_select_index <- rbind(None = rep(1, ncol(labour_subset_z)), labour_subset_z)
+labour_select_index <- labour_select_index == TRUE
+labour_hlevel <- list(Top, Duration, STT, Duration_STT, Total)
+labour_selected_mase <- sapply(1:nrow(labour_select_index), function(i) {
+  ind <- labour_select_index[i, ]
+  avg <- sapply(labour_hlevel, function(j) {
+    mean(labour_series_mase[, j][ind[j]])
+  })
+  return(avg)
+}) |> t()
+labour_selected_mase[is.na(labour_selected_mase)] <- 0
+colnames(labour_selected_mase) <- c("Top", "Duration", "STT", "Duration_STT", "Total")
+rownames(labour_selected_mase) <- rownames(labour_select_index)
+saveRDS(labour_selected_mase, file = "paper/results/labour_selected_mase.rds")
+
 
