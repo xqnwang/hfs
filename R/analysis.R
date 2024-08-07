@@ -119,6 +119,58 @@ latex_table <- function(out_all) {
     print()
 }
 
+latex_table_h <- function(out_all) {
+  out <- out_all$table_out
+  colnames(out) <- sub("_", " x ", colnames(out))
+  levels <- sub("_", " x ", out_all$levels)
+  horizons <- (ncol(out) - 1) / length(levels)
+  header <- c("", rep(as.character(horizons), length(levels)))
+  names(header) <- c("", levels)
+  candidates <- out_all$candidates
+  
+  # Blue entries identify the best performing approaches
+  # Bold entries identify methods that perform better than the corresponding benchmark method
+  out[, -1] <- lapply(out[, -1], function(x) {
+    x <- round(x, 1)
+    origin_x <- x
+    min_x <- min(origin_x)
+    comp_x <- c(
+      origin_x[1:2],
+      rep(origin_x[3 + 4 * (0:(length(candidates) - 1))], each = 4),
+      rep(origin_x[length(origin_x) - 1], each = 2)
+    )
+    out_x <- ifelse(x == min(x),
+                    cell_spec(format(x, nsmall = 1), bold = TRUE, color = "blue"),
+                    ifelse(x < comp_x, cell_spec(format(x, nsmall = 1), bold = TRUE), format(x, nsmall = 1))
+    )
+    out_x <- sub("-", "--", out_x)
+    out_x
+  })
+  
+  out |>
+    kable(
+      format = "latex",
+      booktabs = TRUE,
+      digits = 1,
+      align = c("l", rep("r", ncol(out) - 1)),
+      escape = FALSE,
+      linesep = ""
+    ) |>
+    row_spec(2 + 4 * (0:length(candidates)), hline_after = TRUE) |>
+    # kable_paper(full_width = FALSE) |>
+    kable_styling(latex_options = c("repeat_header"), font_size = 10) |>
+    # kable_styling(
+    #   latex_options = c("repeat_header", "scale_down"),
+    #   font_size = 8
+    # ) |>
+    row_spec(
+      which(grepl("-", out$Method) | grepl("Elasso", out$Method)),
+      background = "#e6e3e3"
+    ) |>
+    column_spec(1:ncol(out), width = paste0(5.5/ncol(out), "in")) %>%
+    print()
+}
+
 #--------------------------------------------------------------------
 # Extract element from forecast results
 #--------------------------------------------------------------------

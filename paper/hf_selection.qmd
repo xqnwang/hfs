@@ -678,7 +678,11 @@ We assess the forecast accuracy of base forecasts and various reconciliation met
 #| tbl-cap: Average out-of-sample forecast results for Australian labour force data.
 
 rmse_labour_avg <- readRDS(here::here("paper/results/labour_rmse.rds"))
-latex_table(rmse_labour_avg)
+# latex_table(rmse_labour_avg)
+cols <- grepl("1--12", colnames(rmse_labour_avg$table_out)) | grepl("Method", colnames(rmse_labour_avg$table_out))
+rmse_labour_avg$table_out <- rmse_labour_avg$table_out[, cols]
+colnames(rmse_labour_avg$table_out) <- c("Method", rmse_labour_avg$levels)
+latex_table_h(rmse_labour_avg)
 ```
 
 The average results are presented in @tbl-labour-rmse-avg. The poor performance of the MinT method and associated methods can be attributed to the poor sample covariance estimator when the sample size is only slightly larger than the number of series in the structure. Subset methods using different estimators of $\bm{G}$ generally improve forecast accuracy over their benchmark methods, particularly when focusing on aggregation levels, which are typically of paramount concern to practitioners. The only exception is the WLSs-subset method, which returns reduced accuracy for longer horizons. However, it still demonstrates improvements in top-level forecasts. Moreover, the Parsimonious and Lasso methods almost always yield results identical to the corresponding benchmark methods, because they tend to provide dense estimates, and ETS models typically do not result in extremely poor forecasts. The only exception is OLS-parsim, which shows improved forecast accuracy at the top level but deterioration at other levels. When we drop the unbiasedness assumption, EMinT is the worst-performing method across all levels because it relies on the assumption that the series in the hierarchy are jointly weakly stationary, which is evidently not the case in the application. Elasso significantly improves the quality of forecasts over EMinT, with the most accurate coherent forecasts observed at the top level and STT level. Overall, Elasso performs well for longer forecast horizons, but it is less effective for one-step-ahead forecasts.
@@ -726,7 +730,11 @@ Overall, the Subset methods outperform their respective benchmark methods, espec
 #| tbl-cap: Average out-of-sample forecast results for Australian domestic tourism data.
 
 rmse_tourism_avg <- readRDS(here::here("paper/results/tourism_rmse.rds"))
-latex_table(rmse_tourism_avg)
+# latex_table(rmse_tourism_avg)
+cols <- grepl("1--12", colnames(rmse_tourism_avg$table_out)) | grepl("Method", colnames(rmse_tourism_avg$table_out))
+rmse_tourism_avg$table_out <- rmse_tourism_avg$table_out[, cols]
+colnames(rmse_tourism_avg$table_out) <- c("Method", rmse_tourism_avg$levels)
+latex_table_h(rmse_tourism_avg)
 ```
 
 @tbl-tourism-rmse present the results based on the last one training set spanning from January 2017 to December 2017. The reconciliation errors across $111$ series and across four hierarchy levels are displayed in @fig-tourism-rmse. The results show a similar performance to the average results described above, indicating relatively high-quality forecasts from Subset and Elasso methods.
@@ -1066,7 +1074,11 @@ grid.arrange(grobs = heatmap_list, ncol = 4)
 #| tbl-cap: Out-of-sample forecast results on a single test set (from August 2022 to July 2023) for Australian labour force data.
 
 rmse_labour <- readRDS(here::here("paper/results/labour_1_rmse.rds"))
-latex_table(rmse_labour)
+# latex_table(rmse_labour)
+cols <- grepl("1--12", colnames(rmse_labour$table_out)) | grepl("Method", colnames(rmse_labour$table_out))
+rmse_labour$table_out <- rmse_labour$table_out[, cols]
+colnames(rmse_labour$table_out) <- c("Method", rmse_labour$levels)
+latex_table_h(rmse_labour)
 ```
 
 ```{r}
@@ -1101,7 +1113,11 @@ labour_info |>
 #| tbl-cap: Out-of-sample forecast results on a single test set (from January 2017 to December 2017) for Australian domestic tourism data.
 
 rmse_tourism <- readRDS(here::here("paper/results/tourism_1_rmse.rds"))
-latex_table(rmse_tourism)
+# latex_table(rmse_tourism)
+cols <- grepl("1--12", colnames(rmse_tourism$table_out)) | grepl("Method", colnames(rmse_tourism$table_out))
+rmse_tourism$table_out <- rmse_tourism$table_out[, cols]
+colnames(rmse_tourism$table_out) <- c("Method", rmse_tourism$levels)
+latex_table_h(rmse_tourism)
 ```
 
 ```{r}
