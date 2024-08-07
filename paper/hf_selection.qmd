@@ -1088,11 +1088,21 @@ latex_table_h(rmse_labour)
 #| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the labour application, considering a single test set (from August 2022 to July 2023). The None row shows the original number of series in the structure.
 
 labour_info <- readRDS(here::here("paper/results/labour_info.rds"))
+labour_mase <- readRDS(here::here( "paper/results/labour_selected_mase.rds")) |>
+  round(2) |> format(2)
+labour_mase <- cbind(labour_mase, matrix("", 6, 3))
+lb <- cbind(matrix("(", 6, 5), matrix("", 6, 3))
+rb <- cbind(matrix(")", 6, 5), matrix("", 6, 3))
 
-labour_info |>
+labour_tbl <- paste_matrices(labour_info, lb, sep = " ") |>
+  paste_matrices(labour_mase, sep = "") |>
+  paste_matrices(rb, sep = "")
+labour_tbl <- sub("NA", "-", labour_tbl)
+colnames(labour_tbl) <- colnames(labour_info)
+rownames(labour_tbl) <- rownames(labour_info)
+labour_tbl |>
   kable(format = "latex",
         booktabs = TRUE,
-        digits = 2,
         align = rep("r", 8),
         escape = FALSE,
         linesep = "") |>
@@ -1124,14 +1134,24 @@ latex_table_h(rmse_tourism)
 #| label: tbl-tourism-info
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the tourism application, considering a single test set (from  January 2017 to December 2017). The None row shows the original number of series in the structure.
+#| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the tourism application, considering a single test set (from January 2017 to December 2017). The None row shows the original number of series in the structure.
 
 tourism_info <- readRDS(here::here("paper/results/tourism_info.rds"))
+tourism_mase <- readRDS(here::here( "paper/results/tourism_selected_mase.rds")) |>
+  round(2) |> format(2)
+tourism_mase <- cbind(tourism_mase, matrix("", 6, 3))
+lb <- cbind(matrix("(", 6, 5), matrix("", 6, 3))
+rb <- cbind(matrix(")", 6, 5), matrix("", 6, 3))
 
-tourism_info |>
+tourism_tbl <- paste_matrices(tourism_info, lb, sep = " ") |>
+  paste_matrices(tourism_mase, sep = "") |>
+  paste_matrices(rb, sep = "")
+tourism_tbl <- sub("NA", "-", tourism_tbl)
+colnames(tourism_tbl) <- colnames(tourism_info)
+rownames(tourism_tbl) <- rownames(tourism_info)
+tourism_tbl |>
   kable(format = "latex",
         booktabs = TRUE,
-        digits = 2,
         align = rep("r", 8),
         escape = FALSE,
         linesep = "") |>

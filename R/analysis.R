@@ -496,3 +496,11 @@ latex_corr_table <- function(out_all) {
     # ) |>
     print()
 }
+
+#--------------------------------------------------------------------
+# paste element-wise
+#--------------------------------------------------------------------
+paste_matrices <- function(mat1, mat2, sep = ",") {
+  result <- matrix(paste(mat1, mat2, sep = sep), nrow = nrow(mat1), ncol = ncol(mat1))
+  return(result)
+}

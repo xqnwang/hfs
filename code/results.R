@@ -190,9 +190,6 @@ target <- sapply(highlight, function(len){
   c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
 }) |> as.vector()
 target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
-# par(mfrow=c(1, length(index)),
-#     mar=c(4,0,0.1,0.3)
-# )
 corr_rmse_mcb <- lapply(index, function(i){
   for (method in methods){
     readRDS(paste0("data_new/", data_label, "_", i, "_", method, "_reconsf_rmse_hts_", h, ".rds")) |>
@@ -204,13 +201,6 @@ corr_rmse_mcb <- lapply(index, function(i){
   colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
   rmse_hfs <- rmse_hfs[, target]
   return(rmse_hfs)
-  # nemenyi(rmse_hfs, conf.level = 0.95, plottype = "vmcb",
-  #         sort = FALSE,
-  #         shadow = FALSE,
-  #         group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
-  #         Title = TeX(sprintf(r'($\rho = %f$)', corr[i])),
-  #         Xlab = "Mean ranks",
-  #         Ylab = "")
 })
 names(corr_rmse_mcb) <- paste0("p", index)
 saveRDS(corr_rmse_mcb, file = paste0("paper/results/corr_rmse_mcb.rds"))
@@ -375,13 +365,20 @@ fc <- indices |>
                              method = "Base", element = "y_tilde")) %>% 
   do.call(rbind, .)
 tourism_series_mase <- calc_mase(fc, train, test, freq, h) |> as.matrix()
-# saveRDS(tourism_series_mase, file = "paper/results/tourism_series_mase_.rds")
-rbind(tourism_series_mase, tourism_subset_z) |> View()
-mean(aaa[Top])
-mean(aaa[State])
-mean(aaa[Zone])
-mean(aaa[Region])
-mean(aaa[Total])
+tourism_select_index <- rbind(None = rep(1, ncol(tourism_subset_z)), tourism_subset_z)
+tourism_select_index <- tourism_select_index == TRUE
+tourism_hlevel <- list(Top, State, Zone, Region, Total)
+tourism_selected_mase <- sapply(1:nrow(tourism_select_index), function(i) {
+  ind <- tourism_select_index[i, ]
+  avg <- sapply(tourism_hlevel, function(j) {
+    mean(tourism_series_mase[, j][ind[j]])
+  })
+  return(avg)
+}) |> t()
+tourism_selected_mase[is.na(tourism_selected_mase)] <- 0
+colnames(tourism_selected_mase) <- c("Top", "State", "Zone", "Region", "Total")
+rownames(tourism_selected_mase) <- rownames(tourism_select_index)
+saveRDS(tourism_selected_mase, file = "paper/results/tourism_selected_mase.rds")
 
 # Heatmap
 data_label <- "tourism_1"
