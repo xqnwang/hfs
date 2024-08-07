@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{August 6, 2024}
+\date{August 7, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -1147,7 +1147,7 @@ To assess the proposed reconciliation methods with time series selection
 outlined in Section~\ref{sec-methodology}, we carry out two simulations
 with different designs. Both simulations consider a hierarchy comprising
 two levels of aggregation, as shown in Figure~\ref{fig-hts}. The
-bottom-level series are first generated and then summed to obtain
+bottom-level series are first generated and then summed to obtain the
 aggregated series at higher levels.
 
 \subsection{Setup 1: Exploring the effect of model
@@ -1185,85 +1185,114 @@ We set \(s = 4\) for quarterly data with error variances
 generated independently from a multivariate normal distribution with
 zero mean and identity covariance matrix. For each bottom-level series,
 we generate \(180\) observations, with the last \(h = 16\) observations
-forming the test set. The bottom-level series are then aggregated higher
-level data. This entire process is repeated \(500\) times.
+forming the test set. The bottom-level series are then aggregated to
+form higher-level data. This entire process is repeated \(500\) times.
 
-We use ETS models to generate base forecasts for the hierarchy using the
+We use ETS models to generate base forecasts for each hierarchy using
 default settings from the \textbf{forecast} R package
 \citep{Hyndman2023-fc}. To introduce model misspecification, we
-deliberately undermine in-sample and out-of-sample forecasts (i.e.,
-fitted values and base forecasts) for specific time series in three
-scenarios. In each scenario, a 1.5 multiplier is applied to in-sample
-and out-of-sample forecasts for a single series; i.e., series AA at the
-bottom level, series A at the middle level, and series Total at the top
-level, resulting in Scenarios A--C, respectively.
+artificially degrade the performance of series A at the middle level by
+applying a \(1.5\) multiplier to its in-sample and out-of-sample
+forecasts (i.e., fitted values and base forecasts). We also repeated the
+analysis with model misspecification for series AA at the bottom level
+and series Total at the top level, respectively. The results for these
+two scenarios are similar and reported in Appendix.
 
-Table~\ref{tbl-s1-rmse}, Table~\ref{tbl-s2-rmse}, and
-Table~\ref{tbl-s3-rmse} summarize the results under different scenarios,
-each reporting the average root mean squared error (RMSE) for each level
-as well as the whole structure (denoted as Average).
-
-Notably, in each scenario, the largest improvements occur at the level
-with model misspecification, though this occasionally results in slight
-performance declines at other levels.
+Table~\ref{tbl-sim-rmse} and Figure~\ref{fig-sim-plots-1} Notably, in
+each scenario, the largest improvements occur at the level with model
+misspecification, though this occasionally results in slight performance
+declines at other levels.
 
 \begin{table}
 
-\caption{\label{tbl-s1-rmse}Out-of-sample forecast results for the
-simulated data in Scenario A, Setup 1.}
+\caption{\label{tbl-sim-rmse}Performance of proposed (gray-shaded) and
+benchmark methods for simulated data in Setup 1. The Base row shows
+average RMSE of base forecasts, while entries below show RMSE percentage
+decrease (negative) or increase (positive) for reconciliation methods.
+Blue entries highlight the best-performing methods; bold entries
+indicate proposed methods outperforming bechmarks.}
 
 \centering{
 
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
 \cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17}
 Method & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16\\
 \midrule
-Base & 9.6 & 10.7 & 12.6 & 15.6 & 6.3 & 7.3 & 8.6 & 10.8 & 6.4 & 7.5 & 8.3 & 9.8 & 6.8 & 7.9 & 9.0 & 10.9\\
-BU & 57.8 & 68.5 & 53.7 & 38.9 & 58.2 & 61.8 & 48.1 & 34.4 & 0.0 & 0.0 & 0.0 & 0.0 & 27.0 & 29.6 & 23.8 & 17.7\\
+Base & 9.6 & 10.7 & 12.6 & 15.6 & 12.1 & 14.4 & 15.3 & 17.0 & 4.2 & 4.9 & 5.9 & 7.5 & 7.2 & 8.5 & 9.6 & 11.4\\
+BU & \textcolor{blue}{\textbf{--1.0}} & 0.4 & 0.6 & 0.7 & \textcolor{blue}{\textbf{--47.7}} & \textcolor{blue}{\textbf{--49.6}} & \textcolor{blue}{\textbf{--43.6}} & \textcolor{blue}{\textbf{--36.2}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{--23.0}} & \textcolor{blue}{\textbf{--24.0}} & \textcolor{blue}{\textbf{--19.8}} & \textcolor{blue}{\textbf{--15.3}}\\
 \midrule
-OLS & 0.6 & 2.2 & 1.8 & 1.4 & 7.1 & 6.4 & 4.6 & 3.1 & --7.6 & --8.6 & --8.2 & --7.3 & --2.1 & --2.5 & --2.7 & --2.6\\
-\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{7.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.1}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{7.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 6.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{2.2} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{7.4} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{4.8} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--8.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.5}\\
+OLS & 8.5 & 13.9 & 10.4 & 7.6 & --28.2 & --29.4 & --26.7 & --23.1 & 22.9 & 23.9 & 17.0 & 11.3 & --4.2 & --3.8 & --4.2 & --4.1\\
+\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.0}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--36.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.0}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}}\\
 \midrule
-WLSs & 7.3 & 10.6 & 8.1 & 5.9 & 15.6 & 16.0 & 11.8 & 8.0 & --6.9 & --7.8 & --7.4 & --6.4 & 1.9 & 2.0 & 1.0 & 0.2\\
-\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{12.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{10.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{16.5} & \cellcolor[HTML]{e6e3e3}{\textbf{15.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{11.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.9}} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.4}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{7.3} & \cellcolor[HTML]{e6e3e3}{\textbf{10.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 8.0}} & \cellcolor[HTML]{e6e3e3}{5.9} & \cellcolor[HTML]{e6e3e3}{15.7} & \cellcolor[HTML]{e6e3e3}{16.1} & \cellcolor[HTML]{e6e3e3}{11.8} & \cellcolor[HTML]{e6e3e3}{8.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.0}} & \cellcolor[HTML]{e6e3e3}{--7.8} & \cellcolor[HTML]{e6e3e3}{--7.3} & \cellcolor[HTML]{e6e3e3}{--6.4} & \cellcolor[HTML]{e6e3e3}{1.9} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.2}\\
+WLSs & 12.1 & 18.6 & 14.0 & 10.2 & --34.4 & --35.1 & --31.7 & --26.9 & 15.6 & 17.0 & 12.0 & 8.0 & --9.0 & --8.0 & --7.6 & --6.5\\
+\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.8}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}}\\
 \midrule
-WLSv & 1.0 & 2.9 & 2.3 & 1.9 & 4.5 & 4.3 & 3.2 & 2.1 & --25.8 & --26.4 & --22.7 & --18.3 & --12.4 & --12.6 & --10.7 & --8.4\\
-\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.0}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--27.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.5}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--27.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--28.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--29.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--24.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.5}}\\
+WLSv & --0.8 & 2.3 & 1.8 & 1.6 & --46.3 & --47.9 & --42.3 & --35.2 & 1.6 & 1.9 & 1.2 & 0.8 & --21.7 & --22.2 & --18.6 & --14.4\\
+\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--42.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.7}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--42.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.7}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--47.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.8}}\\
 \midrule
-MinT & --0.4 & 0.7 & 0.9 & 0.6 & 0.7 & 0.7 & 0.6 & 0.3 & --32.9 & --33.4 & --28.3 & --22.5 & --17.5 & --17.8 & --14.6 & --11.3\\
-\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.6}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--33.0}} & \cellcolor[HTML]{e6e3e3}{--33.1} & \cellcolor[HTML]{e6e3e3}{--28.0} & \cellcolor[HTML]{e6e3e3}{--22.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.6}} & \cellcolor[HTML]{e6e3e3}{--17.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--11.2}\\
-\cellcolor[HTML]{e6e3e3}{MinT-parsim} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--32.9} & \cellcolor[HTML]{e6e3e3}{--33.4} & \cellcolor[HTML]{e6e3e3}{--28.3} & \cellcolor[HTML]{e6e3e3}{--22.5} & \cellcolor[HTML]{e6e3e3}{--17.5} & \cellcolor[HTML]{e6e3e3}{--17.8} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{--11.3}\\
-\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.1}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--33.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--33.7}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--28.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--17.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--18.1}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--14.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}}\\
+MinT & 0.2 & 0.5 & 0.6 & 0.5 & --47.5 & --49.4 & --43.5 & --36.1 & 1.1 & 0.5 & 0.3 & 0.1 & --22.3 & --23.7 & --19.6 & \textcolor{blue}{\textbf{--15.3}}\\
+\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.1}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{--46.9} & \cellcolor[HTML]{e6e3e3}{--49.1} & \cellcolor[HTML]{e6e3e3}{--43.3} & \cellcolor[HTML]{e6e3e3}{--36.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--21.9} & \cellcolor[HTML]{e6e3e3}{--23.4} & \cellcolor[HTML]{e6e3e3}{--19.4} & \cellcolor[HTML]{e6e3e3}{--15.1}\\
+\cellcolor[HTML]{e6e3e3}{MinT-parsim} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{--47.5} & \cellcolor[HTML]{e6e3e3}{--49.4} & \cellcolor[HTML]{e6e3e3}{--43.5} & \cellcolor[HTML]{e6e3e3}{--36.1} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{--22.3} & \cellcolor[HTML]{e6e3e3}{--23.7} & \cellcolor[HTML]{e6e3e3}{--19.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
+\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{--47.6}} & \cellcolor[HTML]{e6e3e3}{--49.4} & \cellcolor[HTML]{e6e3e3}{--43.5} & \cellcolor[HTML]{e6e3e3}{--36.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
 \midrule
-MinTs & --0.9 & 0.6 & 0.7 & 0.5 & 0.6 & 0.6 & 0.5 & 0.2 & --32.9 & --33.5 & --28.3 & --22.5 & --17.6 & --17.9 & --14.6 & --11.3\\
-\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{--33.0}} & \cellcolor[HTML]{e6e3e3}{--33.1} & \cellcolor[HTML]{e6e3e3}{--27.9} & \cellcolor[HTML]{e6e3e3}{--22.2} & \cellcolor[HTML]{e6e3e3}{--17.6} & \cellcolor[HTML]{e6e3e3}{--17.5} & \cellcolor[HTML]{e6e3e3}{--14.3} & \cellcolor[HTML]{e6e3e3}{--11.0}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{--0.9} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{--32.9} & \cellcolor[HTML]{e6e3e3}{--33.5} & \cellcolor[HTML]{e6e3e3}{--28.3} & \cellcolor[HTML]{e6e3e3}{--22.5} & \cellcolor[HTML]{e6e3e3}{--17.6} & \cellcolor[HTML]{e6e3e3}{--17.9} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{--11.3}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{--0.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.1}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--33.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--33.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--28.4}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.0}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--14.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}}\\
+MinTs & --0.3 & 0.3 & \textcolor{blue}{\textbf{ 0.4}} & \textcolor{blue}{\textbf{ 0.4}} & --47.6 & --49.5 & \textcolor{blue}{\textbf{--43.6}} & \textcolor{blue}{\textbf{--36.2}} & 0.7 & 0.2 & 0.1 & \textcolor{blue}{\textbf{ 0.0}} & --22.6 & --23.9 & \textcolor{blue}{\textbf{--19.8}} & \textcolor{blue}{\textbf{--15.3}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.8}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{--47.2} & \cellcolor[HTML]{e6e3e3}{--49.2} & \cellcolor[HTML]{e6e3e3}{--43.4} & \cellcolor[HTML]{e6e3e3}{--36.0} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--22.3} & \cellcolor[HTML]{e6e3e3}{--23.6} & \cellcolor[HTML]{e6e3e3}{--19.5} & \cellcolor[HTML]{e6e3e3}{--15.1}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{--47.6} & \cellcolor[HTML]{e6e3e3}{--49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--36.2}}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{--22.6} & \cellcolor[HTML]{e6e3e3}{--23.9} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.9}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.2}}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--47.7}}} & \cellcolor[HTML]{e6e3e3}{--49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--36.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
 \midrule
-EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & --31.9 & --32.3 & --27.5 & --22.0 & --15.9 & --16.2 & --13.4 & --10.5\\
-\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.4}} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.8}} & \cellcolor[HTML]{e6e3e3}{2.3} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.1}} & \cellcolor[HTML]{e6e3e3}{--32.2} & \cellcolor[HTML]{e6e3e3}{--27.4} & \cellcolor[HTML]{e6e3e3}{--21.9} & \cellcolor[HTML]{e6e3e3}{\textbf{--16.3}} & \cellcolor[HTML]{e6e3e3}{--16.2} & \cellcolor[HTML]{e6e3e3}{--13.3} & \cellcolor[HTML]{e6e3e3}{--10.5}\\
+EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 2.0 & 1.1 & --20.5 & --21.9 & --18.2 & --14.3\\
+\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.2}} & \cellcolor[HTML]{e6e3e3}{--42.4} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.1}} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{--20.9}} & \cellcolor[HTML]{e6e3e3}{--21.9} & \cellcolor[HTML]{e6e3e3}{--18.2} & \cellcolor[HTML]{e6e3e3}{--14.3}\\
 \bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
+\end{tabular}}
 
 }
 
 \end{table}%
+
+\begin{figure}
+
+\begin{minipage}{0.48\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-sim-plots-1.pdf}
+
+}
+
+\subcaption{\label{fig-sim-plots-1}MCB test}
+
+\end{minipage}%
+%
+\begin{minipage}{0.04\linewidth}
+~\end{minipage}%
+%
+\begin{minipage}{0.48\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-sim-plots-2.pdf}
+
+}
+
+\subcaption{\label{fig-sim-plots-2}Correlation between forecast errors}
+
+\end{minipage}%
+
+\caption{\label{fig-sim-plots}MCB test result and correlation matrix
+heatmap for simulated data in Setup 1.}
+
+\end{figure}%
 
 Focusing on the results of benchmark reconciliation methods, we find
 that the BU (bottom-up) method performs the best in Scenarios B and C
@@ -1298,47 +1327,44 @@ aspect of greatest concern to practitioners.
 
 \begin{table}
 
-\caption{\label{tbl-s1-selection}Proportion of time series being
-selected after using the proposed reconciliation methods with selection
-in Scenario A, Setup 1.}
+\caption{\label{tbl-sim-selection}Proportion of time series being
+selected using proposed reconciliation methods for simulated data in
+Setup 1. The numbers in parentheses show MASE values for each series.
+The last column displays a stacked barplot of the total selected series
+from 500 hierarchies, with darker sub-bars indicating higher counts.}
 
 \centering{
 
 \centering\begingroup\fontsize{11}{13}\selectfont
 
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.91) & (0.89) & (0.90) & (2.70) & (0.88) & (0.93) & (0.88) & \\
+(MASE) & (1.20) & (2.75) & (1.26) & (1.28) & (1.32) & (1.32) & (1.27) & \\
 \midrule
-OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
-OLS-parsim & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-parsim.png}\\
-OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-lasso.png}\\
+OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
+OLS-parsim & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-parsim.png}\\
+OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-subset.png}\\
-WLSs-parsim & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-parsim.png}\\
-WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-lasso.png}\\
+WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
+WLSs-parsim & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-parsim.png}\\
+WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-subset.png}\\
-WLSv-parsim & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-parsim.png}\\
-WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-lasso.png}\\
+WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
+WLSv-parsim & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-parsim.png}\\
+WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-parsim.png}\\
-MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-lasso.png}\\
+MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-parsim.png}\\
+MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-parsim.png}\\
-MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-lasso.png}\\
+MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-parsim.png}\\
+MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_Elasso.png}\\
+Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}[para]
-\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
-\end{tablenotes}
-\end{threeparttable}
 \endgroup{}
 
 }
@@ -1347,8 +1373,8 @@ Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 
 In addition, we report the proportion of time series being selected from
 our proposed methods in 500 simulation instances, as shown in
-Table~\ref{tbl-s1-selection}, Table~\ref{tbl-s2-selection}, and
-Table~\ref{tbl-s3-selection}. Clearly, our methods select fewer time
+\textbf{?@tbl-s1-selection}, \textbf{?@tbl-s2-selection}, and
+\textbf{?@tbl-s3-selection}. Clearly, our methods select fewer time
 series, while enhancing forecast accuracy compared to benchmarks. Subset
 methods, in particular, tend to return fewer time series compared to the
 Parsimonious and Lasso methods, which aligns with our expectations that
@@ -1358,20 +1384,8 @@ model misspecification has been selected less often than others. For
 example, in Scenario A, series AA is expected to be removed while
 retaining AB. This allows obtaining series AA via operations such as
 A\(-\)AB, Total\(-\)B\(-\)AB, or Total\(-\)AB\(-\)BA\(-\)BB. The results
-in Table~\ref{tbl-s1-selection} align with our expectations, showing
+in \textbf{?@tbl-s1-selection} align with our expectations, showing
 frequent exclusion of series AA and consistent selection of AB.
-
-\begin{figure}
-
-\centering{
-
-\includegraphics{hf_selection_files/figure-pdf/fig-sim-mcb-1.pdf}
-
-}
-
-\caption{\label{fig-sim-mcb}MCB test results.}
-
-\end{figure}%
 
 \subsection{Setup 2: Exploring the effect of
 correlation}\label{sec-sim2}
@@ -1402,7 +1416,7 @@ observations, with the last observation serving as the test set, i.e.,
 obtained by aggregating the bottom-level series. The process is repeated
 \(500\) times for each candidate correlation, \(\rho\).
 
-\begin{figure}[!b]
+\begin{figure}
 
 \centering{
 
@@ -1435,15 +1449,18 @@ exclude them from reconciliation in this setup.
 
 \begin{table}
 
-\caption{\label{tbl-corr-rmse}Out-of-sample forecast results across
-various error correlations for simulation in Setup 2.}
+\caption{\label{tbl-corr-rmse}Performance of proposed (gray-shaded) and
+benchmark methods for simulated data in Setup 2. The Base row shows
+average RMSE of base forecasts, while entries below show RMSE percentage
+decrease (negative) or increase (positive) for reconciliation methods.
+Blue entries highlight the best-performing methods; bold entries
+indicate proposed methods outperforming bechmarks.}
 
 \centering{
 
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{5}{c}{Top} & \multicolumn{5}{c}{Middle} & \multicolumn{5}{c}{Bottom} & \multicolumn{5}{c}{Average} \\
@@ -1481,15 +1498,46 @@ MinTs & --25.4 & --17.7 & --12.1 & --14.2 & --12.5 & --16.1 & --6.8 & --0.8 & --
 EMinT & \textcolor{blue}{\textbf{--31.2}} & \textcolor{blue}{\textbf{--19.8}} & \textcolor{blue}{\textbf{--12.5}} & --14.1 & --11.1 & \textcolor{blue}{\textbf{--22.9}} & \textcolor{blue}{\textbf{--10.9}} & \textcolor{blue}{\textbf{--2.4}} & \textcolor{blue}{\textbf{--3.2}} & --1.0 & \textcolor{blue}{\textbf{--7.4}} & \textcolor{blue}{\textbf{--7.3}} & \textcolor{blue}{\textbf{--6.9}} & \textcolor{blue}{\textbf{--7.5}} & --5.1 & \textcolor{blue}{\textbf{--16.4}} & \textcolor{blue}{\textbf{--11.2}} & \textcolor{blue}{\textbf{--6.9}} & \textcolor{blue}{\textbf{--7.9}} & --5.3\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{--31.0} & \cellcolor[HTML]{e6e3e3}{--19.1} & \cellcolor[HTML]{e6e3e3}{--11.1} & \cellcolor[HTML]{e6e3e3}{--13.6} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.2}} & \cellcolor[HTML]{e6e3e3}{--22.7} & \cellcolor[HTML]{e6e3e3}{--9.7} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--7.4}}} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{--6.1} & \cellcolor[HTML]{e6e3e3}{--5.7} & \cellcolor[HTML]{e6e3e3}{--3.5} & \cellcolor[HTML]{e6e3e3}{--16.3} & \cellcolor[HTML]{e6e3e3}{--10.6} & \cellcolor[HTML]{e6e3e3}{--6.0} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{--4.9}\\
 \bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
+\end{tabular}}
 
 }
 
 \end{table}%
+
+\begin{figure}
+
+\begin{minipage}{0.48\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-corr-plots-1.pdf}
+
+}
+
+\subcaption{\label{fig-corr-plots-1}MCB test}
+
+\end{minipage}%
+%
+\begin{minipage}{0.04\linewidth}
+~\end{minipage}%
+%
+\begin{minipage}{0.48\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-corr-plots-2.pdf}
+
+}
+
+\subcaption{\label{fig-corr-plots-2}Correlation between forecast errors}
+
+\end{minipage}%
+
+\caption{\label{fig-corr-plots}MCB test result and correlation matrix
+heatmap for simulated data in Setup 2, with the error correlation being
+-0.8.}
+
+\end{figure}%
 
 Table~\ref{tbl-corr-rmse} summarizes the average RMSE of the base
 forecasts across various error correlations and the percentage relative
@@ -1513,7 +1561,7 @@ results. The omitted results follow a similar pattern and are available
 upon request.
 
 In Table~\ref{tbl-corr-selection-neg} and
-Table~\ref{tbl-corr-selection-pos}, we present the proportion of time
+\textbf{?@tbl-corr-selection-pos}, we present the proportion of time
 series being selected using our proposed methods.
 Table~\ref{tbl-corr-selection-neg} shows that, for OLS, WLSs, and WLSv
 estimators, Subset and Parsimonious methods are able to exclude the
@@ -1524,7 +1572,7 @@ Lasso methods typically select all bottom-level series, given their
 tendency to yield dense estimates, as discussed in
 Section~\ref{sec-constrained}. Elasso also selects all bottom-level
 series. When dealing with a high positive error correlation,
-Table~\ref{tbl-corr-selection-pos} shows that our methods still show
+\textbf{?@tbl-corr-selection-pos} shows that our methods still show
 potential for selection but it becomes somewhat challenging to identify
 and exclude the series that should be omitted in reconciliation. Hence,
 our methods are preferred, especially when the error correlation within
@@ -1533,46 +1581,44 @@ the structure is negative.
 \begin{table}
 
 \caption{\label{tbl-corr-selection-neg}Proportion of time series being
-selected after using the proposed reconciliation methods with selection
-in Setup 2, with the error correlation being -0.8.}
+selected using proposed reconciliation methods for simulated data in
+Setup 2, with the error correlation being -0.8. The numbers in
+parentheses show MASE values for each series. The last column displays a
+stacked barplot of the total selected series from 500 hierarchies, with
+darker sub-bars indicating higher counts.}
 
 \centering{
 
 \centering\begingroup\fontsize{11}{13}\selectfont
 
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (MASE) & (0.84) & (0.87) & (0.62) & (0.68) & (0.81) & (0.91) & (0.77) & \\
 \midrule
-OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-subset.png}\\
-OLS-parsim & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-parsim.png}\\
-OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_OLS-lasso.png}\\
+OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-subset.png}\\
+OLS-parsim & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-parsim.png}\\
+OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-subset.png}\\
-WLSs-parsim & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-parsim.png}\\
-WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSs-lasso.png}\\
+WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSs-subset.png}\\
+WLSs-parsim & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSs-parsim.png}\\
+WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-subset.png}\\
-WLSv-parsim & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-parsim.png}\\
-WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_WLSv-lasso.png}\\
+WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSv-subset.png}\\
+WLSv-parsim & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSv-parsim.png}\\
+WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-parsim.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinT-lasso.png}\\
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-parsim.png}\\
-MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_MinTs-lasso.png}\\
+MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinTs-parsim.png}\\
+MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_neg_Elasso.png}\\
+Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_Elasso.png}\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}[para]
-\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
-\end{tablenotes}
-\end{threeparttable}
 \endgroup{}
 
 }
@@ -1678,7 +1724,6 @@ results for Australian labour force data.}
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Duration} & \multicolumn{4}{c}{STT} & \multicolumn{4}{c}{Duration x STT} & \multicolumn{4}{c}{Average} \\
@@ -1711,11 +1756,7 @@ MinTs & 9.9 & 5.8 & 6.4 & 5.3 & 0.6 & --5.0 & --5.0 & --3.7 & --3.4 & --2.4 & --
 EMinT & 43.1 & 17.6 & 9.9 & 10.2 & 36.8 & 25.2 & 27.9 & 24.1 & 16.8 & 15.1 & 6.2 & 6.2 & 32.3 & 27.9 & 29.8 & 27.9 & 31.4 & 23.3 & 21.4 & 19.6\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--5.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{33.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{11.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--17.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--8.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--8.8}}} & \cellcolor[HTML]{e6e3e3}{\textbf{20.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 6.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{12.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.1}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.9}}}\\
 \bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
+\end{tabular}}
 
 }
 
@@ -1851,7 +1892,6 @@ results for Australian domestic tourism data.}
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{State} & \multicolumn{4}{c}{Zone} & \multicolumn{4}{c}{Region} & \multicolumn{4}{c}{Average} \\
@@ -1884,11 +1924,7 @@ MinTs & 5.1 & 17.2 & 19.7 & 18.6 & 0.1 & 1.9 & 4.4 & 5.7 & --3.5 & --3.3 & --3.4
 EMinT & --2.3 & 24.3 & 58.8 & 59.7 & 36.9 & 56.0 & 68.4 & 70.4 & 51.4 & 64.6 & 75.8 & 81.4 & 65.9 & 72.3 & 81.9 & 85.9 & 48.3 & 62.3 & 75.4 & 79.0\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --17.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --19.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --18.7}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--21.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--17.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --6.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --9.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--12.6}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --7.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --7.7}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --9.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --9.9}}}\\
 \bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
+\end{tabular}}
 
 }
 
@@ -2090,87 +2126,38 @@ IC200100009.
 \appendix
 \pagenumbering{arabic}% resets `page` counter to 1
 \setcounter{section}{0}
-\renewcommand{\thesection}{\Alph{section}}
-\renewcommand{\thefigure}{A\arabic{figure}}
-\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\renewcommand{\thetable}{\Alph{subsection}.\arabic{table}}
+\renewcommand{\thefigure}{\Alph{subsection}.\arabic{figure}}
+\numberwithin{figure}{subsection}
+\numberwithin{table}{subsection}
 \setcounter{figure}{0}
 \setcounter{table}{0}
 
 \section*{Appendix}\label{appendix}
 \addcontentsline{toc}{section}{Appendix}
 
+\subsection{Results from simulation Setup
+1}\label{results-from-simulation-setup-1}
+
 The section provides additional results obtained in
-Section~\ref{sec-simulations} and Section~\ref{sec-applications}.
+Section~\ref{sec-sim1}.
 
-\begin{table}
+\begin{table}[!h]
 
-\caption{\label{tbl-s2-rmse}Out-of-sample forecast results for the
-simulated data in Scenario B, Setup 1.}
-
-\centering{
-
-\centering
-\resizebox{\linewidth}{!}{
-\fontsize{11}{13}\selectfont
-\begin{threeparttable}
-\begin{tabular}{lrrrrrrrrrrrrrrrr}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
-\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17}
-Method & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16\\
-\midrule
-Base & 9.6 & 10.7 & 12.6 & 15.6 & 12.1 & 14.4 & 15.3 & 17.0 & 4.2 & 4.9 & 5.9 & 7.5 & 7.2 & 8.5 & 9.6 & 11.4\\
-BU & \textcolor{blue}{\textbf{--1.0}} & 0.4 & 0.6 & 0.7 & \textcolor{blue}{\textbf{--47.7}} & \textcolor{blue}{\textbf{--49.6}} & \textcolor{blue}{\textbf{--43.6}} & \textcolor{blue}{\textbf{--36.2}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{ 0.0}} & \textcolor{blue}{\textbf{--23.0}} & \textcolor{blue}{\textbf{--24.0}} & \textcolor{blue}{\textbf{--19.8}} & \textcolor{blue}{\textbf{--15.3}}\\
-\midrule
-OLS & 8.5 & 13.9 & 10.4 & 7.6 & --28.2 & --29.4 & --26.7 & --23.1 & 22.9 & 23.9 & 17.0 & 11.3 & --4.2 & --3.8 & --4.2 & --4.1\\
-\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.0}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--49.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--36.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.0}}\\
-\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}}\\
-\midrule
-WLSs & 12.1 & 18.6 & 14.0 & 10.2 & --34.4 & --35.1 & --31.7 & --26.9 & 15.6 & 17.0 & 12.0 & 8.0 & --9.0 & --8.0 & --7.6 & --6.5\\
-\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.8}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}}\\
-\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}}\\
-\midrule
-WLSv & --0.8 & 2.3 & 1.8 & 1.6 & --46.3 & --47.9 & --42.3 & --35.2 & 1.6 & 1.9 & 1.2 & 0.8 & --21.7 & --22.2 & --18.6 & --14.4\\
-\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--42.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.7}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--42.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.7}}\\
-\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--47.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--43.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.8}}\\
-\midrule
-MinT & 0.2 & 0.5 & 0.6 & 0.5 & --47.5 & --49.4 & --43.5 & --36.1 & 1.1 & 0.5 & 0.3 & 0.1 & --22.3 & --23.7 & --19.6 & \textcolor{blue}{\textbf{--15.3}}\\
-\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.1}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{--46.9} & \cellcolor[HTML]{e6e3e3}{--49.1} & \cellcolor[HTML]{e6e3e3}{--43.3} & \cellcolor[HTML]{e6e3e3}{--36.0} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--21.9} & \cellcolor[HTML]{e6e3e3}{--23.4} & \cellcolor[HTML]{e6e3e3}{--19.4} & \cellcolor[HTML]{e6e3e3}{--15.1}\\
-\cellcolor[HTML]{e6e3e3}{MinT-parsim} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{--47.5} & \cellcolor[HTML]{e6e3e3}{--49.4} & \cellcolor[HTML]{e6e3e3}{--43.5} & \cellcolor[HTML]{e6e3e3}{--36.1} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{--22.3} & \cellcolor[HTML]{e6e3e3}{--23.7} & \cellcolor[HTML]{e6e3e3}{--19.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
-\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{--47.6}} & \cellcolor[HTML]{e6e3e3}{--49.4} & \cellcolor[HTML]{e6e3e3}{--43.5} & \cellcolor[HTML]{e6e3e3}{--36.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--23.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
-\midrule
-MinTs & --0.3 & 0.3 & \textcolor{blue}{\textbf{ 0.4}} & \textcolor{blue}{\textbf{ 0.4}} & --47.6 & --49.5 & \textcolor{blue}{\textbf{--43.6}} & \textcolor{blue}{\textbf{--36.2}} & 0.7 & 0.2 & 0.1 & \textcolor{blue}{\textbf{ 0.0}} & --22.6 & --23.9 & \textcolor{blue}{\textbf{--19.8}} & \textcolor{blue}{\textbf{--15.3}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.8}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{--47.2} & \cellcolor[HTML]{e6e3e3}{--49.2} & \cellcolor[HTML]{e6e3e3}{--43.4} & \cellcolor[HTML]{e6e3e3}{--36.0} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--22.3} & \cellcolor[HTML]{e6e3e3}{--23.6} & \cellcolor[HTML]{e6e3e3}{--19.5} & \cellcolor[HTML]{e6e3e3}{--15.1}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{--0.3} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{--47.6} & \cellcolor[HTML]{e6e3e3}{--49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--36.2}}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.0}}} & \cellcolor[HTML]{e6e3e3}{--22.6} & \cellcolor[HTML]{e6e3e3}{--23.9} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
-\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.9}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.2}}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--47.7}}} & \cellcolor[HTML]{e6e3e3}{--49.5} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--43.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--36.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{0.1} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--15.3}}}\\
-\midrule
-EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 2.0 & 1.1 & --20.5 & --21.9 & --18.2 & --14.3\\
-\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--46.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--48.2}} & \cellcolor[HTML]{e6e3e3}{--42.4} & \cellcolor[HTML]{e6e3e3}{\textbf{--35.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.1}} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{--20.9}} & \cellcolor[HTML]{e6e3e3}{--21.9} & \cellcolor[HTML]{e6e3e3}{--18.2} & \cellcolor[HTML]{e6e3e3}{--14.3}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
-
-}
-
-\end{table}%
-
-\begin{table}
-
-\caption{\label{tbl-s3-rmse}Out-of-sample forecast results for the
-simulated data in Scenario C, Setup 1.}
+\caption{\label{tbl-sim-rmse-total}Performance of proposed (gray-shaded)
+and benchmark methods for simulated data in Setup 1, with model
+misspecification in series Total. The Base row shows average RMSE of
+base forecasts, while entries below show RMSE percentage decrease
+(negative) or increase (positive) for reconciliation methods. Blue
+entries highlight the best-performing methods; bold entries indicate
+proposed methods outperforming bechmarks.}
 
 \centering{
 
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
@@ -2208,80 +2195,65 @@ MinTs & \textcolor{blue}{\textbf{--62.2}} & \textcolor{blue}{\textbf{--64.4}} & 
 EMinT & --60.7 & --63.5 & --58.2 & --51.0 & 2.5 & 2.9 & 2.3 & 1.3 & 3.6 & 2.9 & 2.0 & 1.1 & --26.2 & --28.3 & --23.8 & --18.9\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--60.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--63.6}} & \cellcolor[HTML]{e6e3e3}{--58.2} & \cellcolor[HTML]{e6e3e3}{\textbf{--51.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.8}} & \cellcolor[HTML]{e6e3e3}{2.3} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.1}} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{\textbf{--26.5}} & \cellcolor[HTML]{e6e3e3}{--28.3} & \cellcolor[HTML]{e6e3e3}{--23.8} & \cellcolor[HTML]{e6e3e3}{--18.9}\\
 \bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
+\end{tabular}}
 
 }
 
 \end{table}%
 
-\begin{table}
+\begin{figure}[!h]
 
-\caption{\label{tbl-s2-selection}Proportion of time series being
-selected after using the proposed reconciliation methods with selection
-in Scenario B, Setup 1.}
+\begin{minipage}{0.48\linewidth}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
-
-\begin{threeparttable}
-\begin{tabular}{lrrrrrrr>{}r}
-\toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.91) & (2.51) & (0.90) & (0.87) & (0.88) & (0.93) & (0.88) & \\
-\midrule
-OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
-OLS-parsim & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-parsim.png}\\
-OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
-\midrule
-WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
-WLSs-parsim & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-parsim.png}\\
-WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
-\midrule
-WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
-WLSv-parsim & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-parsim.png}\\
-WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
-\midrule
-MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-parsim.png}\\
-MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
-\midrule
-MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-parsim.png}\\
-MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
-\midrule
-Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
-\end{tablenotes}
-\end{threeparttable}
-\endgroup{}
+\includegraphics{hf_selection_files/figure-pdf/fig-sim-plots-total-1.pdf}
 
 }
 
-\end{table}%
+\subcaption{\label{fig-sim-plots-total-1}MCB test}
 
-\begin{table}
+\end{minipage}%
+%
+\begin{minipage}{0.04\linewidth}
+~\end{minipage}%
+%
+\begin{minipage}{0.48\linewidth}
 
-\caption{\label{tbl-s3-selection}Proportion of time series being
-selected after using the proposed reconciliation methods with selection
-in Scenario C, Setup 1.}
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-sim-plots-total-2.pdf}
+
+}
+
+\subcaption{\label{fig-sim-plots-total-2}Correlation between forecast
+errors}
+
+\end{minipage}%
+
+\caption{\label{fig-sim-plots-total}MCB test result and correlation
+matrix heatmap for simulated data in Setup 1, with model
+misspecification in series Total.}
+
+\end{figure}%
+
+\begin{table}[!h]
+
+\caption{\label{tbl-sim-selection-total}Proportion of time series being
+selected using proposed reconciliation methods for simulated data in
+Setup 1, with model misspecification in series Total. The numbers in
+parentheses show MASE values for each series. The last column displays a
+stacked barplot of the total selected series from 500 hierarchies, with
+darker sub-bars indicating higher counts.}
 
 \centering{
 
 \centering\begingroup\fontsize{11}{13}\selectfont
 
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (2.38) & (0.89) & (0.90) & (0.87) & (0.88) & (0.93) & (0.88) & \\
+(MASE) & (2.60) & (1.24) & (1.26) & (1.28) & (1.32) & (1.32) & (1.27) & \\
 \midrule
 OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
 OLS-parsim & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-parsim.png}\\
@@ -2306,66 +2278,388 @@ MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[
 Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_Elasso.png}\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}[para]
-\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
-\end{tablenotes}
-\end{threeparttable}
 \endgroup{}
 
 }
 
 \end{table}%
 
-\begin{table}
+\begin{table}[!h]
 
-\caption{\label{tbl-corr-selection-pos}Proportion of time series being
-selected after using the proposed reconciliation methods with selection
-in Setup 2, with the error correlation being 0.8.}
+\caption{\label{tbl-sim-rmse-AA}Performance of proposed (gray-shaded)
+and benchmark methods for simulated data in Setup 1, with model
+misspecification in series AA. The Base row shows average RMSE of base
+forecasts, while entries below show RMSE percentage decrease (negative)
+or increase (positive) for reconciliation methods. Blue entries
+highlight the best-performing methods; bold entries indicate proposed
+methods outperforming bechmarks.}
+
+\centering{
+
+\centering
+\resizebox{\linewidth}{!}{
+\fontsize{11}{13}\selectfont
+\begin{tabular}{lrrrrrrrrrrrrrrrr}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9} \cmidrule(l{3pt}r{3pt}){10-13} \cmidrule(l{3pt}r{3pt}){14-17}
+Method & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16\\
+\midrule
+Base & 9.6 & 10.7 & 12.6 & 15.6 & 6.3 & 7.3 & 8.6 & 10.8 & 6.4 & 7.5 & 8.3 & 9.8 & 6.8 & 7.9 & 9.0 & 10.9\\
+BU & 57.8 & 68.5 & 53.7 & 38.9 & 58.2 & 61.8 & 48.1 & 34.4 & 0.0 & 0.0 & 0.0 & 0.0 & 27.0 & 29.6 & 23.8 & 17.7\\
+\midrule
+OLS & 0.6 & 2.2 & 1.8 & 1.4 & 7.1 & 6.4 & 4.6 & 3.1 & --7.6 & --8.6 & --8.2 & --7.3 & --2.1 & --2.5 & --2.7 & --2.6\\
+\cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{7.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.1}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{7.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 6.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
+\cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{2.2} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{7.4} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{4.8} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--8.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.5}\\
+\midrule
+WLSs & 7.3 & 10.6 & 8.1 & 5.9 & 15.6 & 16.0 & 11.8 & 8.0 & --6.9 & --7.8 & --7.4 & --6.4 & 1.9 & 2.0 & 1.0 & 0.2\\
+\cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{12.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{10.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{16.5} & \cellcolor[HTML]{e6e3e3}{\textbf{15.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{11.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.9}} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.4}}\\
+\cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{7.3} & \cellcolor[HTML]{e6e3e3}{\textbf{10.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 8.0}} & \cellcolor[HTML]{e6e3e3}{5.9} & \cellcolor[HTML]{e6e3e3}{15.7} & \cellcolor[HTML]{e6e3e3}{16.1} & \cellcolor[HTML]{e6e3e3}{11.8} & \cellcolor[HTML]{e6e3e3}{8.1} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.0}} & \cellcolor[HTML]{e6e3e3}{--7.8} & \cellcolor[HTML]{e6e3e3}{--7.3} & \cellcolor[HTML]{e6e3e3}{--6.4} & \cellcolor[HTML]{e6e3e3}{1.9} & \cellcolor[HTML]{e6e3e3}{2.0} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.2}\\
+\midrule
+WLSv & 1.0 & 2.9 & 2.3 & 1.9 & 4.5 & 4.3 & 3.2 & 2.1 & --25.8 & --26.4 & --22.7 & --18.3 & --12.4 & --12.6 & --10.7 & --8.4\\
+\cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.0}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--27.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.5}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--27.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--21.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}}\\
+\cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--28.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--29.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--24.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--14.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.5}}\\
+\midrule
+MinT & --0.4 & 0.7 & 0.9 & 0.6 & 0.7 & 0.7 & 0.6 & 0.3 & --32.9 & --33.4 & --28.3 & --22.5 & --17.5 & --17.8 & --14.6 & --11.3\\
+\cellcolor[HTML]{e6e3e3}{MinT-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.6}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.8}} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--33.0}} & \cellcolor[HTML]{e6e3e3}{--33.1} & \cellcolor[HTML]{e6e3e3}{--28.0} & \cellcolor[HTML]{e6e3e3}{--22.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.6}} & \cellcolor[HTML]{e6e3e3}{--17.6} & \cellcolor[HTML]{e6e3e3}{--14.5} & \cellcolor[HTML]{e6e3e3}{--11.2}\\
+\cellcolor[HTML]{e6e3e3}{MinT-parsim} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--32.9} & \cellcolor[HTML]{e6e3e3}{--33.4} & \cellcolor[HTML]{e6e3e3}{--28.3} & \cellcolor[HTML]{e6e3e3}{--22.5} & \cellcolor[HTML]{e6e3e3}{--17.5} & \cellcolor[HTML]{e6e3e3}{--17.8} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{--11.3}\\
+\cellcolor[HTML]{e6e3e3}{MinT-lasso} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.1}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--33.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--33.7}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--28.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--17.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--18.1}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--14.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}}\\
+\midrule
+MinTs & --0.9 & 0.6 & 0.7 & 0.5 & 0.6 & 0.6 & 0.5 & 0.2 & --32.9 & --33.5 & --28.3 & --22.5 & --17.6 & --17.9 & --14.6 & --11.3\\
+\cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{1.1} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.4} & \cellcolor[HTML]{e6e3e3}{\textbf{--33.0}} & \cellcolor[HTML]{e6e3e3}{--33.1} & \cellcolor[HTML]{e6e3e3}{--27.9} & \cellcolor[HTML]{e6e3e3}{--22.2} & \cellcolor[HTML]{e6e3e3}{--17.6} & \cellcolor[HTML]{e6e3e3}{--17.5} & \cellcolor[HTML]{e6e3e3}{--14.3} & \cellcolor[HTML]{e6e3e3}{--11.0}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{--0.9} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{--32.9} & \cellcolor[HTML]{e6e3e3}{--33.5} & \cellcolor[HTML]{e6e3e3}{--28.3} & \cellcolor[HTML]{e6e3e3}{--22.5} & \cellcolor[HTML]{e6e3e3}{--17.6} & \cellcolor[HTML]{e6e3e3}{--17.9} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{--11.3}\\
+\cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{--0.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{0.5} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ 0.1}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--33.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--33.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--28.4}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--17.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.0}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--14.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}}\\
+\midrule
+EMinT & 2.2 & 2.9 & 2.5 & 1.7 & 2.5 & 2.9 & 2.3 & 1.3 & --31.9 & --32.3 & --27.5 & --22.0 & --15.9 & --16.2 & --13.4 & --10.5\\
+\cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.4}} & \cellcolor[HTML]{e6e3e3}{1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.8}} & \cellcolor[HTML]{e6e3e3}{2.3} & \cellcolor[HTML]{e6e3e3}{1.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.1}} & \cellcolor[HTML]{e6e3e3}{--32.2} & \cellcolor[HTML]{e6e3e3}{--27.4} & \cellcolor[HTML]{e6e3e3}{--21.9} & \cellcolor[HTML]{e6e3e3}{\textbf{--16.3}} & \cellcolor[HTML]{e6e3e3}{--16.2} & \cellcolor[HTML]{e6e3e3}{--13.3} & \cellcolor[HTML]{e6e3e3}{--10.5}\\
+\bottomrule
+\end{tabular}}
+
+}
+
+\end{table}%
+
+\begin{figure}[!h]
+
+\begin{minipage}{0.48\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-sim-plots-AA-1.pdf}
+
+}
+
+\subcaption{\label{fig-sim-plots-AA-1}MCB test}
+
+\end{minipage}%
+%
+\begin{minipage}{0.04\linewidth}
+~\end{minipage}%
+%
+\begin{minipage}{0.48\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-sim-plots-AA-2.pdf}
+
+}
+
+\subcaption{\label{fig-sim-plots-AA-2}Correlation between forecast
+errors}
+
+\end{minipage}%
+
+\caption{\label{fig-sim-plots-AA}MCB test result and correlation matrix
+heatmap for simulated data in Setup 1, with model misspecification in
+series AA.}
+
+\end{figure}%
+
+\begin{table}[!h]
+
+\caption{\label{tbl-sim-selection-AA}Proportion of time series being
+selected using proposed reconciliation methods for simulated data in
+Setup 1, with model misspecification in series AA. The numbers in
+parentheses show MASE values for each series. The last column displays a
+stacked barplot of the total selected series from 500 hierarchies, with
+darker sub-bars indicating higher counts.}
 
 \centering{
 
 \centering\begingroup\fontsize{11}{13}\selectfont
 
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.89) & (0.85) & (0.76) & (0.78) & (0.72) & (0.77) & (0.75) & \\
+(MASE) & (1.20) & (1.24) & (1.26) & (2.92) & (1.32) & (1.32) & (1.27) & \\
 \midrule
-OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-subset.png}\\
-OLS-parsim & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-parsim.png}\\
-OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_OLS-lasso.png}\\
+OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
+OLS-parsim & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-parsim.png}\\
+OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-lasso.png}\\
 \midrule
-WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-subset.png}\\
-WLSs-parsim & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-parsim.png}\\
-WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSs-lasso.png}\\
+WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-subset.png}\\
+WLSs-parsim & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-parsim.png}\\
+WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-lasso.png}\\
 \midrule
-WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-subset.png}\\
-WLSv-parsim & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-parsim.png}\\
-WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_WLSv-lasso.png}\\
+WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-subset.png}\\
+WLSv-parsim & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-parsim.png}\\
+WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-lasso.png}\\
 \midrule
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-parsim.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinT-lasso.png}\\
+MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-parsim.png}\\
+MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-lasso.png}\\
 \midrule
-MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-parsim.png}\\
-MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_MinTs-lasso.png}\\
+MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-parsim.png}\\
+MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-lasso.png}\\
 \midrule
-Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_pos_Elasso.png}\\
+Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_Elasso.png}\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}[para]
-\item Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.
-\end{tablenotes}
-\end{threeparttable}
 \endgroup{}
 
 }
 
 \end{table}%
 
-\begin{table}
+\clearpage
+
+\subsection{Results from simulation Setup
+2}\label{results-from-simulation-setup-2}
+
+The section provides additional results obtained in
+Section~\ref{sec-sim2}.
+
+\begin{table}[!h]
+
+\caption{\label{tbl-corr-selection-p3}Proportion of time series being
+selected using proposed reconciliation methods for simulated data in
+Setup 2, with the error correlation being -0.4. The numbers in
+parentheses show MASE values for each series. The last column displays a
+stacked barplot of the total selected series from 500 hierarchies, with
+darker sub-bars indicating higher counts.}
+
+\centering{
+
+\centering\begingroup\fontsize{11}{13}\selectfont
+
+\begin{tabular}{lrrrrrrr>{}r}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+(MASE) & (0.88) & (0.84) & (0.74) & (0.77) & (0.81) & (0.87) & (0.79) & \\
+\midrule
+OLS-subset & 0.35 & 0.38 & 0.96 & 0.97 & 0.99 & 0.73 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-subset.png}\\
+OLS-parsim & 0.59 & 0.62 & 0.93 & 0.92 & 1.00 & 0.61 & 0.96 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-parsim.png}\\
+OLS-lasso & 0.65 & 0.41 & 0.50 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.35 & 0.43 & 0.99 & 1.00 & 1.00 & 0.73 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSs-subset.png}\\
+WLSs-parsim & 0.56 & 0.54 & 0.97 & 0.98 & 1.00 & 0.70 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSs-parsim.png}\\
+WLSs-lasso & 0.62 & 0.66 & 0.82 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.34 & 0.44 & 1.00 & 1.00 & 1.00 & 0.68 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSv-subset.png}\\
+WLSv-parsim & 0.55 & 0.52 & 0.98 & 1.00 & 1.00 & 0.62 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSv-parsim.png}\\
+WLSv-lasso & 0.63 & 0.76 & 0.92 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.95 & 0.93 & 1.00 & 1.00 & 1.00 & 0.93 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinTs-parsim.png}\\
+MinTs-lasso & 0.96 & 0.94 & 1.00 & 1.00 & 1.00 & 0.96 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.93 & 0.73 & 0.98 & 1.00 & 0.99 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_Elasso.png}\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+
+}
+
+\end{table}%
+
+\begin{table}[!h]
+
+\caption{\label{tbl-corr-selection-p5}Proportion of time series being
+selected using proposed reconciliation methods for simulated data in
+Setup 2, with the error correlation being 0. The numbers in parentheses
+show MASE values for each series. The last column displays a stacked
+barplot of the total selected series from 500 hierarchies, with darker
+sub-bars indicating higher counts.}
+
+\centering{
+
+\centering\begingroup\fontsize{11}{13}\selectfont
+
+\begin{tabular}{lrrrrrrr>{}r}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+(MASE) & (0.90) & (0.85) & (0.76) & (0.86) & (0.83) & (0.74) & (0.80) & \\
+\midrule
+OLS-subset & 0.37 & 0.49 & 0.95 & 0.94 & 0.99 & 0.73 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-subset.png}\\
+OLS-parsim & 0.55 & 0.74 & 0.92 & 0.88 & 0.98 & 0.67 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-parsim.png}\\
+OLS-lasso & 0.70 & 0.57 & 0.61 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.37 & 0.54 & 0.99 & 0.98 & 1.00 & 0.77 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSs-subset.png}\\
+WLSs-parsim & 0.60 & 0.60 & 0.98 & 0.96 & 1.00 & 0.71 & 0.96 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSs-parsim.png}\\
+WLSs-lasso & 0.74 & 0.80 & 0.90 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.35 & 0.55 & 1.00 & 0.99 & 1.00 & 0.78 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSv-subset.png}\\
+WLSv-parsim & 0.60 & 0.58 & 0.99 & 1.00 & 1.00 & 0.86 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSv-parsim.png}\\
+WLSv-lasso & 0.76 & 0.82 & 0.95 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 1.00 & 0.99 & 1.00 & 1.00 & 1.00 & 0.99 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinTs-parsim.png}\\
+MinTs-lasso & 1.00 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.92 & 0.80 & 0.98 & 1.00 & 0.97 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_Elasso.png}\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+
+}
+
+\end{table}%
+
+\begin{table}[!h]
+
+\caption{\label{tbl-corr-selection-p7}Proportion of time series being
+selected using proposed reconciliation methods for simulated data in
+Setup 2, with the error correlation being 0.4. The numbers in
+parentheses show MASE values for each series. The last column displays a
+stacked barplot of the total selected series from 500 hierarchies, with
+darker sub-bars indicating higher counts.}
+
+\centering{
+
+\centering\begingroup\fontsize{11}{13}\selectfont
+
+\begin{tabular}{lrrrrrrr>{}r}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+(MASE) & (0.99) & (0.87) & (0.78) & (0.83) & (0.77) & (0.81) & (0.81) & \\
+\midrule
+OLS-subset & 0.37 & 0.53 & 0.98 & 0.92 & 0.98 & 0.81 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-subset.png}\\
+OLS-parsim & 0.58 & 0.78 & 0.96 & 0.88 & 0.97 & 0.78 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-parsim.png}\\
+OLS-lasso & 0.73 & 0.59 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.35 & 0.57 & 1.00 & 0.99 & 1.00 & 0.86 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSs-subset.png}\\
+WLSs-parsim & 0.62 & 0.61 & 0.99 & 0.96 & 1.00 & 0.78 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSs-parsim.png}\\
+WLSs-lasso & 0.79 & 0.81 & 0.93 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.35 & 0.58 & 1.00 & 1.00 & 1.00 & 0.89 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSv-subset.png}\\
+WLSv-parsim & 0.61 & 0.53 & 1.00 & 1.00 & 0.99 & 0.96 & 0.73 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSv-parsim.png}\\
+WLSv-lasso & 0.83 & 0.89 & 0.98 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinTs-parsim.png}\\
+MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.89 & 0.76 & 0.99 & 0.99 & 0.91 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_Elasso.png}\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+
+}
+
+\end{table}%
+
+\begin{table}[!h]
+
+\caption{\label{tbl-corr-selection-p9}Proportion of time series being
+selected using proposed reconciliation methods for simulated data in
+Setup 2, with the error correlation being 0.8. The numbers in
+parentheses show MASE values for each series. The last column displays a
+stacked barplot of the total selected series from 500 hierarchies, with
+darker sub-bars indicating higher counts.}
+
+\centering{
+
+\centering\begingroup\fontsize{11}{13}\selectfont
+
+\begin{tabular}{lrrrrrrr>{}r}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+(MASE) & (0.89) & (0.85) & (0.76) & (0.78) & (0.72) & (0.77) & (0.75) & \\
+\midrule
+OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-subset.png}\\
+OLS-parsim & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-parsim.png}\\
+OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSs-subset.png}\\
+WLSs-parsim & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSs-parsim.png}\\
+WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSv-subset.png}\\
+WLSv-parsim & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSv-parsim.png}\\
+WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinTs-parsim.png}\\
+MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_Elasso.png}\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+
+}
+
+\end{table}%
+
+\begin{figure}
+
+\begin{minipage}{\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-corr-plots-others-1.pdf}
+
+}
+
+\subcaption{\label{fig-corr-plots-others-1}MCB test}
+
+\end{minipage}%
+\newline
+\begin{minipage}{\linewidth}
+
+\centering{
+
+\includegraphics{hf_selection_files/figure-pdf/fig-corr-plots-others-2.pdf}
+
+}
+
+\subcaption{\label{fig-corr-plots-others-2}Correlation between forecast
+errors}
+
+\end{minipage}%
+
+\caption{\label{fig-corr-plots-others}MCB test result and correlation
+matrix heatmap for simulated data in Setup 2, with the error correlation
+being -0.4, 0, 0.4, 0.8, respectively.}
+
+\end{figure}%
+
+\clearpage
+
+\subsection{Results from Australian labour force
+data}\label{results-from-australian-labour-force-data}
+
+\begin{table}[!h]
 
 \caption{\label{tbl-labour-rmse}Out-of-sample forecast results on a
 single test set (from August 2022 to July 2023) for Australian labour
@@ -2376,7 +2670,6 @@ force data.}
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Duration} & \multicolumn{4}{c}{STT} & \multicolumn{4}{c}{Duration x STT} & \multicolumn{4}{c}{Average} \\
@@ -2409,17 +2702,13 @@ MinTs & --27.0 & --21.1 & --22.9 & --21.8 & --9.1 & --7.9 & --6.7 & --4.6 & --3.
 EMinT & --60.4 & --14.0 & 1.4 & --29.9 & --6.0 & 12.0 & 10.7 & --6.7 & 16.7 & --0.9 & --12.4 & \textcolor{blue}{\textbf{--21.0}} & 23.3 & 17.2 & 16.7 & 10.1 & 7.7 & 10.8 & 9.0 & --3.7\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{--4.2} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{\textbf{--22.3}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{--19.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--19.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--25.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.6}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--24.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--22.6}}} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--0.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--4.9}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--15.7}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--9.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--13.2}}}\\
 \bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
+\end{tabular}}
 
 }
 
 \end{table}%
 
-\begin{table}
+\begin{table}[!h]
 
 \caption{\label{tbl-labour-info}Number of time series selected using
 different proposed methods and the optimal parameter values identified
@@ -2451,7 +2740,12 @@ Elasso & 1 & 5 & 2 & 3 & 11 & 213.59 & - & -\\
 
 \end{table}%
 
-\begin{table}
+\clearpage
+
+\subsection{Results from Australian domestic tourism
+data}\label{results-from-australian-domestic-tourism-data}
+
+\begin{table}[!h]
 
 \caption{\label{tbl-tourism-rmse}Out-of-sample forecast results on a
 single test set (from January 2017 to December 2017) for Australian
@@ -2462,7 +2756,6 @@ domestic tourism data.}
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{11}{13}\selectfont
-\begin{threeparttable}
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{State} & \multicolumn{4}{c}{Zone} & \multicolumn{4}{c}{Region} & \multicolumn{4}{c}{Average} \\
@@ -2495,17 +2788,13 @@ MinTs & 20.6 & 53.6 & 21.6 & 19.0 & \textcolor{blue}{\textbf{--22.2}} & --7.2 & 
 EMinT & 116.5 & 97.8 & --15.8 & --13.7 & 149.4 & 114.5 & 63.5 & 47.5 & 108.4 & 68.4 & 60.6 & 54.2 & 122.1 & 103.1 & 90.2 & 78.2 & 123.2 & 93.9 & 67.9 & 55.5\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --84.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--50.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --16.3}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --16.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--18.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --9.0}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --8.8}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --7.5}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{  2.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.2}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.4}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --3.2}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --6.7}}}\\
 \bottomrule
-\end{tabular}
-\begin{tablenotes}[para]
-\item Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.
-\end{tablenotes}
-\end{threeparttable}}
+\end{tabular}}
 
 }
 
 \end{table}%
 
-\begin{table}
+\begin{table}[!h]
 
 \caption{\label{tbl-tourism-info}Number of time series selected using
 different proposed methods and the optimal parameter values identified

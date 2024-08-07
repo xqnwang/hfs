@@ -24,17 +24,41 @@ source("R/analysis.R")
 # RMSE table
 measure <- "rmse"
 data_label <- "simulation"
+scenarios <- c("s1", "s2", "s3")
 horizons <- c(1, 4, 8, 16)
 methods <- c("subset", "intuitive", "lasso")
-for (i in 1:3){
-  scenario <- paste0("s", i)
+sim_rmse <- lapply(scenarios, function(scenario){
   out_all <- combine_table(data_label, methods, measure, scenario = scenario, horizons)
   out_all$table_out$Method <- gsub("intuitive", "parsim", out_all$table_out$Method)
-  saveRDS(out_all, file = paste0("paper/results/sim_rmse_", scenario, ".rds"))
-}
+  return(out_all)
+})
+names(sim_rmse) <- scenarios
+saveRDS(sim_rmse, file = "paper/results/sim_rmse.rds")
+
+# MCB tests for each scenario
+h <- 16
+highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
+target <- sapply(highlight, function(len){
+  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
+}) |> as.vector()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
+sim_rmse_mcb <- lapply(scenarios, function(scenario){
+  for (method in methods){
+    readRDS(paste0("data_new/", data_label, "_", method, "_reconsf_", scenario, "_rmse_hts_", h, ".rds")) |>
+      assign(method, value = _)
+  }
+  rmse_hfs <- cbind(subset,
+                    intuitive[, grepl("intuitive", colnames(intuitive))],
+                    lasso[, grepl("lasso", colnames(lasso))])
+  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
+  colnames(rmse_hfs) <- gsub("intuitive", "parsim", colnames(rmse_hfs))
+  rmse_hfs <- rmse_hfs[, gsub("intuitive", "parsim", target)]
+  return(rmse_hfs)
+})
+names(sim_rmse_mcb) <- scenarios
+saveRDS(sim_rmse_mcb, file = "paper/results/sim_rmse_mcb.rds")
 
 # Selection ratio table
-scenarios <- c("s1", "s2", "s3")
 series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
 simulation_info <- combine_z(data_label, methods, scenarios, series_name)
 simulation_info <- lapply(simulation_info, function(len){
@@ -42,12 +66,11 @@ simulation_info <- lapply(simulation_info, function(len){
   rownames(len$z) <- gsub("intuitive", "parsim", rownames(len$z))
   return(len)
 })
+names(simulation_info) <- scenarios
 saveRDS(simulation_info, file = "paper/results/sim_selection.rds")
 
 # Forecast variance (MASE)
-data_label <- "simulation"
-scenarios <- c("s1", "s2", "s3")
-freq <- 4; h <- 1
+freq <- 4; h <- 16
 train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
 indices <- unique(test$Index)
@@ -60,49 +83,29 @@ simulation_series_mase <- lapply(scenarios, function(scenario) {
     do.call(rbind, .)
   return(calc_mase(fc, train, test, freq, h))
 })
-names(simulation_series_mase) <- paste0("out_", scenarios)
+names(simulation_series_mase) <- scenarios
 saveRDS(simulation_series_mase, file = "paper/results/sim_series_mase.rds")
 
-# for (scenario in scenarios) {
-#   reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf_", scenario, ".rds"))
-#   fc <- indices |>
-#     purrr::map(\(index)
-#                extract_element(data = reconsf, index = index,
-#                                method = "Base", element = "y_tilde")) %>% 
-#     do.call(rbind, .)
-#   calc_mase(fc, train, test, freq, h)
-#   # err <- subset(test, select = -Index) - subset(fc, select = -Index)
-#   # err <- cbind(err, Index = subset(test, select = Index))
-#   # err |>
-#   #   as_tibble() |>
-#   #   group_by(Index) |>
-#   #   mutate(Horizon = row_number()) |>
-#   #   filter(Horizon <= h) |>
-#   #   ungroup() |>
-#   #   select(!c("Index", "Horizon")) |>
-#   #   summarise_all(function(x) mean(x^2)) |> print()
-# }
-
-# MCB tests for each scenario
-h <- 16
-highlight <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
-target <- sapply(highlight, function(len){
-  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
-}) |> as.vector()
-target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
-for (scenario in scenarios) {
-  for (method in methods){
-    readRDS(paste0("data_new/", data_label, "_", method, "_reconsf_", scenario, "_rmse_hts_", h, ".rds")) |>
-      assign(method, value = _)
-  }
-  rmse_hfs <- cbind(subset,
-                    intuitive[, grepl("intuitive", colnames(intuitive))],
-                    lasso[, grepl("lasso", colnames(lasso))])
-  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
-  colnames(rmse_hfs) <- gsub("intuitive", "parsim", colnames(rmse_hfs))
-  rmse_hfs <- rmse_hfs[, gsub("intuitive", "parsim", target)]
-  saveRDS(rmse_hfs, file = paste0("paper/results/sim_rmse_mcb_", scenario, ".rds"))
-}
+# Forecast correlation
+h <- 1
+train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+indices <- unique(test$Index)
+simulation_cormat <- lapply(scenarios, function(scenario) {
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf_", scenario, ".rds"))
+  fc <- indices |>
+    purrr::map(\(index)
+               extract_element(data = reconsf, index = index,
+                               method = "Base", element = "y_tilde")) %>% 
+    do.call(rbind, .)
+  er_h <- calc_error(fc, test, h)
+  cormat <- cor(er_h)
+  cormat[upper.tri(cormat)]<- NA
+  melted_cormat <- reshape2::melt(cormat, na.rm = TRUE)
+  return(melted_cormat)
+})
+names(simulation_cormat) <- scenarios
+saveRDS(simulation_cormat, file = "paper/results/sim_cormat.rds")
 
 #----------------------------------------------------------------------
 # Simulation setup 2
@@ -138,19 +141,6 @@ resid <- resid |>
 saveRDS(data, file = "paper/results/corr_data_neg.rds")
 saveRDS(resid, file = "paper/results/corr_resid_neg.rds")
 
-# data |>
-#   autoplot(Value) +
-#   facet_wrap(vars(Series), scales = "free_y", ncol = 2) +
-#   xlab("Time") +
-#   ylab("") +
-#   theme(legend.position = "none",
-#         plot.background = element_blank(),
-#         axis.title.y = element_text(face = "bold", size = 14),
-#         axis.title.x = element_text(face = "bold", size = 12),
-#         axis.text = element_text(face = "bold", size = 10),
-#         axis.ticks.x.top = element_blank()) +
-#   theme_bw()
-
 # RMSE table
 measure <- "rmse"
 data_label <- "corr"
@@ -164,24 +154,21 @@ saveRDS(out_all, file = "paper/results/corr_rmse.rds")
 
 # Selection ratio table
 series_name <- c("Top", "A", "B", "AA", "AB", "BA", "BB")
-corr_info_neg <- combine_z("corr_1", methods, scenarios = "s0", series_name)
-corr_info_pos <- combine_z("corr_9", methods, scenarios = "s0", series_name)
-corr_info_neg <- lapply(corr_info_neg, function(len){
-  len$n$Method <- gsub("intuitive", "parsim", len$n$Method)
-  rownames(len$z) <- gsub("intuitive", "parsim", rownames(len$z))
-  return(len)
+corr_selection <- lapply(index, function(i){
+  corr_info <- combine_z(paste0("corr_", i), methods, scenarios = "s0", series_name)
+  corr_info_out <- lapply(corr_info, function(len){
+    len$n$Method <- gsub("intuitive", "parsim", len$n$Method)
+    rownames(len$z) <- gsub("intuitive", "parsim", rownames(len$z))
+    return(len)
+  })
+  return(corr_info_out)
 })
-corr_info_pos <- lapply(corr_info_pos, function(len){
-  len$n$Method <- gsub("intuitive", "parsim", len$n$Method)
-  rownames(len$z) <- gsub("intuitive", "parsim", rownames(len$z))
-  return(len)
-})
-saveRDS(corr_info_neg, file = "paper/results/corr_selection_neg.rds")
-saveRDS(corr_info_pos, file = "paper/results/corr_selection_pos.rds")
+names(corr_selection) <- paste0("p", index)
+saveRDS(corr_selection, file = "paper/results/corr_selection.rds")
 
 # Forecast variance (MASE)
 freq <- 1; h <- 1
-for (i in c(1, 9)){
+corr_series_mase <- lapply(index, function(i){
   train <- readRDS(file = paste0("data/", data_label, "_", i, "_train.rds"))
   test <- readRDS(file = paste0("data/", data_label, "_", i, "_test.rds"))
   indices <- unique(test$Index)
@@ -191,11 +178,10 @@ for (i in c(1, 9)){
                extract_element(data = reconsf, index = index,
                                method = "Base", element = "y_tilde")) %>% 
     do.call(rbind, .)
-  corr_series_mase <- list(out_s0 = calc_mase(fc, train, test, freq, h))
-  saveRDS(corr_series_mase, file = paste0("paper/results/corr_series_mase_",
-                                          ifelse(i==1, "neg", "pos"),
-                                          ".rds"))
-}
+  list(out_s0 = calc_mase(fc, train, test, freq, h))
+})
+names(corr_series_mase) <- paste0("p", index)
+saveRDS(corr_series_mase, file = "paper/results/corr_series_mase.rds")
 
 # MCB tests for each error correlation
 h <- 1
@@ -204,11 +190,10 @@ target <- sapply(highlight, function(len){
   c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
 }) |> as.vector()
 target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
-
-par(mfrow=c(1, length(index)),
-    mar=c(4,0,0.1,0.3)
-)
-for (i in index) {
+# par(mfrow=c(1, length(index)),
+#     mar=c(4,0,0.1,0.3)
+# )
+corr_rmse_mcb <- lapply(index, function(i){
   for (method in methods){
     readRDS(paste0("data_new/", data_label, "_", i, "_", method, "_reconsf_rmse_hts_", h, ".rds")) |>
       assign(method, value = _)
@@ -218,15 +203,39 @@ for (i in index) {
                     lasso[, grepl("lasso", colnames(lasso))])
   colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
   rmse_hfs <- rmse_hfs[, target]
-  # saveRDS(rmse_hfs, file = paste0("paper/results/corr_", "i", "_", "rmse_mcb.rds"))
-  nemenyi(rmse_hfs, conf.level = 0.95, plottype = "vmcb",
-          sort = FALSE,
-          shadow = FALSE,
-          group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
-          Title = TeX(sprintf(r'($\rho = %f$)', corr[i])),
-          Xlab = "Mean ranks",
-          Ylab = "")
-}
+  return(rmse_hfs)
+  # nemenyi(rmse_hfs, conf.level = 0.95, plottype = "vmcb",
+  #         sort = FALSE,
+  #         shadow = FALSE,
+  #         group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+  #         Title = TeX(sprintf(r'($\rho = %f$)', corr[i])),
+  #         Xlab = "Mean ranks",
+  #         Ylab = "")
+})
+names(corr_rmse_mcb) <- paste0("p", index)
+saveRDS(corr_rmse_mcb, file = paste0("paper/results/corr_rmse_mcb.rds"))
+  
+# Forecast correlation
+data_label <- "corr"
+h <- 1
+corr_cormat <- lapply(index, function(len) {
+  train <- readRDS(file = paste0("data/", data_label, "_", len, "_train.rds"))
+  test <- readRDS(file = paste0("data/", data_label, "_", len, "_test.rds"))
+  indices <- unique(test$Index)
+  reconsf <- readRDS(file = paste0("data_new/", data_label, "_", len, "_subset_reconsf.rds"))
+  fc <- indices |>
+    purrr::map(\(x)
+               extract_element(data = reconsf, index = x,
+                               method = "Base", element = "y_tilde")) %>% 
+    do.call(rbind, .)
+  er_h <- calc_error(fc, test, h)
+  cormat <- cor(er_h)
+  cormat[upper.tri(cormat)]<- NA
+  melted_cormat <- reshape2::melt(cormat, na.rm = TRUE)
+  return(melted_cormat)
+})
+names(corr_cormat) <- paste0("p", index)
+saveRDS(corr_cormat, file = "paper/results/corr_cormat.rds")
 
 #----------------------------------------------------------------------
 # Tourism application
@@ -294,6 +303,37 @@ out_1_all <- combine_table(data_label, methods, measure, scenario, horizons)
 out_1_all$table_out$Method <- gsub("intuitive", "parsim", out_1_all$table_out$Method)
 saveRDS(out_1_all, file = "paper/results/tourism_1_rmse.rds")
 
+# MCB test
+h <- 12
+highlight <- c("OLS", "WLSs", "WLSv", "MinTs")
+target <- sapply(highlight, function(len){
+  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
+}) |> as.vector()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
+
+rmse_all <- NULL
+for (i in test_indices) {
+  for (method in methods){
+    readRDS(paste0("data_new/", data_label, "_", i, "_", method, "_reconsf_rmse_hts_", h, ".rds")) |>
+      assign(method, value = _)
+  }
+  rmse_hfs <- cbind(subset,
+                    intuitive[, grepl("intuitive", colnames(intuitive))],
+                    lasso[, grepl("lasso", colnames(lasso))])
+  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
+  rmse_hfs <- rmse_hfs[, target]
+  rmse_all <- rbind(rmse_all, rmse_hfs)
+}
+
+saveRDS(rmse_all, file = paste0("paper/results/tourism_rmse_mcb.rds"))
+nemenyi(rmse_all, conf.level = 0.95, plottype = "vmcb",
+        sort = FALSE,
+        shadow = FALSE,
+        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:20),
+        Title = "",
+        Xlab = "Mean ranks",
+        Ylab = "")
+
 # Series retained table
 tourism_subset_reconsf <- readRDS(file = "data_new/tourism_1_subset_reconsf.rds")
 tourism_lasso_reconsf <- readRDS(file = "data_new/tourism_1_lasso_reconsf.rds")
@@ -321,6 +361,27 @@ tourism_subset_info <- apply(tourism_subset_info, 1, function(lentry){
 }) %>% t() %>% rbind(None, .)
 rownames(tourism_subset_info) <- sub("_", "-", rownames(tourism_subset_info))
 saveRDS(tourism_subset_info, "paper/results/tourism_info.rds")
+
+# Forecast variance (MASE) - the last window
+freq <- 12; h <- 12
+data_label <- "tourism_1"
+train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
+test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
+indices <- unique(test$Index)
+reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf.rds"))
+fc <- indices |>
+  purrr::map(\(index)
+             extract_element(data = reconsf, index = index,
+                             method = "Base", element = "y_tilde")) %>% 
+  do.call(rbind, .)
+tourism_series_mase <- calc_mase(fc, train, test, freq, h) |> as.matrix()
+# saveRDS(tourism_series_mase, file = "paper/results/tourism_series_mase_.rds")
+rbind(tourism_series_mase, tourism_subset_z) |> View()
+mean(aaa[Top])
+mean(aaa[State])
+mean(aaa[Zone])
+mean(aaa[Region])
+mean(aaa[Total])
 
 # Heatmap
 data_label <- "tourism_1"
@@ -446,6 +507,37 @@ for (method_label in methods){
 out_all <- combine_table(data_label, methods, measure, scenario, horizons)
 out_all$table_out$Method <- gsub("intuitive", "parsim", out_all$table_out$Method)
 saveRDS(out_all, file = paste0("paper/results/labour_rmse.rds"))
+
+# MCB test
+h <- 12
+highlight <- c("OLS", "WLSs", "WLSv", "MinTs")
+target <- sapply(highlight, function(len){
+  c(paste0(len, c("", "-subset", "-intuitive", "-lasso")))
+}) |> as.vector()
+target <- c("Base", "BU", target, "EMinT", "Elasso") |> rev()
+
+rmse_all <- NULL
+for (i in test_indices) {
+  for (method in methods){
+    readRDS(paste0("data_new/", data_label, "_", i, "_", method, "_reconsf_rmse_hts_", h, ".rds")) |>
+      assign(method, value = _)
+  }
+  rmse_hfs <- cbind(subset,
+                    intuitive[, grepl("intuitive", colnames(intuitive))],
+                    lasso[, grepl("lasso", colnames(lasso))])
+  colnames(rmse_hfs) <- gsub("_", "-", colnames(rmse_hfs))
+  rmse_hfs <- rmse_hfs[, target]
+  rmse_all <- rbind(rmse_all, rmse_hfs)
+}
+
+saveRDS(rmse_all, file = paste0("paper/results/labour_rmse_mcb.rds"))
+nemenyi(rmse_all, conf.level = 0.95, plottype = "vmcb",
+        sort = FALSE,
+        shadow = FALSE,
+        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:20),
+        Title = "",
+        Xlab = "Mean ranks",
+        Ylab = "")
 
 # RMSE table - the last window
 measure <- "rmse"

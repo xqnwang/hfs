@@ -109,13 +109,13 @@ latex_table <- function(out_all) {
       background = "#e6e3e3"
     ) |>
     add_header_above(header, align = "c") |>
-    footnote(
-      general_title = "",
-      general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.",
-      footnote_as_chunk = TRUE,
-      threeparttable = TRUE,
-      fixed_small_size = FALSE
-    ) |>
+    # footnote(
+    #   general_title = "",
+    #   general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.",
+    #   footnote_as_chunk = TRUE,
+    #   threeparttable = TRUE,
+    #   fixed_small_size = FALSE
+    # ) |>
     print()
 }
 
@@ -136,6 +136,22 @@ extract_element <- function(data, index, method, element) {
     }
   }
   out
+}
+
+#--------------------------------------------------------------------
+# Calculate error
+#--------------------------------------------------------------------
+calc_error <- function(fc, test, h) {
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  err <- cbind(err, Index = subset(test, select = Index))
+  err_h <- err |>
+    as_tibble() |>
+    group_by(Index) |>
+    mutate(Horizon = row_number()) |>
+    filter(Horizon <= h) |>
+    ungroup() |>
+    select(!c("Index", "Horizon"))
+  return(err_h)
 }
 
 #--------------------------------------------------------------------
@@ -301,14 +317,14 @@ latex_sim_nos_table <- function(z_out, n_out, mase_out, label_out) {
     kable_styling(font_size = 11) |>
     kable_paper(full_width = FALSE) |>
     row_spec(3 * (1:length(candidates)), hline_after = TRUE) |>
-    footnote(
-      general_title = "",
-      general = "Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.",
-      escape = TRUE,
-      footnote_as_chunk = TRUE,
-      threeparttable = TRUE,
-      fixed_small_size = FALSE
-    ) |>
+    # footnote(
+    #   general_title = "",
+    #   general = "Note: The last column displays a stacked barplot for each method, based on the total number of selected series from 500 simulation instances. A darker sub-bar indicates a higher count.",
+    #   escape = TRUE,
+    #   footnote_as_chunk = TRUE,
+    #   threeparttable = TRUE,
+    #   fixed_small_size = FALSE
+    # ) |>
     column_spec(NCOL(z_out),
                      image = spec_image(ls_inline_plots, width = 140, height = 30)
     )
@@ -419,12 +435,12 @@ latex_corr_table <- function(out_all) {
       background = "#e6e3e3"
     ) |>
     add_header_above(header, align = "c") |>
-    footnote(
-      general_title = "",
-      general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.",
-      footnote_as_chunk = TRUE,
-      threeparttable = TRUE,
-      fixed_small_size = FALSE
-    ) |>
+    # footnote(
+    #   general_title = "",
+    #   general = "Note: The Base row shows the average RMSE of the base forecasts. Entries below this row indicate the percentage decrease (negative) or increase (positive) in the average RMSE of the reconciled forecasts compared to the base forecasts. The lowest values in each column are highlighted in blue. Proposed methods are shaded in gray, and those outperforming the benchmark method are marked in bold.",
+    #   footnote_as_chunk = TRUE,
+    #   threeparttable = TRUE,
+    #   fixed_small_size = FALSE
+    # ) |>
     print()
 }

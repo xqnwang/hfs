@@ -49,6 +49,19 @@ library(latex2exp)
 source(here::here("R/nemenyi.R")) # MCB test
 source(here::here("R/analysis.R")) # Other functions used for analysis
 options(knitr.kable.NA = '-')
+
+theme_heatmap <- theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  plot.title = element_text(hjust = 0.5),
+  axis.ticks = element_blank(),
+  legend.justification = c(1, 0),
+  legend.position = "inside",
+  legend.position.inside = c(0.5, 0.7),
+  legend.direction = "horizontal")
 ```
 
 ## Introduction {#sec-introduction}
@@ -337,7 +350,7 @@ We also explored the empirical version of group best-subset selection with ridge
 
 ## Monte Carlo simulations {#sec-simulations}
 
-To assess the proposed reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. Both simulations consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. The bottom-level series are first generated and then summed to obtain aggregated series at higher levels.
+To assess the proposed reconciliation methods with time series selection outlined in @sec-methodology, we carry out two simulations with different designs. Both simulations consider a hierarchy comprising two levels of aggregation, as shown in @fig-hts. The bottom-level series are first generated and then summed to obtain the aggregated series at higher levels.
 
 <!-- @sec-sim1 considers a setup where the bottom-level series are generated using a structural time series model, but model misspecification exists for some series within the structure. @sec-sim2 explores the impact of the correlation between series on the performance of reconciled forecasts. -->
 
@@ -358,23 +371,61 @@ $$ where $\bm{\mu}_t$ and $\bm{\gamma}_t$ are trend and seasonal components defi
 \end{array}\right],
 $$ which enables correlations among time series in a hierarchical structure.
 
-We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $\sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$. Initial values for $\bm{\mu}_0$, $\bm{v}_0$, $\bm{\gamma}_0$, $\bm{\gamma}_1$, and $\bm{\gamma}_2$ are generated independently from a multivariate normal distribution with zero mean and identity covariance matrix. For each bottom-level series, we generate $180$ observations, with the last $h = 16$ observations forming the test set. The bottom-level series are then aggregated higher level data. This entire process is repeated $500$ times.
+We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $\sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$. Initial values for $\bm{\mu}_0$, $\bm{v}_0$, $\bm{\gamma}_0$, $\bm{\gamma}_1$, and $\bm{\gamma}_2$ are generated independently from a multivariate normal distribution with zero mean and identity covariance matrix. For each bottom-level series, we generate $180$ observations, with the last $h = 16$ observations forming the test set. The bottom-level series are then aggregated to form higher-level data. This entire process is repeated $500$ times.
 
-We use ETS models to generate base forecasts for the hierarchy using the default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we deliberately undermine in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for specific time series in three scenarios. In each scenario, a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for a single series; i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenarios A--C, respectively.
+We use ETS models to generate base forecasts for each hierarchy using default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we artificially degrade the performance of series A at the middle level by applying a $1.5$ multiplier to its in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts). We also repeated the analysis with model misspecification for series AA at the bottom level and series Total at the top level, respectively. The results for these two scenarios are similar and reported in Appendix.
 
-@tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse summarize the results under different scenarios, each reporting the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as Average).
+<!-- To introduce model misspecification, we deliberately undermine in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts) for specific time series in three scenarios. In each scenario, a 1.5 multiplier is applied to in-sample and out-of-sample forecasts for a single series; i.e., series AA at the bottom level, series A at the middle level, and series Total at the top level, resulting in Scenarios A--C, respectively.
 
-<!-- The BU row uses a "bottom-up" approach, aggregating bottom-level base forecasts to form higher level forecasts. The rows labeled OLS, WLS, WLSv, MinT, and MinTs represent the MinT method using various estimators of $\bm{W}$ (as per @tbl-bench), while the rows OLS-, WLS-, WLSv-, MinT-, and MinTs- denote the three methods proposed in @sec-constrained, using the corresponding $\bm{W}$ estimators. The EMinT row applies the empirical MinT method, while the Elasso row uses the empirical group lasso method proposed in @sec-unconstrained. -->
+@tbl-s1-rmse, @tbl-s2-rmse, and @tbl-s3-rmse summarize the results under different scenarios, each reporting the average root mean squared error (RMSE) for each level as well as the whole structure (denoted as Average). The BU row uses a "bottom-up" approach, aggregating bottom-level base forecasts to form higher level forecasts. The rows labeled OLS, WLS, WLSv, MinT, and MinTs represent the MinT method using various estimators of $\bm{W}$ (as per @tbl-bench), while the rows OLS-, WLS-, WLSv-, MinT-, and MinTs- denote the three methods proposed in @sec-constrained, using the corresponding $\bm{W}$ estimators. The EMinT row applies the empirical MinT method, while the Elasso row uses the empirical group lasso method proposed in @sec-unconstrained. -->
 
+@tbl-sim-rmse and @fig-sim-plots-1
 Notably, in each scenario, the largest improvements occur at the level with model misspecification, though this occasionally results in slight performance declines at other levels.
 
 ```{r}
-#| label: tbl-s1-rmse
+#| label: tbl-sim-rmse
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario A, Setup 1.
+#| tbl-cap: Performance of proposed (gray-shaded) and benchmark methods for simulated data in Setup 1. The Base row shows average RMSE of base forecasts, while entries below show RMSE percentage decrease (negative) or increase (positive) for reconciliation methods. Blue entries highlight the best-performing methods; bold entries indicate proposed methods outperforming bechmarks.
 
-rmse_s1 <- readRDS(here::here("paper/results/sim_rmse_s1.rds"))
-latex_table(rmse_s1)
+sim_rmse <- readRDS(here::here("paper/results/sim_rmse.rds"))
+latex_table(sim_rmse$s2)
+```
+
+```{r}
+#| label: fig-sim-plots
+#| results: hide
+#| fig-width: 6
+#| fig-height: 6
+#| fig-cap: MCB test result and correlation matrix heatmap for simulated data in Setup 1.
+#| fig-subcap: 
+#|   - "MCB test"
+#|   - "Correlation between forecast errors"
+#| layout: [[48, -4, 48]]
+#| layout-valign: bottom
+
+# MCB test
+sim_mcb <- readRDS(here::here("paper/results/sim_rmse_mcb.rds"))
+nemenyi(sim_mcb$s2, conf.level = 0.95, plottype = "vmcb",
+        sort = FALSE,
+        shadow = FALSE,
+        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+        Title = "",
+        Xlab = "Mean ranks",
+        Ylab = "")
+
+# Correlation heatmap
+sim_cormat <- readRDS(here::here("paper/results/sim_cormat.rds"))
+ggplot(data = sim_cormat$s2, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile(color = "white") +
+  geom_text(data = sim_cormat$s2,
+            mapping = aes(Var1, Var2,
+                          label = round(value, digit = 2)),
+            color = "black") +
+  scale_fill_gradient2(low = "white", high = "#452363",
+                       name="Correlation") +
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                               title.position = "top", title.hjust = 0.5)) +
+  theme_heatmap
 ```
 
 Focusing on the results of benchmark reconciliation methods, we find that the BU (bottom-up) method performs the best in Scenarios B and C but ranks as the worst overall in Scenario A. This is not surprising, as bottom-level base forecasts are deteriorated in Scenario A, while higher-level base forecasts are deteriorated in Scenarios B and C. Moreover, WLSv, MinT, and MinTs perform especially well in Setup 1. Their effectiveness stems from their ability to consider in-sample covariance of base forecast errors, allowing for a larger range of adjustments in reconciliation for base forecasts with higher estimated error variance. EMinT also provides accurate reconciled forecasts in our setup, where the in-sample forecasts for specific series are intentionally undermined, a situation that can be detected by the in-sample information based EMinT method. However, OLS and WLSs significantly underperform other benchmark methods in this simulation design.
@@ -382,47 +433,17 @@ Focusing on the results of benchmark reconciliation methods, we find that the BU
 In all three scenarios, our proposed methods consistently produce either improved or comparable reconciled forecasts compared to their respective benchmarks. The improvements are particularly pronounced when using OLS and WLSs estimators of $\bm{W}$ in the benchmark methods, which do not take into account the in-sample covariance of base forecast errors. One advantage of using our proposed forecast reconciliation methods with selection is their ability to reduce the difference introduced by using different estimates of $\bm{W}$, thereby mitigating the risk of estimator selection. In some cases, such as Scenarios B and C, we can align the forecast accuracy achieved using different estimators, and make them approach the best results we can obtain. Dropping the unbiasedness assumption, Elasso performs similarly to EMinT overall while achieving improvements at the top level, which is typically the aspect of greatest concern to practitioners.
 
 ```{r}
-#| label: tbl-s1-selection
+#| label: tbl-sim-selection
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario A, Setup 1.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
-selection_sim <- readRDS(here::here("paper/results/sim_selection.rds"))
-mase_sim <- readRDS(here::here("paper/results/sim_series_mase.rds"))
+sim_selection <- readRDS(here::here("paper/results/sim_selection.rds"))
+sim_mase <- readRDS(here::here("paper/results/sim_series_mase.rds"))
 
-latex_sim_nos_table(selection_sim$out_s1$z, selection_sim$out_s1$n, mase_sim$out_s1, "s1")
+latex_sim_nos_table(sim_selection$s2$z, sim_selection$s2$n, sim_mase$s2, "s2")
 ```
 
 In addition, we report the proportion of time series being selected from our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection. Clearly, our methods select fewer time series, while enhancing forecast accuracy compared to benchmarks. Subset methods, in particular, tend to return fewer time series compared to the Parsimonious and Lasso methods, which aligns with our expectations that the Parsimonious and Lasso methods tend to produce dense estimates. Most importantly, depending on the scenario considered, the time series with model misspecification has been selected less often than others. For example, in Scenario A, series AA is expected to be removed while retaining AB. This allows obtaining series AA via operations such as A$-$AB, Total$-$B$-$AB, or Total$-$AB$-$BA$-$BB. The results in @tbl-s1-selection align with our expectations, showing frequent exclusion of series AA and consistent selection of AB.
-
-```{r}
-#| label: fig-sim-mcb
-#| results: hide
-#| fig-width: 13
-#| fig-height: 4
-#| fig-cap: MCB test results.
-
-scenarios <- c("s1", "s2", "s3")
-par(mfrow=c(1, length(scenarios)),
-    mar=c(4,0,0.1,0.3)
-)
-for (scenario in scenarios) {
-  rmse_hfs <- readRDS(here::here(paste0("paper/results/sim_rmse_mcb_", scenario, ".rds")))
-  if (scenario == "s1"){
-    title <- "Scenario A"
-  } else if (scenario == "s2"){
-    title <- "Scenario B"
-  } else if (scenario == "s3"){
-    title <- "Scenario C"
-  }
-  nemenyi(rmse_hfs, conf.level = 0.95, plottype = "vmcb",
-          sort = FALSE,
-          shadow = FALSE,
-          group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
-          Title = title,
-          Xlab = "Mean ranks",
-          Ylab = "")
-}
-```
 
 ### Setup 2: Exploring the effect of correlation {#sec-sim2}
 
@@ -444,7 +465,6 @@ For each time series at the bottom level, we generate a total of $101$ observati
 #| results: hide
 #| fig-width: 9
 #| fig-height: 6.5
-#| fig-pos: "!b"
 #| fig-cap: An example hierarchical time series and its in-sample residuals in Setup 2.
 
 data <- readRDS(here::here("paper/results/corr_data_neg.rds"))
@@ -523,10 +543,47 @@ For each series, base forecasts are generated from ARMA models. We identify the 
 ```{r}
 #| label: tbl-corr-rmse
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results across various error correlations for simulation in Setup 2.
+#| tbl-cap: Performance of proposed (gray-shaded) and benchmark methods for simulated data in Setup 2. The Base row shows average RMSE of base forecasts, while entries below show RMSE percentage decrease (negative) or increase (positive) for reconciliation methods. Blue entries highlight the best-performing methods; bold entries indicate proposed methods outperforming bechmarks.
 
 rmse_corr <- readRDS(here::here("paper/results/corr_rmse.rds"))
 latex_corr_table(rmse_corr)
+```
+
+```{r}
+#| label: fig-corr-plots
+#| results: hide
+#| fig-width: 6
+#| fig-height: 6
+#| fig-cap: MCB test result and correlation matrix heatmap for simulated data in Setup 2, with the error correlation being -0.8.
+#| fig-subcap: 
+#|   - "MCB test"
+#|   - "Correlation between forecast errors"
+#| layout: [[48, -4, 48]]
+#| layout-valign: bottom
+
+# MCB test
+corr_mcb <- readRDS(here::here("paper/results/corr_rmse_mcb.rds"))
+nemenyi(corr_mcb$p1, conf.level = 0.95, plottype = "vmcb",
+        sort = FALSE,
+        shadow = FALSE,
+        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+        Title = "",
+        Xlab = "Mean ranks",
+        Ylab = "")
+
+# Correlation heatmap
+corr_cormat <- readRDS(here::here("paper/results/corr_cormat.rds"))
+ggplot(data = corr_cormat$p1, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile(color = "white") +
+  geom_text(data = corr_cormat$p1,
+            mapping = aes(Var1, Var2,
+                          label = round(value, digit = 2)),
+            color = "black") +
+  scale_fill_gradient2(low = "white", high = "#452363",
+                       name="Correlation") +
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                               title.position = "top", title.hjust = 0.5)) +
+  theme_heatmap
 ```
 
 @tbl-corr-rmse summarizes the average RMSE of the base forecasts across various error correlations and the percentage relative improvements in RMSE achieved by reconciliation methods relative to the base forecasts. The results show that, for OLS, WLSs, and WLSv estimators, our proposed methods consistently dominate or are equivalent to their respective benchmark methods at all levels. We should highlight the challenge of identifying the "poor" base forecasts in this simulation design, given that the omission of the constant term has minimal impact relative to the data variability. In addition, we observe that the MinT and MinTs methods perform especially well and our methods provide results similar to these benchmark methods. This is attributed to the use of in-sample covariance by MinT and MinTs, which allows for large adjustments in reconciliation for base forecasts with high estimated error variance. Elasso forecasts are slightly worse than EMinT, possibly due to the difficulty of identifying underperforming base forecasts in this simulation setup. We have also considered alternative error correlation values, $\rho = -0.6, -0.2, 0.2, 0.4$, for this simulation setting, but to save space, we do not present all results. The omitted results follow a similar pattern and are available upon request.
@@ -536,14 +593,14 @@ In @tbl-corr-selection-neg and @tbl-corr-selection-pos, we present the proportio
 ```{r}
 #| label: tbl-corr-selection-neg
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being -0.8.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being -0.8. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
-selection_corr_neg <- readRDS(here::here("paper/results/corr_selection_neg.rds"))
-mase_corr_neg <- readRDS(here::here("paper/results/corr_series_mase_neg.rds"))
-latex_sim_nos_table(selection_corr_neg$out_s0$z,
-                    selection_corr_neg$out_s0$n,
-                    mase_corr_neg$out_s0,
-                    "corr_neg")
+corr_selection <- readRDS(here::here("paper/results/corr_selection.rds"))
+corr_mase <- readRDS(here::here("paper/results/corr_series_mase.rds"))
+latex_sim_nos_table(corr_selection$p1$out_s0$z,
+                    corr_selection$p1$out_s0$n,
+                    corr_mase$p1$out_s0,
+                    "corr_p1")
 ```
 
 ## Applications {#sec-applications}
@@ -773,66 +830,239 @@ Rob J Hyndman was supported by the Australian Research Council Industrial Transf
 \appendix
 \pagenumbering{arabic}% resets `page` counter to 1
 \setcounter{section}{0}
-\renewcommand{\thesection}{\Alph{section}}
-\renewcommand{\thefigure}{A\arabic{figure}}
-\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\renewcommand{\thetable}{\Alph{subsection}.\arabic{table}}
+\renewcommand{\thefigure}{\Alph{subsection}.\arabic{figure}}
+\numberwithin{figure}{subsection}
+\numberwithin{table}{subsection}
 \setcounter{figure}{0}
 \setcounter{table}{0}
 ```
+
 ## Appendix {.unnumbered}
 
-The section provides additional results obtained in @sec-simulations and @sec-applications.
+### Results from simulation Setup 1
+
+The section provides additional results obtained in @sec-sim1.
 
 ```{r}
-#| label: tbl-s2-rmse
+#| label: tbl-sim-rmse-total
 #| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario B, Setup 1.
+#| tbl-pos: "!h"
+#| tbl-cap: Performance of proposed (gray-shaded) and benchmark methods for simulated data in Setup 1, with model misspecification in series Total. The Base row shows average RMSE of base forecasts, while entries below show RMSE percentage decrease (negative) or increase (positive) for reconciliation methods. Blue entries highlight the best-performing methods; bold entries indicate proposed methods outperforming bechmarks.
 
-rmse_s2 <- readRDS(here::here("paper/results/sim_rmse_s2.rds"))
-latex_table(rmse_s2)
+latex_table(sim_rmse$s3)
 ```
 
 ```{r}
-#| label: tbl-s3-rmse
-#| results: asis
-#| tbl-cap: Out-of-sample forecast results for the simulated data in Scenario C, Setup 1.
+#| label: fig-sim-plots-total
+#| results: hide
+#| fig-pos: "!h"
+#| fig-width: 6
+#| fig-height: 6
+#| fig-cap: MCB test result and correlation matrix heatmap for simulated data in Setup 1, with model misspecification in series Total.
+#| fig-subcap: 
+#|   - "MCB test"
+#|   - "Correlation between forecast errors"
+#| layout: [[48, -4, 48]]
+#| layout-valign: bottom
 
-rmse_s3 <- readRDS(here::here("paper/results/sim_rmse_s3.rds"))
-latex_table(rmse_s3)
+# MCB test
+nemenyi(sim_mcb$s3, conf.level = 0.95, plottype = "vmcb",
+        sort = FALSE,
+        shadow = FALSE,
+        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+        Title = "",
+        Xlab = "Mean ranks",
+        Ylab = "")
+
+# Correlation heatmap
+ggplot(data = sim_cormat$s3, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile(color = "white") +
+  geom_text(data = sim_cormat$s3,
+            mapping = aes(Var1, Var2,
+                          label = round(value, digit = 2)),
+            color = "black") +
+  scale_fill_gradient2(low = "white", high = "#452363",
+                       name="Correlation") +
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                               title.position = "top", title.hjust = 0.5)) +
+  theme_heatmap
 ```
 
 ```{r}
-#| label: tbl-s2-selection
+#| label: tbl-sim-selection-total
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario B, Setup 1.
+#| tbl-pos: "!h"
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1, with model misspecification in series Total. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
-latex_sim_nos_table(selection_sim$out_s2$z, selection_sim$out_s2$n, mase_sim$out_s2, "s2")
+latex_sim_nos_table(sim_selection$s3$z, sim_selection$s3$n, sim_mase$s3, "s3")
 ```
 
 ```{r}
-#| label: tbl-s3-selection
+#| label: tbl-sim-rmse-AA
 #| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Scenario C, Setup 1.
+#| tbl-pos: "!h"
+#| tbl-cap: Performance of proposed (gray-shaded) and benchmark methods for simulated data in Setup 1, with model misspecification in series AA. The Base row shows average RMSE of base forecasts, while entries below show RMSE percentage decrease (negative) or increase (positive) for reconciliation methods. Blue entries highlight the best-performing methods; bold entries indicate proposed methods outperforming bechmarks.
 
-latex_sim_nos_table(selection_sim$out_s3$z, selection_sim$out_s3$n, mase_sim$out_s3, "s3")
+latex_table(sim_rmse$s1)
 ```
 
 ```{r}
-#| label: tbl-corr-selection-pos
-#| results: asis
-#| tbl-cap: Proportion of time series being selected after using the proposed reconciliation methods with selection in Setup 2, with the error correlation being 0.8.
+#| label: fig-sim-plots-AA
+#| results: hide
+#| fig-pos: "!h"
+#| fig-width: 6
+#| fig-height: 6
+#| fig-cap: MCB test result and correlation matrix heatmap for simulated data in Setup 1, with model misspecification in series AA.
+#| fig-subcap: 
+#|   - "MCB test"
+#|   - "Correlation between forecast errors"
+#| layout: [[48, -4, 48]]
+#| layout-valign: bottom
 
-selection_corr_pos <- readRDS(here::here("paper/results/corr_selection_pos.rds"))
-mase_corr_pos <- readRDS(here::here("paper/results/corr_series_mase_pos.rds"))
-latex_sim_nos_table(selection_corr_pos$out_s0$z,
-                    selection_corr_pos$out_s0$n,
-                    mase_corr_pos$out_s0,
-                    "corr_pos")
+# MCB test
+nemenyi(sim_mcb$s1, conf.level = 0.95, plottype = "vmcb",
+        sort = FALSE,
+        shadow = FALSE,
+        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+        Title = "",
+        Xlab = "Mean ranks",
+        Ylab = "")
+
+# Correlation heatmap
+ggplot(data = sim_cormat$s1, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile(color = "white") +
+  geom_text(data = sim_cormat$s1,
+            mapping = aes(Var1, Var2,
+                          label = round(value, digit = 2)),
+            color = "black") +
+  scale_fill_gradient2(low = "white", high = "#452363",
+                       name="Correlation") +
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                               title.position = "top", title.hjust = 0.5)) +
+  theme_heatmap
 ```
+
+```{r}
+#| label: tbl-sim-selection-AA
+#| results: asis
+#| tbl-pos: "!h"
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1, with model misspecification in series AA. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+
+latex_sim_nos_table(sim_selection$s1$z, sim_selection$s1$n, sim_mase$s1, "s1")
+```
+
+\clearpage
+
+### Results from simulation Setup 2
+
+The section provides additional results obtained in @sec-sim2.
+
+```{r}
+#| label: tbl-corr-selection-p3
+#| results: asis
+#| tbl-pos: "!h"
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being -0.4. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+
+latex_sim_nos_table(corr_selection$p3$out_s0$z,
+                    corr_selection$p3$out_s0$n,
+                    corr_mase$p3$out_s0,
+                    "corr_p3")
+```
+
+
+```{r}
+#| label: tbl-corr-selection-p5
+#| results: asis
+#| tbl-pos: "!h"
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+
+latex_sim_nos_table(corr_selection$p5$out_s0$z,
+                    corr_selection$p5$out_s0$n,
+                    corr_mase$p5$out_s0,
+                    "corr_p5")
+```
+
+
+```{r}
+#| label: tbl-corr-selection-p7
+#| results: asis
+#| tbl-pos: "!h"
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0.4. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+
+latex_sim_nos_table(corr_selection$p7$out_s0$z,
+                    corr_selection$p7$out_s0$n,
+                    corr_mase$p7$out_s0,
+                    "corr_p7")
+```
+
+
+```{r}
+#| label: tbl-corr-selection-p9
+#| results: asis
+#| tbl-pos: "!h"
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0.8. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+
+latex_sim_nos_table(corr_selection$p9$out_s0$z,
+                    corr_selection$p9$out_s0$n,
+                    corr_mase$p9$out_s0,
+                    "corr_p9")
+```
+
+```{r}
+#| label: fig-corr-plots-others
+#| results: hide
+#| fig-width: 15
+#| fig-height: 4
+#| fig-cap: MCB test result and correlation matrix heatmap for simulated data in Setup 2, with the error correlation being -0.4, 0, 0.4, 0.8, respectively.
+#| fig-subcap: 
+#|   - "MCB test"
+#|   - "Correlation between forecast errors"
+#| layout-nrow: 2
+
+# MCB test
+par(mfrow=c(1, 4), mar=c(4,0,0.1,0.3))
+ind <- c(3, 5, 7, 9); p <- c(-0.4, 0, 0.4, 0.8)
+for (i in 1:4) {
+  nemenyi(corr_mcb[[paste0("p", ind[i])]], conf.level = 0.95, plottype = "vmcb",
+        sort = FALSE,
+        shadow = FALSE,
+        group = list(1:2, 3:6, 7:10, 11:14, 15:18, 19:22, 23:24),
+        Title = TeX(sprintf(r'($\rho = %f$)', p[i])),
+        Xlab = "Mean ranks",
+        Ylab = "")
+}
+par(mfrow=c(1, 1))
+
+# Correlation heatmap
+heatmap_list <- list() 
+for (i in 1:4) {
+  heatmap_list[[i]] <- ggplot(data = corr_cormat[[paste0("p", ind[i])]], aes(x = Var1, y = Var2, fill = value)) +
+    geom_tile(color = "white") +
+    geom_text(data = corr_cormat[[paste0("p", ind[i])]],
+              mapping = aes(Var1, Var2,
+                            label = round(value, digit = 2)),
+              color = "black") +
+    ggtitle(TeX(sprintf(r'($\rho = %f$)', p[i]))) +
+    scale_fill_gradient2(low = "white", high = "#452363",
+                         name="Correlation") +
+    guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                                 title.position = "top", title.hjust = 0.5)) +
+    theme_heatmap
+}
+library(gridExtra)
+grid.arrange(grobs = heatmap_list, ncol = 4)
+```
+
+\clearpage
+
+### Results from Australian labour force data
 
 ```{r}
 #| label: tbl-labour-rmse
 #| results: asis
+#| tbl-pos: "!h"
 #| tbl-cap: Out-of-sample forecast results on a single test set (from August 2022 to July 2023) for Australian labour force data.
 
 rmse_labour <- readRDS(here::here("paper/results/labour_1_rmse.rds"))
@@ -842,6 +1072,7 @@ latex_table(rmse_labour)
 ```{r}
 #| label: tbl-labour-info
 #| results: asis
+#| tbl-pos: "!h"
 #| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the labour application, considering a single test set (from August 2022 to July 2023). The None row shows the original number of series in the structure.
 
 labour_info <- readRDS(here::here("paper/results/labour_info.rds"))
@@ -859,9 +1090,14 @@ labour_info |>
                    align = "c")
 ```
 
+\clearpage
+
+### Results from Australian domestic tourism data
+
 ```{r}
 #| label: tbl-tourism-rmse
 #| results: asis
+#| tbl-pos: "!h"
 #| tbl-cap: Out-of-sample forecast results on a single test set (from January 2017 to December 2017) for Australian domestic tourism data.
 
 rmse_tourism <- readRDS(here::here("paper/results/tourism_1_rmse.rds"))
@@ -871,6 +1107,7 @@ latex_table(rmse_tourism)
 ```{r}
 #| label: tbl-tourism-info
 #| results: asis
+#| tbl-pos: "!h"
 #| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the tourism application, considering a single test set (from  January 2017 to December 2017). The None row shows the original number of series in the structure.
 
 tourism_info <- readRDS(here::here("paper/results/tourism_info.rds"))
