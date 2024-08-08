@@ -542,5 +542,3 @@ labour_selected_mase[is.na(labour_selected_mase)] <- 0
 colnames(labour_selected_mase) <- c("Top", "Duration", "STT", "Duration_STT", "Total")
 rownames(labour_selected_mase) <- rownames(labour_select_index)
 saveRDS(labour_selected_mase, file = "paper/results/labour_selected_mase.rds")
-
-

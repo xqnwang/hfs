@@ -51,17 +51,19 @@ source(here::here("R/analysis.R")) # Other functions used for analysis
 options(knitr.kable.NA = '-')
 
 theme_heatmap <- theme(
+  axis.text.x = element_text(face = "bold"),
+  axis.text.y = element_text(face = "bold"),
+  axis.ticks = element_blank(),
   axis.title.x = element_blank(),
   axis.title.y = element_blank(),
-  panel.grid.major = element_blank(),
   panel.border = element_blank(),
   panel.background = element_blank(),
+  panel.grid.major = element_blank(),
   plot.title = element_text(hjust = 0.5),
-  axis.ticks = element_blank(),
+  legend.direction = "horizontal",
   legend.justification = c(1, 0),
   legend.position = "inside",
-  legend.position.inside = c(0.5, 0.7),
-  legend.direction = "horizontal")
+  legend.position.inside = c(0.5, 0.7))
 ```
 
 ## Introduction {#sec-introduction}
@@ -782,16 +784,12 @@ Additionally, @tbl-tourism-info summarizes the number of series selected using p
 ## Discussion {#sec-discussion}
 
 \todo[inline]{
-
-- Zhang et al. (2023)
-
 - list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
 
 - emphasize the contributions of the current paper. (Grouped hierarchy. The selected series in our proposed method may come from different levels of the hierarchy.
 It preserves the unbiasedness of forecasts, is able to restore the hierarchy.) Discuss the practical (OR) significance of the current paper. Unused series. Practical scenario in demand forecasting where intermittent series predominate at the most disaggregated level and their forecasts are worse.
 
 - discuss the practical repercussions of this work as well as the potential limitations it faces. Probabilistic forecasting.
-
 }
 
 While our proposed methods opt to leave "poor" base forecasts unused in forming reconciled forecasts, the approach by @Zhang2023-op is primarily focused on keeping "good" base forecasts unchanged after reconciliation. Both methods frame the problem as a quadratic programming problem to enhance reconciled forecast performance by somehow managing the impact of some time series during the process, ultimately providing reconciled forecasts for all series in the hierarchy. However, our methods differ from the approach by @Zhang2023-op in four main ways. First, our proposed methods alter the poor-performing base forecasts, ensuring these do not influence other nodes, whereas the approach by @Zhang2023-op keeps the forecasts of certain nodes immutable, which then impact others. Second, our methods automate the selection of series unused during reconciliation, while the latter method requires an additional, yet-to-be-determined procedure to identify the immutable set of series. Third, we use only base forecasts of the selected series for reconciliation, while @Zhang2023-op use base forecasts of all series, even though some remain unchanged after reconciliation. Finally, beyond preserving the unbiasedness of forecasts, we also relax the unbiasedness assumption and propose an unconstrained "in-sample" reconciliation method.
