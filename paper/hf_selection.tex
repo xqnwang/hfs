@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{August 8, 2024}
+\date{August 16, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -1329,7 +1329,7 @@ aspect of greatest concern to practitioners.
 
 \caption{\label{tbl-sim-selection}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
-Setup 1. The numbers in parentheses show MASE values for each series.
+Setup 1. The numbers in parentheses show RMSSE values for each series.
 The last column displays a stacked barplot of the total selected series
 from 500 hierarchies, with darker sub-bars indicating higher counts.}
 
@@ -1340,7 +1340,7 @@ from 500 hierarchies, with darker sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (1.20) & (2.75) & (1.26) & (1.28) & (1.32) & (1.32) & (1.27) & \\
+(RMSSE) & (1.48) & (3.25) & (1.55) & (1.57) & (1.62) & (1.62) & (1.57) & \\
 \midrule
 OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
 OLS-parsim & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-parsim.png}\\
@@ -1583,9 +1583,9 @@ the structure is negative.
 \caption{\label{tbl-corr-selection-neg}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
 Setup 2, with the error correlation being -0.8. The numbers in
-parentheses show MASE values for each series. The last column displays a
-stacked barplot of the total selected series from 500 hierarchies, with
-darker sub-bars indicating higher counts.}
+parentheses show RMSSE values for each series. The last column displays
+a stacked barplot of the total selected series from 500 hierarchies,
+with darker sub-bars indicating higher counts.}
 
 \centering{
 
@@ -1594,7 +1594,7 @@ darker sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.84) & (0.87) & (0.62) & (0.68) & (0.81) & (0.91) & (0.77) & \\
+(RMSSE) & (0.84) & (0.87) & (0.62) & (0.68) & (0.81) & (0.91) & (0.77) & \\
 \midrule
 OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-subset.png}\\
 OLS-parsim & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-parsim.png}\\
@@ -2234,9 +2234,9 @@ misspecification in series Total.}
 \caption{\label{tbl-sim-selection-total}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
 Setup 1, with model misspecification in series Total. The numbers in
-parentheses show MASE values for each series. The last column displays a
-stacked barplot of the total selected series from 500 hierarchies, with
-darker sub-bars indicating higher counts.}
+parentheses show RMSSE values for each series. The last column displays
+a stacked barplot of the total selected series from 500 hierarchies,
+with darker sub-bars indicating higher counts.}
 
 \centering{
 
@@ -2245,7 +2245,7 @@ darker sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (2.60) & (1.24) & (1.26) & (1.28) & (1.32) & (1.32) & (1.27) & \\
+(RMSSE) & (3.08) & (1.52) & (1.55) & (1.57) & (1.62) & (1.62) & (1.57) & \\
 \midrule
 OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
 OLS-parsim & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-parsim.png}\\
@@ -2375,9 +2375,9 @@ series AA.}
 \caption{\label{tbl-sim-selection-AA}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
 Setup 1, with model misspecification in series AA. The numbers in
-parentheses show MASE values for each series. The last column displays a
-stacked barplot of the total selected series from 500 hierarchies, with
-darker sub-bars indicating higher counts.}
+parentheses show RMSSE values for each series. The last column displays
+a stacked barplot of the total selected series from 500 hierarchies,
+with darker sub-bars indicating higher counts.}
 
 \centering{
 
@@ -2386,7 +2386,7 @@ darker sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (1.20) & (1.24) & (1.26) & (2.92) & (1.32) & (1.32) & (1.27) & \\
+(RMSSE) & (1.48) & (1.52) & (1.55) & (3.45) & (1.62) & (1.62) & (1.57) & \\
 \midrule
 OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
 OLS-parsim & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-parsim.png}\\
@@ -2430,9 +2430,9 @@ Section~\ref{sec-sim2}.
 \caption{\label{tbl-corr-selection-p3}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
 Setup 2, with the error correlation being -0.4. The numbers in
-parentheses show MASE values for each series. The last column displays a
-stacked barplot of the total selected series from 500 hierarchies, with
-darker sub-bars indicating higher counts.}
+parentheses show RMSSE values for each series. The last column displays
+a stacked barplot of the total selected series from 500 hierarchies,
+with darker sub-bars indicating higher counts.}
 
 \centering{
 
@@ -2441,7 +2441,7 @@ darker sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.88) & (0.84) & (0.74) & (0.77) & (0.81) & (0.87) & (0.79) & \\
+(RMSSE) & (0.88) & (0.84) & (0.74) & (0.77) & (0.81) & (0.87) & (0.79) & \\
 \midrule
 OLS-subset & 0.35 & 0.38 & 0.96 & 0.97 & 0.99 & 0.73 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-subset.png}\\
 OLS-parsim & 0.59 & 0.62 & 0.93 & 0.92 & 1.00 & 0.61 & 0.96 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-parsim.png}\\
@@ -2477,7 +2477,7 @@ Elasso & 0.93 & 0.73 & 0.98 & 1.00 & 0.99 & 1.00 & 1.00 & \includegraphics[width
 \caption{\label{tbl-corr-selection-p5}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
 Setup 2, with the error correlation being 0. The numbers in parentheses
-show MASE values for each series. The last column displays a stacked
+show RMSSE values for each series. The last column displays a stacked
 barplot of the total selected series from 500 hierarchies, with darker
 sub-bars indicating higher counts.}
 
@@ -2488,7 +2488,7 @@ sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.90) & (0.85) & (0.76) & (0.86) & (0.83) & (0.74) & (0.80) & \\
+(RMSSE) & (0.90) & (0.85) & (0.76) & (0.86) & (0.83) & (0.74) & (0.80) & \\
 \midrule
 OLS-subset & 0.37 & 0.49 & 0.95 & 0.94 & 0.99 & 0.73 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-subset.png}\\
 OLS-parsim & 0.55 & 0.74 & 0.92 & 0.88 & 0.98 & 0.67 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-parsim.png}\\
@@ -2524,9 +2524,9 @@ Elasso & 0.92 & 0.80 & 0.98 & 1.00 & 0.97 & 1.00 & 1.00 & \includegraphics[width
 \caption{\label{tbl-corr-selection-p7}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
 Setup 2, with the error correlation being 0.4. The numbers in
-parentheses show MASE values for each series. The last column displays a
-stacked barplot of the total selected series from 500 hierarchies, with
-darker sub-bars indicating higher counts.}
+parentheses show RMSSE values for each series. The last column displays
+a stacked barplot of the total selected series from 500 hierarchies,
+with darker sub-bars indicating higher counts.}
 
 \centering{
 
@@ -2535,7 +2535,7 @@ darker sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.99) & (0.87) & (0.78) & (0.83) & (0.77) & (0.81) & (0.81) & \\
+(RMSSE) & (0.99) & (0.87) & (0.78) & (0.83) & (0.77) & (0.81) & (0.81) & \\
 \midrule
 OLS-subset & 0.37 & 0.53 & 0.98 & 0.92 & 0.98 & 0.81 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-subset.png}\\
 OLS-parsim & 0.58 & 0.78 & 0.96 & 0.88 & 0.97 & 0.78 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-parsim.png}\\
@@ -2571,9 +2571,9 @@ Elasso & 0.89 & 0.76 & 0.99 & 0.99 & 0.91 & 1.00 & 0.99 & \includegraphics[width
 \caption{\label{tbl-corr-selection-p9}Proportion of time series being
 selected using proposed reconciliation methods for simulated data in
 Setup 2, with the error correlation being 0.8. The numbers in
-parentheses show MASE values for each series. The last column displays a
-stacked barplot of the total selected series from 500 hierarchies, with
-darker sub-bars indicating higher counts.}
+parentheses show RMSSE values for each series. The last column displays
+a stacked barplot of the total selected series from 500 hierarchies,
+with darker sub-bars indicating higher counts.}
 
 \centering{
 
@@ -2582,7 +2582,7 @@ darker sub-bars indicating higher counts.}
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
-(MASE) & (0.89) & (0.85) & (0.76) & (0.78) & (0.72) & (0.77) & (0.75) & \\
+(RMSSE) & (0.89) & (0.85) & (0.76) & (0.78) & (0.72) & (0.77) & (0.75) & \\
 \midrule
 OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-subset.png}\\
 OLS-parsim & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-parsim.png}\\
@@ -2716,12 +2716,12 @@ the structure.}
 \cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
   & Top & Duration & STT & Duration x STT & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
 \midrule
-None & 1 (0.33) & 6 (0.96) & 8 (0.48) & 48 (0.74) & 63 (0.72) & - & - & -\\
-OLS-subset & 0 (0.00) & 5 (0.90) & 1 (0.39) & 48 (0.74) & 54 (0.75) & - & 4.16 & 1\\
-WLSs-subset & 0 (0.00) & 5 (0.90) & 1 (0.57) & 46 (0.75) & 52 (0.76) & - & 0.38 & 0.1\\
-WLSv-subset & 1 (0.33) & 5 (0.92) & 7 (0.44) & 48 (0.74) & 61 (0.71) & - & 0.51 & 1\\
-MinTs-subset & 0 (0.00) & 1 (0.63) & 1 (0.39) & 47 (0.74) & 49 (0.73) & - & 0.03 & 0.01\\
-Elasso & 1 (0.33) & 5 (1.08) & 2 (0.52) & 3 (0.77) & 11 (0.83) & 213.59 & - & -\\
+None & 1 (0.39) & 6 (1.07) & 8 (0.57) & 48 (0.90) & 63 & - & - & -\\
+OLS-subset & 0 (0.00) & 5 (1.01) & 1 (0.42) & 48 (0.90) & 54 & - & 4.16 & 1\\
+WLSs-subset & 0 (0.00) & 5 (1.01) & 1 (0.70) & 46 (0.90) & 52 & - & 0.38 & 0.1\\
+WLSv-subset & 1 (0.39) & 5 (1.03) & 7 (0.54) & 48 (0.90) & 61 & - & 0.51 & 1\\
+MinTs-subset & 0 (0.00) & 1 (0.75) & 1 (0.42) & 47 (0.90) & 49 & - & 0.03 & 0.01\\
+Elasso & 1 (0.39) & 5 (1.20) & 2 (0.57) & 3 (0.88) & 11 & 213.59 & - & -\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -2800,12 +2800,12 @@ in the structure.}
 \cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
   & Top & State & Zone & Region & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
 \midrule
-None & 1 (0.90) & 7 (0.87) & 27 (0.90) & 76 (0.88) & 111 (0.89) & - & - & -\\
-OLS-subset & 1 (0.90) & 2 (0.66) & 13 (0.85) & 76 (0.88) & 92 (0.87) & - & 27.98 & 10\\
-WLSs-subset & 1 (0.90) & 1 (0.49) & 15 (0.85) & 76 (0.88) & 93 (0.87) & - & 18.73 & 10\\
-WLSv-subset & 1 (0.90) & 7 (0.87) & 27 (0.90) & 76 (0.88) & 111 (0.89) & - & 0.03 & 0.01\\
-MinTs-subset & 1 (0.90) & 7 (0.87) & 27 (0.90) & 76 (0.88) & 111 (0.89) & - & 0.05 & 0.01\\
-Elasso & 1 (0.90) & 4 (0.82) & 0 (0.00) & 8 (0.68) & 13 (0.74) & 71759.21 & - & -\\
+None & 1 (1.19) & 7 (1.09) & 27 (1.13) & 76 (1.17) & 111 & - & - & -\\
+OLS-subset & 1 (1.19) & 2 (0.77) & 13 (1.09) & 76 (1.17) & 92 & - & 27.98 & 10\\
+WLSs-subset & 1 (1.19) & 1 (0.62) & 15 (1.08) & 76 (1.17) & 93 & - & 18.73 & 10\\
+WLSv-subset & 1 (1.19) & 7 (1.09) & 27 (1.13) & 76 (1.17) & 111 & - & 0.03 & 0.01\\
+MinTs-subset & 1 (1.19) & 7 (1.09) & 27 (1.13) & 76 (1.17) & 111 & - & 0.05 & 0.01\\
+Elasso & 1 (1.19) & 4 (1.04) & 0 (0.00) & 8 (0.86) & 13 & 71759.21 & - & -\\
 \bottomrule
 \end{tabular}
 \endgroup{}

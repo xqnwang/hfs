@@ -264,6 +264,28 @@ calc_mase <- function(fc, train, test, freq, h) {
 }
 
 #--------------------------------------------------------------------
+# Calculate RMSSE
+#--------------------------------------------------------------------
+calc_rmsse <- function(fc, train, test, freq, h) {
+  x <- subset(train, select = -Index)
+  err <- subset(test, select = -Index) - subset(fc, select = -Index)
+  scaling <- apply(x, 2, function(s) mean(abs(diff(as.vector(s), freq))))
+  q <- cbind(t(t(err) / scaling), Index = subset(test, select = Index))
+  
+  rmsse <- q |>
+    as_tibble() |>
+    group_by(Index) |>
+    mutate(Horizon = row_number()) |>
+    filter(Horizon <= h) |>
+    summarise_at(1:NCOL(q), function(x) sqrt(mean(x^2))) |>
+    ungroup() |>
+    select(!c("Index", "Horizon")) |>
+    summarise_all(mean)
+  
+  return(rmsse)
+}
+
+#--------------------------------------------------------------------
 # Combine z outputs from results of different methods
 #--------------------------------------------------------------------
 combine_z <- function(data_label, methods, scenarios, series_name) {
@@ -308,7 +330,7 @@ combine_z <- function(data_label, methods, scenarios, series_name) {
 #--------------------------------------------------------------------
 # Output table latex for number of time series retained after subset selection for the simulation data
 #--------------------------------------------------------------------
-latex_sim_nos_table <- function(z_out, n_out, mase_out, label_out) {
+latex_sim_nos_table <- function(z_out, n_out, rmsse_out, label_out) {
   candidates <- c("OLS", "WLSs", "WLSv", "MinT", "MinTs")
   target <- sapply(candidates, function(len) {
     c(paste0(len, "-", c("subset", "parsim", "lasso")))
@@ -317,7 +339,7 @@ latex_sim_nos_table <- function(z_out, n_out, mase_out, label_out) {
   z_out <- z_out[match(target, row.names(z_out)), ] / 500
   z_out <- data.frame(row.names(z_out), z_out, Summary = "")
   header <- c("", colnames(z_out)[-1])
-  colnames(z_out) <- c("(MASE)", paste0("(", format(round(as.numeric(mase_out), digits = 2), 2), ")"), "")
+  colnames(z_out) <- c("(RMSSE)", paste0("(", format(round(as.numeric(rmsse_out), digits = 2), 2), ")"), "")
   row.names(z_out) <- NULL
   n_img <- split(n_out$Total, n_out$Method)
   n_img <- n_img[match(target, names(n_img))]

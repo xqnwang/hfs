@@ -437,12 +437,12 @@ In all three scenarios, our proposed methods consistently produce either improve
 ```{r}
 #| label: tbl-sim-selection
 #| results: asis
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 sim_selection <- readRDS(here::here("paper/results/sim_selection.rds"))
-sim_mase <- readRDS(here::here("paper/results/sim_series_mase.rds"))
+sim_rmsse <- readRDS(here::here("paper/results/sim_series_rmsse.rds"))
 
-latex_sim_nos_table(sim_selection$s2$z, sim_selection$s2$n, sim_mase$s2, "s2")
+latex_sim_nos_table(sim_selection$s2$z, sim_selection$s2$n, sim_rmsse$s2, "s2")
 ```
 
 In addition, we report the proportion of time series being selected from our proposed methods in 500 simulation instances, as shown in @tbl-s1-selection, @tbl-s2-selection, and @tbl-s3-selection. Clearly, our methods select fewer time series, while enhancing forecast accuracy compared to benchmarks. Subset methods, in particular, tend to return fewer time series compared to the Parsimonious and Lasso methods, which aligns with our expectations that the Parsimonious and Lasso methods tend to produce dense estimates. Most importantly, depending on the scenario considered, the time series with model misspecification has been selected less often than others. For example, in Scenario A, series AA is expected to be removed while retaining AB. This allows obtaining series AA via operations such as A$-$AB, Total$-$B$-$AB, or Total$-$AB$-$BA$-$BB. The results in @tbl-s1-selection align with our expectations, showing frequent exclusion of series AA and consistent selection of AB.
@@ -595,13 +595,13 @@ In @tbl-corr-selection-neg and @tbl-corr-selection-pos, we present the proportio
 ```{r}
 #| label: tbl-corr-selection-neg
 #| results: asis
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being -0.8. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being -0.8. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 corr_selection <- readRDS(here::here("paper/results/corr_selection.rds"))
-corr_mase <- readRDS(here::here("paper/results/corr_series_mase.rds"))
+corr_rmsse <- readRDS(here::here("paper/results/corr_series_rmsse.rds"))
 latex_sim_nos_table(corr_selection$p1$out_s0$z,
                     corr_selection$p1$out_s0$n,
-                    corr_mase$p1$out_s0,
+                    corr_rmsse$p1$out_s0,
                     "corr_p1")
 ```
 
@@ -900,9 +900,9 @@ ggplot(data = sim_cormat$s3, aes(x = Var1, y = Var2, fill = value)) +
 #| label: tbl-sim-selection-total
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1, with model misspecification in series Total. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1, with model misspecification in series Total. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
-latex_sim_nos_table(sim_selection$s3$z, sim_selection$s3$n, sim_mase$s3, "s3")
+latex_sim_nos_table(sim_selection$s3$z, sim_selection$s3$n, sim_rmsse$s3, "s3")
 ```
 
 ```{r}
@@ -954,9 +954,9 @@ ggplot(data = sim_cormat$s1, aes(x = Var1, y = Var2, fill = value)) +
 #| label: tbl-sim-selection-AA
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1, with model misspecification in series AA. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 1, with model misspecification in series AA. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
-latex_sim_nos_table(sim_selection$s1$z, sim_selection$s1$n, sim_mase$s1, "s1")
+latex_sim_nos_table(sim_selection$s1$z, sim_selection$s1$n, sim_rmsse$s1, "s1")
 ```
 
 \clearpage
@@ -969,11 +969,11 @@ The section provides additional results obtained in @sec-sim2.
 #| label: tbl-corr-selection-p3
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being -0.4. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being -0.4. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p3$out_s0$z,
                     corr_selection$p3$out_s0$n,
-                    corr_mase$p3$out_s0,
+                    corr_rmsse$p3$out_s0,
                     "corr_p3")
 ```
 
@@ -982,11 +982,11 @@ latex_sim_nos_table(corr_selection$p3$out_s0$z,
 #| label: tbl-corr-selection-p5
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p5$out_s0$z,
                     corr_selection$p5$out_s0$n,
-                    corr_mase$p5$out_s0,
+                    corr_rmsse$p5$out_s0,
                     "corr_p5")
 ```
 
@@ -995,11 +995,11 @@ latex_sim_nos_table(corr_selection$p5$out_s0$z,
 #| label: tbl-corr-selection-p7
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0.4. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0.4. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p7$out_s0$z,
                     corr_selection$p7$out_s0$n,
-                    corr_mase$p7$out_s0,
+                    corr_rmsse$p7$out_s0,
                     "corr_p7")
 ```
 
@@ -1008,11 +1008,11 @@ latex_sim_nos_table(corr_selection$p7$out_s0$z,
 #| label: tbl-corr-selection-p9
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0.8. The numbers in parentheses show MASE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulated data in Setup 2, with the error correlation being 0.8. The numbers in parentheses show RMSSE values for each series. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p9$out_s0$z,
                     corr_selection$p9$out_s0$n,
-                    corr_mase$p9$out_s0,
+                    corr_rmsse$p9$out_s0,
                     "corr_p9")
 ```
 
@@ -1086,14 +1086,14 @@ latex_table_h(rmse_labour)
 #| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the labour application, considering a single test set (from August 2022 to July 2023). The None row shows the original number of series in the structure.
 
 labour_info <- readRDS(here::here("paper/results/labour_info.rds"))
-labour_mase <- readRDS(here::here( "paper/results/labour_selected_mase.rds")) |>
+labour_rmsse <- readRDS(here::here( "paper/results/labour_selected_rmsse.rds")) |>
   round(2) |> format(2)
-labour_mase <- cbind(labour_mase, matrix("", 6, 3))
-lb <- cbind(matrix("(", 6, 5), matrix("", 6, 3))
-rb <- cbind(matrix(")", 6, 5), matrix("", 6, 3))
+labour_rmsse <- cbind(labour_rmsse, matrix("", 6, 4))
+lb <- cbind(matrix("(", 6, 4), matrix("", 6, 4))
+rb <- cbind(matrix(")", 6, 4), matrix("", 6, 4))
 
 labour_tbl <- paste_matrices(labour_info, lb, sep = " ") |>
-  paste_matrices(labour_mase, sep = "") |>
+  paste_matrices(labour_rmsse, sep = "") |>
   paste_matrices(rb, sep = "")
 labour_tbl <- sub("NA", "-", labour_tbl)
 colnames(labour_tbl) <- colnames(labour_info)
@@ -1135,14 +1135,14 @@ latex_table_h(rmse_tourism)
 #| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the tourism application, considering a single test set (from January 2017 to December 2017). The None row shows the original number of series in the structure.
 
 tourism_info <- readRDS(here::here("paper/results/tourism_info.rds"))
-tourism_mase <- readRDS(here::here( "paper/results/tourism_selected_mase.rds")) |>
+tourism_rmsse <- readRDS(here::here( "paper/results/tourism_selected_rmsse.rds")) |>
   round(2) |> format(2)
-tourism_mase <- cbind(tourism_mase, matrix("", 6, 3))
-lb <- cbind(matrix("(", 6, 5), matrix("", 6, 3))
-rb <- cbind(matrix(")", 6, 5), matrix("", 6, 3))
+tourism_rmsse <- cbind(tourism_rmsse, matrix("", 6, 4))
+lb <- cbind(matrix("(", 6, 4), matrix("", 6, 4))
+rb <- cbind(matrix(")", 6, 4), matrix("", 6, 4))
 
 tourism_tbl <- paste_matrices(tourism_info, lb, sep = " ") |>
-  paste_matrices(tourism_mase, sep = "") |>
+  paste_matrices(tourism_rmsse, sep = "") |>
   paste_matrices(rb, sep = "")
 tourism_tbl <- sub("NA", "-", tourism_tbl)
 colnames(tourism_tbl) <- colnames(tourism_info)

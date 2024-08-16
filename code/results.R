@@ -69,22 +69,22 @@ simulation_info <- lapply(simulation_info, function(len){
 names(simulation_info) <- scenarios
 saveRDS(simulation_info, file = "paper/results/sim_selection.rds")
 
-# Forecast variance (MASE)
+# Forecast variance (RMSSE)
 freq <- 4; h <- 16
 train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
 test <- readRDS(file = paste0("data/", data_label, "_test.rds"))
 indices <- unique(test$Index)
-simulation_series_mase <- lapply(scenarios, function(scenario) {
+simulation_series_rmsse <- lapply(scenarios, function(scenario) {
   reconsf <- readRDS(file = paste0("data_new/", data_label, "_subset_reconsf_", scenario, ".rds"))
   fc <- indices |>
     purrr::map(\(index)
                extract_element(data = reconsf, index = index,
                                method = "Base", element = "y_tilde")) %>% 
     do.call(rbind, .)
-  return(calc_mase(fc, train, test, freq, h))
+  return(calc_rmsse(fc, train, test, freq, h))
 })
-names(simulation_series_mase) <- scenarios
-saveRDS(simulation_series_mase, file = "paper/results/sim_series_mase.rds")
+names(simulation_series_rmsse) <- scenarios
+saveRDS(simulation_series_rmsse, file = "paper/results/sim_series_rmsse.rds")
 
 # Forecast correlation
 h <- 1
@@ -166,9 +166,9 @@ corr_selection <- lapply(index, function(i){
 names(corr_selection) <- paste0("p", index)
 saveRDS(corr_selection, file = "paper/results/corr_selection.rds")
 
-# Forecast variance (MASE)
+# Forecast variance (RMSSE)
 freq <- 1; h <- 1
-corr_series_mase <- lapply(index, function(i){
+corr_series_rmsse <- lapply(index, function(i){
   train <- readRDS(file = paste0("data/", data_label, "_", i, "_train.rds"))
   test <- readRDS(file = paste0("data/", data_label, "_", i, "_test.rds"))
   indices <- unique(test$Index)
@@ -178,10 +178,10 @@ corr_series_mase <- lapply(index, function(i){
                extract_element(data = reconsf, index = index,
                                method = "Base", element = "y_tilde")) %>% 
     do.call(rbind, .)
-  list(out_s0 = calc_mase(fc, train, test, freq, h))
+  list(out_s0 = calc_rmsse(fc, train, test, freq, h))
 })
-names(corr_series_mase) <- paste0("p", index)
-saveRDS(corr_series_mase, file = "paper/results/corr_series_mase.rds")
+names(corr_series_rmsse) <- paste0("p", index)
+saveRDS(corr_series_rmsse, file = "paper/results/corr_series_rmsse.rds")
 
 # MCB tests for each error correlation
 h <- 1
@@ -321,7 +321,7 @@ tourism_subset_info <- apply(tourism_subset_info, 1, function(lentry){
 rownames(tourism_subset_info) <- sub("_", "-", rownames(tourism_subset_info))
 saveRDS(tourism_subset_info, "paper/results/tourism_info.rds")
 
-# Forecast variance (MASE) - the last window
+# Forecast variance (RMSSE) - the last window
 freq <- 12; h <- 12
 data_label <- "tourism_1"
 train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
@@ -333,21 +333,21 @@ fc <- indices |>
              extract_element(data = reconsf, index = index,
                              method = "Base", element = "y_tilde")) %>% 
   do.call(rbind, .)
-tourism_series_mase <- calc_mase(fc, train, test, freq, h) |> as.matrix()
+tourism_series_rmsse <- calc_rmsse(fc, train, test, freq, h) |> as.matrix()
 tourism_select_index <- rbind(None = rep(1, ncol(tourism_subset_z)), tourism_subset_z)
 tourism_select_index <- tourism_select_index == TRUE
-tourism_hlevel <- list(Top, State, Zone, Region, Total)
-tourism_selected_mase <- sapply(1:nrow(tourism_select_index), function(i) {
+tourism_hlevel <- list(Top, State, Zone, Region)
+tourism_selected_rmsse <- sapply(1:nrow(tourism_select_index), function(i) {
   ind <- tourism_select_index[i, ]
   avg <- sapply(tourism_hlevel, function(j) {
-    mean(tourism_series_mase[, j][ind[j]])
+    mean(tourism_series_rmsse[, j][ind[j]])
   })
   return(avg)
 }) |> t()
-tourism_selected_mase[is.na(tourism_selected_mase)] <- 0
-colnames(tourism_selected_mase) <- c("Top", "State", "Zone", "Region", "Total")
-rownames(tourism_selected_mase) <- rownames(tourism_select_index)
-saveRDS(tourism_selected_mase, file = "paper/results/tourism_selected_mase.rds")
+tourism_selected_rmsse[is.na(tourism_selected_rmsse)] <- 0
+colnames(tourism_selected_rmsse) <- c("Top", "State", "Zone", "Region")
+rownames(tourism_selected_rmsse) <- rownames(tourism_select_index)
+saveRDS(tourism_selected_rmsse, file = "paper/results/tourism_selected_rmsse.rds")
 
 # Heatmap
 data_label <- "tourism_1"
@@ -515,7 +515,7 @@ rownames(labour_subset_info) <- sub("_", "-", rownames(labour_subset_info))
 colnames(labour_subset_info) <- sub("Duration_STT", "Duration x STT", colnames(labour_subset_info))
 saveRDS(labour_subset_info, "paper/results/labour_info.rds")
 
-# Forecast variance (MASE) - the last window
+# Forecast variance (RMSSE) - the last window
 freq <- 12; h <- 12
 data_label <- "labour_1"
 train <- readRDS(file = paste0("data/", data_label, "_train.rds"))
@@ -527,18 +527,18 @@ fc <- indices |>
              extract_element(data = reconsf, index = index,
                              method = "Base", element = "y_tilde")) %>% 
   do.call(rbind, .)
-labour_series_mase <- calc_mase(fc, train, test, freq, h) |> as.matrix()
+labour_series_rmsse <- calc_rmsse(fc, train, test, freq, h) |> as.matrix()
 labour_select_index <- rbind(None = rep(1, ncol(labour_subset_z)), labour_subset_z)
 labour_select_index <- labour_select_index == TRUE
-labour_hlevel <- list(Top, Duration, STT, Duration_STT, Total)
-labour_selected_mase <- sapply(1:nrow(labour_select_index), function(i) {
+labour_hlevel <- list(Top, Duration, STT, Duration_STT)
+labour_selected_rmsse <- sapply(1:nrow(labour_select_index), function(i) {
   ind <- labour_select_index[i, ]
   avg <- sapply(labour_hlevel, function(j) {
-    mean(labour_series_mase[, j][ind[j]])
+    mean(labour_series_rmsse[, j][ind[j]])
   })
   return(avg)
 }) |> t()
-labour_selected_mase[is.na(labour_selected_mase)] <- 0
-colnames(labour_selected_mase) <- c("Top", "Duration", "STT", "Duration_STT", "Total")
-rownames(labour_selected_mase) <- rownames(labour_select_index)
-saveRDS(labour_selected_mase, file = "paper/results/labour_selected_mase.rds")
+labour_selected_rmsse[is.na(labour_selected_rmsse)] <- 0
+colnames(labour_selected_rmsse) <- c("Top", "Duration", "STT", "Duration_STT")
+rownames(labour_selected_rmsse) <- rownames(labour_select_index)
+saveRDS(labour_selected_rmsse, file = "paper/results/labour_selected_rmsse.rds")
