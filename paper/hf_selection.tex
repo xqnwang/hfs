@@ -660,39 +660,7 @@ hierarchy.
 \end{proposition}
 
 \begin{proof}
-Let \(\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
-denote the submatrix of the \(r \times c\) matrix \(\bm{X}\) with the
-columns indexed by the set \(\mathbb{S}\), where \(|\mathbb{S}|\) is the
-cardinality of the set \(\mathbb{S}\). Similarly, let
-\(\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}\)
-denote the submatrix of \(\bm{X}\) with the rows indexed by
-\(\mathbb{S}\). If \(\mathbb{S}\) is the set of indices of nonzero
-columns in the solution \(\hat{\bm{G}}\) to Equation \eqref{eq-op_u},
-then the following equations hold: \[
-\hat{\bm{G}}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I}_{n_b},
-\qquad\text{and}\qquad
-\min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
-\] This indicates that the number of nonzero columns of \(\hat{\bm{G}}\)
-should be no less than \(n_b\), i.e., \(|\mathbb{S}| \geq n_b\).
-
-Moreover, we have
-\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b\) because
-\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b\), given that
-\(\bm{S}\) has \(n_b\) columns. If the solution to Equation
-\eqref{eq-op_u} yields a \(\hat{\bm{G}}\) with exactly \(n_b\) nonzero
-columns (i.e., \(|\mathbb{S}|=n_b\)), then \(\bm{S}_{\mathbb{S}\cdot}\)
-is a full rank square matrix and thus invertible. Applying Theorem 2 in
-\citet{Zhang2023-op}, \(\bm{y}_{\mathbb{S}\cdot}\) is valid for
-constructing the full hierarchy using nothing but the information
-embedded in the aggregation constraints. If the solution yields a
-\(\hat{\bm{G}}\) with more than \(n_b\) nonzero columns, we should be
-able to identify more than one subset
-\(\mathbb{S}^* \subset \mathbb{S}\) with \(|\mathbb{S}^*|=n_b\) to
-construct an invertible square matrix \(\bm{S}_{\mathbb{S}^{*}\cdot}\)
-and thereby restore the full hierarchy using the valid
-\(\bm{y}_{\mathbb{S}^{*}\cdot}\). Therefore, the constraint
-\(\bm{GS}=\bm{I}\) ensures that the selected columns of \(\hat{\bm{G}}\)
-correspond to variables that can restore the full hierarchy.
+See \hyperref[appendix-proofs]{Appendix A}, supplementary materials.
 \end{proof}
 
 For example, for the simple hierarchy shown in Figure~\ref{fig-hts}, the
@@ -718,15 +686,7 @@ larger than the number of observations, \(n\).
 \end{proposition}
 
 \begin{proof}
-We have\vspace*{-0.4cm}\enlargethispage{0.4cm} \[
-\begin{aligned}
-& \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
-& \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
-\end{aligned}
-\] Substituting these into Equation \eqref{eq-op_u}, the previous
-problem now takes the form of a regression problem with an additional
-regularization term and an equality constraint on the coefficients, as
-shown in Equation \eqref{eq-op_u_reg}.
+See \hyperref[appendix-proofs]{Appendix A}, supplementary materials.
 \end{proof}
 
 Next, we present three constrained ``out-of-sample'' reconciliation
@@ -1014,21 +974,7 @@ column of \(\bm{G}\).
 \end{proposition}
 
 \begin{proof}
-Denote \(\bm{\beta} = \operatorname{vec}(\bm{G})\), and the first term
-in the objective of Equation \eqref{eq-lasso} as
-\(L\left(\bm{\beta} \mid \bm{D}\right)\), where \(\bm{D}\) is the
-working data
-\(\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}\). Ignoring
-the constraint \(\bm{G_h S}=\bm{I_{n_b}}\), we define \(\lambda^{1}\) as
-the smallest \(\lambda\) value such that all predictors in the group
-lasso problem have zero coefficients, i.e., the solution at
-\(\lambda^{1}\) is \(\hat{\bm{\beta}}^{1}=\bm{0}\). (Note that there is
-no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions,
-we have \[
-\lambda^{1}
- = \max_{j=1, \ldots, n}\big\|\big[\nabla L(\hat{\bm{\beta}}^{1} \mid \bm{D})\big]^{(j)}\big\|_2 / w_j
- = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j.
-\]
+See \hyperref[appendix-proofs]{Appendix A}, supplementary materials.
 \end{proof}
 
 \textbf{Computation details.} Due to the incorporation of the
@@ -1195,7 +1141,7 @@ forecasts (i.e., fitted values and base forecasts). We also repeated the
 analysis with model misspecification for series AA at the bottom level
 and series Total at the top level, respectively. The results for these
 two scenarios are similar and reported in
-\hyperref[appendix-sim1]{Appendix A}.
+\hyperref[appendix-sim1]{Appendix B}.
 
 \begin{table}
 
@@ -1533,7 +1479,7 @@ The results across various error correlations are presented in
 Table~\ref{tbl-corr-rmse}, with the MCB test for a correlation of
 \(-0.8\) shown in Figure~\ref{fig-corr-plots-1}. The conclusion from the
 MCB test results for other error correlations are qualitatively similar,
-thus we report them in \hyperref[appendix-sim2]{Appendix B}. The results
+thus we report them in \hyperref[appendix-sim2]{Appendix C}. The results
 show that our proposed methods slightly outperform or are comparable to
 their respective benchmarks at all levels when using OLS, WLSs, and WLSv
 estimators. However, only the OLS-lasso method significantly outperforms
@@ -1556,7 +1502,7 @@ series being selected using our proposed methods, with an error
 correlation of \(-0.8\). The correlation matrix heatmap for forecast
 errors is displayed in Figure~\ref{fig-corr-plots-2}. To save space, the
 results for other error correlations are similar and given in
-\hyperref[appendix-sim2]{Appendix B}. Despite the challenges in
+\hyperref[appendix-sim2]{Appendix C}. Despite the challenges in
 identifying poor-performing series in this setup,
 Table~\ref{tbl-corr-selection-neg} shows that Subset and Parsimonious
 methods, using OLS, WLSs, and WLSv estimators, are able to exclude the
@@ -1777,7 +1723,7 @@ overall and significantly outperforms EMinT, with the most accurate
 coherent forecasts observed at the top level and STT level.
 
 Results based on the final test set spanning from August 2022 to July
-2023 are detailed in \hyperref[appendix-labour]{Appendix C}, allowing
+2023 are detailed in \hyperref[appendix-labour]{Appendix D}, allowing
 for model training with more data and analysis of post-COVID patterns.
 Table~\ref{tbl-labour-rmse} shows RMSE results qualitatively similar to
 those in Table~\ref{tbl-labour-rmse-avg}. Table~\ref{tbl-labour-info}
@@ -1909,7 +1855,7 @@ EMinT & 59.7 & 70.4 & 81.4 & 85.9 & 79.0\\
 \end{table}%
 
 We present the results based on the last one training set from January
-2017 to December 2017 in \hyperref[appendix-tourism]{Appendix D}.
+2017 to December 2017 in \hyperref[appendix-tourism]{Appendix E}.
 Table~\ref{tbl-tourism-rmse} shows the RMSE results, and
 Figure~\ref{fig-tourism-rmse} displays the reconciliation errors across
 \(111\) series. The results are consistent with the average results
@@ -2093,6 +2039,82 @@ IC200100009.
 
 \section*{Appendix}\label{appendix}
 \addcontentsline{toc}{section}{Appendix}
+
+\subsection{Proofs of Propositions}\label{proofs-of-propositions}
+
+\subsubsection{Proof of Proposition 3.1}\label{appendix-proofs}
+
+\begin{proof}
+Let \(\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
+denote the submatrix of the \(r \times c\) matrix \(\bm{X}\) with the
+columns indexed by the set \(\mathbb{S}\), where \(|\mathbb{S}|\) is the
+cardinality of the set \(\mathbb{S}\). Similarly, let
+\(\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}\)
+denote the submatrix of \(\bm{X}\) with the rows indexed by
+\(\mathbb{S}\). If \(\mathbb{S}\) is the set of indices of nonzero
+columns in the solution \(\hat{\bm{G}}\) to Equation \eqref{eq-op_u},
+then the following equations hold: \[
+\hat{\bm{G}}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I}_{n_b},
+\qquad\text{and}\qquad
+\min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
+\] This indicates that the number of nonzero columns of \(\hat{\bm{G}}\)
+should be no less than \(n_b\), i.e., \(|\mathbb{S}| \geq n_b\).
+
+Moreover, we have
+\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b\) because
+\(\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b\), given that
+\(\bm{S}\) has \(n_b\) columns. If the solution to Equation
+\eqref{eq-op_u} yields a \(\hat{\bm{G}}\) with exactly \(n_b\) nonzero
+columns (i.e., \(|\mathbb{S}|=n_b\)), then \(\bm{S}_{\mathbb{S}\cdot}\)
+is a full rank square matrix and thus invertible. Applying Theorem 2 in
+\citet{Zhang2023-op}, \(\bm{y}_{\mathbb{S}\cdot}\) is valid for
+constructing the full hierarchy using nothing but the information
+embedded in the aggregation constraints. If the solution yields a
+\(\hat{\bm{G}}\) with more than \(n_b\) nonzero columns, we should be
+able to identify more than one subset
+\(\mathbb{S}^* \subset \mathbb{S}\) with \(|\mathbb{S}^*|=n_b\) to
+construct an invertible square matrix \(\bm{S}_{\mathbb{S}^{*}\cdot}\)
+and thereby restore the full hierarchy using the valid
+\(\bm{y}_{\mathbb{S}^{*}\cdot}\). Therefore, the constraint
+\(\bm{GS}=\bm{I}\) ensures that the selected columns of \(\hat{\bm{G}}\)
+correspond to variables that can restore the full hierarchy.
+\end{proof}
+
+\subsubsection{Proof of Proposition 3.2}\label{proof-of-proposition-3.2}
+
+\begin{proof}
+We have\vspace*{-0.4cm}\enlargethispage{0.4cm} \[
+\begin{aligned}
+& \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
+& \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
+\end{aligned}
+\] Substituting these into Equation \eqref{eq-op_u}, the previous
+problem now takes the form of a regression problem with an additional
+regularization term and an equality constraint on the coefficients, as
+shown in Equation \eqref{eq-op_u_reg}.
+\end{proof}
+
+\subsubsection{Proof of Proposition 3.3}\label{proof-of-proposition-3.3}
+
+\begin{proof}
+Denote \(\bm{\beta} = \operatorname{vec}(\bm{G})\), and the first term
+in the objective of Equation \eqref{eq-lasso} as
+\(L\left(\bm{\beta} \mid \bm{D}\right)\), where \(\bm{D}\) is the
+working data
+\(\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}\). Ignoring
+the constraint \(\bm{G_h S}=\bm{I_{n_b}}\), we define \(\lambda^{1}\) as
+the smallest \(\lambda\) value such that all predictors in the group
+lasso problem have zero coefficients, i.e., the solution at
+\(\lambda^{1}\) is \(\hat{\bm{\beta}}^{1}=\bm{0}\). (Note that there is
+no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions,
+we have \[
+\lambda^{1}
+ = \max_{j=1, \ldots, n}\big\|\big[\nabla L(\hat{\bm{\beta}}^{1} \mid \bm{D})\big]^{(j)}\big\|_2 / w_j
+ = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j.
+\]
+\end{proof}
+
+\clearpage
 
 \subsection{Results from simulation Setup 1}\label{appendix-sim1}
 

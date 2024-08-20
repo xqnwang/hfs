@@ -204,13 +204,7 @@ If the assumption that forecast reconciliation preserves unbiasedness is imposed
 :::
 
 ::: proof
-Let $\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}$ denote the submatrix of the $r \times c$ matrix $\bm{X}$ with the columns indexed by the set $\mathbb{S}$, where $|\mathbb{S}|$ is the cardinality of the set $\mathbb{S}$. Similarly, let $\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}$ denote the submatrix of $\bm{X}$ with the rows indexed by $\mathbb{S}$. If $\mathbb{S}$ is the set of indices of nonzero columns in the solution $\hat{\bm{G}}$ to Equation \eqref{eq-op_u}, then the following equations hold: $$
-\hat{\bm{G}}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I}_{n_b},
-\qquad\text{and}\qquad
-\min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
-$$ This indicates that the number of nonzero columns of $\hat{\bm{G}}$ should be no less than $n_b$, i.e., $|\mathbb{S}| \geq n_b$.
-
-Moreover, we have $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b$ because $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b$, given that $\bm{S}$ has $n_b$ columns. If the solution to Equation \eqref{eq-op_u} yields a $\hat{\bm{G}}$ with exactly $n_b$ nonzero columns (i.e., $|\mathbb{S}|=n_b$), then $\bm{S}_{\mathbb{S}\cdot}$ is a full rank square matrix and thus invertible. Applying Theorem 2 in @Zhang2023-op, $\bm{y}_{\mathbb{S}\cdot}$ is valid for constructing the full hierarchy using nothing but the information embedded in the aggregation constraints. If the solution yields a $\hat{\bm{G}}$ with more than $n_b$ nonzero columns, we should be able to identify more than one subset $\mathbb{S}^* \subset \mathbb{S}$ with $|\mathbb{S}^*|=n_b$ to construct an invertible square matrix $\bm{S}_{\mathbb{S}^{*}\cdot}$ and thereby restore the full hierarchy using the valid $\bm{y}_{\mathbb{S}^{*}\cdot}$. Therefore, the constraint $\bm{GS}=\bm{I}$ ensures that the selected columns of $\hat{\bm{G}}$ correspond to variables that can restore the full hierarchy.
+See [Appendix A](#appendix-proofs), supplementary materials.
 :::
 
 For example, for the simple hierarchy shown in @fig-hts, the selected columns of $\hat{\bm{G}}$ will be at least $n_b=4$. Our constrained reconciliation methods might simultaneously zero out the columns of $\bm{G}$ corresponding to series AA and BA, but not to series AA and AB.
@@ -225,12 +219,7 @@ $$ {#eq-op_u_reg} which is characterized as a high-dimensional problem in which 
 :::
 
 ::: proof
-We have\vspace*{-0.4cm}\enlargethispage{0.4cm} $$
-\begin{aligned}
-& \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
-& \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
-\end{aligned}
-$$ Substituting these into Equation \eqref{eq-op_u}, the previous problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in Equation \eqref{eq-op_u_reg}.
+See [Appendix A](#appendix-proofs), supplementary materials.
 :::
 
 Next, we present three constrained "out-of-sample" reconciliation methods: (i) group best-subset selection with ridge regularization, (ii) parsimonious method with $L_0$ regularization, and (iii) group lasso method. These methods perform forecast reconciliation with series selection under the unbiasedness assumption, differing only in the regularization term employed.
@@ -318,11 +307,7 @@ $$ where $j^{*}$ denotes the column index of $\hat{\bm{y}}^{\prime} \otimes \bm{
 :::
 
 ::: proof
-Denote $\bm{\beta} = \operatorname{vec}(\bm{G})$, and the first term in the objective of Equation \eqref{eq-lasso} as $L\left(\bm{\beta} \mid \bm{D}\right)$, where $\bm{D}$ is the working data $\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}$. Ignoring the constraint $\bm{G_h S}=\bm{I_{n_b}}$, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\bm{\beta}}^{1}=\bm{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have $$
-\lambda^{1}
- = \max_{j=1, \ldots, n}\big\|\big[\nabla L(\hat{\bm{\beta}}^{1} \mid \bm{D})\big]^{(j)}\big\|_2 / w_j
- = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j.
-$$
+See [Appendix A](#appendix-proofs), supplementary materials.
 :::
 
 **Computation details.** Due to the incorporation of the constraint, we can not directly use some open-source packages designed for group lasso. Consequently, we employ Gurobi to solve the SOCP problem, configuring it by setting OptimalityTol = $0.0001$.
@@ -372,7 +357,7 @@ $$ which enables correlations among time series in a hierarchical structure.
 
 We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $\sigma_\zeta^2=0.007$, and $\sigma_\omega^2=7$. Initial values for $\bm{\mu}_0$, $\bm{v}_0$, $\bm{\gamma}_0$, $\bm{\gamma}_1$, and $\bm{\gamma}_2$ are generated independently from a multivariate normal distribution with zero mean and identity covariance matrix. For each bottom-level series, we generate $180$ observations, with the last $h = 16$ observations forming the test set. The bottom-level series are then aggregated to form higher-level data. This entire process is repeated $500$ times.
 
-We use ETS models to generate base forecasts for each hierarchy using default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we artificially degrade the performance of series A at the middle level by applying a $1.5$ multiplier to its in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts). We also repeated the analysis with model misspecification for series AA at the bottom level and series Total at the top level, respectively. The results for these two scenarios are similar and reported in [Appendix A](#appendix-sim1).
+We use ETS models to generate base forecasts for each hierarchy using default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we artificially degrade the performance of series A at the middle level by applying a $1.5$ multiplier to its in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts). We also repeated the analysis with model misspecification for series AA at the bottom level and series Total at the top level, respectively. The results for these two scenarios are similar and reported in [Appendix B](#appendix-sim1).
 
 ```{r}
 #| label: tbl-sim-rmse
@@ -578,9 +563,9 @@ ggplot(data = corr_cormat$p1, aes(x = Var1, y = Var2, fill = value)) +
   theme_heatmap
 ```
 
-The results across various error correlations are presented in @tbl-corr-rmse, with the MCB test for a correlation of $-0.8$ shown in @fig-corr-plots-1. The conclusion from the MCB test results for other error correlations are qualitatively similar, thus we report them in [Appendix B](#appendix-sim2). The results show that our proposed methods slightly outperform or are comparable to their respective benchmarks at all levels when using OLS, WLSs, and WLSv estimators. However, only the OLS-lasso method significantly outperforms the OLS benchmark. It is important to note the challenge of identifying the "poor" base forecasts in this simulation design, given that the omission of the constant term has minimal impact relative to the data variability. In addition, the MinT and MinTs methods perform especially well, and our proposed methods provide similar results. This is attributed to the use of in-sample covariance by MinT and MinTs, which allows for large adjustments in reconciliation for base forecasts with high estimated error variance. Elasso performs the best across the whole hierarchy, though not significantly better than EMinT due to the identification challenge. We have also considered alternative error correlation values, $\rho = -0.6, -0.2, 0.2, 0.4$, for this simulation setting, but to save space, we do not present all results. The omitted results follow a similar pattern and are available upon request.
+The results across various error correlations are presented in @tbl-corr-rmse, with the MCB test for a correlation of $-0.8$ shown in @fig-corr-plots-1. The conclusion from the MCB test results for other error correlations are qualitatively similar, thus we report them in [Appendix C](#appendix-sim2). The results show that our proposed methods slightly outperform or are comparable to their respective benchmarks at all levels when using OLS, WLSs, and WLSv estimators. However, only the OLS-lasso method significantly outperforms the OLS benchmark. It is important to note the challenge of identifying the "poor" base forecasts in this simulation design, given that the omission of the constant term has minimal impact relative to the data variability. In addition, the MinT and MinTs methods perform especially well, and our proposed methods provide similar results. This is attributed to the use of in-sample covariance by MinT and MinTs, which allows for large adjustments in reconciliation for base forecasts with high estimated error variance. Elasso performs the best across the whole hierarchy, though not significantly better than EMinT due to the identification challenge. We have also considered alternative error correlation values, $\rho = -0.6, -0.2, 0.2, 0.4$, for this simulation setting, but to save space, we do not present all results. The omitted results follow a similar pattern and are available upon request.
 
-@tbl-corr-selection-neg presents the proportion of time series being selected using our proposed methods, with an error correlation of $-0.8$. The correlation matrix heatmap for forecast errors is displayed in @fig-corr-plots-2. To save space, the results for other error correlations are similar and given in [Appendix B](#appendix-sim2). Despite the challenges in identifying poor-performing series in this setup, @tbl-corr-selection-neg shows that Subset and Parsimonious methods, using OLS, WLSs, and WLSv estimators, are able to exclude the series Total, A, and BA (which have higher RMSSE) in some instances. Notably, Total and A are selected less frequently than BA, likely due to their forecast errors being more correlated with other series, as shown in @fig-corr-plots-2. Subset methods outperform Parsimonious methods in selection. Lasso methods typically select all bottom-level series, given their tendency to yield dense estimates, as discussed in @sec-constrained. When dealing with a high positive error correlation, our methods remain effective in excluding the series that should be omitted in reconciliation. Hence, our methods are preferred, especially when the error correlation within the structure is negative.
+@tbl-corr-selection-neg presents the proportion of time series being selected using our proposed methods, with an error correlation of $-0.8$. The correlation matrix heatmap for forecast errors is displayed in @fig-corr-plots-2. To save space, the results for other error correlations are similar and given in [Appendix C](#appendix-sim2). Despite the challenges in identifying poor-performing series in this setup, @tbl-corr-selection-neg shows that Subset and Parsimonious methods, using OLS, WLSs, and WLSv estimators, are able to exclude the series Total, A, and BA (which have higher RMSSE) in some instances. Notably, Total and A are selected less frequently than BA, likely due to their forecast errors being more correlated with other series, as shown in @fig-corr-plots-2. Subset methods outperform Parsimonious methods in selection. Lasso methods typically select all bottom-level series, given their tendency to yield dense estimates, as discussed in @sec-constrained. When dealing with a high positive error correlation, our methods remain effective in excluding the series that should be omitted in reconciliation. Hence, our methods are preferred, especially when the error correlation within the structure is negative.
 
 ```{r}
 #| label: tbl-corr-selection-neg
@@ -680,7 +665,7 @@ latex_table_h(rmse_labour_avg)
 
 The average results are presented in @tbl-labour-rmse-avg. The MCB test and error correlation calculations are not performed due to the limited data length. Results of MinT and the respective proposed methods are excluded due to poor performance, likely caused by the poor sample covariance estimator given the small sample size relative to the number of series in the structure. Subset methods using different estimators of $\bm{G}$ generally improve forecast accuracy over their benchmarks, particularly at aggregation levels, which are of paramount concern to practitioners. The exception is WLSs-subset, which shows slight deterioration, though still improving top-level forecasts. Moreover, the Parsimonious and Lasso methods almost always yield results identical to their benchmarks, because they tend to provide dense estimates, and ETS models typically avoid extremely poor forecasts. However, OLS-parsim shows deterioration at all levels except the top level. When we drop the unbiasedness assumption, EMinT performs the worst across all levels, as it assumes joint weak stationarity among series, which is evidently not the case here. Elasso ranks the best overall and significantly outperforms EMinT, with the most accurate coherent forecasts observed at the top level and STT level.
 
-Results based on the final test set spanning from August 2022 to July 2023 are detailed in [Appendix C](#appendix-labour), allowing for model training with more data and analysis of post-COVID patterns. @tbl-labour-rmse shows RMSE results qualitatively similar to those in @tbl-labour-rmse-avg. @tbl-labour-info presents the number of series selected at each level, their average RMSSE values, and the identified optimal tuning parameters. Only Subset and Elasso methods are presented, as they differ from benchmark results. The scale variation in optimal parameters across methods is due to differences in objective function scales. Notably, all Subset methods exclude some series, and Elasso, using only $11$ series, performs best overall. With the exception of the STT level for WLSs-subset, and the Duration level for WLSv-subset and Elasso, the series selected by the proposed methods show reduced RMSSE values at each level. Moreover, series at the STT level are mostly removed, while most Duration level series are retained. This aligns with our data description, highlighting that the seasonal patterns at the Duration level are more consistent and potentially easier to forecast compared to those at the STT level.
+Results based on the final test set spanning from August 2022 to July 2023 are detailed in [Appendix D](#appendix-labour), allowing for model training with more data and analysis of post-COVID patterns. @tbl-labour-rmse shows RMSE results qualitatively similar to those in @tbl-labour-rmse-avg. @tbl-labour-info presents the number of series selected at each level, their average RMSSE values, and the identified optimal tuning parameters. Only Subset and Elasso methods are presented, as they differ from benchmark results. The scale variation in optimal parameters across methods is due to differences in objective function scales. Notably, all Subset methods exclude some series, and Elasso, using only $11$ series, performs best overall. With the exception of the STT level for WLSs-subset, and the Duration level for WLSv-subset and Elasso, the series selected by the proposed methods show reduced RMSSE values at each level. Moreover, series at the STT level are mostly removed, while most Duration level series are retained. This aligns with our data description, highlighting that the seasonal patterns at the Duration level are more consistent and potentially easier to forecast compared to those at the STT level.
 
 ### Forecasting Australian domestic tourism {#sec-tourism}
 
@@ -725,7 +710,7 @@ colnames(rmse_tourism_avg$table_out) <- c("Method", rmse_tourism_avg$levels)
 latex_table_h(rmse_tourism_avg)
 ```
 
-We present the results based on the last one training set from January 2017 to December 2017 in [Appendix D](#appendix-tourism). @tbl-tourism-rmse shows the RMSE results, and @fig-tourism-rmse displays the reconciliation errors across $111$ series. The results are consistent with the average results mentioned earlier, indicating relatively high-quality forecasts from Subset and Elasso methods. In addition, @tbl-tourism-info summarizes the number of series selected at each level, their average RMSSE values, and the optimal tuning parameters. Here we focus on the Subset and Elasso methods since they are useful in the tourism application. We observe that OLS-subset and WLSs-subset exclude some series at the State and Zone levels, yielding lower RMSSE values for the selected series at each level. Notably, WLSs-subset selects only the best-performing series at the State level. Despite using only $13$ time series, Elasso performs exceptionally well, with reduced RMSSE values at each level for the selected series. Thus, both the Subset and Elasso methods are able to exclude series with high forecast errors. In contrast, the WLSv and MinTs methods retain all series. Nonetheless, the inclusion of shrinkage through ridge regularization in the WLSv and MinTs methods still enhances the quality of reconciled forecasts.
+We present the results based on the last one training set from January 2017 to December 2017 in [Appendix E](#appendix-tourism). @tbl-tourism-rmse shows the RMSE results, and @fig-tourism-rmse displays the reconciliation errors across $111$ series. The results are consistent with the average results mentioned earlier, indicating relatively high-quality forecasts from Subset and Elasso methods. In addition, @tbl-tourism-info summarizes the number of series selected at each level, their average RMSSE values, and the optimal tuning parameters. Here we focus on the Subset and Elasso methods since they are useful in the tourism application. We observe that OLS-subset and WLSs-subset exclude some series at the State and Zone levels, yielding lower RMSSE values for the selected series at each level. Notably, WLSs-subset selects only the best-performing series at the State level. Despite using only $13$ time series, Elasso performs exceptionally well, with reduced RMSSE values at each level for the selected series. Thus, both the Subset and Elasso methods are able to exclude series with high forecast errors. In contrast, the WLSv and MinTs methods retain all series. Nonetheless, the inclusion of shrinkage through ridge regularization in the WLSv and MinTs methods still enhances the quality of reconciled forecasts.
 
 ## Discussion {#sec-discussion}
 
@@ -793,6 +778,44 @@ Rob J Hyndman was supported by the Australian Research Council Industrial Transf
 ```
 
 ## Appendix {.unnumbered}
+
+### Proofs of Propositions
+
+#### Proof of Proposition 3.1 {#appendix-proofs}
+
+::: proof
+Let $\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}$ denote the submatrix of the $r \times c$ matrix $\bm{X}$ with the columns indexed by the set $\mathbb{S}$, where $|\mathbb{S}|$ is the cardinality of the set $\mathbb{S}$. Similarly, let $\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}$ denote the submatrix of $\bm{X}$ with the rows indexed by $\mathbb{S}$. If $\mathbb{S}$ is the set of indices of nonzero columns in the solution $\hat{\bm{G}}$ to Equation \eqref{eq-op_u}, then the following equations hold: $$
+\hat{\bm{G}}\bm{S} = \hat{\bm{G}}_{\cdot \mathbb{S}}\bm{S}_{\mathbb{S}\cdot} = \bm{I}_{n_b},
+\qquad\text{and}\qquad
+\min \left(\operatorname{rank}(\hat{\bm{G}}_{\cdot \mathbb{S}}), \operatorname{rank}(\bm{S}_{\mathbb{S}\cdot})\right) \geq \operatorname{rank}(\bm{I}_{n_b})=n_b.
+$$ This indicates that the number of nonzero columns of $\hat{\bm{G}}$ should be no less than $n_b$, i.e., $|\mathbb{S}| \geq n_b$.
+
+Moreover, we have $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b$ because $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b$, given that $\bm{S}$ has $n_b$ columns. If the solution to Equation \eqref{eq-op_u} yields a $\hat{\bm{G}}$ with exactly $n_b$ nonzero columns (i.e., $|\mathbb{S}|=n_b$), then $\bm{S}_{\mathbb{S}\cdot}$ is a full rank square matrix and thus invertible. Applying Theorem 2 in @Zhang2023-op, $\bm{y}_{\mathbb{S}\cdot}$ is valid for constructing the full hierarchy using nothing but the information embedded in the aggregation constraints. If the solution yields a $\hat{\bm{G}}$ with more than $n_b$ nonzero columns, we should be able to identify more than one subset $\mathbb{S}^* \subset \mathbb{S}$ with $|\mathbb{S}^*|=n_b$ to construct an invertible square matrix $\bm{S}_{\mathbb{S}^{*}\cdot}$ and thereby restore the full hierarchy using the valid $\bm{y}_{\mathbb{S}^{*}\cdot}$. Therefore, the constraint $\bm{GS}=\bm{I}$ ensures that the selected columns of $\hat{\bm{G}}$ correspond to variables that can restore the full hierarchy.
+:::
+
+#### Proof of Proposition 3.2
+
+::: proof
+We have\vspace*{-0.4cm}\enlargethispage{0.4cm} $$
+\begin{aligned}
+& \bm{SG}\hat{\bm{y}} = \operatorname{vec}\left(\bm{SG}\hat{\bm{y}}\right) = \left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G}), \\
+& \operatorname{vec}\left(\bm{G}\bm{S}\right) = \operatorname{vec}\left(\bm{I}_{n_b}\bm{G}\bm{S}\right) = \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G}).
+\end{aligned}
+$$ Substituting these into Equation \eqref{eq-op_u}, the previous problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in Equation \eqref{eq-op_u_reg}.
+:::
+
+#### Proof of Proposition 3.3
+
+::: proof
+Denote $\bm{\beta} = \operatorname{vec}(\bm{G})$, and the first term in the objective of Equation \eqref{eq-lasso} as $L\left(\bm{\beta} \mid \bm{D}\right)$, where $\bm{D}$ is the working data $\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}$. Ignoring the constraint $\bm{G_h S}=\bm{I_{n_b}}$, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\bm{\beta}}^{1}=\bm{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have
+$$
+\lambda^{1}
+ = \max_{j=1, \ldots, n}\big\|\big[\nabla L(\hat{\bm{\beta}}^{1} \mid \bm{D})\big]^{(j)}\big\|_2 / w_j
+ = \max_{j=1, \ldots, n}\big\|-\big((\hat{\bm{y}}^{\prime} \otimes \bm{S})_{\cdot j^{*}}\big)^{\prime} \bm{W}^{-1} \hat{\bm{y}}\big\|_2 / w_j.
+$$
+:::
+
+\clearpage
 
 ### Results from simulation Setup 1 {#appendix-sim1}
 
