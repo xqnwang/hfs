@@ -215,7 +215,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{August 16, 2024}
+\date{August 20, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -344,8 +344,8 @@ time series that adheres to known linear constraints. Let
 \(\bm{y}_t \in \mathbb{R}^n\) be a vector comprising observations from
 all time series in the hierarchy at time \(t\), and
 \(\bm{b}_t \in \mathbb{R}^{n_b}\) be a vector comprising observations of
-only the most disaggregated (``bottom-level'') time series at time
-\(t\). The full hierarchy at time \(t\) can be written as \[
+only the most disaggregated (bottom-level) time series. The full
+hierarchy can be written as \[
 \bm{y}_t = \bm{S}\bm{b}_t,
 \] for \(t=1,2,\ldots,T\), where \(T\) is the length of the time series,
 and \(\bm{S}\) is an \(n \times n_b\) \emph{summing matrix} that defines
@@ -355,11 +355,11 @@ where \(\bm{A}\) is an \(n_a \times n_b\) \emph{aggregation matrix} with
 \(n = n_a + n_b\), and \(\bm{I}_{n_b}\) is an \(n_b\)-dimensional
 identity matrix.
 
-\begin{figure}[!t]
+\begin{figure}
 
 \centering{
 
-\includegraphics[width=0.35\textwidth,height=\textheight]{figs/hts_example.pdf}
+\includegraphics[width=0.3\textwidth,height=\textheight]{figs/hts_example.pdf}
 
 }
 
@@ -403,7 +403,7 @@ reconciliation}\label{linear-forecast-reconciliation}
 
 Let \(\hat{\bm{y}}_{T+h \mid T} \in \mathbb{R}^n\) be a vector of
 \(h\)-step-ahead \emph{base forecasts} for all time series in the
-structure, given observations up to and including time \(T\), and
+hierarchy, given observations up to and including time \(T\), and
 stacked in the same order as \(\bm{y}_t\). We can use any method to
 generate these forecasts, but in general they will not be coherent
 (i.e., they won't satisfy the aggregation constraints). Let
@@ -412,18 +412,17 @@ generate these forecasts, but in general they will not be coherent
 \begin{equation}\phantomsection\label{eq-lr}{
 \tilde{\bm{y}}_{T+h \mid T} = \bm{S}\bm{G}_h\hat{\bm{y}}_{T+h \mid T},
 }\end{equation} where \(\bm{G}_h\) is an \(n_b \times n\)
-\emph{weighting matrix} and \(\bm{S}\) is an \(n \times n_b\)
-\emph{summing matrix}.
+\emph{weighting matrix}.
 
 In general, forecast reconciliation methods consider the loss function
-given by \begin{equation}\phantomsection\label{eq-loss}{
+\citep{Ben_Taieb2019-be} given by
+\begin{equation}\phantomsection\label{eq-loss}{
 \begin{aligned}
 & \mathrm{E}\left[\left\|\bm{y}_{T+h}-\tilde{\bm{y}}_{T+h \mid T}\right\|_2^2 \mid \bm{I}_T\right] \\
 & =\underbrace{\left\|\bm{S G_h}\left(\mathrm{E}\left[\hat{\bm{y}}_{T+h \mid T} \mid \bm{I}_T\right]-\mathrm{E}\left[\bm{y}_{T+h} \mid \bm{I}_T\right]\right)+(\bm{S}-\bm{S G_h S}) \mathrm{E}\left[\bm{b}_{T+h} \mid \bm{I}_T\right]\right\|_2^2}_{\text{bias}} +\underbrace{\operatorname{Tr}\left(\operatorname{Var}\left[\bm{y}_{T+h}-\tilde{\bm{y}}_{T+h \mid T} \mid \bm{I}_T\right]\right)}_{\text{variance}},
 \end{aligned}
 }\end{equation} which includes two parts in its decomposition, bias and
-variance of the reconciled forecasts \(\tilde{\bm{y}}_{T+h \mid T}\)
-\citep{Ben_Taieb2019-be}.
+variance of the reconciled forecasts.
 
 \subsubsection*{Minimum trace
 reconciliation}\label{minimum-trace-reconciliation}
@@ -433,16 +432,14 @@ Let
 \(\hat{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h \mid t}\)
 denote the \(h\)-step-ahead in-sample \emph{base forecast errors}, and
 \(\tilde{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h \mid t}\)
-denote the \(h\)-step-ahead \emph{reconciled forecast errors}, for
-\(t = 1,2,\ldots,T-h\). Assuming the base forecasts are unbiased and
-imposing the constraint \(\bm{G_h S}=\bm{I_{n_b}}\) to preserve the
-unbiasedness of the reconciled forecasts, the bias term in Equation
-\eqref{eq-loss} cancels. \citet{Wickramasuriya2019-fc} thus formulated
-the reconciliation problem as minimizing the trace (MinT) of the
-\(h\)-step-ahead covariance matrix of the reconciled forecast errors,
-\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})=\bm{S}\bm{G}_h\bm{W}_h\bm{G}^{\prime}_h\bm{S}^{\prime}\).
-This leads to the unique solution given by
-\begin{equation}\phantomsection\label{eq-mint}{
+denote the \(h\)-step-ahead \emph{reconciled forecast errors}. Assuming
+the base forecasts are unbiased and imposing the constraint
+\(\bm{G}_h\bm{ S}=\bm{I}_{n_b}\) to preserve the unbiasedness of the
+reconciled forecasts, the bias term in Equation \eqref{eq-loss} cancels.
+\citet{Wickramasuriya2019-fc} thus formulated the reconciliation problem
+as minimizing the trace (MinT) of the \(h\)-step-ahead covariance matrix
+of the reconciled forecast errors, leading to the unique solution given
+by \begin{equation}\phantomsection\label{eq-mint}{
 \bm{G}_h=\left(\bm{S}^{\prime} \bm{W}_h^{-1} \bm{S}\right)^{-1} \bm{S}^{\prime} \bm{W}_h^{-1},
 }\end{equation} where \(\bm{W}_h\) is the positive definite covariance
 matrix of the \(h\)-step-ahead base forecast errors.
@@ -454,22 +451,23 @@ linear constraints: \begin{equation}\phantomsection\label{eq-mint_op}{
 }\end{equation} where
 \(\tilde{\bm{b}}_{T+h \mid T} \in \mathbb{R}^{n_b}\) comprises the
 \(h\)-step-ahead bottom-level reconciled forecasts, made at time \(T\).
-The intuition behind MinT reconciliation is that \textbf{the larger the
+The intuition behind MinT reconciliation is that the larger the
 estimated variance of the base forecast errors, the larger the range of
-adjustments permitted for forecast reconciliation}.
+adjustments permitted for forecast reconciliation.
 
 It is challenging to estimate \(\bm{W}_h\), especially for \(h > 1\). It
 is common to assume \(\bm{W}_h = k_h\bm{W}_1\), \(\forall h\), where
-\(k_h > 0\); then the MinT solution of \(\bm{G}\) does not change with
-the forecast horizon, \(h\). Hence, we will drop the subscript \(h\) for
-ease of exposition. Table~\ref{tbl-bench} lists the most popularly used
-candidate estimators for \(\bm{W}_h\). In principle, all optimization
-methods could use either an in-sample or out-of-sample approach. The
-methods discussed here are considered ``out-of-sample'' as they use
-genuine forecasts, \(\hat{\bm{y}}_{T+h \mid T}\), rather than fitted
-values, in the optimization problem.
+\(k_h > 0\); then the MinT solution for \(\bm{G}\) remains unchanged
+across different forecast horizons, \(h\). Hence, we will drop the
+subscript \(h\) for ease of exposition. Table~\ref{tbl-bench} lists the
+most popularly used candidate estimators for \(\bm{W}_h\). In principle,
+all optimization methods can be based on either in-sample or
+out-of-sample data. The methods discussed here are considered
+``out-of-sample'' as they use genuine forecasts,
+\(\hat{\bm{y}}_{T+h \mid T}\), rather than ``in-sample'' fitted values
+for the optimization process.
 
-\begin{table}[!h]
+\begin{table}
 
 \caption{\label{tbl-bench}Forecast reconciliation methods for which
 different estimators of \(\bm{W}_h\) are used.}
@@ -478,7 +476,7 @@ different estimators of \(\bm{W}_h\) are used.}
 
 \centering
 \begin{threeparttable}
-\begin{tabular}{p{0.7\linewidth}r}
+\begin{tabular}{p{0.5\linewidth}r}
 \toprule
 Reconciliation method & $\bm{W}_h\propto$\\
 \midrule
@@ -489,8 +487,8 @@ Reconciliation method & $\bm{W}_h\propto$\\
 \textbf{MinTs} \citep{Wickramasuriya2019-fc} & $\lambda\operatorname{Diag}(\hat{\bm{W}}_1) + (1-\lambda)\hat{\bm{W}}_1$\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\item Note: $\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.
+\begin{tablenotes}[para]
+\item \footnotesize{Note: $\bm{1}$ is a vector of 1s of size $n_b$, $\operatorname{diag}(\cdot)$ constructs a diagonal matrix using a given vector, $\hat{\bm{W}}_1$ denotes the unbiased covariance estimator based on the in-sample one-step-ahead base forecast errors (i.e., residuals), and $\operatorname{Diag}(\cdot)$ forms a diagonal matrix using the diagonal elements of the input matrix.}
 \end{tablenotes}
 \end{threeparttable}
 
@@ -506,10 +504,10 @@ assumptions}
 \citet{Ben_Taieb2019-be} proposed a reconciliation method relaxing the
 assumption of unbiasedness. Their goal was to achieve a tradeoff between
 bias and variance by directly minimizing the mean squared reconciled
-forecast errors, as described in Equation \eqref{eq-loss}. Specifically,
-by expanding the training window incrementally, one observation at a
-time, they formulated the reconciliation problem as a regularized
-empirical risk minimization (RERM) problem given by \[
+forecast errors in Equation \eqref{eq-loss}. By expanding the training
+window incrementally, one observation at a time, they formulated the
+reconciliation problem as a regularized empirical risk minimization
+(RERM) problem: \[
 \min_{\bm{G}_h} \frac{1}{(T-T_1-h+1)n}\left\|\bm{Y}_{h}^{*}-\hat{\bm{Y}}_{h}^{*} \bm{G}_{h}^{\prime} \bm{S}^{\prime}\right\|_F^2+\lambda\|\operatorname{vec}( \bm{G}_h)\|_1,
 \] where \(T_1\) denotes the minimum number of observations used for
 model training, \(\left\| \cdot \right\|_F\) is the Frobenius norm,
@@ -529,17 +527,15 @@ a closed-form solution given by \[
 \] where
 \(\bm{B}_{h}^{*}=\left[\bm{b}_{T_1+h}, \ldots, \bm{b}_T\right]^{\prime}\).
 If \(\hat{\bm{Y}}_{h}^{*\prime}\hat{\bm{Y}}_{h}^{*}\) is not invertible,
-\citet{Ben_Taieb2019-be} suggested using a generalized inverse. When
-\(\lambda > 0\), imposing the \(L_1\) penalty on \(\bm{G}_h\) will
-introduce sparsity and reduce estimation variance, albeit at the cost of
-introducing some bias.
+a generalized inverse can be applied. When \(\lambda > 0\), imposing the
+\(L_1\) penalty on \(\bm{G}_h\) will introduce sparsity and reduce
+estimation variance, albeit at the cost of introducing some bias.
 
 Relaxing the assumption of unbiasedness of base forecasts,
 \citet{Wickramasuriya2021-am} proposed an empirical MinT
 (\textbf{EMinT}) solution by minimizing the trace of the covariance
-matrix of the reconciled forecast errors,
-\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\). Assuming the series
-are jointly weakly stationary, the solution is given by \[
+matrix of the reconciled forecast errors. Assuming the series are
+jointly weakly stationary, the solution is given by \[
 \hat{\bm{G}}_{h} = \bm{B}_{h}^{\prime}\hat{\bm{Y}}_{h}\left(\hat{\bm{Y}}_{h}^{\prime}\hat{\bm{Y}}_{h}\right)^{-1},
 \] where
 \(\bm{B}_{h}=\left[\bm{b}_{h}, \ldots, \bm{b}_T\right]^{\prime}\), and
@@ -553,25 +549,25 @@ forecasts generated on a holdout validation set. Both EMinT and ERM
 consider an estimate of \(\bm{G}\) that changes over the forecast
 horizon, which is why we keep the subscript \(h\) here.
 
-In practical settings, some series in a structure could have poor base
+In practical settings, some series in a hierarchy could have poor base
 forecasts due to model misspecification or low forecastability.
 Specifically, within a hierarchical structure, the influence of
 unforeseen events may prompt a forecaster to make a bad decision,
 leading to the use of a misspecified forecasting model for a specific
-time series and, consequently, yielding inferior forecasts. Lower-level
-time series are normally characterized by less apparent trend and
-seasonality, large intermittence, and volatility, rendering them more
-challenging to predict and resulting in poor forecasts.
+time series and, consequently, yielding inferior forecasts. Moreover,
+lower-level time series are normally characterized by less apparent
+trend and seasonality, large intermittence, and volatility, rendering
+them more challenging to predict and resulting in poor forecasts.
 
 A challenge in forecast reconciliation arises when some base forecasts
-perform poorly, as the role of the weighting matrix \(\bm{G}\) is to
-assimilate \emph{all} base forecasts and map them into bottom-level
-disaggregated forecasts, which are subsequently summed by \(\bm{S}\).
-While the RERM method proposed by \citet{Ben_Taieb2019-be} introduces
-sparsity by shrinking some elements of \(\bm{G}\) towards zero, it
-remains incapable of mitigating the adverse impact of underperforming
-base forecasts. Moreover, the method is time-consuming because it uses
-expanding windows to recursively generate out-of-sample base forecasts.
+perform poorly, as the weighting matrix \(\bm{G}\) assimilates
+\emph{all} base forecasts and maps them into bottom-level forecasts,
+which are subsequently summed by \(\bm{S}\). While the RERM method
+introduces sparsity by shrinking some elements of \(\bm{G}\) towards
+zero, it remains incapable of mitigating the adverse impact of
+underperforming base forecasts. Moreover, the method is time-consuming
+because it uses expanding windows to recursively generate out-of-sample
+base forecasts.
 
 In addition to \citet{Ben_Taieb2019-be}, several other contributions
 have incorporated diverse forms of shrinkage or penalization in forecast
@@ -598,14 +594,14 @@ series selection in forecast reconciliation, failing to alleviate their
 adverse impact on forecast performance, while maintaining consideration
 for forecast errors across the entire initial hierarchy.
 
-We therefore propose two new forecast reconciliation methods involving
-time series selection: constrained out-of-sample (under the unbiasedness
-assumption) and unconstrained in-sample (without the unbiasedness
-assumption). These methods aim to address the negative effect of some
-poor base forecasts on the overall performance of the reconciled
-forecasts. Additionally, through the incorporation of regularization in
-the objective function, our method improves reconciliation outcomes
-produced with a ``poor'' choice of \(\bm{W}\).
+We therefore propose two types of forecast reconciliation methods
+involving time series selection: constrained ``out-of-sample''
+reconciliation and unconstrained ``in-sample'' reconciliation. These
+methods aim to address the negative effect of some poor base forecasts
+on the overall performance of the reconciled forecasts. Additionally,
+through the incorporation of regularization in the objective function,
+our method improves reconciliation outcomes produced with a ``poor''
+choice of \(\bm{W}\).
 
 \section{Forecast reconciliation with time series
 selection}\label{sec-methodology}
@@ -1072,8 +1068,8 @@ Elasso method omits the \(\bm{GS}=\bm{I}\) constraint, which ensures the
 unbiasedness of reconciled forecasts when base forecasts are unbiased,
 and (2) why the Elasso method does not use a \(\bm{W}\) matrix, which is
 introduced when deriving from
-\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\) under the constraint
-\(\bm{GS}=\bm{I}\).
+\(\operatorname{Var}(\tilde{\bm{e}}_{T+h \mid T})\) under the
+constraint.
 
 We note that both the ``in-sample'' Elasso and EMinT methods require
 only one round of model training. Similarly, the Subset, Parsimonious,
@@ -1196,12 +1192,19 @@ applying a \(1.5\) multiplier to its in-sample and out-of-sample
 forecasts (i.e., fitted values and base forecasts). We also repeated the
 analysis with model misspecification for series AA at the bottom level
 and series Total at the top level, respectively. The results for these
-two scenarios are similar and reported in Appendix.
+two scenarios are similar and reported in
+\hyperref[appendix-sim1]{Appendix A}.
 
-Table~\ref{tbl-sim-rmse} and Figure~\ref{fig-sim-plots-1} Notably, in
-each scenario, the largest improvements occur at the level with model
-misspecification, though this occasionally results in slight performance
-declines at other levels.
+Table~\ref{tbl-sim-rmse} summarizes the average root mean squared error
+(RMSE) results for each level and the overall structure (denoted as
+Average). The BU row uses the ``bottom-up'' approach, where base
+forecasts at the bottom level are aggregated to generate higher-level
+forecasts. We also perform the multiple comparisons with the best (MCB)
+test at a \(95\%\) confidence level, as shown in
+Figure~\ref{fig-sim-plots-1}, to assess the statistical significance of
+differences among the methods in Table Table~\ref{tbl-sim-rmse}. With
+MCB, the ranking performances are statistically different if the
+intervals of two methods do not overlap.
 
 \begin{table}
 
@@ -1270,7 +1273,7 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 
 
 }
 
-\subcaption{\label{fig-sim-plots-1}MCB test}
+\subcaption{\label{fig-sim-plots-1}MCB test for hierarchy}
 
 \end{minipage}%
 %
@@ -1294,36 +1297,23 @@ heatmap for simulated data in Setup 1.}
 
 \end{figure}%
 
-Focusing on the results of benchmark reconciliation methods, we find
-that the BU (bottom-up) method performs the best in Scenarios B and C
-but ranks as the worst overall in Scenario A. This is not surprising, as
-bottom-level base forecasts are deteriorated in Scenario A, while
-higher-level base forecasts are deteriorated in Scenarios B and C.
-Moreover, WLSv, MinT, and MinTs perform especially well in Setup 1.
-Their effectiveness stems from their ability to consider in-sample
-covariance of base forecast errors, allowing for a larger range of
-adjustments in reconciliation for base forecasts with higher estimated
-error variance. EMinT also provides accurate reconciled forecasts in our
-setup, where the in-sample forecasts for specific series are
-intentionally undermined, a situation that can be detected by the
-in-sample information based EMinT method. However, OLS and WLSs
-significantly underperform other benchmark methods in this simulation
-design.
-
-In all three scenarios, our proposed methods consistently produce either
-improved or comparable reconciled forecasts compared to their respective
-benchmarks. The improvements are particularly pronounced when using OLS
-and WLSs estimators of \(\bm{W}\) in the benchmark methods, which do not
-take into account the in-sample covariance of base forecast errors. One
-advantage of using our proposed forecast reconciliation methods with
-selection is their ability to reduce the difference introduced by using
-different estimates of \(\bm{W}\), thereby mitigating the risk of
-estimator selection. In some cases, such as Scenarios B and C, we can
-align the forecast accuracy achieved using different estimators, and
-make them approach the best results we can obtain. Dropping the
-unbiasedness assumption, Elasso performs similarly to EMinT overall
-while achieving improvements at the top level, which is typically the
-aspect of greatest concern to practitioners.
+We find that the BU method performs the best overall, which is
+unsurprising given that the aggregated series A is deteriorated in this
+setup, and the BU method does not use its information. WLSv, MinT, and
+MinTs also perform well, with no significant difference from BU, as they
+account for the in-sample covariance of base forecast errors, allowing
+for larger adjustments in reconciliation for forecasts with higher error
+variance. However, OLS and WLSs significantly underperform the other
+benchmark methods. Our proposed methods show significant improvements
+when using OLS and WLSs estimators of \(\bm{W}\), which do not consider
+in-sample covariance. A key advantage of our forecast reconciliation
+methods with selection is their ability to reduce differences introduced
+by using different estimates of \(\bm{W}\), thereby mitigating the risk
+of estimator selection. We can align the forecast accuracy achieved
+using different estimators, making them approach the best results we can
+obtain. By relaxing the unbiasedness assumption, Elasso performs
+similarly to EMinT overall, with slight improvements at aggregated
+levels, which is typically the primary concern for practitioners.
 
 \begin{table}
 
@@ -1339,7 +1329,7 @@ from 500 hierarchies, with darker sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (1.48) & (3.25) & (1.55) & (1.57) & (1.62) & (1.62) & (1.57) & \\
 \midrule
 OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
@@ -1371,21 +1361,19 @@ Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 
 \end{table}%
 
-In addition, we report the proportion of time series being selected from
-our proposed methods in 500 simulation instances, as shown in
-\textbf{?@tbl-s1-selection}, \textbf{?@tbl-s2-selection}, and
-\textbf{?@tbl-s3-selection}. Clearly, our methods select fewer time
-series, while enhancing forecast accuracy compared to benchmarks. Subset
-methods, in particular, tend to return fewer time series compared to the
-Parsimonious and Lasso methods, which aligns with our expectations that
-the Parsimonious and Lasso methods tend to produce dense estimates. Most
-importantly, depending on the scenario considered, the time series with
-model misspecification has been selected less often than others. For
-example, in Scenario A, series AA is expected to be removed while
-retaining AB. This allows obtaining series AA via operations such as
-A\(-\)AB, Total\(-\)B\(-\)AB, or Total\(-\)AB\(-\)BA\(-\)BB. The results
-in \textbf{?@tbl-s1-selection} align with our expectations, showing
-frequent exclusion of series AA and consistent selection of AB.
+In addition, we report the proportion of time series being selected by
+our proposed methods across \(500\) simulation instances, along with the
+average root mean squared scaled error (RMSSE) for each series, as shown
+in Table~\ref{tbl-sim-selection}. Our methods select fewer time series,
+while enhancing forecast accuracy compared to benchmarks. Subset
+methods, in particular, select fewer time series than Parsimonious and
+Lasso, which aligns with our expectations that the Parsimonious and
+Lasso methods tend to produce dense estimates. Notably, the misspecified
+series A shows higher RMSSE and is selected least frequently, except in
+cases where all bottom-level series are retained so series A leads to
+only slight deterioration. Series Total and B are also selected less
+often due to the high correlation of their forecast errors with other
+series, as shown in Figure~\ref{fig-sim-plots-2}.
 
 \subsection{Setup 2: Exploring the effect of
 correlation}\label{sec-sim2}
@@ -1593,7 +1581,7 @@ with darker sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.84) & (0.87) & (0.62) & (0.68) & (0.81) & (0.91) & (0.77) & \\
 \midrule
 OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-subset.png}\\
@@ -2129,8 +2117,7 @@ IC200100009.
 \section*{Appendix}\label{appendix}
 \addcontentsline{toc}{section}{Appendix}
 
-\subsection{Results from simulation Setup
-1}\label{results-from-simulation-setup-1}
+\subsection{Results from simulation Setup 1}\label{appendix-sim1}
 
 The section provides additional results obtained in
 Section~\ref{sec-sim1}.
@@ -2244,7 +2231,7 @@ with darker sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (3.08) & (1.52) & (1.55) & (1.57) & (1.62) & (1.62) & (1.57) & \\
 \midrule
 OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
@@ -2385,7 +2372,7 @@ with darker sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (1.48) & (1.52) & (1.55) & (3.45) & (1.62) & (1.62) & (1.57) & \\
 \midrule
 OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
@@ -2419,8 +2406,7 @@ Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.
 
 \clearpage
 
-\subsection{Results from simulation Setup
-2}\label{results-from-simulation-setup-2}
+\subsection{Results from simulation Setup 2}\label{appendix-sim2}
 
 The section provides additional results obtained in
 Section~\ref{sec-sim2}.
@@ -2440,7 +2426,7 @@ with darker sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.88) & (0.84) & (0.74) & (0.77) & (0.81) & (0.87) & (0.79) & \\
 \midrule
 OLS-subset & 0.35 & 0.38 & 0.96 & 0.97 & 0.99 & 0.73 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-subset.png}\\
@@ -2487,7 +2473,7 @@ sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.90) & (0.85) & (0.76) & (0.86) & (0.83) & (0.74) & (0.80) & \\
 \midrule
 OLS-subset & 0.37 & 0.49 & 0.95 & 0.94 & 0.99 & 0.73 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-subset.png}\\
@@ -2534,7 +2520,7 @@ with darker sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.99) & (0.87) & (0.78) & (0.83) & (0.77) & (0.81) & (0.81) & \\
 \midrule
 OLS-subset & 0.37 & 0.53 & 0.98 & 0.92 & 0.98 & 0.81 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-subset.png}\\
@@ -2581,7 +2567,7 @@ with darker sub-bars indicating higher counts.}
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Top} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.89) & (0.85) & (0.76) & (0.78) & (0.72) & (0.77) & (0.75) & \\
 \midrule
 OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-subset.png}\\
@@ -2649,7 +2635,7 @@ being -0.4, 0, 0.4, 0.8, respectively.}
 \clearpage
 
 \subsection{Results from Australian labour force
-data}\label{results-from-australian-labour-force-data}
+data}\label{appendix-labour}
 
 \begin{table}[!h]
 
@@ -2733,7 +2719,7 @@ Elasso & 1 (0.39) & 5 (1.20) & 2 (0.57) & 3 (0.88) & 11 & 213.59 & - & -\\
 \clearpage
 
 \subsection{Results from Australian domestic tourism
-data}\label{results-from-australian-domestic-tourism-data}
+data}\label{appendix-tourism}
 
 \begin{table}[!h]
 

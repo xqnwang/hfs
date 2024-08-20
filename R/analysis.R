@@ -338,6 +338,7 @@ latex_sim_nos_table <- function(z_out, n_out, rmsse_out, label_out) {
   target <- c(target, "Elasso")
   z_out <- z_out[match(target, row.names(z_out)), ] / 500
   z_out <- data.frame(row.names(z_out), z_out, Summary = "")
+  if ("AA" %in% colnames(z_out)) colnames(z_out) <- sub("Top", "Total", colnames(z_out))
   header <- c("", colnames(z_out)[-1])
   colnames(z_out) <- c("(RMSSE)", paste0("(", format(round(as.numeric(rmsse_out), digits = 2), 2), ")"), "")
   row.names(z_out) <- NULL
