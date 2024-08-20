@@ -117,8 +117,8 @@
 \usepackage{caption}
 \DeclareCaptionStyle{italic}[justification=centering]
  {labelfont={bf},textfont={it},labelsep=colon}
-\captionsetup[figure]{style=italic,format=hang,singlelinecheck=true,font=singlespacing}
-\captionsetup[table]{style=italic,format=hang,singlelinecheck=true,font=singlespacing}
+\captionsetup[figure]{style=italic,singlelinecheck=true,font=singlespacing,format=plain}
+\captionsetup[table]{style=italic,singlelinecheck=true,font=singlespacing,format=plain}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -1626,12 +1626,12 @@ domestic tourism flows with a natural geographic hierarchy.
 
 \subsection{Forecasting Australian labour force}\label{sec-labour}
 
-The dataset from the Labour Force Survey was released by the Australian
-Bureau of Statistics, and comprises monthly data on the number of
-unemployed persons in Australia from January 2010 to July
-2023\footnote{The Labour Force Survey data is publicly available at
+The dataset from the Labour Force Survey, released by the Australian
+Bureau of Statistics, comprises monthly data on the number of unemployed
+persons in Australia from January 2010 to July 2023\footnote{The Labour
+  Force Survey data is publicly available at
   \url{https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023}.}.
-To deal with the few missing observations, we use linear interpolation.
+We address the few missing observations using linear interpolation.
 Analyzing unemployment data by labour market region and duration of job
 search offers valuable insights into regional disparities, and the
 structural nuances underlying unemployment. Forecast reconciliation is
@@ -1639,20 +1639,18 @@ crucial in such a case to ensure aligned decision making.
 
 We construct a grouped hierarchy by disaggregating the number of
 unemployed persons over two independent attributes, duration of job
-search (referred to as \emph{Duration}), and State and Territory
-(referred to as \emph{STT} ). At the bottom level, the data are
-disaggregated by both attributes. We refer to the bottom level as the
-\emph{Duration} \(\times\) \emph{STT} level. Specifically, there are six
-different groups of job search duration, under 1 month, 1--3 months,
-3--6 months, 6--12 months, 1--2 years, and 2 years and over.
-Additionally, the number of unemployed persons in Australia can be
-disaggregated by eight states and territories, i.e., NSW (New South
-Wales), VIC (Victoria), QLD (Queensland), SA (South Australia), WA
-(Western Australia), TAS (Tasmania), NT (Northern Territory), and ACT
-(Australian Capital Territory). So the final grouped hierarchy consists
-of the top series, six series at the Duration level, eight series at the
-STT level, and \(48\) series at the Duration \(\times\) STT level,
-giving \(63\) time series in total, each of length \(163\) observations.
+search (\emph{Duration}), and State and Territory (\emph{STT} ). At the
+bottom level, the data are disaggregated by both attributes. We refer to
+the bottom level as the \emph{Duration} \(\times\) \emph{STT} level.
+Specifically, there are six different groups of job search duration,
+under 1 month, 1--3 months, 3--6 months, 6--12 months, 1--2 years, and 2
+years and over. Additionally, the number of unemployed persons in
+Australia can be disaggregated by eight states and territories, i.e.,
+NSW, VIC, QLD, SA, WA, TAS, NT, and ACT. So the final grouped hierarchy
+consists of the top series, six series at the Duration level, eight
+series at the STT level, and \(48\) series at the Duration \(\times\)
+STT level, giving \(63\) time series in total, each of length \(163\)
+observations.
 
 \begin{figure}[!t]
 
@@ -1707,8 +1705,13 @@ affect the accuracy of forecasts across all time series.
 
 \begin{table}
 
-\caption{\label{tbl-labour-rmse-avg}Average out-of-sample forecast
-results for Australian labour force data.}
+\caption{\label{tbl-labour-rmse-avg}Performance of proposed
+(gray-shaded) and benchmark methods for Australian labour force data.
+The Base row shows average RMSE of base forecasts, while entries below
+show RMSE percentage decrease (negative) or increase (positive) for
+reconciliation methods. Blue entries highlight the best-performing
+methods; bold entries indicate proposed methods outperforming
+bechmarks.}
 
 \centering{
 
@@ -1752,57 +1755,43 @@ EMinT & 10.2 & 24.1 & 6.2 & 27.9 & 19.6\\
 \end{table}%
 
 The average results are presented in Table~\ref{tbl-labour-rmse-avg}.
-The poor performance of the MinT method and associated methods can be
-attributed to the poor sample covariance estimator when the sample size
-is only slightly larger than the number of series in the structure.
-Subset methods using different estimators of \(\bm{G}\) generally
-improve forecast accuracy over their benchmark methods, particularly
-when focusing on aggregation levels, which are typically of paramount
-concern to practitioners. The only exception is the WLSs-subset method,
-which returns reduced accuracy for longer horizons. However, it still
-demonstrates improvements in top-level forecasts. Moreover, the
-Parsimonious and Lasso methods almost always yield results identical to
-the corresponding benchmark methods, because they tend to provide dense
-estimates, and ETS models typically do not result in extremely poor
-forecasts. The only exception is OLS-parsim, which shows improved
-forecast accuracy at the top level but deterioration at other levels.
-When we drop the unbiasedness assumption, EMinT is the worst-performing
-method across all levels because it relies on the assumption that the
-series in the hierarchy are jointly weakly stationary, which is
-evidently not the case in the application. Elasso significantly improves
-the quality of forecasts over EMinT, with the most accurate coherent
-forecasts observed at the top level and STT level. Overall, Elasso
-performs well for longer forecast horizons, but it is less effective for
-one-step-ahead forecasts.
+The MCB test and error correlation calculations were not performed due
+to the limited data length. Results of MinT and the respective proposed
+methods are excluded due to poor performance, likely caused by the poor
+sample covariance estimator given the small sample size relative to the
+number of series in the structure. Subset methods using different
+estimators of \(\bm{G}\) generally improve forecast accuracy over their
+benchmarks, particularly at aggregation levels, which are of paramount
+concern to practitioners. The exception is WLSs-subset, which shows
+slight deterioration, though still improving top-level forecasts.
+Moreover, the Parsimonious and Lasso methods almost always yield results
+identical to their benchmarks, because they tend to provide dense
+estimates, and ETS models typically avoid extremely poor forecasts.
+However, OLS-parsim shows deterioration at all levels except the top
+level. When we drop the unbiasedness assumption, EMinT performs the
+worst across all levels, as it assumes joint weak stationarity among
+series, which is evidently not the case here. Elasso ranks the best
+overall and significantly outperforms EMinT, with the most accurate
+coherent forecasts observed at the top level and STT level.
 
-We provide results based on the final test set spanning from August 2022
-to July 2023 in Table~\ref{tbl-labour-rmse}. This is the latest
-available data, enabling us to use more data for model training and
-explore the post-COVID pattern. All Subset methods (using various
-estimators of \(\bm{W}\)) produce improved or comparable reconciled
-forecasts compared to their benchmarks. The accuracy improvements become
-more noticeable for longer forecast horizons. Similar to the average
-results in Table~\ref{tbl-labour-rmse-avg}, the Parsimonious and Lasso
-methods yield results identical to the benchmark methods due to their
-tendency to offer dense estimates. Surprisingly, when relaxing the
-unbiasedness assumption, Elasso ranks the best and demonstrates
-significant improvement over EMinT, and outperforms other methods across
-almost all levels except for the top level.
-
-Table~\ref{tbl-labour-info} presents the number of series selected at
-each level and the optimal tuning parameter values obtained using
-proposed methods. We only show results from Subset and Elasso methods,
-as they return the best RMSE results. The scale variation in optimal
-parameters for different methods is due to objective function scales.
-Table~\ref{tbl-labour-info} shows that all Subset methods exclude some
-series. Remarkably, the Elasso method outperforms the others when
-evaluated on average results across the entire hierarchy and forecast
-horizon, even though it uses only \(11\) series for forecast
-reconciliation. Most of the series at the STT level are removed, while
-the majority of series at the Duration level are retained. This aligns
-with our data description, highlighting that the seasonal patterns in
-the Duration level series are more consistent and potentially easier to
-forecast compared to those at the STT level.
+Results based on the final test set spanning from August 2022 to July
+2023 are detailed in \hyperref[appendix-labour]{Appendix C}, allowing
+for model training with more data and analysis of post-COVID patterns.
+Table~\ref{tbl-labour-rmse} shows RMSE results qualitatively similar to
+those in Table~\ref{tbl-labour-rmse-avg}. Table~\ref{tbl-labour-info}
+presents the number of series selected at each level, their average
+RMSSE values, and the identified optimal tuning parameters. Only Subset
+and Elasso methods are presented, as they differ from benchmark results.
+The scale variation in optimal parameters across methods is due to
+differences in objective function scales. Notably, all Subset methods
+exclude some series, and Elasso, using only \(11\) series, performs best
+overall. With the exception of the STT level for WLSs-subset, and the
+Duration level for WLSv-subset and Elasso, the series selected by the
+proposed methods show reduced RMSSE values at each level. Moreover,
+series at the STT level are mostly removed, while most Duration level
+series are retained. This aligns with our data description, highlighting
+that the seasonal patterns at the Duration level are more consistent and
+potentially easier to forecast compared to those at the STT level.
 
 \subsection{Forecasting Australian domestic tourism}\label{sec-tourism}
 
@@ -2644,7 +2633,11 @@ data}\label{appendix-labour}
 
 \caption{\label{tbl-labour-rmse}Out-of-sample forecast results on a
 single test set (from August 2022 to July 2023) for Australian labour
-force data.}
+force data. The Base row shows average RMSE of base forecasts, while
+entries below show RMSE percentage decrease (negative) or increase
+(positive) for reconciliation methods. Blue entries highlight the
+best-performing methods; bold entries indicate proposed methods
+outperforming bechmarks.}
 
 \centering{
 
@@ -2689,11 +2682,12 @@ EMinT & --29.9 & --6.7 & \textcolor{blue}{\textbf{--21.0}} & 10.1 & --3.7\\
 
 \begin{table}[!h]
 
-\caption{\label{tbl-labour-info}Number of time series selected using
-different proposed methods and the optimal parameter values identified
-in the labour application, considering a single test set (from August
-2022 to July 2023). The None row shows the original number of series in
-the structure.}
+\caption{\label{tbl-labour-info}Number of time series selected by
+proposed methods and the optimal parameters identified in the labour
+application, considering a single test set (from August 2022 to July
+2023). The None row shows the original number of series in the
+structure. The numbers in parentheses show RMSSE values for different
+levels.}
 
 \centering{
 
