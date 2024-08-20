@@ -374,8 +374,6 @@ We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $
 
 We use ETS models to generate base forecasts for each hierarchy using default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we artificially degrade the performance of series A at the middle level by applying a $1.5$ multiplier to its in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts). We also repeated the analysis with model misspecification for series AA at the bottom level and series Total at the top level, respectively. The results for these two scenarios are similar and reported in [Appendix A](#appendix-sim1).
 
-@tbl-sim-rmse summarizes the average root mean squared error (RMSE) results for each level and the overall structure (denoted as Average). The BU row uses the "bottom-up" approach, where base forecasts at the bottom level are aggregated to generate higher-level forecasts. We also perform the multiple comparisons with the best (MCB) test at a $95\%$ confidence level, as shown in @fig-sim-plots-1, to assess the statistical significance of differences among the methods in Table @tbl-sim-rmse. With MCB, the ranking performances are statistically different if the intervals of two methods do not overlap.
-
 ```{r}
 #| label: tbl-sim-rmse
 #| results: asis
@@ -421,6 +419,8 @@ ggplot(data = sim_cormat$s2, aes(x = Var1, y = Var2, fill = value)) +
                                title.position = "top", title.hjust = 0.5)) +
   theme_heatmap
 ```
+
+@tbl-sim-rmse summarizes the average root mean squared error (RMSE) results for each level and the overall structure (denoted as Average). The BU row uses the "bottom-up" approach, where base forecasts at the bottom level are aggregated to generate higher-level forecasts. We also perform the multiple comparisons with the best (MCB) test at a $95\%$ confidence level, as shown in @fig-sim-plots-1, to assess the statistical significance of differences among the methods in Table @tbl-sim-rmse. With MCB, the ranking performances are statistically different if the intervals of two methods do not overlap.
 
 We find that the BU method performs the best overall, which is unsurprising given that the aggregated series A is deteriorated in this setup, and the BU method does not use its information. WLSv, MinT, and MinTs also perform well, with no significant difference from BU, as they account for the in-sample covariance of base forecast errors, allowing for larger adjustments in reconciliation for forecasts with higher error variance. However, OLS and WLSs significantly underperform the other benchmark methods. Our proposed methods show significant improvements when using OLS and WLSs estimators of $\bm{W}$, which do not consider in-sample covariance. A key advantage of our forecast reconciliation methods with selection is their ability to reduce differences introduced by using different estimates of $\bm{W}$, thereby mitigating the risk of estimator selection. We can align the forecast accuracy achieved using different estimators, making them approach the best results we can obtain. By relaxing the unbiasedness assumption, Elasso performs similarly to EMinT overall, with slight improvements at aggregated levels, which is typically the primary concern for practitioners.
 
@@ -678,7 +678,7 @@ colnames(rmse_labour_avg$table_out) <- c("Method", rmse_labour_avg$levels)
 latex_table_h(rmse_labour_avg)
 ```
 
-The average results are presented in @tbl-labour-rmse-avg. The MCB test and error correlation calculations were not performed due to the limited data length. Results of MinT and the respective proposed methods are excluded due to poor performance, likely caused by the poor sample covariance estimator given the small sample size relative to the number of series in the structure. Subset methods using different estimators of $\bm{G}$ generally improve forecast accuracy over their benchmarks, particularly at aggregation levels, which are of paramount concern to practitioners. The exception is WLSs-subset, which shows slight deterioration, though still improving top-level forecasts. Moreover, the Parsimonious and Lasso methods almost always yield results identical to their benchmarks, because they tend to provide dense estimates, and ETS models typically avoid extremely poor forecasts. However, OLS-parsim shows deterioration at all levels except the top level. When we drop the unbiasedness assumption, EMinT performs the worst across all levels, as it assumes joint weak stationarity among series, which is evidently not the case here. Elasso ranks the best overall and significantly outperforms EMinT, with the most accurate coherent forecasts observed at the top level and STT level.
+The average results are presented in @tbl-labour-rmse-avg. The MCB test and error correlation calculations are not performed due to the limited data length. Results of MinT and the respective proposed methods are excluded due to poor performance, likely caused by the poor sample covariance estimator given the small sample size relative to the number of series in the structure. Subset methods using different estimators of $\bm{G}$ generally improve forecast accuracy over their benchmarks, particularly at aggregation levels, which are of paramount concern to practitioners. The exception is WLSs-subset, which shows slight deterioration, though still improving top-level forecasts. Moreover, the Parsimonious and Lasso methods almost always yield results identical to their benchmarks, because they tend to provide dense estimates, and ETS models typically avoid extremely poor forecasts. However, OLS-parsim shows deterioration at all levels except the top level. When we drop the unbiasedness assumption, EMinT performs the worst across all levels, as it assumes joint weak stationarity among series, which is evidently not the case here. Elasso ranks the best overall and significantly outperforms EMinT, with the most accurate coherent forecasts observed at the top level and STT level.
 
 Results based on the final test set spanning from August 2022 to July 2023 are detailed in [Appendix C](#appendix-labour), allowing for model training with more data and analysis of post-COVID patterns. @tbl-labour-rmse shows RMSE results qualitatively similar to those in @tbl-labour-rmse-avg. @tbl-labour-info presents the number of series selected at each level, their average RMSSE values, and the identified optimal tuning parameters. Only Subset and Elasso methods are presented, as they differ from benchmark results. The scale variation in optimal parameters across methods is due to differences in objective function scales. Notably, all Subset methods exclude some series, and Elasso, using only $11$ series, performs best overall. With the exception of the STT level for WLSs-subset, and the Duration level for WLSv-subset and Elasso, the series selected by the proposed methods show reduced RMSSE values at each level. Moreover, series at the STT level are mostly removed, while most Duration level series are retained. This aligns with our data description, highlighting that the seasonal patterns at the Duration level are more consistent and potentially easier to forecast compared to those at the STT level.
 
@@ -707,68 +707,25 @@ tourism_ts |>
         axis.ticks.x.top = element_blank())
 ```
 
-@fig-tourism-data shows aggregate tourism flows for Australia and individual states, revealing pronounced seasonal patterns across the national total and states, albeit with varying seasonal patterns among series. Notably, significant growth began around 2010 for the national total flow and some states such as NSW, VIC, QLD, and WA. While flows are relatively flat for SA, TAS, and NT. Moreover, the time plot displays a large decrease in tourism flows for WA in 2016.
+@fig-tourism-data shows aggregate tourism flows for Australia and individual states, revealing pronounced seasonal patterns across both national and states levels, though patterns vary across series. Significant growth began around 2010 for the national flow and some states such as NSW, VIC, QLD, and WA, while flows for SA, TAS, and NT are relatively flat. Moreover, there is a notable decline in tourism flows for WA in 2016.
 
 Our objective is to forecast tourism flows for each series in the geographic hierarchy while ensuring coherence across all levels. We use a rolling forecast origin to evaluate the forecast accuracy of different methods. We start with a training set of $216$ months for each series, and compute base forecasts from optimal ETS models. We then roll the forecast origin forward, month by month, until December 2016. The base forecasts are reconciled using our proposed methods and some existing reconciliation methods.
 
-@tbl-tourism-rmse-avg reports average RMSE values for base forecasts generated by ETS models, along with the percentage relative improvements obtained by each reconciliation method. Similar to @sec-labour, MinT and the respective proposed methods are not considered due to their poor performance. The results show that the OLS method outperforms other benchmarks like WLSs, WLSv and MinTs, despite the fact that WLSv and MinTs account for the in-sample covariance of base forecast errors. This highlights the effectiveness of the OLS method despite its simplicity.
-
-Overall, the Subset methods outperform their respective benchmark methods, especially for aggregation levels and longer horizons. The only exception is the OLS-subset method, which slightly reduces overall accuracy while improving top-level forecasts. Parsimonious and Lasso methods produce results almost identical to the corresponding benchmarks, which is not surprising as ETS models rarely yield extremely poor forecasts, making them challenging to be selected out using methods that tend to return dense estimates. When we relax the unbiasedness assumption, EMinT consistently performs the worst across all levels due to the evident lack of joint weak stationarity among the series in the hierarchy. The Elasso method shows significant improvement compared to EMinT, and outperforms other methods across almost all levels except the bottom level.
+@tbl-tourism-rmse-avg reports average RMSE results. Similar to @sec-labour, MinT and the respective proposed methods are excluded due to poor performance, and the MCB test and error correlation calculations are omitted due to limited data. The results show that OLS outperforms other benchmarks, despite WLSv and MinTs accounting for in-sample covariance of base forecast errors, highlighting its effectiveness. Overall, the Subset methods outperform benchmarks, especially for aggregation levels. The only exception is OLS-subset, which slightly reduces overall accuracy while improving top-level forecasts. Parsimonious and Lasso methods produce results almost identical to their benchmarks, which is not surprising as ETS models rarely yield extremely poor forecasts, making them challenging to be selected out using methods that tend to return dense estimates. When we relax the unbiasedness assumption, EMinT consistently performs worst across all levels due to the lack of joint weak stationarity among the series in the hierarchy. Elasso, however, shows large improvement compared to EMinT, and ranks best across most levels except the bottom level.
 
 ```{r}
 #| label: tbl-tourism-rmse-avg
 #| results: asis
-#| tbl-cap: Average out-of-sample forecast results for Australian domestic tourism data.
+#| tbl-cap: Performance of proposed (gray-shaded) and benchmark methods for Australian domestic tourism data. The Base row shows average RMSE of base forecasts, while entries below show RMSE percentage decrease (negative) or increase (positive) for reconciliation methods. Blue entries highlight the best-performing methods; bold entries indicate proposed methods outperforming bechmarks.
 
 rmse_tourism_avg <- readRDS(here::here("paper/results/tourism_rmse.rds"))
-# latex_table(rmse_tourism_avg)
 cols <- grepl("1--12", colnames(rmse_tourism_avg$table_out)) | grepl("Method", colnames(rmse_tourism_avg$table_out))
 rmse_tourism_avg$table_out <- rmse_tourism_avg$table_out[, cols]
 colnames(rmse_tourism_avg$table_out) <- c("Method", rmse_tourism_avg$levels)
 latex_table_h(rmse_tourism_avg)
 ```
 
-@tbl-tourism-rmse present the results based on the last one training set spanning from January 2017 to December 2017. The reconciliation errors across $111$ series and across four hierarchy levels are displayed in @fig-tourism-rmse. The results show a similar performance to the average results described above, indicating relatively high-quality forecasts from Subset and Elasso methods.
-
-```{r}
-#| label: fig-tourism-rmse
-#| results: hide
-#| fig-width: 10
-#| fig-height: 3
-#| fig-pos: "!t"
-#| fig-cap: Average out-of-sample forecasting performance, measured in terms of RMSE (from 1- to 12-step-ahead), for each series across different reconciliation methods. Time series are arranged along the horizontal axis.
-
-tourism_heatmap <- readRDS(here::here("paper/results/tourism_heatmap.rds"))
-ggplot(tourism_heatmap, aes(x = Series, y = Method, fill = RMSE)) +
-  geom_tile() +
-  geom_vline(xintercept = c(1.5, 8.5, 35.5), linetype = "dashed", linewidth = 0.5) +
-  scale_fill_gradientn(colors = c("#f7d9a6",
-                                  rev(hcl.colors(100, "Purples"))[c(seq(1, 50, 10), seq(51, 100, 1))])) +
-  labs(x = "Time series", y = "") +
-  scale_x_continuous(expand = c(0, 0),
-                     breaks =  seq(20, 100, 20),
-                     sec.axis = dup_axis(name = "",
-                                         breaks = c(4.5, 11.5, 39),
-                                         labels = c("States", "Zones", "Regions"))) +
-  scale_y_discrete(expand = c(0, 0),
-                   limits = rev(c("Base", "BU", "OLS", "OLS-subset",
-                                  "WLSs", "WLSs-subset", "WLSv", "WLSv-subset",
-                                  "MinTs", "MinTs-subset", "EMinT", "Elasso"))) +
-  theme(
-    plot.background = element_blank(),
-    panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
-    axis.title.x = element_text(face = "bold", size = 12),
-    legend.title = element_text(face = "bold", size = 10),
-    legend.text = element_text(face = "bold", size = 10),
-    legend.position = "right",
-    axis.text = element_text(face = "bold", size = 10),
-    axis.ticks.x.top = element_blank()
-  ) +
-  guides(fill = guide_colourbar(barwidth = 1.5,
-                                barheight = 10))
-```
-
-Additionally, @tbl-tourism-info summarizes the number of series selected using proposed methods as well as the optimal tuning parameter values identified. Here we focus on the Subset and Elasso methods since they are useful in the tourism application. Note that the scale variation in optimal parameters for different methods comes from to objective function scales. We observe that the OLS-subset and WLSs-subset methods exclude some series at the State and Zone levels for reconciliation. In contrast, the WLSv and MinTs methods retain all series, benefiting from the consideration of in-sample covariance, which enables larger adjustments made to series with large in-sample forecast error variances during reconciliation. Nonetheless, the WLSv and MinTs methods can still enhance the quality of reconciled forecasts due to the inclusion of shrinkage through ridge regularization. It is surprising that Elasso performs exceptionally well despite using only $13$ series for reconciliation.
+We present the results based on the last one training set from January 2017 to December 2017 in [Appendix D](#appendix-tourism). @tbl-tourism-rmse shows the RMSE results, and @fig-tourism-rmse displays the reconciliation errors across $111$ series. The results are consistent with the average results mentioned earlier, indicating relatively high-quality forecasts from Subset and Elasso methods. In addition, @tbl-tourism-info summarizes the number of series selected at each level, their average RMSSE values, and the optimal tuning parameters. Here we focus on the Subset and Elasso methods since they are useful in the tourism application. We observe that OLS-subset and WLSs-subset exclude some series at the State and Zone levels, yielding lower RMSSE values for the selected series at each level. Notably, WLSs-subset selects only the best-performing series at the State level. Despite using only $13$ time series, Elasso performs exceptionally well, with reduced RMSSE values at each level for the selected series. Thus, both the Subset and Elasso methods are able to exclude series with high forecast errors. In contrast, the WLSv and MinTs methods retain all series. Nonetheless, the inclusion of shrinkage through ridge regularization in the WLSv and MinTs methods still enhances the quality of reconciled forecasts.
 
 ## Discussion {#sec-discussion}
 
@@ -1059,7 +1016,6 @@ grid.arrange(grobs = heatmap_list, ncol = 4)
 #| tbl-cap: Out-of-sample forecast results on a single test set (from August 2022 to July 2023) for Australian labour force data. The Base row shows average RMSE of base forecasts, while entries below show RMSE percentage decrease (negative) or increase (positive) for reconciliation methods. Blue entries highlight the best-performing methods; bold entries indicate proposed methods outperforming bechmarks.
 
 rmse_labour <- readRDS(here::here("paper/results/labour_1_rmse.rds"))
-# latex_table(rmse_labour)
 cols <- grepl("1--12", colnames(rmse_labour$table_out)) | grepl("Method", colnames(rmse_labour$table_out))
 rmse_labour$table_out <- rmse_labour$table_out[, cols]
 colnames(rmse_labour$table_out) <- c("Method", rmse_labour$levels)
@@ -1105,10 +1061,9 @@ labour_tbl |>
 #| label: tbl-tourism-rmse
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Out-of-sample forecast results on a single test set (from January 2017 to December 2017) for Australian domestic tourism data.
+#| tbl-cap: Out-of-sample forecast results on a single test set (from January 2017 to December 2017) for Australian domestic tourism data. The Base row shows average RMSE of base forecasts, while entries below show RMSE percentage decrease (negative) or increase (positive) for reconciliation methods. Blue entries highlight the best-performing methods; bold entries indicate proposed methods outperforming bechmarks.
 
 rmse_tourism <- readRDS(here::here("paper/results/tourism_1_rmse.rds"))
-# latex_table(rmse_tourism)
 cols <- grepl("1--12", colnames(rmse_tourism$table_out)) | grepl("Method", colnames(rmse_tourism$table_out))
 rmse_tourism$table_out <- rmse_tourism$table_out[, cols]
 colnames(rmse_tourism$table_out) <- c("Method", rmse_tourism$levels)
@@ -1116,10 +1071,48 @@ latex_table_h(rmse_tourism)
 ```
 
 ```{r}
+#| label: fig-tourism-rmse
+#| results: hide
+#| fig-width: 10
+#| fig-height: 3
+#| fig-pos: "!h"
+#| fig-cap: Average out-of-sample forecasting performance, measured in terms of RMSE (from 1- to 12-step-ahead), for each series across different reconciliation methods. Time series are arranged along the horizontal axis.
+
+tourism_heatmap <- readRDS(here::here("paper/results/tourism_heatmap.rds"))
+ggplot(tourism_heatmap, aes(x = Series, y = Method, fill = RMSE)) +
+  geom_tile() +
+  geom_vline(xintercept = c(1.5, 8.5, 35.5), linetype = "dashed", linewidth = 0.5) +
+  scale_fill_gradientn(colors = c("#f7d9a6",
+                                  rev(hcl.colors(100, "Purples"))[c(seq(1, 50, 10), seq(51, 100, 1))])) +
+  labs(x = "Time series", y = "") +
+  scale_x_continuous(expand = c(0, 0),
+                     breaks =  seq(20, 100, 20),
+                     sec.axis = dup_axis(name = "",
+                                         breaks = c(4.5, 11.5, 39),
+                                         labels = c("States", "Zones", "Regions"))) +
+  scale_y_discrete(expand = c(0, 0),
+                   limits = rev(c("Base", "BU", "OLS", "OLS-subset",
+                                  "WLSs", "WLSs-subset", "WLSv", "WLSv-subset",
+                                  "MinTs", "MinTs-subset", "EMinT", "Elasso"))) +
+  theme(
+    plot.background = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
+    axis.title.x = element_text(face = "bold", size = 12),
+    legend.title = element_text(face = "bold", size = 10),
+    legend.text = element_text(face = "bold", size = 10),
+    legend.position = "right",
+    axis.text = element_text(face = "bold", size = 10),
+    axis.ticks.x.top = element_blank()
+  ) +
+  guides(fill = guide_colourbar(barwidth = 1.5,
+                                barheight = 10))
+```
+
+```{r}
 #| label: tbl-tourism-info
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Number of time series selected using different proposed methods and the optimal parameter values identified in the tourism application, considering a single test set (from January 2017 to December 2017). The None row shows the original number of series in the structure.
+#| tbl-cap: Number of time series selected by proposed methods and the optimal parameters identified in the tourism application, considering a single test set (from January 2017 to December 2017). The None row shows the original number of series in the structure. The numbers in parentheses show RMSSE values for different levels.
 
 tourism_info <- readRDS(here::here("paper/results/tourism_info.rds"))
 tourism_rmsse <- readRDS(here::here( "paper/results/tourism_selected_rmsse.rds")) |>
