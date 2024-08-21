@@ -1903,6 +1903,58 @@ It preserves the unbiasedness of forecasts, is able to restore the hierarchy.) D
 - discuss the practical repercussions of this work as well as the potential limitations it faces. Probabilistic forecasting.
 }
 
+\begin{table}
+
+\caption{\label{tbl-time}Computational time (in seconds) for a single
+hierarchy across the four experiments, considering all candidate
+hyperparameters.}
+
+\centering{
+
+\centering\begingroup\fontsize{10}{12}\selectfont
+
+\begin{threeparttable}
+\begin{tabular}{lrrrr}
+\toprule
+ & Section 4.1 & Section 4.2 & Section 5.1 & Section 5.2\\
+\midrule
+Number of parameters & 28.0 & 28.0 & 3024 & 8436\\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{Subset (NOCH = 126)}}\\
+\hspace{1em}OLS-subset & 3.1 & 3.3 & 1242 & 2329\\
+\hspace{1em}WLSs-subset & 3.3 & 3.0 & 1304 & 2386\\
+\hspace{1em}WLSv-subset & 3.3 & 3.0 & 1306 & 2377\\
+\hspace{1em}MinT-subset & 4.4 & 4.1 & - & -\\
+\hspace{1em}MinTs-subset & 4.4 & 4.0 & 1467 & 2493\\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{Parsimonious (NOCH = 21)}}\\
+\hspace{1em}OLS-parsim & 2.2 & 2.3 & 1170 & 1939\\
+\hspace{1em}WLSs-parsim & 2.3 & 2.0 & 1171 & 1968\\
+\hspace{1em}WLSv-parsim & 2.4 & 2.3 & 1171 & 2001\\
+\hspace{1em}MinT-parsim & 3.3 & 3.5 & - & -\\
+\hspace{1em}MinTs-parsim & 3.7 & 3.7 & 1346 & 2162\\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{Lasso (NOCH = 21)}}\\
+\hspace{1em}OLS-lasso & 2.1 & 2.4 & 1167 & 1822\\
+\hspace{1em}WLSs-lasso & 2.1 & 2.4 & 1169 & 1840\\
+\hspace{1em}WLSv-lasso & 2.0 & 2.4 & 1235 & 1841\\
+\hspace{1em}MinT-lasso & 3.7 & 3.9 & - & -\\
+\hspace{1em}MinTs-lasso & 3.9 & 3.9 & 1330 & 2059\\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{Elasso (NOCH = 21)}}\\
+\hspace{1em}Elasso & 3.0 & 3.2 & 1155 & 1860\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item \footnotesize{Note: NOCH refers to the number of candidate hyperparameters considered.}
+\end{tablenotes}
+\end{threeparttable}
+\endgroup{}
+
+}
+
+\end{table}%
+
 While our proposed methods opt to leave ``poor'' base forecasts unused
 in forming reconciled forecasts, the approach by \citet{Zhang2023-op} is
 primarily focused on keeping ``good'' base forecasts unchanged after

@@ -718,7 +718,6 @@ We present the results based on the last one training set from January 2017 to D
 
 ## Discussion {#sec-discussion}
 
-```{=tex}
 \todo[inline]{
 - list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
 
@@ -727,7 +726,36 @@ It preserves the unbiasedness of forecasts, is able to restore the hierarchy.) D
 
 - discuss the practical repercussions of this work as well as the potential limitations it faces. Probabilistic forecasting.
 }
+
+```{r}
+#| label: tbl-time
+#| results: asis
+#| tbl-cap: Computational time (in seconds) for a single hierarchy across the four experiments, considering all candidate hyperparameters.
+
+time_tbl <- readRDS(here::here("paper/results/time.rds"))
+time_tbl[, 2] <- sprintf("%.01f", time_tbl[, 2] |> as.numeric())
+time_tbl[, 3] <- sprintf("%.01f", time_tbl[, 3] |> as.numeric())
+
+time_tbl |>
+  kable(format = "latex",
+        booktabs = TRUE,
+        align = c("l", rep("r", 5)),
+        escape = FALSE,
+        linesep = "") |>
+  kable_styling(latex_options = c("repeat_header"), font_size = 10) |>
+  pack_rows("Subset (NOCH = 126)", 2, 6) |>
+  pack_rows("Parsimonious (NOCH = 21)", 7, 11) |>
+  pack_rows("Lasso (NOCH = 21)", 12, 16) |>
+  pack_rows("Elasso (NOCH = 21)", 17, 17) |>
+  footnote(
+    general = "\\\\footnotesize{Note: NOCH refers to the number of candidate hyperparameters considered.}",
+    general_title = "",
+    escape = FALSE,
+    threeparttable = TRUE,
+    footnote_as_chunk = T
+  )
 ```
+
 While our proposed methods opt to leave "poor" base forecasts unused in forming reconciled forecasts, the approach by @Zhang2023-op is primarily focused on keeping "good" base forecasts unchanged after reconciliation. Both methods frame the problem as a quadratic programming problem to enhance reconciled forecast performance by somehow managing the impact of some time series during the process, ultimately providing reconciled forecasts for all series in the hierarchy. However, our methods differ from the approach by @Zhang2023-op in four main ways. First, our proposed methods alter the poor-performing base forecasts, ensuring these do not influence other nodes, whereas the approach by @Zhang2023-op keeps the forecasts of certain nodes immutable, which then impact others. Second, our methods automate the selection of series unused during reconciliation, while the latter method requires an additional, yet-to-be-determined procedure to identify the immutable set of series. Third, we use only base forecasts of the selected series for reconciliation, while @Zhang2023-op use base forecasts of all series, even though some remain unchanged after reconciliation. Finally, beyond preserving the unbiasedness of forecasts, we also relax the unbiasedness assumption and propose an unconstrained "in-sample" reconciliation method.
 
 Relaxing the assumption of unbiasedness of base forecasts, the Elasso method directly minimizes the mean squared reconciled forecast errors while incorporating regularization terms for time series selection. Unlike constrained "out-of-sample" reconciliation methods, Elasso does not use a $\bm{W}$ matrix in its optimization problem as $\bm{W}$ is introduced when deriving the loss function (Equation \eqref{eq-loss}) under the unbiasedness condition for both base and reconciled forecasts. Future research could explore including a $\bm{W}$ matrix in the Elasso method by considering the following optimization problem $$
