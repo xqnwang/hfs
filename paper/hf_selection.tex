@@ -1143,6 +1143,16 @@ and series Total at the top level, respectively. The results for these
 two scenarios are similar and reported in
 \hyperref[appendix-sim1]{Appendix B}.
 
+As elaborated following the introduction of each method in
+Section~\ref{sec-methodology}, we conduct parameter tuning by minimizing
+the sum of squared reconciled forecast errors on a truncated training
+set. We experimented with directly using the estimated weighting matrix
+\(\bm{G}\) derived from various candidate parameter values for forecast
+reconciliation. The results indicated significant variability in
+reconciliation outcomes depending on the parameter values. However, the
+optimal parameters identified through our tuning method consistently
+yielded stable and well-performing reconciliation results.
+
 \begin{table}
 
 \caption{\label{tbl-sim-rmse}Performance of proposed (gray-shaded) and
@@ -1382,6 +1392,13 @@ other series. This is because the influence of the constant term is
 minimal, i.e., it is much smaller compared to the data variability.
 Thus, it may be challenging to identify the ``poor'' base forecasts and
 exclude them from reconciliation in this setup.
+
+Similarly to Section~\ref{sec-sim1}, we experimented with using the
+estimated weighting matrix obtained from different parameter values for
+forecast reconciliation. The results showed noticeable variability in
+the reconciliation outcomes depending on the parameter values. However,
+our tuning method consistently produced stable and well-performing
+reconciliation results.
 
 \begin{table}
 

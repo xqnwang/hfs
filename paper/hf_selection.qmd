@@ -359,6 +359,8 @@ We set $s = 4$ for quarterly data with error variances $\sigma_{\varrho}^2=2$, $
 
 We use ETS models to generate base forecasts for each hierarchy using default settings from the **forecast** R package [@Hyndman2023-fc]. To introduce model misspecification, we artificially degrade the performance of series A at the middle level by applying a $1.5$ multiplier to its in-sample and out-of-sample forecasts (i.e., fitted values and base forecasts). We also repeated the analysis with model misspecification for series AA at the bottom level and series Total at the top level, respectively. The results for these two scenarios are similar and reported in [Appendix B](#appendix-sim1).
 
+As elaborated following the introduction of each method in @sec-methodology, we conduct parameter tuning by minimizing the sum of squared reconciled forecast errors on a truncated training set. We experimented with directly using the estimated weighting matrix $\bm{G}$ derived from various candidate parameter values for forecast reconciliation. The results indicated significant variability in reconciliation outcomes depending on the parameter values. However, the optimal parameters identified through our tuning method consistently yielded stable and well-performing reconciliation results.
+
 ```{r}
 #| label: tbl-sim-rmse
 #| results: asis
@@ -516,6 +518,8 @@ p23 <- resid |>
 ```
 
 For each series, base forecasts are generated from ARMA models. We identify the best ARMA model using the automated algorithm implemented in the **forecast** R package [@HK08]. Additionally, when fitting ARMA models for time series Total, A, and BA, we introduce a slight bias by omitting the constant term. @fig-corr-data presents an illustrative example of a simulated hierarchical time series. The left panels depict time plots for each series at different levels of the structure, while the right panels show the residuals obtained from forecasting each series using the fitted ARMA model. Notably, despite our omission of the constant term when fitting ARMA models to series Total, A, and BA, the residuals derived from the identified optimal models still exhibit fluctuations around zero and do not display significant deviations in comparison to the residuals from other series. This is because the influence of the constant term is minimal, i.e., it is much smaller compared to the data variability. Thus, it may be challenging to identify the "poor" base forecasts and exclude them from reconciliation in this setup.
+
+Similarly to @sec-sim1, we experimented with using the estimated weighting matrix obtained from different parameter values for forecast reconciliation. The results showed noticeable variability in the reconciliation outcomes depending on the parameter values. However, our tuning method consistently produced stable and well-performing reconciliation results.
 
 ```{r}
 #| label: tbl-corr-rmse
