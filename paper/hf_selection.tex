@@ -244,8 +244,8 @@ Nevertheless, certain series may experience deteriorations in reconciled
 forecasts. In practical settings, series in a structure often exhibit
 poor base forecasts due to model misspecification or low
 forecastability. To prevent their negative impact, we propose two
-categories of forecast reconciliation methods that incorporate time
-series selection based on out-of-sample and in-sample information,
+categories of forecast reconciliation methods that incorporate automatic
+time series selection based on out-of-sample and in-sample information,
 respectively. These methods keep ``poor'' base forecasts unused in
 forming reconciled forecasts, while adjusting weights allocated to the
 remaining series accordingly when generating bottom-level reconciled
@@ -253,9 +253,9 @@ forecasts. Additionally, our methods ameliorate disparities stemming
 from varied estimates of the base forecast error covariance matrix,
 alleviating challenges associated with estimator selection. Empirical
 evaluations through two simulation studies and applications using
-Australian labour force and domestic tourism data demonstrate improved
-forecast accuracy, particularly evident in higher aggregation levels,
-longer forecast horizons, and cases involving model misspecification.
+Australian labour force and domestic tourism data demonstrate the
+benefits of excluding series with high forecast errors and show
+promising results.
 \end{abstract}
 
 \noindent%
