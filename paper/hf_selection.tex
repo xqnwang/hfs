@@ -217,7 +217,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{August 21, 2024}
+\date{August 22, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -293,49 +293,73 @@ reconciliation are observed in series with initially poor-performing
 base forecasts \citep{Athanasopoulos2017-jj}. In practice, it is not
 uncommon for some series to have poor base forecasts due to challenges
 such as model misspecification or low signal-to-noise ratio (SNR). In
-such cases, it may be advantageous to exclude the worst base forecasts
-when performing reconciliation. This is the motivation for our proposed
-methods.
+such cases, it may be advantageous to exclude these poor-performing
+forecasts when performing reconciliation. This is the motivation for our
+proposed methods.
 
-First, we propose forecast reconciliation methods that incorporate time
-series selection based on out-of-sample information, assuming unbiased
-base forecasts. We formulate this as an optimization problem, using
-diverse penalty functions to control the number of nonzero column
-entries in the weighting matrix for linear forecast reconciliation. We
-show that the number of selected time series is at least equal to the
-number of series at the bottom level, and we can reconstruct the entire
-structure by aggregating/disaggregating the selected series. Second, we
-relax the unbiasedness assumption and introduce an additional
-reconciliation method with selection, utilizing in-sample observations
-and their fitted values. This enables us to use the in-sample
-reconciliation performance for selection purposes. In this case, it is
-possible that fewer than the number of series at the bottom level are
-used for reconciliation. In an extreme scenario, the solution may
-resemble the traditional top-down approach. Through simulation
-experiments and two empirical applications, we demonstrate that our
-proposed methods guarantee coherent forecasts that outperform or match
-their respective benchmark methods.
-\todo[inline]{Reconsider the wording.} The improvements are particularly
-pronounced when focusing on higher aggregation levels, longer forecast
-horizons, and cases of model misspecification. A remarkable feature of
-the proposed methods is their ability to diminish disparities arising
-from using different estimates of the base forecast error covariance
-matrix, thereby mitigating challenges associated with estimator
-selection, which is a prominent concern in the field of forecast
-reconciliation research.
-\todo[inline]{What about other concerns in forecast reconciliation research? It would be good to summarize these and address areas where the proposed methodology could support such concerns.}
+First, we propose constrained forecast reconciliation methods that
+incorporate time series selection based on out-of-sample information,
+assuming unbiased base forecasts. This is formulated as an optimization
+problem, using diverse penalty functions to control the number of
+nonzero column entries in the weighting matrix for linear forecast
+reconciliation. We show that the number of selected time series is at
+least equal to the number of series at the bottom level, and we can
+reconstruct the entire structure by aggregating/disaggregating the
+selected series. Second, we relax the unbiasedness assumption and
+introduce an additional unconstrained reconciliation method with
+selection, utilizing in-sample observations and their fitted values.
+This method leverages in-sample reconciliation performance for
+selection, potentially selecting fewer time series than the number of
+bottom-level series, and in extreme cases, resembling a top-down
+approach. Third, we conduct two Monte Carlo simulations to show the
+benefits of our methods under model misspecification and varying
+correlation levels among series. Finally, we assess the performance of
+the proposed methods in two real-world applications, a grouped hierarchy
+of Australian labour force data and a geographic hierarchy of Australian
+domestic tourism data.
+
+The methods proposed in this paper incorporate time series selection to
+enhance forecast reconciliation. Our experiments demonstrate their
+potential to exclude series with high forecast errors. In particular,
+the unconstrained reconciliation method with selection shows promising
+results in both simulations and real-world applications. Constrained
+methods with selection are particularly effective in addressing model
+misspecification. A remarkable feature of our methods is their ability
+to reduce disparities arising from using different estimates of the base
+forecast error covariance matrix, thereby mitigating challenges
+associated with estimator selection, which is a prominent concern in
+forecast reconciliation research.
+
+Unlike \citet{Zhang2023-op}, which keep good forecasts unchanged, we
+leave poor base forecasts unused in generating reconciled forecasts.
+Notably, our methods automate the selection process, relieving
+practitioners from the task of carefully choose which series to exclude.
+There may be other practical motivations to use our proposed approach.
+For example, in labour force forecasting, economists may be interested
+in various attributes such as gender, labor market region, and duration
+of job search, which create a complex hierarchical structure. Some
+series within this structure may be poorly specified for forecasting or
+exhibit weak patterns, resulting in poor base forecasts. Our methods
+selectively use some series into the reconciliation process, potentially
+improving overall accuracy while still providing reconciled forecasts
+for the entire hierarchy. Moreover, our methods allow for computational
+efficiency by avoiding the need to forecast excluded series. Finally,
+they also adapt well to scenarios with missing or extremely sparse data
+by adding additional constraints to exclude such series, enabling us to
+bypass their base forecasts while still returning reconciled outcomes.
 
 The remainder of the paper is structured as follows.
-Section~\ref{sec-preliminaries} presents the notations and a review of
+Section~\ref{sec-preliminaries} presents notations and a review of
 linear forecast reconciliation methods. Section~\ref{sec-methodology}
-introduces our proposed methods to achieve time series selection in
-reconciliation, and provides some theoretical insights.
-Section~\ref{sec-simulations} and Section~\ref{sec-applications} show
-the results from simulations and two real-world datasets, respectively.
-Section~\ref{sec-discussion} provides disucussions and thoughts on
-future research, followed by concluding remarks in
-Section~\ref{sec-conclusion}. The R code for reproducing the results is
-available at \url{https://github.com/xqnwang/hfs}.
+introduces our proposed methods, which incorporate time series selection
+to strengthen forecast reconciliation, and provides theoretical
+insights. Section~\ref{sec-simulations} and
+Section~\ref{sec-applications} show the results from two simulations and
+two real-world datasets, respectively. Section~\ref{sec-discussion}
+discusses the practical significance, contributions, limitations, and
+potential future research. Finally, Section~\ref{sec-conclusion}
+provides the conclusion. The code and data for reproducing the results
+is available at \url{https://github.com/xqnwang/hfs}.
 
 \section{Preliminaries}\label{sec-preliminaries}
 
@@ -1801,25 +1825,6 @@ forecast origin forward, month by month, until December 2016. The base
 forecasts are reconciled using our proposed methods and some existing
 reconciliation methods.
 
-Table~\ref{tbl-tourism-rmse-avg} reports average RMSE results. Similar
-to Section~\ref{sec-labour}, MinT and the respective proposed methods
-are excluded due to poor performance, and the MCB test and error
-correlation calculations are omitted due to limited data. The results
-show that OLS outperforms other benchmarks, despite WLSv and MinTs
-accounting for in-sample covariance of base forecast errors,
-highlighting its effectiveness. Overall, the Subset methods outperform
-benchmarks, especially for aggregation levels. The only exception is
-OLS-subset, which slightly reduces overall accuracy while improving
-top-level forecasts. Parsimonious and Lasso methods produce results
-almost identical to their benchmarks, which is not surprising as ETS
-models rarely yield extremely poor forecasts, making them challenging to
-be selected out using methods that tend to return dense estimates. When
-we relax the unbiasedness assumption, EMinT consistently performs worst
-across all levels due to the lack of joint weak stationarity among the
-series in the hierarchy. Elasso, however, shows large improvement
-compared to EMinT, and ranks best across most levels except the bottom
-level.
-
 \begin{table}
 
 \caption{\label{tbl-tourism-rmse-avg}Performance of proposed
@@ -1871,6 +1876,25 @@ EMinT & 59.7 & 70.4 & 81.4 & 85.9 & 79.0\\
 
 \end{table}%
 
+Table~\ref{tbl-tourism-rmse-avg} reports average RMSE results. Similar
+to Section~\ref{sec-labour}, MinT and the respective proposed methods
+are excluded due to poor performance, and the MCB test and error
+correlation calculations are omitted due to limited data. The results
+show that OLS outperforms other benchmarks, despite WLSv and MinTs
+accounting for in-sample covariance of base forecast errors,
+highlighting its effectiveness. Overall, the Subset methods outperform
+benchmarks, especially for aggregation levels. The only exception is
+OLS-subset, which slightly reduces overall accuracy while improving
+top-level forecasts. Parsimonious and Lasso methods produce results
+almost identical to their benchmarks, which is not surprising as ETS
+models rarely yield extremely poor forecasts, making them challenging to
+be selected out using methods that tend to return dense estimates. When
+we relax the unbiasedness assumption, EMinT consistently performs worst
+across all levels due to the lack of joint weak stationarity among the
+series in the hierarchy. Elasso, however, shows large improvement
+compared to EMinT, and ranks best across most levels except the bottom
+level.
+
 We present the results based on the last one training set from January
 2017 to December 2017 in \hyperref[appendix-tourism]{Appendix E}.
 Table~\ref{tbl-tourism-rmse} shows the RMSE results, and
@@ -1893,15 +1917,6 @@ inclusion of shrinkage through ridge regularization in the WLSv and
 MinTs methods still enhances the quality of reconciled forecasts.
 
 \section{Discussion}\label{sec-discussion}
-
-\todo[inline]{
-- list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
-
-- emphasize the contributions of the current paper. (Grouped hierarchy. The selected series in our proposed method may come from different levels of the hierarchy.
-It preserves the unbiasedness of forecasts, is able to restore the hierarchy.) Discuss the practical (OR) significance of the current paper. Unused series. Practical scenario in demand forecasting where intermittent series predominate at the most disaggregated level and their forecasts are worse.
-
-- discuss the practical repercussions of this work as well as the potential limitations it faces. Probabilistic forecasting.
-}
 
 \begin{table}
 
@@ -1972,7 +1987,7 @@ during reconciliation, while the latter method requires an additional,
 yet-to-be-determined procedure to identify the immutable set of series.
 Third, we use only base forecasts of the selected series for
 reconciliation, while \citet{Zhang2023-op} use base forecasts of all
-series, even though some remain unchanged after reconciliation. Finally,
+series, even though some remain unchanged after reconciliation. Fourth,
 beyond preserving the unbiasedness of forecasts, we also relax the
 unbiasedness assumption and propose an unconstrained ``in-sample''
 reconciliation method.
@@ -2022,8 +2037,6 @@ base forecasts, particularly regarding their significance when mapped to
 bottom‑level disaggregated forecasts.
 
 \section{Conclusion}\label{sec-conclusion}
-
-\todo[inline]{Tighten up conclusions.}
 
 In existing forecast reconciliation literature, we map all base
 forecasts into bottom-level disaggregated forecasts, which are then
