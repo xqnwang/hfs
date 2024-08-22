@@ -102,7 +102,7 @@ latex_table <- function(out_all) {
     kable_paper(full_width = FALSE) |>
     kable_styling(
       latex_options = c("repeat_header", "scale_down"),
-      font_size = 11
+      font_size = 10
     ) |>
     row_spec(
       which(grepl("-", out$Method) | grepl("Elasso", out$Method)),
@@ -389,7 +389,7 @@ latex_sim_nos_table <- function(z_out, n_out, rmsse_out, label_out) {
       linesep = ""
     ) |>
     add_header_above(header, line = FALSE) |>
-    kable_styling(font_size = 11) |>
+    kable_styling(font_size = 10) |>
     kable_paper(full_width = FALSE) |>
     row_spec(3 * (1:length(candidates)), hline_after = TRUE) |>
     # footnote(
@@ -504,7 +504,7 @@ latex_corr_table <- function(out_all) {
     kable_paper(full_width = FALSE) |>
     kable_styling(
       latex_options = c("repeat_header", "scale_down"),
-      font_size = 11
+      font_size = 10
     ) |>
     row_spec((grepl("-", out$Method) | grepl("Elasso", out$Method)) |> which(),
       background = "#e6e3e3"

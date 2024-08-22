@@ -3,7 +3,7 @@
 \usepackage{mathptmx}
 \usepackage{amsmath} % Ensure amsmath is included for \eqref
 \usepackage[]{natbib}
-\usepackage[margin = 2.5cm]{geometry}
+\usepackage[top=1.5cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
 %\clubpenalty = 10000
@@ -34,7 +34,11 @@
 \usepackage{caption}
 \DeclareCaptionStyle{italic}[justification=centering]
  {labelfont={bf},textfont={it},labelsep=colon}
-\captionsetup[figure]{style=italic,singlelinecheck=true,font=singlespacing,format=plain}
-\captionsetup[table]{style=italic,singlelinecheck=true,font=singlespacing,format=plain}
-\setlength{\abovecaptionskip}{2pt}   % Adjust space above the caption
-\setlength{\belowcaptionskip}{2pt}   % Adjust space below the caption
+\captionsetup[figure]{style=italic,singlelinecheck=true,font=singlespacing,format=plain,aboveskip=2pt,belowskip=2pt}
+\captionsetup[table]{style=italic,singlelinecheck=true,font=singlespacing,format=plain,aboveskip=2pt,belowskip=2pt}
+
+%% SECTION TITLE
+\usepackage{sectsty}
+\sectionfont{\vspace{-10pt}} % Space before section title
+\subsectionfont{\vspace{-5pt}} % Space before subsection title
+\subsubsectionfont{\vspace{-5pt}} % Space before subsubsection title

@@ -86,7 +86,7 @@
 \usepackage{mathptmx}
 \usepackage{amsmath} % Ensure amsmath is included for \eqref
 \usepackage[]{natbib}
-\usepackage[margin = 2.5cm]{geometry}
+\usepackage[top=1.5cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
 %\clubpenalty = 10000
@@ -117,10 +117,14 @@
 \usepackage{caption}
 \DeclareCaptionStyle{italic}[justification=centering]
  {labelfont={bf},textfont={it},labelsep=colon}
-\captionsetup[figure]{style=italic,singlelinecheck=true,font=singlespacing,format=plain}
-\captionsetup[table]{style=italic,singlelinecheck=true,font=singlespacing,format=plain}
-\setlength{\abovecaptionskip}{2pt}   % Adjust space above the caption
-\setlength{\belowcaptionskip}{2pt}   % Adjust space below the caption
+\captionsetup[figure]{style=italic,singlelinecheck=true,font=singlespacing,format=plain,aboveskip=2pt,belowskip=2pt}
+\captionsetup[table]{style=italic,singlelinecheck=true,font=singlespacing,format=plain,aboveskip=2pt,belowskip=2pt}
+
+%% SECTION TITLE
+\usepackage{sectsty}
+\sectionfont{\vspace{-10pt}} % Space before section title
+\subsectionfont{\vspace{-5pt}} % Space before subsection title
+\subsubsectionfont{\vspace{-5pt}} % Space before subsubsection title
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -217,7 +221,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{August 22, 2024}
+\date{August 23, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -370,8 +374,8 @@ time series that adheres to known linear constraints. Let
 \(\bm{y}_t \in \mathbb{R}^n\) be a vector comprising observations from
 all time series in the hierarchy at time \(t\), and
 \(\bm{b}_t \in \mathbb{R}^{n_b}\) be a vector comprising observations of
-only the most disaggregated (bottom-level) time series. The full
-hierarchy can be written as \[
+only the most disaggregated (bottom-level) series. The full hierarchy
+can be written as \[
 \bm{y}_t = \bm{S}\bm{b}_t,
 \] for \(t=1,2,\ldots,T\), where \(T\) is the length of the time series,
 and \(\bm{S}\) is an \(n \times n_b\) \emph{summing matrix} that defines
@@ -554,7 +558,7 @@ a closed-form solution given by \[
 \(\bm{B}_{h}^{*}=\left[\bm{b}_{T_1+h}, \ldots, \bm{b}_T\right]^{\prime}\).
 If \(\hat{\bm{Y}}_{h}^{*\prime}\hat{\bm{Y}}_{h}^{*}\) is not invertible,
 a generalized inverse can be applied. When \(\lambda > 0\), imposing the
-\(L_1\) penalty on \(\bm{G}_h\) will introduce sparsity and reduce
+\(L_1\) penalty on \(\bm{G}_h\) introduces sparsity and reduce
 estimation variance, albeit at the cost of introducing some bias.
 
 Relaxing the assumption of unbiasedness of base forecasts,
@@ -661,8 +665,7 @@ within this framework are ``out‑of‑sample'' in the sense that
 considered \emph{a grouped variable selection problem}, with each group
 corresponding to a column of \(\bm{G}\). When \(\lambda = 0\), the
 problem reduces to the MinT optimization problem in Equation
-\eqref{eq-mint_op} with a closed-form solution given by Equation
-\eqref{eq-mint}.
+\eqref{eq-mint_op} with a closed-form solution.
 
 The constraint \(\bm{G}\bm{S}=\bm{I}\) guarantees that the reconciled
 forecasts remain unbiased if the base forecasts are unbiased. Under this
@@ -726,10 +729,9 @@ regularization}\label{group-best-subset-selection-with-ridge-regularization}
 ridge regularization}
 
 In a high-dimensional context with \(p \gg n\), it is common to assume
-that the true regression coefficient (i.e.,
-\(\operatorname{vec}(\bm{G})\) in our problem) is sparse. We apply a
-combination of \(L_0\) and \(L_2\) regularization to control the nonzero
-column entries in \(\bm{G}\):
+the true regression coefficient (i.e., \(\operatorname{vec}(\bm{G})\) in
+our problem) is sparse. We apply a combination of \(L_0\) and \(L_2\)
+regularization to control the nonzero column entries in \(\bm{G}\):
 \begin{equation}\phantomsection\label{eq-subset}{ \begin{aligned}
 \min_{\operatorname{vec}(\bm{G})} \quad & \frac{1}{2}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\left(\hat{\bm{y}}^{\prime} \otimes \bm{S}\right) \operatorname{vec}(\bm{G})\right) + \lambda_0 \sum_{j=1}^n 1\left(\bm{G}_{\cdot j} \neq \bm{0}\right) + \lambda_2 \left\|\operatorname{vec}\left(\bm{G}\right)\right\|_2^2 \\
 \text{s.t.} \quad & \left(\bm{S}^{\prime} \otimes \bm{I}_{n_b}\right) \operatorname{vec}(\bm{G})=\operatorname{vec}(\bm{I}_{n_b}),
@@ -898,8 +900,7 @@ candidate values for \(\lambda_0\) we consider is
 \(\lambda_{0}^{j} = \lambda_{0}^{1}\left(\lambda_{0}^{k} / \lambda_{0}^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\).
 
-\textbf{Computation details.} Following a setup akin to that in the
-group best-subset selection, we employ Gurobi to solve Equation
+\textbf{Computation details.} We employ Gurobi to solve Equation
 \eqref{eq-parsimonious_mip} by configuring parameters such as MIPGap =
 \(0.001\) and TimeLimit = \(600\) seconds for problems with
 \(p > 1000\).
@@ -940,7 +941,7 @@ method based on various estimators for \(\bm{W}\), referring to them as
 \textbf{MinT-lasso}, and \textbf{MinTs-lasso}, respectively.
 
 Next, we present the second order cone programming (SOCP) formulation
-for the group lasso based estimators given by
+for the group lasso based estimators:
 \begin{equation}\phantomsection\label{eq-lasso_socp}{
 \begin{aligned}
 \min_{\operatorname{vec}(\bm{G}), \check{\bm{e}}, \bm{g}^{+}} & \frac{1}{2}\check{\bm{e}}^{\prime} \bm{W}_h^{-1}\check{\bm{e}} + \lambda \sum_{j=1}^n w_j c_j \\
@@ -954,7 +955,7 @@ second order cone constraints,
 \(c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}\) for
 \(j \in[n]\).
 
-Compared to the previous two methods above, the group lasso method is
+Compared to the previous methods, the group lasso method is
 computationally friendlier. Nonetheless, \citet{Hazimeh2023-ie}
 demonstrated, both empirically and theoretically, that the group
 \(L_0\)-regularized method exhibits advantages over its group lasso
@@ -1111,12 +1112,12 @@ constraint.
 
 \section{Monte Carlo simulations}\label{sec-simulations}
 
-To assess the proposed reconciliation methods with time series selection
-outlined in Section~\ref{sec-methodology}, we carry out two simulations
-with different designs. Both simulations consider a hierarchy comprising
-two levels of aggregation, as shown in Figure~\ref{fig-hts}. The
-bottom-level series are first generated and then summed to obtain the
-aggregated series at higher levels.
+To assess the proposed reconciliation methods with selection outlined in
+Section~\ref{sec-methodology}, we carry out two simulations with
+different designs. Both simulations consider a hierarchy comprising two
+levels of aggregation, as shown in Figure~\ref{fig-hts}. Bottom-level
+series are first generated and then summed to obtain the aggregated
+series at higher levels.
 
 \subsection{Setup 1: Exploring the effect of model
 misspecification}\label{sec-sim1}
@@ -1151,20 +1152,19 @@ We set \(s = 4\) for quarterly data with error variances
 \(\sigma_\omega^2=7\). Initial values for \(\bm{\mu}_0\), \(\bm{v}_0\),
 \(\bm{\gamma}_0\), \(\bm{\gamma}_1\), and \(\bm{\gamma}_2\) are
 generated independently from a multivariate normal distribution with
-zero mean and identity covariance matrix. For each bottom-level series,
-we generate \(180\) observations, with the last \(h = 16\) observations
-forming the test set. The bottom-level series are then aggregated to
-form higher-level data. This entire process is repeated \(500\) times.
+zero mean and identity covariance matrix. Each bottom-level series has
+\(180\) observations, with the last \(h = 16\) forming the test set. The
+bottom-level series are then aggregated to form higher-level data. This
+process is repeated \(500\) times.
 
 We use ETS models to generate base forecasts for each hierarchy using
 default settings from the \textbf{forecast} R package
-\citep{Hyndman2023-fc}. To introduce model misspecification, we
-artificially degrade the performance of series A at the middle level by
-applying a \(1.5\) multiplier to its in-sample and out-of-sample
-forecasts (i.e., fitted values and base forecasts). We also repeated the
-analysis with model misspecification for series AA at the bottom level
-and series Total at the top level, respectively. The results for these
-two scenarios are similar and reported in
+\citep{Hyndman2023-fc}. To introduce model misspecification, we degrade
+the performance of series A at the middle level by applying a \(1.5\)
+multiplier to its in-sample fitted values and out-of-sample forecasts.
+We also repeated the analysis with model misspecification for series AA
+at the bottom level and series Total at the top level, respectively. The
+results for these two scenarios are similar and reported in
 \hyperref[appendix-sim1]{Appendix B}.
 
 As elaborated following the introduction of each method in
@@ -1180,8 +1180,8 @@ yielded stable and well-performing reconciliation results.
 \begin{table}
 
 \caption{\label{tbl-sim-rmse}Performance of proposed (gray-shaded) and
-benchmark methods for simulated data in Setup 1. The Base row shows
-average RMSE of base forecasts, while entries below show RMSE percentage
+benchmark methods for simulation Setup 1. The Base row shows average
+RMSE of base forecasts, while entries below show RMSE percentage
 decrease (negative) or increase (positive) for reconciliation methods.
 Blue entries highlight the best-performing methods; bold entries
 indicate proposed methods outperforming bechmarks.}
@@ -1190,7 +1190,7 @@ indicate proposed methods outperforming bechmarks.}
 
 \centering
 \resizebox{\linewidth}{!}{
-\fontsize{11}{13}\selectfont
+\fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
@@ -1264,20 +1264,19 @@ EMinT & 2.2 & 2.9 & 2.5 & 1.7 & --46.2 & --48.1 & --42.4 & --35.3 & 3.6 & 2.9 & 
 \end{minipage}%
 
 \caption{\label{fig-sim-plots}MCB test result and correlation matrix
-heatmap for simulated data in Setup 1.}
+heatmap for simulation Setup 1.}
 
 \end{figure}%
 
 Table~\ref{tbl-sim-rmse} summarizes the average root mean squared error
-(RMSE) results for each level and the overall structure (denoted as
-Average). The BU row uses the ``bottom-up'' approach, where base
-forecasts at the bottom level are aggregated to generate higher-level
-forecasts. We also perform the multiple comparisons with the best (MCB)
-test at a \(95\%\) confidence level, as shown in
-Figure~\ref{fig-sim-plots-1}, to assess the statistical significance of
-differences among the methods in Table Table~\ref{tbl-sim-rmse}. With
-MCB, the ranking performances are statistically different if the
-intervals of two methods do not overlap.
+(RMSE) for each level and the overall structure (denoted as Average).
+The BU row uses the ``bottom-up'' approach, where base forecasts at the
+bottom level are aggregated to generate higher-level forecasts. Multiple
+comparisons with the best (MCB) test at a \(95\%\) confidence level,
+shown in Figure~\ref{fig-sim-plots-1}, assesses the statistical
+significance of differences among the methods in
+Table~\ref{tbl-sim-rmse}. With MCB, the ranking performances are
+statistically different if the intervals of two methods do not overlap.
 
 We find that the BU method performs the best overall, which is
 unsurprising given that the aggregated series A is deteriorated in this
@@ -1300,14 +1299,14 @@ levels, which is typically the primary concern for practitioners.
 \begin{table}
 
 \caption{\label{tbl-sim-selection}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 1. The numbers in parentheses show RMSSE values for each series.
-The last column displays a stacked barplot of the total selected series
-from 500 hierarchies, with darker sub-bars indicating higher counts.}
+selected using proposed reconciliation methods for simulation Setup 1.
+RMSSE values for each series are in parentheses. The last column
+displays a stacked barplot of the total selected series from 500
+hierarchies, with darker sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -1427,8 +1426,8 @@ reconciliation results.
 \begin{table}
 
 \caption{\label{tbl-corr-rmse}Performance of proposed (gray-shaded) and
-benchmark methods for simulated data in Setup 2. The Base row shows
-average RMSE of base forecasts, while entries below show RMSE percentage
+benchmark methods for simulation Setup 2. The Base row shows average
+RMSE of base forecasts, while entries below show RMSE percentage
 decrease (negative) or increase (positive) for reconciliation methods.
 Blue entries highlight the best-performing methods; bold entries
 indicate proposed methods outperforming bechmarks.}
@@ -1437,7 +1436,7 @@ indicate proposed methods outperforming bechmarks.}
 
 \centering
 \resizebox{\linewidth}{!}{
-\fontsize{11}{13}\selectfont
+\fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{5}{c}{Top} & \multicolumn{5}{c}{Middle} & \multicolumn{5}{c}{Bottom} & \multicolumn{5}{c}{Average} \\
@@ -1511,8 +1510,7 @@ EMinT & \textcolor{blue}{\textbf{--31.2}} & \textcolor{blue}{\textbf{--19.8}} & 
 \end{minipage}%
 
 \caption{\label{fig-corr-plots}MCB test result and correlation matrix
-heatmap for simulated data in Setup 2, with the error correlation being
--0.8.}
+heatmap for simulation Setup 2, with error correlation being -0.8.}
 
 \end{figure}%
 
@@ -1539,10 +1537,10 @@ setting, but to save space, we do not present all results. The omitted
 results follow a similar pattern and are available upon request.
 
 Table~\ref{tbl-corr-selection-neg} presents the proportion of time
-series being selected using our proposed methods, with an error
-correlation of \(-0.8\). The correlation matrix heatmap for forecast
-errors is displayed in Figure~\ref{fig-corr-plots-2}. To save space, the
-results for other error correlations are similar and given in
+series selected using our methods, with an error correlation of
+\(-0.8\). The correlation matrix heatmap for forecast errors is
+displayed in Figure~\ref{fig-corr-plots-2}. To save space, the results
+for other error correlations are similar and given in
 \hyperref[appendix-sim2]{Appendix C}. Despite the challenges in
 identifying poor-performing series in this setup,
 Table~\ref{tbl-corr-selection-neg} shows that Subset and Parsimonious
@@ -1560,16 +1558,16 @@ especially when the error correlation within the structure is negative.
 
 \begin{table}
 
-\caption{\label{tbl-corr-selection-neg}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 2, with the error correlation being -0.8. The numbers in
-parentheses show RMSSE values for each series. The last column displays
-a stacked barplot of the total selected series from 500 hierarchies,
-with darker sub-bars indicating higher counts.}
+\caption{\label{tbl-corr-selection-neg}Proportion of time series
+selected using proposed reconciliation methods for simulation Setup 2,
+with error correlation being -0.8. RMSSE values for each series are in
+parentheses. The last column displays a stacked barplot of the total
+selected series from 500 hierarchies, with darker sub-bars indicating
+higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -1656,25 +1654,24 @@ disaggregated by state and territory, and by duration of job search.}
 
 The top panel in Figure~\ref{fig-labour-data} shows the total number of
 unemployed persons in Australia from January 2010 to July 2023,
-representing the top-level series in the hierarchical structure. The
-monthly series shows strong seasonality within each year, marked by
-prominent peaks occurring every January, attributable to school-leavers.
-Lower peaks occur in July, perhaps impacted by the start of the
-financial year. Amidst the backdrop of COVID-19's non-essential service
-shutdowns and trading restrictions, March and April 2020 saw a notable
-surge in unemployment. However, as coronavirus cases dwindled
-significantly and restrictions eased in the aftermath, employment made a
-remarkable recovery, leading to a subsequent decline in unemployment.
-The bottom-left panel displays the breakdown of unemployed individuals
-by state and territory, while the bottom-right panel presents the
-breakdown by the duration of job search. The plots display diverse and
-rich dynamics both within and between different levels of the hierarchy.
-For example, there was noticeable growth observed during 2020 for some
-states such as NSW, VIC, and QLD, whereas other states did not
-experience such significant growth. Additionally, there is a resemblance
-in the seasonal patterns between NSW and QLD, while the seasonal pattern
-in VIC differs. When comparing the series at the STT level and Duration
-level, the seasonal patterns in the Duration-level series are more
+representing the top-level series in the hierarchy. The monthly series
+shows strong seasonality, marked by prominent peaks occurring every
+January, attributable to school-leavers. Lower peaks occur in July,
+perhaps impacted by the start of the financial year. Amidst the backdrop
+of COVID-19's non-essential service shutdowns and trading restrictions,
+March and April 2020 saw a notable surge in unemployment. However, as
+coronavirus cases dwindled significantly and restrictions eased in the
+aftermath, employment made a remarkable recovery, leading to a
+subsequent decline in unemployment. The bottom-left panel displays the
+breakdown of unemployed individuals by state and territory, while the
+bottom-right panel presents the breakdown by the duration of job search.
+The plots display diverse and rich dynamics both within and between
+different levels of the hierarchy. For example, there was noticeable
+growth observed during 2020 for some states such as NSW, VIC, and QLD,
+whereas other states did not experience such significant growth.
+Additionally, there is a resemblance in the seasonal patterns between
+NSW and QLD, while the seasonal pattern in VIC differs. Compared to the
+STT level, the seasonal patterns in the Duration-level series are more
 consistent and potentially easier to forecast.
 
 We assess the forecast accuracy of base forecasts and various
@@ -1804,7 +1801,7 @@ to December 2017, with a total of \(240\) observations.
 }
 
 \caption{\label{fig-tourism-data}Domestic tourism flows from January
-1998 to December 2017 for the whole of Australia as well as the states.}
+1998 to December 2017 for Australia as well as the states.}
 
 \end{figure}%
 
@@ -2228,7 +2225,7 @@ Section~\ref{sec-sim1}.
 \begin{table}[!h]
 
 \caption{\label{tbl-sim-rmse-total}Performance of proposed (gray-shaded)
-and benchmark methods for simulated data in Setup 1, with model
+and benchmark methods for simulation Setup 1, with model
 misspecification in series Total. The Base row shows average RMSE of
 base forecasts, while entries below show RMSE percentage decrease
 (negative) or increase (positive) for reconciliation methods. Blue
@@ -2239,7 +2236,7 @@ proposed methods outperforming bechmarks.}
 
 \centering
 \resizebox{\linewidth}{!}{
-\fontsize{11}{13}\selectfont
+\fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
@@ -2314,23 +2311,23 @@ errors}
 \end{minipage}%
 
 \caption{\label{fig-sim-plots-total}MCB test result and correlation
-matrix heatmap for simulated data in Setup 1, with model
-misspecification in series Total.}
+matrix heatmap for simulation Setup 1, with model misspecification in
+series Total.}
 
 \end{figure}%
 
 \begin{table}[!h]
 
 \caption{\label{tbl-sim-selection-total}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 1, with model misspecification in series Total. The numbers in
-parentheses show RMSSE values for each series. The last column displays
-a stacked barplot of the total selected series from 500 hierarchies,
-with darker sub-bars indicating higher counts.}
+selected using proposed reconciliation methods for simulation Setup 1,
+with model misspecification in series Total. RMSSE values for each
+series are in parentheses. The last column displays a stacked barplot of
+the total selected series from 500 hierarchies, with darker sub-bars
+indicating higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -2369,7 +2366,7 @@ Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width
 \begin{table}[!h]
 
 \caption{\label{tbl-sim-rmse-AA}Performance of proposed (gray-shaded)
-and benchmark methods for simulated data in Setup 1, with model
+and benchmark methods for simulation Setup 1, with model
 misspecification in series AA. The Base row shows average RMSE of base
 forecasts, while entries below show RMSE percentage decrease (negative)
 or increase (positive) for reconciliation methods. Blue entries
@@ -2380,7 +2377,7 @@ methods outperforming bechmarks.}
 
 \centering
 \resizebox{\linewidth}{!}{
-\fontsize{11}{13}\selectfont
+\fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{4}{c}{Top} & \multicolumn{4}{c}{Middle} & \multicolumn{4}{c}{Bottom} & \multicolumn{4}{c}{Average} \\
@@ -2455,23 +2452,23 @@ errors}
 \end{minipage}%
 
 \caption{\label{fig-sim-plots-AA}MCB test result and correlation matrix
-heatmap for simulated data in Setup 1, with model misspecification in
-series AA.}
+heatmap for simulation Setup 1, with model misspecification in series
+AA.}
 
 \end{figure}%
 
 \begin{table}[!h]
 
 \caption{\label{tbl-sim-selection-AA}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 1, with model misspecification in series AA. The numbers in
-parentheses show RMSSE values for each series. The last column displays
-a stacked barplot of the total selected series from 500 hierarchies,
-with darker sub-bars indicating higher counts.}
+selected using proposed reconciliation methods for simulation Setup 1,
+with model misspecification in series AA. RMSSE values for each series
+are in parentheses. The last column displays a stacked barplot of the
+total selected series from 500 hierarchies, with darker sub-bars
+indicating higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -2516,16 +2513,15 @@ Section~\ref{sec-sim2}.
 
 \begin{table}[!h]
 
-\caption{\label{tbl-corr-selection-p3}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 2, with the error correlation being -0.4. The numbers in
-parentheses show RMSSE values for each series. The last column displays
-a stacked barplot of the total selected series from 500 hierarchies,
-with darker sub-bars indicating higher counts.}
+\caption{\label{tbl-corr-selection-p3}Proportion of time series selected
+using proposed reconciliation methods for simulation Setup 2, with error
+correlation being -0.4. RMSSE values for each series are in parentheses.
+The last column displays a stacked barplot of the total selected series
+from 500 hierarchies, with darker sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -2563,16 +2559,15 @@ Elasso & 0.93 & 0.73 & 0.98 & 1.00 & 0.99 & 1.00 & 1.00 & \includegraphics[width
 
 \begin{table}[!h]
 
-\caption{\label{tbl-corr-selection-p5}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 2, with the error correlation being 0. The numbers in parentheses
-show RMSSE values for each series. The last column displays a stacked
-barplot of the total selected series from 500 hierarchies, with darker
-sub-bars indicating higher counts.}
+\caption{\label{tbl-corr-selection-p5}Proportion of time series selected
+using proposed reconciliation methods for simulation Setup 2, with error
+correlation being 0. RMSSE values for each series are in parentheses.
+The last column displays a stacked barplot of the total selected series
+from 500 hierarchies, with darker sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -2610,16 +2605,15 @@ Elasso & 0.92 & 0.80 & 0.98 & 1.00 & 0.97 & 1.00 & 1.00 & \includegraphics[width
 
 \begin{table}[!h]
 
-\caption{\label{tbl-corr-selection-p7}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 2, with the error correlation being 0.4. The numbers in
-parentheses show RMSSE values for each series. The last column displays
-a stacked barplot of the total selected series from 500 hierarchies,
-with darker sub-bars indicating higher counts.}
+\caption{\label{tbl-corr-selection-p7}Proportion of time series selected
+using proposed reconciliation methods for simulation Setup 2, with error
+correlation being 0.4. RMSSE values for each series are in parentheses.
+The last column displays a stacked barplot of the total selected series
+from 500 hierarchies, with darker sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -2657,16 +2651,15 @@ Elasso & 0.89 & 0.76 & 0.99 & 0.99 & 0.91 & 1.00 & 0.99 & \includegraphics[width
 
 \begin{table}[!h]
 
-\caption{\label{tbl-corr-selection-p9}Proportion of time series being
-selected using proposed reconciliation methods for simulated data in
-Setup 2, with the error correlation being 0.8. The numbers in
-parentheses show RMSSE values for each series. The last column displays
-a stacked barplot of the total selected series from 500 hierarchies,
-with darker sub-bars indicating higher counts.}
+\caption{\label{tbl-corr-selection-p9}Proportion of time series selected
+using proposed reconciliation methods for simulation Setup 2, with error
+correlation being 0.8. RMSSE values for each series are in parentheses.
+The last column displays a stacked barplot of the total selected series
+from 500 hierarchies, with darker sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\begingroup\fontsize{11}{13}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
@@ -2730,8 +2723,8 @@ errors}
 \end{minipage}%
 
 \caption{\label{fig-corr-plots-others}MCB test result and correlation
-matrix heatmap for simulated data in Setup 2, with the error correlation
-being -0.4, 0, 0.4, 0.8, respectively.}
+matrix heatmap for simulation Setup 2, with error correlation being
+-0.4, 0, 0.4, 0.8, respectively.}
 
 \end{figure}%
 
