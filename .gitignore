@@ -1,10 +1,14 @@
 # Data
 *.rds
 *.csv
+*.RData
+data/*
+!data/tourism.csv
+!data/labour.csv
 !paper/results/*.rds
 
 # Review comments
-reviews/
+comments/
 
 # References
 refs/
@@ -23,14 +27,10 @@ __pycache__/
 # User-specific files
 *.Ruserdata
 *.DS_Store
-*.RData
 *.ipynb_checkpoints/
 *.pptx
 inst/
 docs/
-data/*
-!data/tourism.csv
-!data/labour.csv
 
 # Core latex/pdflatex auxiliary files
 *.xdv

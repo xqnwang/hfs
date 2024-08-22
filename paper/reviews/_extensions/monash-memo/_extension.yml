@@ -1,0 +1,25 @@
+title: Monash Memo Template
+authors: 
+ - Emi Tanaka
+ - Rob J Hyndman
+version: 1.0.0
+quarto-required: ">=1.2.0"
+contributes:
+  formats:
+    pdf:
+      template: assets/monashmemo.tex
+      format-resources:
+       - assets/AACSB.png
+       - assets/monash2.png
+       - assets/AMBA.png
+       - assets/EQUIS.png
+       - assets/MBSportrait.jpg
+      cite-method: biblatex
+      biblio-style: authoryear-comp
+    html: 
+      template: assets/paged.html
+      format-resources:
+       - assets/paged.polyfill.js
+       - assets/interface.css
+      
+
