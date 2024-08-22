@@ -784,9 +784,7 @@ Under the assumption of unbiased base forecasts, we developed three constrained 
 
 Simulation experiments and two empirical applications demonstrated the superiority of the proposed methods over existing reconciliation methods. When model misspecification was introduced in some series within the hierarchy, our methods effectively excluded these "problematic" series, ensuring good quality coherent forecasts. In both empirical applications, where no apparent model misspecification was present, the Subset and Elasso methods demonstrated promising results. In contrast, Parsimonious and Lasso generally produced results similar to their benchmarks, as they tend to deliver dense estimates.
 
-%%%% Edits needed
-
-A feature of the proposed methods is their ability to reduce the disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating the challenges associated with estimator selection, which is a prominent issue within the field of forecast reconciliation research.
+While this study provides marks a important advancement in hierarchical forecasting, several promising avenues for further research remain. These include improving the scalability of the methods, extending the unconstrained in-sample approach to account for varying weights assigned to forecast errors of different series, integrating bias correction mechanisms prior to reconciliation to deal with biased forecasts, and investigating bi-level variable selection strategies.
 
 ## Supplementary materials {.unnumbered}
 
