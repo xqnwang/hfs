@@ -1,3 +1,6 @@
+# Diff file
+diff.*
+
 # Data
 *.rds
 *.csv
