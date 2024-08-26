@@ -196,7 +196,7 @@ In this section, we introduce our methods for forecast reconciliation while auto
 
 ### Series selection under the unbiasedness assumption {#sec-constrained}
 
-As $\bm{S}$ is fixed and $\hat{\bm{y}}_{T+h \mid T}$ is given, $\bm{G}_h$ determines the linear reconciliation performance, as shown in Equation \eqref{eq-lr}. We drop the subscript $h$ here as we assume $\bm{W}$ and $\bm{G}$ do not vary with the forecast horizon. A natural way to remove forecasts of some series is by controlling the number of nonzero column entries in $\bm{G}$. This leads to a generalization of the MinT optimization problem with an additional penalty term: $$
+As $\bm{S}$ is fixed and $\hat{\bm{y}}_{T+h \mid T}$ is given, $\bm{G}_h$ determines the linear reconciliation performance, as shown in Equation \eqref{eq-lr}. We drop the subscript $h$ here as we assume $\bm{W}$ and $\bm{G}$ do not vary with the forecast horizon. Recognizing that reconciled forecasts $\tilde{\bm{y}}$ are simply linear combinations of base forecasts $\hat{\bm{y}}$ via $\tilde{\bm{y}}=\bm{SG}\hat{\bm{y}}$, setting columns of $\bm{G}$ to zero can eliminate heavily misspecified forecasts from the combination. This leads to a generalization of the MinT optimization problem with an additional penalty term: $$
 \min_{\bm{G}} \quad \frac{1}{2}\left(\hat{\bm{y}}-\bm{SG}\hat{\bm{y}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\bm{SG}\hat{\bm{y}}\right)
 + \lambda\mathfrak{g}(\bm{G}) \qquad \text{s.t.} \quad \bm{G}\bm{S}=\bm{I},
 $$ {#eq-op_u} where $\hat{\bm{y}}:=\hat{\bm{y}}_{T+1 \mid T}$, $\mathfrak{g}(\cdot)$ penalizes the columns of $\bm{G}$ towards zero, and $\lambda$ is a penalty parameter. The methods developed within this framework are "out‑of‑sample" in the sense that $\hat{\bm{y}}$ are genuine one-step-ahead forecasts. This can be considered *a grouped variable selection problem*, with each group corresponding to a column of $\bm{G}$. When $\lambda = 0$, the problem reduces to the MinT optimization problem in Equation \eqref{eq-mint_op} with a closed-form solution.
@@ -447,7 +447,7 @@ For each time series at the bottom level, we generate a total of $101$ observati
 #| label: fig-corr-data
 #| results: hide
 #| fig-width: 9
-#| fig-height: 6.5
+#| fig-height: 5
 #| fig-cap: An example hierarchical time series and its in-sample residuals in Setup 2.
 
 data <- readRDS(here::here("paper/results/corr_data_neg.rds"))
@@ -683,7 +683,7 @@ Australian domestic tourism flows are measured as the number of overnight trips 
 #| label: fig-tourism-data
 #| results: hide
 #| fig-width: 9
-#| fig-height: 6
+#| fig-height: 5.5
 #| fig-cap: Domestic tourism flows from January 1998 to December 2017 for Australia as well as the states.
 tourism_ts <- readRDS(here::here("paper/results/tourism_hts.rds"))
 tourism_ts |>
@@ -780,7 +780,7 @@ Finally, the concept of bi-level variable selection can be applied to enhance th
 
 In the existing forecast reconciliation literature, base forecasts are mapped into bottom-level disaggregated forecasts, which are then summed to yield coherent forecasts for the entire structure. The mapping step can be conceptually regarded as a forecast combination. However, poor performance in some base forecasts can diminish overall reconciliation effectiveness. To address this issue, we incorporate time series selection to enhance forecast reconciliation, while ensuring coherent forecasts for all series.
 
-Under the assumption of unbiased base forecasts, we developed three constrained "out-of-sample" reconciliation methods with selection mechanisms. These methods use various penalty functions to shrink the columns of the weighting matrix $\bm{G}$ towards zero. We proved that the selected time series can effectively reconstruct the whole hierarchy. Additionally, we relaxed the unbiasedness assumption by introducing the unconstrained Elasso method, which selects time series based on in-sample observations and fitted values. Elasso may use fewer time series than the number of bottom-level series and, in extreme cases, resemble a top-down approach.
+Recognizing that reconciled forecasts $\tilde{\bm{y}}$ are simply linear combinations of base forecasts $\hat{\bm{y}}$ via $\tilde{\bm{y}}=\bm{SG}\hat{\bm{y}}$, setting columns of $\bm{G}$ to zero can eliminate heavily misspecified forecasts from the combination. Under the assumption of unbiased base forecasts, we developed three constrained "out-of-sample" reconciliation methods with selection mechanisms. These methods use various penalty functions to shrink the columns of the weighting matrix $\bm{G}$ towards zero. We proved that the selected time series can effectively reconstruct the whole hierarchy. Additionally, we relaxed the unbiasedness assumption by introducing the unconstrained Elasso method, which selects time series based on in-sample observations and fitted values. Elasso may use fewer time series than the number of bottom-level series and, in extreme cases, resemble a top-down approach.
 
 Simulation experiments and two empirical applications demonstrated the superiority of the proposed methods over existing reconciliation methods. When model misspecification was introduced in some series within the hierarchy, our methods effectively excluded these "problematic" series, ensuring good quality coherent forecasts. In both empirical applications, where no apparent model misspecification was present, the Subset and Elasso methods demonstrated promising results. In contrast, Parsimonious and Lasso generally produced results similar to their benchmarks, as they tend to deliver dense estimates.
 

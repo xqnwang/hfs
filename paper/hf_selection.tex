@@ -120,6 +120,9 @@
 \captionsetup[figure]{style=italic,singlelinecheck=true,font=singlespacing,format=plain,aboveskip=2pt,belowskip=2pt}
 \captionsetup[table]{style=italic,singlelinecheck=true,font=singlespacing,format=plain,aboveskip=2pt,belowskip=2pt}
 
+\setlength{\intextsep}{6pt} % Space above and below in-text figures and tables
+\setlength{\textfloatsep}{6pt} % Space between floats and text
+
 %% SECTION TITLE
 \usepackage{sectsty}
 \sectionfont{\vspace{-10pt}} % Space before section title
@@ -221,7 +224,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{August 23, 2024}
+\date{August 26, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -650,11 +653,13 @@ assumption}\label{sec-constrained}
 As \(\bm{S}\) is fixed and \(\hat{\bm{y}}_{T+h \mid T}\) is given,
 \(\bm{G}_h\) determines the linear reconciliation performance, as shown
 in Equation \eqref{eq-lr}. We drop the subscript \(h\) here as we assume
-\(\bm{W}\) and \(\bm{G}\) do not vary with the forecast horizon. A
-natural way to remove forecasts of some series is by controlling the
-number of nonzero column entries in \(\bm{G}\). This leads to a
-generalization of the MinT optimization problem with an additional
-penalty term: \begin{equation}\phantomsection\label{eq-op_u}{
+\(\bm{W}\) and \(\bm{G}\) do not vary with the forecast horizon.
+Recognizing that reconciled forecasts \(\tilde{\bm{y}}\) are simply
+linear combinations of base forecasts \(\hat{\bm{y}}\) via
+\(\tilde{\bm{y}}=\bm{SG}\hat{\bm{y}}\), setting columns of \(\bm{G}\) to
+zero can eliminate heavily misspecified forecasts from the combination.
+This leads to a generalization of the MinT optimization problem with an
+additional penalty term: \begin{equation}\phantomsection\label{eq-op_u}{
 \min_{\bm{G}} \quad \frac{1}{2}\left(\hat{\bm{y}}-\bm{SG}\hat{\bm{y}}\right)^{\prime} \bm{W}^{-1}\left(\hat{\bm{y}}-\bm{SG}\hat{\bm{y}}\right)
 + \lambda\mathfrak{g}(\bm{G}) \qquad \text{s.t.} \quad \bm{G}\bm{S}=\bm{I},
 }\end{equation} where \(\hat{\bm{y}}:=\hat{\bm{y}}_{T+1 \mid T}\),
@@ -2077,6 +2082,10 @@ effectiveness. To address this issue, we incorporate time series
 selection to enhance forecast reconciliation, while ensuring coherent
 forecasts for all series.
 
+Recognizing that reconciled forecasts \(\tilde{\bm{y}}\) are simply
+linear combinations of base forecasts \(\hat{\bm{y}}\) via
+\(\tilde{\bm{y}}=\bm{SG}\hat{\bm{y}}\), setting columns of \(\bm{G}\) to
+zero can eliminate heavily misspecified forecasts from the combination.
 Under the assumption of unbiased base forecasts, we developed three
 constrained ``out-of-sample'' reconciliation methods with selection
 mechanisms. These methods use various penalty functions to shrink the
