@@ -298,7 +298,7 @@ Next, we present the second order cone programming (SOCP) formulation for the gr
 \end{aligned}
 $$ {#eq-lasso_socp} Equation \eqref{eq-lasso_socp} includes additional auxiliary variables $c_j \in \mathbb{R}_{\geq 0}$, $j \in [n]$, and second order cone constraints, $c_j = \sqrt{\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+2}}$ for $j \in[n]$.
 
-Compared to the previous methods, the group lasso method is computationally friendlier. Nonetheless, @Hazimeh2023-ie demonstrated, both empirically and theoretically, that the group $L_0$-regularized method exhibits advantages over its group lasso counterpart across a range of regimes. Group lasso can either be highly dense or possess non-zero coefficients that are overly shrunk. This issue becomes more pronounced when the groups are correlated with each other, as group lasso tends to retain all correlated groups instead of seeking a more concise model.
+Compared to the previous methods, group lasso is computationally friendlier. Nonetheless, @Hazimeh2023-ie demonstrated, both empirically and theoretically, that the group $L_0$-regularized method exhibits advantages over its group lasso counterpart across a range of regimes. Group lasso can either be highly dense or possess non-zero coefficients that are overly shrunk. This issue becomes more pronounced when the groups are correlated with each other, as group lasso tends to retain all correlated groups instead of seeking a more concise model.
 
 **Penalty weights and parameter tuning.** In the context of group lasso, the default choice for the penalty weight, $w_j$, is $\sqrt{p_j}$, where $p_j$ is the size of each group (in our case, $p_j = n_b$). In our experiments, we allocate different penalty weights to each group using $w_j = 1/\|\bm{G}_{\cdot j}^{\text{bench}}\|_2$, which allows us to account for variations in scale across different time series in the structure.
 
@@ -382,7 +382,7 @@ latex_table(sim_rmse$s2)
 #| fig-cap: MCB test result and correlation matrix heatmap for simulation Setup 1.
 #| fig-subcap: 
 #|   - "MCB test for hierarchy"
-#|   - "Correlation between forecast errors"
+#|   - "Correlation between base forecast errors"
 #| layout: [[48, -4, 48]]
 #| layout-valign: bottom
 
@@ -418,7 +418,7 @@ We find that the BU method performs the best overall, which is unsurprising give
 ```{r}
 #| label: tbl-sim-selection
 #| results: asis
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulation Setup 1. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulation Setup 1. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 sim_selection <- readRDS(here::here("paper/results/sim_selection.rds"))
 sim_rmsse <- readRDS(here::here("paper/results/sim_series_rmsse.rds"))
@@ -426,7 +426,7 @@ sim_rmsse <- readRDS(here::here("paper/results/sim_series_rmsse.rds"))
 latex_sim_nos_table(sim_selection$s2$z, sim_selection$s2$n, sim_rmsse$s2, "s2")
 ```
 
-In addition, we report the proportion of time series being selected by our proposed methods across $500$ simulation instances, along with the average root mean squared scaled error (RMSSE) for each series, as shown in @tbl-sim-selection. Our methods select fewer time series, while enhancing forecast accuracy compared to benchmarks. Subset methods, in particular, select fewer time series than Parsimonious and Lasso, which aligns with our expectations that the Parsimonious and Lasso methods tend to produce dense estimates. Notably, the misspecified series A shows higher RMSSE and is selected least frequently, except in cases where all bottom-level series are retained so series A leads to only slight deterioration. Series Total and B are also selected less often due to the high correlation of their forecast errors with other series, as shown in @fig-sim-plots-2.
+In addition, we report the proportion of time series being selected by our proposed methods across $500$ simulation instances, along with the average root mean squared scaled error (RMSSE) for base forecasts of each series, as shown in @tbl-sim-selection. Our methods select fewer time series, while enhancing forecast accuracy compared to benchmarks. Subset methods, in particular, select fewer time series than Parsimonious and Lasso, which aligns with our expectations that the Parsimonious and Lasso methods tend to produce dense estimates. Notably, the misspecified series A shows higher RMSSE and is selected least frequently, except in cases where all bottom-level series are retained so series A leads to only slight deterioration. Series Total and B are also selected less often due to the high correlation of their forecast errors with other series, as shown in @fig-sim-plots-2.
 
 ### Setup 2: Exploring the effect of correlation {#sec-sim2}
 
@@ -542,7 +542,7 @@ latex_corr_table(rmse_corr)
 #| fig-cap: MCB test result and correlation matrix heatmap for simulation Setup 2, with error correlation being -0.8.
 #| fig-subcap: 
 #|   - "MCB test for hierarchy"
-#|   - "Correlation between forecast errors"
+#|   - "Correlation between base forecast errors"
 #| layout: [[48, -4, 48]]
 #| layout-valign: bottom
 
@@ -578,7 +578,7 @@ The results across various error correlations are presented in @tbl-corr-rmse, w
 ```{r}
 #| label: tbl-corr-selection-neg
 #| results: asis
-#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being -0.8. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being -0.8. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 corr_selection <- readRDS(here::here("paper/results/corr_selection.rds"))
 corr_rmsse <- readRDS(here::here("paper/results/corr_series_rmsse.rds"))
@@ -673,7 +673,7 @@ latex_table_h(rmse_labour_avg)
 
 The average results are presented in @tbl-labour-rmse-avg. The MCB test and error correlation calculations are not performed due to the limited data length. Results of MinT and the respective proposed methods are excluded due to poor performance, likely caused by the poor sample covariance estimator given the small sample size relative to the number of series in the structure. Subset methods using different estimators of $\bm{G}$ generally improve forecast accuracy over their benchmarks, particularly at aggregation levels, which are of paramount concern to practitioners. The exception is WLSs-subset, which shows slight deterioration, though still improving top-level forecasts. Moreover, the Parsimonious and Lasso methods almost always yield results identical to their benchmarks, because they tend to provide dense estimates, and ETS models typically avoid extremely poor forecasts. However, OLS-parsim shows deterioration at all levels except the top level. When we drop the unbiasedness assumption, EMinT performs the worst across all levels, as it assumes joint weak stationarity among series, which is evidently not the case here. Elasso ranks the best overall and significantly outperforms EMinT, with the most accurate coherent forecasts observed at the top level and STT level.
 
-Results based on the final test set spanning from August 2022 to July 2023 are detailed in [Appendix D](#appendix-labour), allowing for model training with more data and analysis of post-COVID patterns. @tbl-labour-rmse shows RMSE results qualitatively similar to those in @tbl-labour-rmse-avg. @tbl-labour-info presents the number of series selected at each level, their average RMSSE values, and the identified optimal tuning parameters. Only Subset and Elasso methods are presented, as they differ from benchmark results. The scale variation in optimal parameters across methods is due to differences in objective function scales. Notably, all Subset methods exclude some series, and Elasso, using only $11$ series, performs best overall. With the exception of the STT level for WLSs-subset, and the Duration level for WLSv-subset and Elasso, the series selected by the proposed methods show reduced RMSSE values at each level. Moreover, series at the STT level are mostly removed, while most Duration level series are retained. This aligns with our data description, highlighting that the seasonal patterns at the Duration level are more consistent and potentially easier to forecast compared to those at the STT level.
+Results based on the final test set spanning from August 2022 to July 2023 are detailed in [Appendix D](#appendix-labour), allowing for model training with more data and analysis of post-COVID patterns. @tbl-labour-rmse shows RMSE results qualitatively similar to those in @tbl-labour-rmse-avg. @tbl-labour-info presents the number of series selected at each level, their average RMSSE values, and the identified optimal tuning parameters. Only Subset and Elasso methods are presented, as they differ from benchmark results. The scale variation in optimal parameters across methods is due to differences in objective function scales. Notably, all Subset methods exclude some series, and Elasso, using only $11$ series, performs best overall when assessed based on average results across the entire hierarchy and forecast horizon. With the exception of the STT level for WLSs-subset, and the Duration level for WLSv-subset and Elasso, the series selected by the proposed methods show reduced RMSSE values at each level. Moreover, series at the STT level are mostly removed, while most Duration level series are retained. This aligns with our data description, highlighting that the seasonal patterns at the Duration level are more consistent and potentially easier to forecast compared to those at the STT level.
 
 ### Forecasting Australian domestic tourism {#sec-tourism}
 
@@ -722,15 +722,6 @@ We present the results based on the last one training set from January 2017 to D
 
 ## Discussion {#sec-discussion}
 
-<!--
-- list concerns in forecast reconciliation research, summarize these and address areas where the proposed methodology could support such concerns.
-
-- emphasize the contributions of the current paper. (Grouped hierarchy. The selected series in our proposed method may come from different levels of the hierarchy.
-It preserves the unbiasedness of forecasts, is able to restore the hierarchy.) Discuss the practical (OR) significance of the current paper. Unused series.
-
-- discuss the practical repercussions of this work as well as the potential limitations it faces. Probabilistic forecasting.
--->
-
 While our proposed methods opt to leave "poor" base forecasts unused in forming reconciled forecasts, the approach by @Zhang2023-op is primarily focused on keeping "good" base forecasts unchanged after reconciliation. Both methods frame the problem as a quadratic programming problem to enhance reconciled forecast performance by somehow managing the impact of some time series during the process, ultimately providing reconciled forecasts for all series in the hierarchy. However, our methods differ from the approach by @Zhang2023-op in four main ways. First, our proposed methods alter the poor-performing base forecasts, ensuring these do not influence other nodes, whereas the approach by @Zhang2023-op keeps the forecasts of certain nodes immutable, which then impact others. Second, our methods automate the selection of series unused during reconciliation, while the latter method requires an additional, yet-to-be-determined procedure to identify the immutable set of series. Third, we use only base forecasts of the selected series for reconciliation, while @Zhang2023-op use base forecasts of all series, even though some remain unchanged after reconciliation. Fourth, beyond preserving the unbiasedness of forecasts, we relax the unbiasedness assumption and introduce an unconstrained "in-sample" reconciliation method that leverages in-sample information for selection.
 
 The proposed methods offer four key benefits to hierarchical forecasting process. First, they automatically exclude series with high forecast errors from reconciliation and enhance computational efficiency by eliminating the need to forecast these series. Second, they generally produce promising reconciled forecasts for the whole hierarchy, particularly in cases of model misspecification. Third, they reduce disparities resulting from different estimates of $\bm{W}$ in the MinT framework. Lastly, a further practical benefit of the proposed methods is their adaptability to scenarios where practitioners wish to avoid forecasting certain series, such as those with extensive missing values, by simply imposing additional constraints to enforce the corresponding columns of $\bm{G}$ to zero.
@@ -766,9 +757,9 @@ time_tbl |>
 
 One limitation of the proposed methods is their scalability. As the number of series in a hierarchy increases, efficiently solving these problems becomes increasingly challenging, and the exact computation of the estimators remains a significant hurdle. In this study, we employed Gurobi, a widely used commercial solvers, to tackle the NP-hard MIP problems. @tbl-time provides the computational time for solving the reconciliation problem for a single hierarchy in each of our experiments. Note that the reported time considers all candidate hyperparameters. In terms of computational resources we used 20 CPUs and 3 GB of memory per CPU in a high-performance computing (HPC) system. Given these computational demands, we recommend applying the proposed methods primarily to hierarchies of small to moderate size. While there are ongoing efforts to develop MIP-based approaches for solving $L_0$-regularized regression in high-dimensional settings [@Mazumder2022-hx], extending these approaches to accommodate additional constraints remains a challenge, which we leave for future research.
 
-Other promising directions for further investigation are also worth exploring. Relaxing the assumption of unbiasedness of base forecasts, the Elasso method directly minimizes the mean squared reconciled forecast errors while incorporating regularization terms for time series selection. Unlike constrained "out-of-sample" reconciliation methods, Elasso does not use a $\bm{W}$ matrix in its optimization problem as $\bm{W}$ is introduced when deriving the loss function (Equation \eqref{eq-loss}) under the unbiasedness condition for both base and reconciled forecasts. Future research could explore including a $\bm{W}$ matrix in the Elasso method by considering the following optimization problem $$
-\min_{\bm{G}} \quad \frac{1}{2 T} \operatorname{Tr}\left( \left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)\bm{W}^{-1}\left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)^{\prime}\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
-$$ where $\operatorname{Tr}(\cdot)$ denotes the trace of a matrix. In this context, $\bm{W}$ assigns different weights to reconciled forecast errors of various series in the hierarchical structure. Conversely, Elasso and other proposed methods currently treat reconciled forecast errors equally across different series. This suggests a potential new direction for research that differs from the problems addressed in this paper.
+Other promising directions for further investigation are also worth exploring. Relaxing the assumption of unbiasedness of base forecasts, the Elasso method directly minimizes the mean squared reconciled forecast errors while incorporating regularization terms for time series selection. Unlike constrained "out-of-sample" reconciliation methods, Elasso does not use a $\bm{W}$ matrix in its optimization problem as $\bm{W}$ is introduced when deriving the loss function (Equation \eqref{eq-loss}) under the unbiasedness condition for both base and reconciled forecasts. Future research could explore including a $\bm{V}$ matrix in the Elasso method by considering the following optimization problem $$
+\min_{\bm{G}} \quad \frac{1}{2 T} \operatorname{Tr}\left( \left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)\bm{V}^{-1}\left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)^{\prime}\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
+$$ where $\operatorname{Tr}(\cdot)$ denotes the trace of a matrix. In this context, $\bm{V}$ can be arbitrary and is not restricted to the covariance matrix of base forecast errors. The purpose of its inclusion here is to assign different weights to reconciled forecast errors of various series in the hierarchical structure. Conversely, Elasso and other proposed methods currently treat reconciled forecast errors equally across different series. This suggests a potential new direction for research that differs from the problems addressed in this paper.
 
 Additionally, @Panagiotelis2021-mf highlighted the critical need for bias correction prior to forecast reconciliation when dealing with biased forecasts. Given that the unbiasedness preserving property is dropped in the Elasso method, a possible direction for future research could be to extend Elasso by including a bias correction mechanism. This can be achieved by formulating the optimization problem as follows: $$
 \min_{\bm{G}} \quad \frac{1}{2 T} \left\|\bm{Y}-\left(\bm{D} + \hat{\bm{Y}} \bm{G}^{\prime}\right)\bm{S}^{\prime}\right\|_F^2 + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
@@ -875,7 +866,7 @@ latex_table(sim_rmse$s3)
 #| fig-cap: MCB test result and correlation matrix heatmap for simulation Setup 1, with model misspecification in series Total.
 #| fig-subcap: 
 #|   - "MCB test"
-#|   - "Correlation between forecast errors"
+#|   - "Correlation between base forecast errors"
 #| layout: [[48, -4, 48]]
 #| layout-valign: bottom
 
@@ -906,7 +897,7 @@ ggplot(data = sim_cormat$s3, aes(x = Var1, y = Var2, fill = value)) +
 #| label: tbl-sim-selection-total
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulation Setup 1, with model misspecification in series Total. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulation Setup 1, with model misspecification in series Total. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(sim_selection$s3$z, sim_selection$s3$n, sim_rmsse$s3, "s3")
 ```
@@ -929,7 +920,7 @@ latex_table(sim_rmse$s1)
 #| fig-cap: MCB test result and correlation matrix heatmap for simulation Setup 1, with model misspecification in series AA.
 #| fig-subcap: 
 #|   - "MCB test"
-#|   - "Correlation between forecast errors"
+#|   - "Correlation between base forecast errors"
 #| layout: [[48, -4, 48]]
 #| layout-valign: bottom
 
@@ -960,7 +951,7 @@ ggplot(data = sim_cormat$s1, aes(x = Var1, y = Var2, fill = value)) +
 #| label: tbl-sim-selection-AA
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulation Setup 1, with model misspecification in series AA. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series being selected using proposed reconciliation methods for simulation Setup 1, with model misspecification in series AA. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(sim_selection$s1$z, sim_selection$s1$n, sim_rmsse$s1, "s1")
 ```
@@ -975,7 +966,7 @@ The section provides additional results obtained in @sec-sim2.
 #| label: tbl-corr-selection-p3
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being -0.4. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being -0.4. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p3$out_s0$z,
                     corr_selection$p3$out_s0$n,
@@ -987,7 +978,7 @@ latex_sim_nos_table(corr_selection$p3$out_s0$z,
 #| label: tbl-corr-selection-p5
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being 0. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being 0. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p5$out_s0$z,
                     corr_selection$p5$out_s0$n,
@@ -999,7 +990,7 @@ latex_sim_nos_table(corr_selection$p5$out_s0$z,
 #| label: tbl-corr-selection-p7
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being 0.4. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being 0.4. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p7$out_s0$z,
                     corr_selection$p7$out_s0$n,
@@ -1011,7 +1002,7 @@ latex_sim_nos_table(corr_selection$p7$out_s0$z,
 #| label: tbl-corr-selection-p9
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being 0.8. RMSSE values for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
+#| tbl-cap: Proportion of time series selected using proposed reconciliation methods for simulation Setup 2, with error correlation being 0.8. RMSSE values of base forecasts for each series are in parentheses. The last column displays a stacked barplot of the total selected series from 500 hierarchies, with darker sub-bars indicating higher counts.
 
 latex_sim_nos_table(corr_selection$p9$out_s0$z,
                     corr_selection$p9$out_s0$n,
@@ -1027,7 +1018,7 @@ latex_sim_nos_table(corr_selection$p9$out_s0$z,
 #| fig-cap: MCB test result and correlation matrix heatmap for simulation Setup 2, with error correlation being -0.4, 0, 0.4, 0.8, respectively.
 #| fig-subcap: 
 #|   - "MCB test"
-#|   - "Correlation between forecast errors"
+#|   - "Correlation between base forecast errors"
 #| layout-nrow: 2
 
 # MCB test
@@ -1085,7 +1076,7 @@ latex_table_h(rmse_labour)
 #| label: tbl-labour-info
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Number of time series selected by proposed methods and the optimal parameters identified in the labour application, considering a single test set (from August 2022 to July 2023). The None row shows the original number of series in the structure. The numbers in parentheses show RMSSE values for different levels.
+#| tbl-cap: Number of time series selected by proposed methods and the optimal parameters identified in the labour application, considering a single test set (from August 2022 to July 2023). The None row shows the original number of series in the structure. The numbers in parentheses show RMSSE values of base forecasts for selected series across different levels.
 
 labour_info <- readRDS(here::here("paper/results/labour_info.rds"))
 labour_rmsse <- readRDS(here::here( "paper/results/labour_selected_rmsse.rds")) |>
@@ -1171,7 +1162,7 @@ ggplot(tourism_heatmap, aes(x = Series, y = Method, fill = RMSE)) +
 #| label: tbl-tourism-info
 #| results: asis
 #| tbl-pos: "!h"
-#| tbl-cap: Number of time series selected by proposed methods and the optimal parameters identified in the tourism application, considering a single test set (from January 2017 to December 2017). The None row shows the original number of series in the structure. The numbers in parentheses show RMSSE values for different levels.
+#| tbl-cap: Number of time series selected by proposed methods and the optimal parameters identified in the tourism application, considering a single test set (from January 2017 to December 2017). The None row shows the original number of series in the structure. The numbers in parentheses show RMSSE values of base forecasts for selected series across different levels.
 
 tourism_info <- readRDS(here::here("paper/results/tourism_info.rds"))
 tourism_rmsse <- readRDS(here::here( "paper/results/tourism_selected_rmsse.rds")) |>
