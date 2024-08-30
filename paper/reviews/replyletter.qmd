@@ -91,19 +91,25 @@ This paper proposes novel forecast reconciliation methods incorporating time ser
 
 The paper focuses on an important area (i.e., forecast reconciliation), is theoretically rigorous and provides a good summary of the relevant research. Incorporating time series selection to strengthen forecast reconciliation has both theoretical and practical significance. While the authors are to be commanded on their theoretical approach, the paper lacks any substantive discussion on the practical significance of the proposed methods. What are the precise implications of their proposed methods for analysts working in labour economics and tourism, for example (since their application data is from these two fields). Other users of such forecasts? What could be some potential implications for decision making? Policy making? These would be vital to enhancing the paper's reach and impact.
 
-> Done
+> (\@Shanika, the paper may need additional revisions to better address the response.)
+>
+> Thank you for the comment. We have now added an additional paragraph in both the introduction and discussion sections to discuss the potential practical significance of the proposed methods. We present below the newly added paragraph from the introduction section, with the key practical significance highlighted in bold.
+>
+> "Unlike @Zhang2023-op, which keep good forecasts unchanged, we leave poor base forecasts unused in generating reconciled forecasts. Notably, **our methods automate the selection process, relieving practitioners from the task of carefully choose which series to exclude**. There may be other practical motivations to use our proposed approach. For example, in labour force forecasting, **economists may be interested in various attributes** such as gender, labor market region, and duration of job search, **which create a complex hierarchical structure.** **Some series within this structure may be poorly specified for forecasting or exhibit weak patterns**, resulting in poor base forecasts. **Our methods selectively use some series into the reconciliation process**, potentially improving overall accuracy while still providing reconciled forecasts for the entire hierarchy. Moreover, **our methods allow for computational efficiency by avoiding the need to forecast excluded series**. Finally, **they also adapt well to scenarios with missing or extremely sparse data** by adding additional constraints to exclude such series, enabling us to bypass their base forecasts while still returning reconciled outcomes."
 
 -   P.2 The authors claim "Through simulation experiments and two empirical applications, we demonstrate that our proposed methods guarantee coherent forecasts that outperform or match their respective benchmark methods" - how is such a guarantee provided? May wish to reconsider the wording.
 
-> Done
+> Thanks for pointing this out. We have now completely rewritten the fifth paragraph in the introduction section and thoroughly reviewed the paper to ensure the accuracy of statements.
 
 -   p.2-3 "A remarkable feature of the proposed methods is their ability to diminish disparities arising from using different estimates of the base forecast error covariance matrix, thereby mitigating challenges associated with estimator selection, which is a prominent concern in the field of forecast reconciliation research." What about other concerns in forecast reconciliation research? It would be good to summarize these and address areas where the proposed methodology could support such concerns.
 
-> Done
+> (\@Shanika, the paper may need additional revisions to better address the response.)
+>
+> In the newly added paragraph in the introduction section, we also have discussed other concerns in forecast reconciliation research. For example, in complex hierarchical structures, some series may be poorly specified for forecasting or exhibit weak patterns, leading to suboptimal base forecasts. Additionally, forecasting all series in such complex hierarchies can be time-consuming. Lastly, in scenarios with missing or extremely sparse data, it may be necessary to exclude these series from the reconciliation process. Our proposed methods are designed to adapt effectively to these scenarios.
 
 -   Conclusion section needs to be extended to discuss the practical repercussions of this work as well as the potential limitations it faces. The authors briefly touch upon one aspect in the final paragraph, but there would be other challenges and such an extended discussion would be critical in both highlighting the limitations as well as emphasizing the contributions of the current paper.
 
-> Done
+> Thank you for these helpful comments. We have now added a new section (the discussion section) to compare our methods with other related methods, highlight the contributions and the limitations of the paper, and also provide potential future research in detail.
 
 # Reviewer 4
 
