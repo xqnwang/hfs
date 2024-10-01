@@ -214,7 +214,7 @@
 \raggedbottom
 
 \usepackage[australian]{babel}
-\date{2024-08-30}
+\date{2024-10-01}
 
 \usepackage{color}
 \renewenvironment{quote}
@@ -614,10 +614,12 @@ Figures 4(b) and C.1(b) for setup 2. We have also expanded the related
 results analysis to incorporate insights from these results. Our
 analysis suggests that both forecast variance and forecast correlation
 influence time series selection. In general, time series with high
-forecast variance and strong correlations with other series are more
-likely to be excluded. For the empirical applications, we did not
-include heatmaps, as the number of time series in these hierarchies is
-too large to present them effectively.
+forecast variance
+\todo{"high forecast variance"? The top level series might have high forecast variance due to large scale, but that doesn't mean it should be excluded}
+and strong correlations with other series are more likely to be
+excluded. For the empirical applications, we did not include heatmaps,
+as the number of time series in these hierarchies is too large to
+present them effectively.
 \end{quote}
 
 \section*{Reviewer 3}\label{reviewer-3}
@@ -647,7 +649,7 @@ paper's reach and impact.
 
 \begin{quote}
 (@Shanika, the paper may need additional revisions to better address the
-response.)
+response.) \todo{I have added few more lines to the third paragraph}
 
 Thank you for the comment. We have now added an additional paragraph in
 both the introduction and discussion sections to discuss the potential
@@ -713,10 +715,12 @@ discussed other concerns in forecast reconciliation research. For
 example, in complex hierarchical structures, some series may be poorly
 specified for forecasting or exhibit weak patterns, leading to
 suboptimal base forecasts. Additionally, forecasting all series in such
-complex hierarchies can be time-consuming. Lastly, in scenarios with
-missing or extremely sparse data, it may be necessary to exclude these
-series from the reconciliation process. Our proposed methods are
-designed to adapt effectively to these scenarios.
+complex hierarchies can be time-consuming
+\todo{I don't think we address this in our work though it is an issue in hts}.
+Lastly, in scenarios with missing or extremely sparse data, it may be
+necessary to exclude these series from the reconciliation process. Our
+proposed methods are designed to adapt effectively to these scenarios.
+\todo{I am not sure what is more to be added here}
 \end{quote}
 
 \begin{itemize}
