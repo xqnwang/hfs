@@ -659,12 +659,15 @@ for forecast errors across the entire initial hierarchy.
 
 We therefore propose two types of forecast reconciliation methods
 involving time series selection: constrained ``out-of-sample''
-reconciliation and unconstrained ``in-sample'' reconciliation. These
-methods aim to address the negative effect of some poor base forecasts
-on the overall performance of the reconciled forecasts. Additionally,
-through the incorporation of regularization in the objective function,
-our method improves reconciliation outcomes produced with a ``poor''
-choice of \(\bm{W}\).
+reconciliation, which adheres to the constraint \(\bm{G}\bm{S}=\bm{I}\),
+and unconstrained ``in-sample'' reconciliation, which operates without
+this
+constraint.\todo{XQ --- I've rewritten this sentence to clarify the difference between constrained and unconstrained methods.}
+These methods aim to address the negative effect of some poor base
+forecasts on the overall performance of the reconciled forecasts.
+Additionally, through the incorporation of regularization in the
+objective function, our method improves reconciliation outcomes produced
+with a ``poor'' choice of \(\bm{W}\).
 
 \section{Forecast reconciliation with time series
 selection}\label{sec-methodology}
