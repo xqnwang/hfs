@@ -272,7 +272,7 @@ methods keep ``poor'' base forecasts unused in forming reconciled
 forecasts, while adjusting the weights assigned to the remaining series
 accordingly when generating bottom-level reconciled forecasts.
 Additionally, our methods ameliorate disparities stemming from varied
-estimates of the base forecast error covariance matrix, alleviating
+estimators of the base forecast error covariance matrix, alleviating
 challenges associated with estimator selection. Empirical evaluations
 through two simulation studies and applications using Australian labour
 force and domestic tourism data demonstrate the potential of the
@@ -355,7 +355,7 @@ shows promising results in both simulations and real-world applications.
 Constrained methods with selection are particularly effective in
 addressing model misspecification. A remarkable feature of our methods
 is their ability to reduce disparities arising from using different
-estimates of the base forecast error covariance matrix, thereby
+estimators of the base forecast error covariance matrix, thereby
 mitigating challenges associated with estimator selection, which is a
 prominent concern in forecast reconciliation research.
 
@@ -1327,7 +1327,7 @@ benchmark methods. Our proposed methods show significant improvements
 when using OLS and WLSs estimators of \(\bm{W}\), which do not consider
 in-sample covariance. A key advantage of our forecast reconciliation
 methods with selection is their ability to reduce differences introduced
-by using different estimates of \(\bm{W}\), thereby mitigating the risk
+by using different estimators of \(\bm{W}\), thereby mitigating the risk
 of estimator selection. We can align the forecast accuracy achieved
 using different estimators, making them approach the best results we can
 obtain. By relaxing the unbiasedness assumption, Elasso performs
@@ -1788,9 +1788,9 @@ The average results are presented in Table~\ref{tbl-labour-rmse-avg}.
 The MCB test and error correlation calculations are not performed due to
 the limited data length. Results of MinT and the respective proposed
 methods are excluded due to poor performance, likely caused by the poor
-sample covariance estimator given the small sample size relative to the
+sample covariance estimate given the small sample size relative to the
 number of series in the structure. Subset methods using different
-estimates of \(\bm{W}\)
+estimators of \(\bm{W}\)
 \todo{different estimates of W? XQ --- Corrected.} generally improve
 forecast accuracy over their benchmarks, particularly at aggregation
 levels, which are of paramount concern to practitioners. The exception
@@ -1996,12 +1996,12 @@ the need to forecast these series in future
 operations\todo{don't we need forecasts for all the series to decide which columns to set to zero? XQ --- Corrected. As explained earlier, it's for future future operations.}.
 Second, they generally produce promising reconciled forecasts for the
 whole hierarchy, particularly in cases of model misspecification. Third,
-they reduce disparities resulting from different estimates of \(\bm{W}\)
-in the MinT framework. Lastly, a further practical benefit of the
-proposed methods is their adaptability to scenarios where practitioners
-wish to avoid forecasting certain series, such as those with extensive
-missing values, by simply imposing additional constraints to enforce the
-corresponding columns of \(\bm{G}\) to zero.
+they reduce disparities resulting from different estimators of
+\(\bm{W}\) in the MinT framework. Lastly, a further practical benefit of
+the proposed methods is their adaptability to scenarios where
+practitioners wish to avoid forecasting certain series, such as those
+with extensive missing values, by simply imposing additional constraints
+to enforce the corresponding columns of \(\bm{G}\) to zero.
 
 \begin{table}
 
