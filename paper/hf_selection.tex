@@ -41,14 +41,28 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \setcounter{secnumdepth}{5}
 % Make \paragraph and \subparagraph free-standing
+\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\makeatother
 
 
 \providecommand{\tightlist}{%
@@ -81,7 +95,7 @@
 \addtolength{\textwidth}{1in}%
 \addtolength{\textheight}{1.7in}%
 \addtolength{\topmargin}{-1in}%
-\usepackage{todonotes}
+\usepackage[textsize=tiny]{todonotes}
 \usepackage{bm}
 \usepackage{mathptmx}
 \usepackage{amsmath} % Ensure amsmath is included for \eqref
@@ -191,6 +205,7 @@
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
+
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -213,6 +228,7 @@ reconciliation, Variable selection, Integer programming},
   pdfcreator={LaTeX via pandoc}}
 
 
+
 \begin{document}
 
 
@@ -223,7 +239,7 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{October 1, 2024}
+\date{October 7, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
 Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
@@ -243,25 +259,25 @@ University \vspace{0.2em}\\
 \begin{abstract}
 Forecast reconciliation ensures forecasts of time series in a hierarchy
 adhere to aggregation constraints, enabling aligned decision making.
-While forecast reconciliation can enhance overall accuracy in
-hierarchical or grouped structures, the most substantial improvements
-occur in series with initially poor-performing base forecasts.
-Nevertheless, certain series may experience deteriorations in reconciled
-forecasts. In practical settings, series in a structure often exhibit
-poor base forecasts due to model misspecification or low
-forecastability. To prevent their negative impact, we propose two
-categories of forecast reconciliation methods that incorporate automatic
-time series selection based on out-of-sample and in-sample information,
-respectively. These methods keep ``poor'' base forecasts unused in
-forming reconciled forecasts, while adjusting weights allocated to the
-remaining series accordingly when generating bottom-level reconciled
-forecasts. Additionally, our methods ameliorate disparities stemming
-from varied estimates of the base forecast error covariance matrix,
-alleviating challenges associated with estimator selection. Empirical
-evaluations through two simulation studies and applications using
-Australian labour force and domestic tourism data demonstrate the
-benefits of excluding series with high forecast errors
-\todo{I don't think it is correct to say that this method excludes series with "high FE" because FE depends on the scale. The top level series might have the largest FE due to its scale but this doesn't necessarity mean that the series produces poor forecasts}
+While forecast reconciliation can enhance overall accuracy in a
+hierarchical or grouped structure, the most substantial improvements
+generally occur in series with initially poor-performing base forecasts.
+Forecasts of certain series may get worse after reconciliation. In
+practical applications, some series in a structure often produce poor
+base forecasts due to model misspecification or low forecastability. To
+mitigate their negative impact, we propose two categories of forecast
+reconciliation methods that incorporate automatic time series selection
+based on out-of-sample and in-sample information, respectively. These
+methods keep ``poor'' base forecasts unused in forming reconciled
+forecasts, while adjusting the weights assigned to the remaining series
+accordingly when generating bottom-level reconciled forecasts.
+Additionally, our methods ameliorate disparities stemming from varied
+estimates of the base forecast error covariance matrix, alleviating
+challenges associated with estimator selection. Empirical evaluations
+through two simulation studies and applications using Australian labour
+force and domestic tourism data demonstrate the potential of the
+proposed methods to exclude series with high scaled forecast
+errors\todo{I don't think it is correct to say that this method excludes series with "high FE" because FE depends on the scale. The top level series might have the largest FE due to its scale but this doesn't necessarity mean that the series produces poor forecasts. XQ --- It should be scaled forecast errors as we report RMSSE in the results.}
 and show promising results.
 \end{abstract}
 
@@ -273,6 +289,7 @@ reconciliation, Variable selection, Integer programming
 \newpage
 %\spacingset{1.8} % DON'T change the spacing!
 \setstretch{1.5}
+
 \section{Introduction}\label{sec-introduction}
 
 Forecast reconciliation is a post-processing method that ensures
@@ -331,10 +348,10 @@ domestic tourism data.
 
 The methods proposed in this paper incorporate time series selection to
 enhance forecast reconciliation. Our experiments demonstrate their
-potential to exclude series with high forecast errors
-\todo{don't think "high forecast error" is the right term}. In
-particular, the unconstrained reconciliation method with selection shows
-promising results in both simulations and real-world applications.
+potential to exclude series with high scaled forecast
+errors\todo{don't think "high forecast error" is the right term. XQ --- It should be scaled forecast errors.}.
+In particular, the unconstrained reconciliation method with selection
+shows promising results in both simulations and real-world applications.
 Constrained methods with selection are particularly effective in
 addressing model misspecification. A remarkable feature of our methods
 is their ability to reduce disparities arising from using different
@@ -354,9 +371,12 @@ series within this structure may be poorly specified for forecasting or
 exhibit weak patterns, resulting in poor base forecasts. Our methods
 selectively use some series into the reconciliation process, potentially
 improving overall accuracy while still providing reconciled forecasts
-for the entire hierarchy. Moreover, our methods allow for computational
-efficiency by avoiding the need to forecast excluded series.
-\todo{Unsure from where does we get computational efficiency. We need to fit models to each series and get their forecasts to decide which series need to be eliminated.}
+for the entire hierarchy. Moreover, the selection procedure avoids the
+need to forecast the excluded series in future operations, at least for
+a short duration, and employs only the selected series along with the
+estimated weighting matrix for reconciliation, thereby improving
+computational
+efficiency.\todo{Unsure from where does we get computational efficiency. We need to fit models to each series and get their forecasts to decide which series need to be eliminated. XQ --- All forecasts are needed when using our reconciliation methods. What I mean is that, after implementing our methods, we can avoid forecasting excluded series in "future operations", at least for a short period, and only use the selected series and the estimated G for reconciliation.}
 Finally, they also adapt well to scenarios with missing or extremely
 sparse data by adding additional constraints to exclude such series,
 enabling us to bypass their base forecasts while still returning
@@ -456,7 +476,7 @@ generate these forecasts, but in general they will not be coherent
 
 In general, forecast reconciliation methods consider the loss function
 \citep{Ben_Taieb2019-be} given by
-\todo{Is it conditional MSE or unconditional MSE? In the 2019 paper, we used conditional expectation but later I thought it should be unconditional MSE.}
+\todo{Is it conditional MSE or unconditional MSE? In the 2019 paper, we used conditional expectation but later I thought it should be unconditional MSE. XQ --- I think it follows the idea in the 2019 paper, which is based on conditional MSE. Why do you think it should be unconditional MSE? If that is the case, should we remove $\bm{I}_T$ from the equation?}
 \begin{equation}\phantomsection\label{eq-loss}{
 \begin{aligned}
 & \mathrm{E}\left[\left\|\bm{y}_{T+h}-\tilde{\bm{y}}_{T+h \mid T}\right\|_2^2 \mid \bm{I}_T\right] \\
@@ -1104,8 +1124,9 @@ Then the tuning parameter, \(\lambda\), is selected by minimizing the
 sum of squared reconciled forecast errors on a truncated training set,
 comprising only the \(T_v\) observations closest to the forecast origin.
 Specifically, for \(\lambda\) values, we consider
-\(\{\lambda^{1},\dots,\lambda^{k}, 0\}\), \todo{define what is N} where
-\(\lambda^{1} = \max_{j=1, \ldots, n}\left\|-\frac{1}{N}\left(\left(\bm{S} \otimes \hat{\bm{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\bm{Y})\right\|_2 / w_j\),
+\(\{\lambda^{1},\dots,\lambda^{k}, 0\}\),
+\todo{define what is N. XQ --- It should be T.} where
+\(\lambda^{1} = \max_{j=1, \ldots, n}\left\|-\frac{1}{T}\left(\left(\bm{S} \otimes \hat{\bm{Y}}\right)_{\cdot j*}\right)^{\prime} \operatorname{vec}(\bm{Y})\right\|_2 / w_j\),
 \(\lambda^{k} = 0.0001\lambda^{1}\), and
 \(\lambda^{j} = \lambda^{1}\left(\lambda^{k} / \lambda^{1}\right)^{(j-1) / (k-1)}\)
 for \(j \in [k]\). Following the derivation in the proof of
@@ -1203,8 +1224,8 @@ indicate proposed methods outperforming bechmarks.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
@@ -1323,34 +1344,34 @@ last column displays a stacked barplot of the total selected series from
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (1.48) & (3.25) & (1.55) & (1.57) & (1.62) & (1.62) & (1.57) & \\
 \midrule
-OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_OLS-subset.png}\\
-OLS-parsim & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_OLS-parsim.png}\\
-OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_WLSs-subset.png}\\
-WLSs-parsim & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_WLSs-parsim.png}\\
-WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_WLSv-subset.png}\\
-WLSv-parsim & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_WLSv-parsim.png}\\
-WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_MinT-parsim.png}\\
-MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_MinTs-parsim.png}\\
-MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s2_Elasso.png}\\
+OLS-subset & 0.55 & 0.04 & 0.41 & 0.74 & 0.78 & 0.79 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-subset.png}\\
+OLS-parsim & 0.61 & 0.04 & 0.52 & 0.75 & 0.69 & 0.69 & 0.83 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-parsim.png}\\
+OLS-lasso & 0.04 & 0.35 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.45 & 0.06 & 0.36 & 0.81 & 0.84 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-subset.png}\\
+WLSs-parsim & 0.61 & 0.06 & 0.48 & 0.75 & 0.71 & 0.73 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-parsim.png}\\
+WLSs-lasso & 0.02 & 0.33 & 0.02 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.54 & 0.29 & 0.46 & 0.91 & 0.94 & 0.86 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-subset.png}\\
+WLSv-parsim & 0.59 & 0.32 & 0.53 & 0.82 & 0.86 & 0.77 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-parsim.png}\\
+WLSv-lasso & 0.27 & 0.42 & 0.26 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 0.69 & 0.64 & 0.66 & 0.95 & 0.96 & 0.90 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-parsim.png}\\
+MinT-lasso & 0.82 & 0.74 & 0.83 & 1.00 & 0.99 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.62 & 0.63 & 0.58 & 0.95 & 0.96 & 0.90 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-parsim.png}\\
+MinTs-lasso & 0.68 & 0.75 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.78 & 0.95 & 0.68 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s2_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -1452,8 +1473,8 @@ indicate proposed methods outperforming bechmarks.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrrrrrr}
 \toprule
@@ -1463,7 +1484,7 @@ Method & $\rho$=--0.8 & --0.4 & 0 & 0.4 & 0.8 & $\rho$=--0.8 & --0.4 & 0 & 0.4 &
 \midrule
 Base & 2.4 & 2.9 & 3.4 & 4.1 & 4.0 & 1.5 & 1.8 & 2.1 & 2.4 & 2.5 & 1.5 & 1.5 & 1.5 & 1.5 & 1.4 & 1.6 & 1.8 & 2.0 & 2.1 & 2.1\\
 BU & --17.0 & --9.0 & --6.7 & --7.0 & --7.4 & --6.8 & 0.4 & 4.8 & 5.7 & 2.8 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & --5.3 & --1.9 & --0.2 & --0.1 & --1.0\\
-\midrule\\
+\midrule
 OLS & --11.0 & --8.2 & --7.7 & --8.2 & --8.0 & --3.5 & --0.7 & 3.1 & 2.5 & 0.8 & 0.7 & --0.6 & --2.0 & --2.3 & --2.1 & --2.8 & --2.4 & --1.8 & --2.4 & --2.7\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.7}} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{2.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.8}} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--1.7} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.9}} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.2}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.6}} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{3.7} & \cellcolor[HTML]{e6e3e3}{2.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.6}} & \cellcolor[HTML]{e6e3e3}{--0.2} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--0.4} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.0}} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--1.6} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.8}}\\
@@ -1570,11 +1591,14 @@ their forecast errors being more correlated with other series, as shown
 in Figure~\ref{fig-corr-plots-2}. Subset methods outperform Parsimonious
 methods in selection. Lasso methods typically select all bottom-level
 series, given their tendency to yield dense estimates, as discussed in
-Section~\ref{sec-constrained}. When dealing with a high positive error
-correlation, our methods remain effective in excluding the series that
-should be omitted in reconciliation. Hence, our methods are preferred,
-especially when the error correlation within the structure is negative.
-\todo{Not sure of last two lines}
+Section~\ref{sec-constrained}. When addressing higher correlation
+values, as shown in \hyperref[appendix-sim2]{Appendix C}, our methods
+maintain the ability to exclude series that should be omitted in
+reconciliation. However, their efficacy diminishes in the presence of
+positive correlation, particularly in removing the bottom-level series
+BA. Hence, our methods are especially preferable when the error
+correlation within the structure is
+negative.\todo{Not sure of last two lines. XQ --- Has now been rewritten.}
 
 \begin{table}
 
@@ -1587,34 +1611,34 @@ sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.84) & (0.87) & (0.62) & (0.68) & (0.81) & (0.91) & (0.77) & \\
 \midrule
-OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_OLS-subset.png}\\
-OLS-parsim & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_OLS-parsim.png}\\
-OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_WLSs-subset.png}\\
-WLSs-parsim & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_WLSs-parsim.png}\\
-WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_WLSv-subset.png}\\
-WLSv-parsim & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_WLSv-parsim.png}\\
-WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_MinT-parsim.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_MinTs-parsim.png}\\
-MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p1_Elasso.png}\\
+OLS-subset & 0.32 & 0.34 & 0.95 & 0.98 & 1 & 0.74 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-subset.png}\\
+OLS-parsim & 0.58 & 0.52 & 0.93 & 0.97 & 1 & 0.61 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-parsim.png}\\
+OLS-lasso & 0.61 & 0.34 & 0.38 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.27 & 0.40 & 0.98 & 1.00 & 1 & 0.73 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSs-subset.png}\\
+WLSs-parsim & 0.49 & 0.57 & 0.96 & 1.00 & 1 & 0.74 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSs-parsim.png}\\
+WLSs-lasso & 0.48 & 0.62 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.30 & 0.42 & 1.00 & 1.00 & 1 & 0.68 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSv-subset.png}\\
+WLSv-parsim & 0.49 & 0.53 & 0.99 & 1.00 & 1 & 0.47 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSv-parsim.png}\\
+WLSv-lasso & 0.35 & 0.70 & 0.85 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.87 & 0.85 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinTs-parsim.png}\\
+MinTs-lasso & 0.86 & 0.84 & 1.00 & 1.00 & 1 & 0.85 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.94 & 0.79 & 0.93 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p1_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -1729,12 +1753,12 @@ Method & Top & Duration & STT & Duration x STT & Average\\
 \midrule
 Base & 67.6 & 18.1 & 10.7 & 3.3 & 6.6\\
 BU & 24.2 & 0.8 & 10.4 & 0.0 & 6.3\\
-\midrule\\
+\midrule
 OLS & 1.0 & --3.3 & --0.1 & 0.7 & --0.5\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--4.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.6}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.2}} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{1.2} & \cellcolor[HTML]{e6e3e3}{--0.2}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{1.0} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--0.1} & \cellcolor[HTML]{e6e3e3}{0.7} & \cellcolor[HTML]{e6e3e3}{--0.5}\\
-\midrule\\
+\midrule
 WLSs & 7.0 & --4.3 & 1.6 & \textcolor{blue}{\textbf{--1.6}} & --0.3\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.2}} & \cellcolor[HTML]{e6e3e3}{--3.4} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.0}} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{0.1}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{7.0} & \cellcolor[HTML]{e6e3e3}{--4.3} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--1.6}}} & \cellcolor[HTML]{e6e3e3}{--0.3}\\
@@ -1744,12 +1768,12 @@ WLSv & 6.6 & --4.5 & 0.2 & --1.3 & --0.6\\
 \cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--4.6}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.0}} & \cellcolor[HTML]{e6e3e3}{--0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{--1.3}}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{6.6} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--0.6}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{6.6} & \cellcolor[HTML]{e6e3e3}{--4.5} & \cellcolor[HTML]{e6e3e3}{0.2} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--0.6}\\
-\midrule\\
+\midrule
 MinTs & 5.3 & --3.7 & --0.8 & --0.7 & --0.5\\
 \cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.9}} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{\textbf{--0.7}}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{5.3} & \cellcolor[HTML]{e6e3e3}{--3.7} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{--0.5}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{5.3} & \cellcolor[HTML]{e6e3e3}{--3.7} & \cellcolor[HTML]{e6e3e3}{--0.8} & \cellcolor[HTML]{e6e3e3}{--0.7} & \cellcolor[HTML]{e6e3e3}{--0.5}\\
-\midrule\\
+\midrule
 EMinT & 10.2 & 24.1 & 6.2 & 27.9 & 19.6\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.3}}} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.6}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--8.8}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.5}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.9}}}\\
 \bottomrule
@@ -1766,20 +1790,20 @@ the limited data length. Results of MinT and the respective proposed
 methods are excluded due to poor performance, likely caused by the poor
 sample covariance estimator given the small sample size relative to the
 number of series in the structure. Subset methods using different
-estimators of \(\bm{G}\) \todo{different estimates of W?} generally
-improve forecast accuracy over their benchmarks, particularly at
-aggregation levels, which are of paramount concern to practitioners. The
-exception is WLSs-subset, which shows slight deterioration, though still
-improving top-level forecasts. Moreover, the Parsimonious and Lasso
-methods almost always yield results identical to their benchmarks,
-because they tend to provide dense estimates, and ETS models typically
-avoid extremely poor forecasts. However, OLS-parsim shows deterioration
-at all levels except the top level. When we drop the unbiasedness
-assumption, EMinT performs the worst across all levels, as it assumes
-joint weak stationarity among series, which is evidently not the case
-here. Elasso ranks the best overall and significantly outperforms EMinT,
-with the most accurate coherent forecasts observed at the top level and
-STT level.
+estimates of \(\bm{W}\)
+\todo{different estimates of W? XQ --- Corrected.} generally improve
+forecast accuracy over their benchmarks, particularly at aggregation
+levels, which are of paramount concern to practitioners. The exception
+is WLSs-subset, which shows slight deterioration, though still improving
+top-level forecasts. Moreover, the Parsimonious and Lasso methods almost
+always yield results identical to their benchmarks, because they tend to
+provide dense estimates, and ETS models typically avoid extremely poor
+forecasts. However, OLS-parsim shows deterioration at all levels except
+the top level. When we drop the unbiasedness assumption, EMinT performs
+the worst across all levels, as it assumes joint weak stationarity among
+series, which is evidently not the case here. Elasso ranks the best
+overall and significantly outperforms EMinT, with the most accurate
+coherent forecasts observed at the top level and STT level.
 
 Results based on the final test set spanning from August 2022 to July
 2023 are detailed in \hyperref[appendix-labour]{Appendix D}, allowing
@@ -1794,15 +1818,11 @@ across methods is due to differences in objective function scales.
 Notably, all Subset methods exclude some series, and Elasso, using only
 \(11\) series, performs best overall when assessed based on average
 results across the entire hierarchy and forecast horizon. With the
-exception of the STT level for WLSs-subset
-\todo{is it true to say STT level for WLSs-subset has RMSSE > 1, don't think so},
-and the Duration level for WLSv-subset and Elasso, the series selected
-by the proposed methods show reduced RMSSE values at each level.
-Moreover, series at the STT level are mostly removed, while most
-Duration level series are retained. This aligns with our data
-description, highlighting that the seasonal patterns at the Duration
-level are more consistent and potentially easier to forecast compared to
-those at the STT level.
+exception of the series selected at the STT level by
+WLSs-subset\todo{is it true to say STT level for WLSs-subset has RMSSE > 1, don't think so. XQ --- Has now been rewritten.}
+and at the Duration level by WLSv-subset and Elasso, the time series
+chosen by the proposed methods show either lower or at least equivalent
+RMSSE values at each level compared to all series within that level.
 
 \subsection{Forecasting Australian domestic tourism}\label{sec-tourism}
 
@@ -1867,22 +1887,22 @@ Method & Top & State & Zone & Region & Average\\
 \midrule
 Base & 1773.1 & 442.0 & 185.3 & 94.4 & 153.6\\
 BU & 38.8 & 15.7 & 1.6 & 0.0 & 7.4\\
-\midrule\\
+\midrule
 OLS & 1.9 & --1.3 & --5.6 & --2.4 & --2.7\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{  --3.0}} & \cellcolor[HTML]{e6e3e3}{0.9} & \cellcolor[HTML]{e6e3e3}{--1.1} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{--0.2}\\
 \cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{1.9} & \cellcolor[HTML]{e6e3e3}{--1.3} & \cellcolor[HTML]{e6e3e3}{--5.6} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.7}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{2.9} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{--4.9} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--2.0}\\
-\midrule\\
+\midrule
 WLSs & 18.1 & 5.2 & --3.4 & --1.8 & 1.1\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{  10.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{  4.3}} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{--0.5} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.0}}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{18.1} & \cellcolor[HTML]{e6e3e3}{5.2} & \cellcolor[HTML]{e6e3e3}{--3.4} & \cellcolor[HTML]{e6e3e3}{--1.8} & \cellcolor[HTML]{e6e3e3}{1.1}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{18.5} & \cellcolor[HTML]{e6e3e3}{5.5} & \cellcolor[HTML]{e6e3e3}{--3.3} & \cellcolor[HTML]{e6e3e3}{--1.7} & \cellcolor[HTML]{e6e3e3}{1.2}\\
-\midrule\\
+\midrule
 WLSv & 23.6 & 7.9 & --2.2 & --1.9 & 2.4\\
 \cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{   5.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --1.7}}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{23.6} & \cellcolor[HTML]{e6e3e3}{7.9} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{2.4}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{23.6} & \cellcolor[HTML]{e6e3e3}{7.9} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{--1.9} & \cellcolor[HTML]{e6e3e3}{2.4}\\
-\midrule\\
+\midrule
 MinTs & 18.6 & 5.7 & --3.4 & \textcolor{blue}{\textbf{--2.7}} & 0.9\\
 \cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{   3.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.4}} & \cellcolor[HTML]{e6e3e3}{--2.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.5}}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{18.6} & \cellcolor[HTML]{e6e3e3}{5.7} & \cellcolor[HTML]{e6e3e3}{--3.4} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--2.7}}} & \cellcolor[HTML]{e6e3e3}{0.9}\\
@@ -1921,25 +1941,26 @@ We present the results based on the last test set from January 2017 to
 December 2017 in \hyperref[appendix-tourism]{Appendix E}.
 Table~\ref{tbl-tourism-rmse} shows the percentage improvement in RMSEs
 for various reconciliation methods, and Figure~\ref{fig-tourism-rmse}
-displays the reconciliation errors across \(111\) series
-\todo{I don't think you have interpreted this plot}. The results are
-consistent with the average results mentioned earlier, indicating
-relatively high-quality forecasts from Subset and Elasso methods. In
-addition, Table~\ref{tbl-tourism-info} summarizes the number of series
-selected at each level, their average RMSSE values, and the optimal
-tuning parameters. Here we focus on the Subset and Elasso methods since
-they show improved forecast results in this application. We observe that
-OLS-subset and WLSs-subset exclude some series at the State and Zone
-levels, yielding lower RMSSE values for the selected series at each
-level. Notably, WLSs-subset selects only the best-performing series at
-the State level. Despite using only \(13\) time series, Elasso performs
-exceptionally well, with reduced RMSSE values at each level for the
-selected series. Thus, both the Subset and Elasso methods are able to
-exclude series with high forecast errors
-\todo{again, "high forecast error"?}. In contrast, the WLSv and MinTs
-subset methods retain all series. Nonetheless, the inclusion of
-shrinkage through ridge regularization in the WLSv and MinTs subset
-methods still enhances the quality of reconciled forecasts.
+displays the reconciliation errors across \(111\)
+series\todo{I don't think you have interpreted this plot. XQ --- Figure E1 and Table E1 really show the same results, but Figure E1 presents them in a heatmap format and excludes the -parsim and -lasso results. To keep the paper concise and considering their consistency with the earlier findings, I think the following sentence is enough for summarizing these results.}.
+These results are consistent with the average results mentioned earlier,
+indicating relatively high-quality forecasts from Subset and Elasso
+methods. In addition, Table~\ref{tbl-tourism-info} summarizes the number
+of series selected at each level, their average RMSSE values, and the
+optimal tuning parameters. Here we focus on the Subset and Elasso
+methods since they show improved forecast results in this application.
+We observe that OLS-subset and WLSs-subset exclude some series at the
+State and Zone levels, yielding lower RMSSE values for the selected
+series at each level. Notably, WLSs-subset selects only the
+best-performing series at the State level. Despite using only \(13\)
+time series, Elasso performs exceptionally well, with reduced RMSSE
+values at each level for the selected series. Thus, both the Subset and
+Elasso methods are able to exclude series with high scaled forecast
+errors\todo{again, "high forecast error"? XQ --- Corrected to "high scaled forecast error"}.
+In contrast, the WLSv and MinTs subset methods retain all series.
+Nonetheless, the inclusion of shrinkage through ridge regularization in
+the WLSv and MinTs subset methods still enhances the quality of
+reconciled forecasts.
 
 \section{Discussion}\label{sec-discussion}
 
@@ -1967,11 +1988,12 @@ reconciliation method that leverages in-sample information for
 selection.
 
 The proposed methods offer four key benefits to hierarchical forecasting
-process. First, they automatically exclude series with high forecast
-errors \todo{high forecast error?} from reconciliation and enhance
-computational efficiency by eliminating the need to forecast these
-series
-\todo{don't we need forecasts for all the series to decide which columns to set to zero?}.
+process. First, they automatically exclude series with high scaled
+forecast
+errors\todo{high forecast error? XQ --- high scaled forecast errors}
+from reconciliation and enhance computational efficiency by eliminating
+the need to forecast these series in future
+operations\todo{don't we need forecasts for all the series to decide which columns to set to zero? XQ --- Corrected. As explained earlier, it's for future future operations.}.
 Second, they generally produce promising reconciled forecasts for the
 whole hierarchy, particularly in cases of model misspecification. Third,
 they reduce disparities resulting from different estimates of \(\bm{W}\)
@@ -2024,7 +2046,7 @@ Number of parameters & 28.0 & 28.0 & 3024 & 8436\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[para]
-\item \footnotesize{Note: NOCH refers to the number of candidate hyperparameters considered.}
+\item \footnotesize{Note: NOCH refers to the number of candidate hyperparameters considered. A dash (-) denotes that the method is not applicable to the experiment.}
 \end{tablenotes}
 \end{threeparttable}
 \endgroup{}
@@ -2040,8 +2062,8 @@ the estimates remains a significant hurdle. In this study, we employed
 Gurobi, a widely used commercial solvers, to tackle the NP-hard MIP
 problems. Table~\ref{tbl-time} provides the computational time for
 solving the reconciliation problem for a single hierarchy in each of our
-experiments
-\todo{are these for all hyperparameters and rolling test sets/simulations? Explain what is denoted by "-" in the table}.
+experiments, considering all candidate hyperparameters and rolling test
+sets\todo{are these for all hyperparameters and rolling test sets/simulations? Explain what is denoted by "-" in the table. XQ --- Corrected}.
 Note that the reported time considers all candidate hyperparameters and
 rolling test sets. In terms of computational resources we used 20 CPUs
 and 3 GB of memory per CPU in a high-performance computing system. Given
@@ -2139,11 +2161,11 @@ similar to their benchmarks, as they tend to deliver dense estimates.
 While this study provides an important advancement in hierarchical
 forecasting, several promising avenues for further research remain.
 These include improving the scalability of the methods, extending the
-unconstrained in-sample approach to account for varying weights assigned
-to forecast errors of different series, integrating bias correction
-mechanisms prior to reconciliation to deal with biased forecasts
-\todo{prior to reconciliation or during the reconciliation, look at the equation on page 27},
-and investigating bi-level variable selection strategies.
+unconstrained in-sample approach to account for varying weights for
+forecast errors across series, integrating bias correction mechanisms
+during the reconciliation to address biased
+forecasts\todo{prior to reconciliation or during the reconciliation, look at the equation on page 27. XQ --- It should be "during the reconciliation". Now corrected.},
+and exploring bi-level variable selection strategies.
 
 \section*{Supplementary materials}\label{supplementary-materials}
 \addcontentsline{toc}{section}{Supplementary materials}
@@ -2273,8 +2295,8 @@ proposed methods outperforming bechmarks.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
@@ -2366,34 +2388,34 @@ darker sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (3.08) & (1.52) & (1.55) & (1.57) & (1.62) & (1.62) & (1.57) & \\
 \midrule
-OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_OLS-subset.png}\\
-OLS-parsim & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_OLS-parsim.png}\\
-OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_WLSs-subset.png}\\
-WLSs-parsim & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_WLSs-parsim.png}\\
-WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_WLSv-subset.png}\\
-WLSv-parsim & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_WLSv-parsim.png}\\
-WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_MinT-parsim.png}\\
-MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_MinTs-parsim.png}\\
-MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s3_Elasso.png}\\
+OLS-subset & 0.75 & 0.45 & 0.44 & 0.82 & 0.79 & 0.83 & 0.80 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-subset.png}\\
+OLS-parsim & 0.47 & 0.70 & 0.69 & 0.86 & 0.92 & 0.90 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-parsim.png}\\
+OLS-lasso & 0.38 & 0.01 & 0.01 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.08 & 0.42 & 0.41 & 0.87 & 0.85 & 0.84 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-subset.png}\\
+WLSs-parsim & 0.06 & 0.55 & 0.50 & 0.66 & 0.87 & 0.69 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-parsim.png}\\
+WLSs-lasso & 0.35 & 0.03 & 0.03 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.31 & 0.67 & 0.65 & 0.88 & 0.90 & 0.91 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-subset.png}\\
+WLSv-parsim & 0.34 & 0.63 & 0.60 & 0.80 & 0.89 & 0.84 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-parsim.png}\\
+WLSv-lasso & 0.45 & 0.35 & 0.36 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 0.69 & 0.78 & 0.80 & 0.91 & 0.91 & 0.91 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-parsim.png}\\
+MinT-lasso & 0.75 & 0.89 & 0.86 & 0.97 & 0.97 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.67 & 0.74 & 0.76 & 0.90 & 0.89 & 0.88 & 0.91 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-parsim.png}\\
+MinTs-lasso & 0.77 & 0.72 & 0.73 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.95 & 0.64 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s3_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -2414,8 +2436,8 @@ methods outperforming bechmarks.}
 
 \centering{
 
-\centering\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\centering
+\resizebox{\linewidth}{!}{
 \fontsize{10}{12}\selectfont
 \begin{tabular}{lrrrrrrrrrrrrrrrr}
 \toprule
@@ -2425,12 +2447,12 @@ Method & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1--8 & 1--16 & h=1 & 1--4 & 1-
 \midrule
 Base & 9.6 & 10.7 & 12.6 & 15.6 & 6.3 & 7.3 & 8.6 & 10.8 & 6.4 & 7.5 & 8.3 & 9.8 & 6.8 & 7.9 & 9.0 & 10.9\\
 BU & 57.8 & 68.5 & 53.7 & 38.9 & 58.2 & 61.8 & 48.1 & 34.4 & 0.0 & 0.0 & 0.0 & 0.0 & 27.0 & 29.6 & 23.8 & 17.7\\
-\midrule\\
+\midrule
 OLS & 0.6 & 2.2 & 1.8 & 1.4 & 7.1 & 6.4 & 4.6 & 3.1 & --7.6 & --8.6 & --8.2 & --7.3 & --2.1 & --2.5 & --2.7 & --2.6\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.3}} & \cellcolor[HTML]{e6e3e3}{7.2} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 2.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.1}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{0.8} & \cellcolor[HTML]{e6e3e3}{2.6} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{7.5} & \cellcolor[HTML]{e6e3e3}{\textbf{ 6.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--11.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --4.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{0.6} & \cellcolor[HTML]{e6e3e3}{2.2} & \cellcolor[HTML]{e6e3e3}{1.8} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{7.4} & \cellcolor[HTML]{e6e3e3}{6.7} & \cellcolor[HTML]{e6e3e3}{4.8} & \cellcolor[HTML]{e6e3e3}{3.2} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{--8.5} & \cellcolor[HTML]{e6e3e3}{--8.1} & \cellcolor[HTML]{e6e3e3}{--7.2} & \cellcolor[HTML]{e6e3e3}{--2.0} & \cellcolor[HTML]{e6e3e3}{--2.4} & \cellcolor[HTML]{e6e3e3}{--2.6} & \cellcolor[HTML]{e6e3e3}{--2.5}\\
-\midrule\\
+\midrule
 WLSs & 7.3 & 10.6 & 8.1 & 5.9 & 15.6 & 16.0 & 11.8 & 8.0 & --6.9 & --7.8 & --7.4 & --6.4 & 1.9 & 2.0 & 1.0 & 0.2\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 4.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{12.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{10.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.0}}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 5.2}} & \cellcolor[HTML]{e6e3e3}{16.5} & \cellcolor[HTML]{e6e3e3}{\textbf{15.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{11.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 7.9}} & \cellcolor[HTML]{e6e3e3}{--6.8} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{2.1} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{  0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.4}}\\
@@ -2507,34 +2529,34 @@ sub-bars indicating higher counts.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (1.48) & (1.52) & (1.55) & (3.45) & (1.62) & (1.62) & (1.57) & \\
 \midrule
-OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_OLS-subset.png}\\
-OLS-parsim & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_OLS-parsim.png}\\
-OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_WLSs-subset.png}\\
-WLSs-parsim & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_WLSs-parsim.png}\\
-WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_WLSv-subset.png}\\
-WLSv-parsim & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_WLSv-parsim.png}\\
-WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_MinT-parsim.png}\\
-MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_MinTs-parsim.png}\\
-MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/s1_Elasso.png}\\
+OLS-subset & 0.52 & 0.79 & 0.57 & 0.79 & 1 & 0.91 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-subset.png}\\
+OLS-parsim & 0.80 & 0.90 & 0.81 & 0.80 & 1 & 0.85 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-parsim.png}\\
+OLS-lasso & 0.90 & 1.00 & 0.68 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.85 & 0.91 & 0.86 & 0.90 & 1 & 0.97 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-subset.png}\\
+WLSs-parsim & 0.92 & 0.95 & 0.67 & 0.92 & 1 & 0.92 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-parsim.png}\\
+WLSs-lasso & 0.72 & 1.00 & 0.72 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.50 & 0.62 & 0.42 & 0.19 & 1 & 0.81 & 0.87 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-subset.png}\\
+WLSv-parsim & 0.59 & 0.55 & 0.49 & 0.17 & 1 & 0.76 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-parsim.png}\\
+WLSv-lasso & 0.40 & 1.00 & 0.41 & 0.77 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 0.66 & 0.90 & 0.61 & 0.72 & 1 & 0.91 & 0.93 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-parsim.png}\\
+MinT-lasso & 0.80 & 0.96 & 0.84 & 0.72 & 1 & 0.98 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.57 & 0.88 & 0.52 & 0.67 & 1 & 0.89 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-parsim.png}\\
+MinTs-lasso & 0.68 & 1.00 & 0.66 & 0.74 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.82 & 0.63 & 0.69 & 1.00 & 1 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/s1_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -2561,34 +2583,34 @@ indicating higher counts.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.88) & (0.84) & (0.74) & (0.77) & (0.81) & (0.87) & (0.79) & \\
 \midrule
-OLS-subset & 0.35 & 0.38 & 0.96 & 0.97 & 0.99 & 0.73 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_OLS-subset.png}\\
-OLS-parsim & 0.59 & 0.62 & 0.93 & 0.92 & 1.00 & 0.61 & 0.96 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_OLS-parsim.png}\\
-OLS-lasso & 0.65 & 0.41 & 0.50 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.35 & 0.43 & 0.99 & 1.00 & 1.00 & 0.73 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_WLSs-subset.png}\\
-WLSs-parsim & 0.56 & 0.54 & 0.97 & 0.98 & 1.00 & 0.70 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_WLSs-parsim.png}\\
-WLSs-lasso & 0.62 & 0.66 & 0.82 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.34 & 0.44 & 1.00 & 1.00 & 1.00 & 0.68 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_WLSv-subset.png}\\
-WLSv-parsim & 0.55 & 0.52 & 0.98 & 1.00 & 1.00 & 0.62 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_WLSv-parsim.png}\\
-WLSv-lasso & 0.63 & 0.76 & 0.92 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_MinT-parsim.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 0.95 & 0.93 & 1.00 & 1.00 & 1.00 & 0.93 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_MinTs-parsim.png}\\
-MinTs-lasso & 0.96 & 0.94 & 1.00 & 1.00 & 1.00 & 0.96 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.93 & 0.73 & 0.98 & 1.00 & 0.99 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p3_Elasso.png}\\
+OLS-subset & 0.35 & 0.38 & 0.96 & 0.97 & 0.99 & 0.73 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-subset.png}\\
+OLS-parsim & 0.59 & 0.62 & 0.93 & 0.92 & 1.00 & 0.61 & 0.96 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-parsim.png}\\
+OLS-lasso & 0.65 & 0.41 & 0.50 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.35 & 0.43 & 0.99 & 1.00 & 1.00 & 0.73 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSs-subset.png}\\
+WLSs-parsim & 0.56 & 0.54 & 0.97 & 0.98 & 1.00 & 0.70 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSs-parsim.png}\\
+WLSs-lasso & 0.62 & 0.66 & 0.82 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.34 & 0.44 & 1.00 & 1.00 & 1.00 & 0.68 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSv-subset.png}\\
+WLSv-parsim & 0.55 & 0.52 & 0.98 & 1.00 & 1.00 & 0.62 & 0.97 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSv-parsim.png}\\
+WLSv-lasso & 0.63 & 0.76 & 0.92 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 0.95 & 0.93 & 1.00 & 1.00 & 1.00 & 0.93 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinTs-parsim.png}\\
+MinTs-lasso & 0.96 & 0.94 & 1.00 & 1.00 & 1.00 & 0.96 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.93 & 0.73 & 0.98 & 1.00 & 0.99 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p3_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -2608,34 +2630,34 @@ higher counts.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.90) & (0.85) & (0.76) & (0.86) & (0.83) & (0.74) & (0.80) & \\
 \midrule
-OLS-subset & 0.37 & 0.49 & 0.95 & 0.94 & 0.99 & 0.73 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_OLS-subset.png}\\
-OLS-parsim & 0.55 & 0.74 & 0.92 & 0.88 & 0.98 & 0.67 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_OLS-parsim.png}\\
-OLS-lasso & 0.70 & 0.57 & 0.61 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.37 & 0.54 & 0.99 & 0.98 & 1.00 & 0.77 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_WLSs-subset.png}\\
-WLSs-parsim & 0.60 & 0.60 & 0.98 & 0.96 & 1.00 & 0.71 & 0.96 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_WLSs-parsim.png}\\
-WLSs-lasso & 0.74 & 0.80 & 0.90 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.35 & 0.55 & 1.00 & 0.99 & 1.00 & 0.78 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_WLSv-subset.png}\\
-WLSv-parsim & 0.60 & 0.58 & 0.99 & 1.00 & 1.00 & 0.86 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_WLSv-parsim.png}\\
-WLSv-lasso & 0.76 & 0.82 & 0.95 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_MinT-parsim.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 1.00 & 0.99 & 1.00 & 1.00 & 1.00 & 0.99 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_MinTs-parsim.png}\\
-MinTs-lasso & 1.00 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.92 & 0.80 & 0.98 & 1.00 & 0.97 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p5_Elasso.png}\\
+OLS-subset & 0.37 & 0.49 & 0.95 & 0.94 & 0.99 & 0.73 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-subset.png}\\
+OLS-parsim & 0.55 & 0.74 & 0.92 & 0.88 & 0.98 & 0.67 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-parsim.png}\\
+OLS-lasso & 0.70 & 0.57 & 0.61 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.37 & 0.54 & 0.99 & 0.98 & 1.00 & 0.77 & 0.98 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSs-subset.png}\\
+WLSs-parsim & 0.60 & 0.60 & 0.98 & 0.96 & 1.00 & 0.71 & 0.96 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSs-parsim.png}\\
+WLSs-lasso & 0.74 & 0.80 & 0.90 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.35 & 0.55 & 1.00 & 0.99 & 1.00 & 0.78 & 0.95 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSv-subset.png}\\
+WLSv-parsim & 0.60 & 0.58 & 0.99 & 1.00 & 1.00 & 0.86 & 0.84 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSv-parsim.png}\\
+WLSv-lasso & 0.76 & 0.82 & 0.95 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 1.00 & 0.99 & 1.00 & 1.00 & 1.00 & 0.99 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinTs-parsim.png}\\
+MinTs-lasso & 1.00 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.92 & 0.80 & 0.98 & 1.00 & 0.97 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p5_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -2655,34 +2677,34 @@ indicating higher counts.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.99) & (0.87) & (0.78) & (0.83) & (0.77) & (0.81) & (0.81) & \\
 \midrule
-OLS-subset & 0.37 & 0.53 & 0.98 & 0.92 & 0.98 & 0.81 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_OLS-subset.png}\\
-OLS-parsim & 0.58 & 0.78 & 0.96 & 0.88 & 0.97 & 0.78 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_OLS-parsim.png}\\
-OLS-lasso & 0.73 & 0.59 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.35 & 0.57 & 1.00 & 0.99 & 1.00 & 0.86 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_WLSs-subset.png}\\
-WLSs-parsim & 0.62 & 0.61 & 0.99 & 0.96 & 1.00 & 0.78 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_WLSs-parsim.png}\\
-WLSs-lasso & 0.79 & 0.81 & 0.93 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.35 & 0.58 & 1.00 & 1.00 & 1.00 & 0.89 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_WLSv-subset.png}\\
-WLSv-parsim & 0.61 & 0.53 & 1.00 & 1.00 & 0.99 & 0.96 & 0.73 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_WLSv-parsim.png}\\
-WLSv-lasso & 0.83 & 0.89 & 0.98 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_MinT-parsim.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_MinTs-parsim.png}\\
-MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.89 & 0.76 & 0.99 & 0.99 & 0.91 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p7_Elasso.png}\\
+OLS-subset & 0.37 & 0.53 & 0.98 & 0.92 & 0.98 & 0.81 & 0.90 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-subset.png}\\
+OLS-parsim & 0.58 & 0.78 & 0.96 & 0.88 & 0.97 & 0.78 & 0.89 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-parsim.png}\\
+OLS-lasso & 0.73 & 0.59 & 0.64 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.35 & 0.57 & 1.00 & 0.99 & 1.00 & 0.86 & 0.92 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSs-subset.png}\\
+WLSs-parsim & 0.62 & 0.61 & 0.99 & 0.96 & 1.00 & 0.78 & 0.88 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSs-parsim.png}\\
+WLSs-lasso & 0.79 & 0.81 & 0.93 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.35 & 0.58 & 1.00 & 1.00 & 1.00 & 0.89 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSv-subset.png}\\
+WLSv-parsim & 0.61 & 0.53 & 1.00 & 1.00 & 0.99 & 0.96 & 0.73 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSv-parsim.png}\\
+WLSv-lasso & 0.83 & 0.89 & 0.98 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinTs-parsim.png}\\
+MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.89 & 0.76 & 0.99 & 0.99 & 0.91 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p7_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -2702,34 +2724,34 @@ indicating higher counts.}
 
 \centering{
 
-\centering\centering\begingroup\fontsize{10}{12}\selectfont
+\centering\begingroup\fontsize{10}{12}\selectfont
 
 \begin{tabular}{lrrrrrrr>{}r}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{1}{c}{Total} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{AA} & \multicolumn{1}{c}{AB} & \multicolumn{1}{c}{BA} & \multicolumn{1}{c}{BB} & \multicolumn{1}{c}{Summary} \\
 (RMSSE) & (0.89) & (0.85) & (0.76) & (0.78) & (0.72) & (0.77) & (0.75) & \\
 \midrule
-OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_OLS-subset.png}\\
-OLS-parsim & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_OLS-parsim.png}\\
-OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_OLS-lasso.png}\\
-\midrule\\
-WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_WLSs-subset.png}\\
-WLSs-parsim & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_WLSs-parsim.png}\\
-WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_WLSs-lasso.png}\\
-\midrule\\
-WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_WLSv-subset.png}\\
-WLSv-parsim & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_WLSv-parsim.png}\\
-WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_WLSv-lasso.png}\\
-\midrule\\
-MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_MinT-subset.png}\\
-MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_MinT-parsim.png}\\
-MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_MinT-lasso.png}\\
-\midrule\\
-MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_MinTs-subset.png}\\
-MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_MinTs-parsim.png}\\
-MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_MinTs-lasso.png}\\
-\midrule\\
-Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{C:/Users/shani/Documents/GitHub/hfs/paper/_figs/corr_p9_Elasso.png}\\
+OLS-subset & 0.33 & 0.52 & 0.96 & 0.95 & 0.98 & 0.96 & 0.78 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-subset.png}\\
+OLS-parsim & 0.54 & 0.77 & 0.93 & 0.89 & 0.97 & 0.83 & 0.85 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-parsim.png}\\
+OLS-lasso & 0.69 & 0.53 & 0.60 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_OLS-lasso.png}\\
+\midrule
+WLSs-subset & 0.29 & 0.60 & 1.00 & 1.00 & 1.00 & 0.98 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSs-subset.png}\\
+WLSs-parsim & 0.63 & 0.67 & 0.99 & 0.98 & 1.00 & 0.93 & 0.86 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSs-parsim.png}\\
+WLSs-lasso & 0.69 & 0.76 & 0.91 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSs-lasso.png}\\
+\midrule
+WLSv-subset & 0.32 & 0.55 & 1.00 & 1.00 & 1.00 & 0.99 & 0.76 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSv-subset.png}\\
+WLSv-parsim & 0.58 & 0.56 & 1.00 & 1.00 & 0.98 & 1.00 & 0.75 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSv-parsim.png}\\
+WLSv-lasso & 0.77 & 0.84 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_WLSv-lasso.png}\\
+\midrule
+MinT-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinT-subset.png}\\
+MinT-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinT-parsim.png}\\
+MinT-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinT-lasso.png}\\
+\midrule
+MinTs-subset & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinTs-subset.png}\\
+MinTs-parsim & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinTs-parsim.png}\\
+MinTs-lasso & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_MinTs-lasso.png}\\
+\midrule
+Elasso & 0.73 & 0.65 & 0.98 & 0.98 & 0.86 & 1.00 & 0.99 & \includegraphics[width=0.47in, height=0.1in]{/Users/xwan0362/Git/hfs/paper/_figs/corr_p9_Elasso.png}\\
 \bottomrule
 \end{tabular}
 \endgroup{}
@@ -2796,27 +2818,27 @@ Method & Top & Duration & STT & Duration x STT & Average\\
 \midrule
 Base & 28.3 & 16.9 & 6.3 & 2.9 & 5.1\\
 BU & --45.0 & --10.1 & --13.5 & 0.0 & --9.3\\
-\midrule\\
+\midrule
 OLS & --10.4 & --0.6 & 0.3 & 4.9 & 1.1\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--38.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 3.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.8}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{\textbf{--32.1}} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{13.2} & \cellcolor[HTML]{e6e3e3}{11.6} & \cellcolor[HTML]{e6e3e3}{4.4}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{--10.4} & \cellcolor[HTML]{e6e3e3}{--0.6} & \cellcolor[HTML]{e6e3e3}{0.3} & \cellcolor[HTML]{e6e3e3}{4.9} & \cellcolor[HTML]{e6e3e3}{1.1}\\
-\midrule\\
+\midrule
 WLSs & --38.6 & --5.9 & --8.0 & 1.6 & --5.9\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--50.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{--12.8}} & \cellcolor[HTML]{e6e3e3}{5.9} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.4}}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{--38.6} & \cellcolor[HTML]{e6e3e3}{--5.9} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{1.6} & \cellcolor[HTML]{e6e3e3}{--5.9}\\
-\midrule\\
+\midrule
 WLSv & --36.6 & --4.8 & --7.0 & 3.1 & --4.6\\
 \cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{--29.6} & \cellcolor[HTML]{e6e3e3}{\textbf{--10.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.3}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 1.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{--36.6} & \cellcolor[HTML]{e6e3e3}{--4.8} & \cellcolor[HTML]{e6e3e3}{--7.0} & \cellcolor[HTML]{e6e3e3}{3.1} & \cellcolor[HTML]{e6e3e3}{--4.6}\\
-\midrule\\
+\midrule
 MinTs & --21.8 & --4.6 & --7.6 & 3.4 & --3.1\\
 \cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{--45.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --9.3}} & \cellcolor[HTML]{e6e3e3}{3.6} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.1}}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{--21.8} & \cellcolor[HTML]{e6e3e3}{--4.6} & \cellcolor[HTML]{e6e3e3}{--7.6} & \cellcolor[HTML]{e6e3e3}{3.4} & \cellcolor[HTML]{e6e3e3}{--3.1}\\
-\midrule\\
+\midrule
 EMinT & --29.9 & --6.7 & \textcolor{blue}{\textbf{--21.0}} & 10.1 & --3.7\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{--8.0} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--25.3}}} & \cellcolor[HTML]{e6e3e3}{--14.6} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--4.9}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--13.2}}}\\
 \bottomrule
@@ -2832,7 +2854,7 @@ EMinT & --29.9 & --6.7 & \textcolor{blue}{\textbf{--21.0}} & 10.1 & --3.7\\
 \caption{\label{tbl-labour-info}Number of time series selected by
 proposed methods and the optimal parameters identified in the labour
 application, considering a single test set (from August 2022 to July
-2023). The None row shows the original number of series in the
+2023). The Base row shows the original number of series in the
 structure. The numbers in parentheses show RMSSE values of base
 forecasts for selected series across different levels.}
 
@@ -2846,7 +2868,7 @@ forecasts for selected series across different levels.}
 \cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
   & Top & Duration & STT & Duration x STT & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
 \midrule
-None & 1 (0.39) & 6 (1.07) & 8 (0.57) & 48 (0.90) & 63 & - & - & -\\
+Base & 1 (0.39) & 6 (1.07) & 8 (0.57) & 48 (0.90) & 63 & - & - & -\\
 OLS-subset & 0 (0.00) & 5 (1.01) & 1 (0.42) & 48 (0.90) & 54 & - & 4.16 & 1\\
 WLSs-subset & 0 (0.00) & 5 (1.01) & 1 (0.70) & 46 (0.90) & 52 & - & 0.38 & 0.1\\
 WLSv-subset & 1 (0.39) & 5 (1.03) & 7 (0.54) & 48 (0.90) & 61 & - & 0.51 & 1\\
@@ -2860,7 +2882,7 @@ Elasso & 1 (0.39) & 5 (1.20) & 2 (0.57) & 3 (0.88) & 11 & 213.59 & - & -\\
 
 \end{table}%
 
-\todo{"None" or "Base" in Table D.2}
+\todo{"None" or "Base" in Table D.2. XQ --- Now use Base instead.}
 
 \clearpage
 
@@ -2887,27 +2909,27 @@ Method & Top & State & Zone & Region & Average\\
 \midrule
 Base & 1907.6 & 424.8 & 179.7 & 94.1 & 152.1\\
 BU & 42.0 & 19.7 & 1.0 & 0.0 & 8.5\\
-\midrule\\
+\midrule
 OLS & 1.4 & --1.5 & --7.5 & --3.2 & --3.6\\
 \cellcolor[HTML]{e6e3e3}{OLS-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{ --14.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.9}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.7}} & \cellcolor[HTML]{e6e3e3}{--2.3} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.5}}\\
 \cellcolor[HTML]{e6e3e3}{OLS-parsim} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
 \cellcolor[HTML]{e6e3e3}{OLS-lasso} & \cellcolor[HTML]{e6e3e3}{1.4} & \cellcolor[HTML]{e6e3e3}{--1.5} & \cellcolor[HTML]{e6e3e3}{--7.5} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--3.6}\\
-\midrule\\
+\midrule
 WLSs & 19.1 & 6.2 & --5.0 & --2.2 & 0.9\\
 \cellcolor[HTML]{e6e3e3}{WLSs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{  --7.8}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.2}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --8.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{--2.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --5.5}}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-parsim} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{0.9}\\
 \cellcolor[HTML]{e6e3e3}{WLSs-lasso} & \cellcolor[HTML]{e6e3e3}{19.1} & \cellcolor[HTML]{e6e3e3}{6.2} & \cellcolor[HTML]{e6e3e3}{--5.0} & \cellcolor[HTML]{e6e3e3}{--2.2} & \cellcolor[HTML]{e6e3e3}{0.9}\\
-\midrule\\
+\midrule
 WLSv & 25.6 & 9.9 & --3.2 & --2.1 & 2.8\\
 \cellcolor[HTML]{e6e3e3}{WLSv-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{   8.5}} & \cellcolor[HTML]{e6e3e3}{\textbf{  1.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --6.7}} & \cellcolor[HTML]{e6e3e3}{\textbf{--3.4}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --2.2}}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-parsim} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{2.8}\\
 \cellcolor[HTML]{e6e3e3}{WLSv-lasso} & \cellcolor[HTML]{e6e3e3}{25.6} & \cellcolor[HTML]{e6e3e3}{9.9} & \cellcolor[HTML]{e6e3e3}{--3.2} & \cellcolor[HTML]{e6e3e3}{--2.1} & \cellcolor[HTML]{e6e3e3}{2.8}\\
-\midrule\\
+\midrule
 MinTs & 19.0 & 6.3 & --5.3 & --3.1 & 0.4\\
 \cellcolor[HTML]{e6e3e3}{MinTs-subset} & \cellcolor[HTML]{e6e3e3}{\textbf{   5.6}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --0.1}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --7.8}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--3.9}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ --3.3}}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-parsim} & \cellcolor[HTML]{e6e3e3}{19.0} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{--5.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{0.4}\\
 \cellcolor[HTML]{e6e3e3}{MinTs-lasso} & \cellcolor[HTML]{e6e3e3}{19.0} & \cellcolor[HTML]{e6e3e3}{6.3} & \cellcolor[HTML]{e6e3e3}{--5.3} & \cellcolor[HTML]{e6e3e3}{--3.1} & \cellcolor[HTML]{e6e3e3}{0.4}\\
-\midrule\\
+\midrule
 EMinT & --13.7 & 47.5 & 54.2 & 78.2 & 55.5\\
 \cellcolor[HTML]{e6e3e3}{Elasso} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --16.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--11.4}}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{--10.4}}} & \cellcolor[HTML]{e6e3e3}{\textbf{ 0.3}} & \cellcolor[HTML]{e6e3e3}{\textcolor{blue}{\textbf{ --6.7}}}\\
 \bottomrule
@@ -2938,7 +2960,7 @@ arranged along the horizontal axis.}
 \caption{\label{tbl-tourism-info}Number of time series selected by
 proposed methods and the optimal parameters identified in the tourism
 application, considering a single test set (from January 2017 to
-December 2017). The None row shows the original number of series in the
+December 2017). The Base row shows the original number of series in the
 structure. The numbers in parentheses show RMSSE values of base
 forecasts for selected series across different levels.}
 
@@ -2952,7 +2974,7 @@ forecasts for selected series across different levels.}
 \cmidrule(l{3pt}r{3pt}){2-6} \cmidrule(l{3pt}r{3pt}){7-9}
   & Top & State & Zone & Region & Total & $\lambda$ & $\lambda_0$ & $\lambda_2$\\
 \midrule
-None & 1 (1.19) & 7 (1.09) & 27 (1.13) & 76 (1.17) & 111 & - & - & -\\
+Base & 1 (1.19) & 7 (1.09) & 27 (1.13) & 76 (1.17) & 111 & - & - & -\\
 OLS-subset & 1 (1.19) & 2 (0.77) & 13 (1.09) & 76 (1.17) & 92 & - & 27.98 & 10\\
 WLSs-subset & 1 (1.19) & 1 (0.62) & 15 (1.08) & 76 (1.17) & 93 & - & 18.73 & 10\\
 WLSv-subset & 1 (1.19) & 7 (1.09) & 27 (1.13) & 76 (1.17) & 111 & - & 0.03 & 0.01\\
@@ -2966,7 +2988,8 @@ Elasso & 1 (1.19) & 4 (1.04) & 0 (0.00) & 8 (0.86) & 13 & 71759.21 & - & -\\
 
 \end{table}%
 
-\todo{"None" or "Base" in Table E.2}
+\todo{"None" or "Base" in Table E.2. XQ --- Now use Base instead}
+
 
 
 
