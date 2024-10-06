@@ -214,7 +214,7 @@
 \raggedbottom
 
 \usepackage[australian]{babel}
-\date{2024-10-01}
+\date{2024-10-07}
 
 \usepackage{color}
 \renewenvironment{quote}
@@ -614,8 +614,8 @@ Figures 4(b) and C.1(b) for setup 2. We have also expanded the related
 results analysis to incorporate insights from these results. Our
 analysis suggests that both forecast variance and forecast correlation
 influence time series selection. In general, time series with high
-forecast variance
-\todo{"high forecast variance"? The top level series might have high forecast variance due to large scale, but that doesn't mean it should be excluded}
+scaled forecast
+variance\todo{"high forecast variance"? The top level series might have high forecast variance due to large scale, but that doesn't mean it should be excluded. XQ --- It should be "high scaled forecast variance."}
 and strong correlations with other series are more likely to be
 excluded. For the empirical applications, we did not include heatmaps,
 as the number of time series in these hierarchies is too large to
@@ -648,33 +648,39 @@ decision making? Policy making? These would be vital to enhancing the
 paper's reach and impact.
 
 \begin{quote}
-(@Shanika, the paper may need additional revisions to better address the
-response.) \todo{I have added few more lines to the third paragraph}
-
-Thank you for the comment. We have now added an additional paragraph in
-both the introduction and discussion sections to discuss the potential
-practical significance of the proposed methods. We present below the
-newly added paragraph from the introduction section, with the key
+Thank you for the comment. We have now added few more lines to the third
+paragraph of the introduction section, and included an additional
+paragraph in both the introduction and discussion sections to discuss
+the potential practical significance of the proposed methods. Below, we
+only present the newly added content from the introduction, with the key
 practical significance highlighted in bold.
+
+``In practice, hierarchical time series can encompass hundreds or even
+thousands of individual series, making it impractical to focus on each
+model we fit. To address this complexity, we often rely on automated
+model selection methods.''
 
 ``Unlike \textcite{Zhang2023-op}, which keep good forecasts unchanged,
 we leave poor base forecasts unused in generating reconciled forecasts.
 Notably, \textbf{our methods automate the selection process, relieving
 practitioners from the task of carefully choose which series to
-exclude}. There may be other practical motivations to use our proposed
-approach. For example, in labour force forecasting, \textbf{economists
-may be interested in various attributes} such as gender, labor market
-region, and duration of job search, \textbf{which create a complex
-hierarchical structure.} \textbf{Some series within this structure may
-be poorly specified for forecasting or exhibit weak patterns}, resulting
-in poor base forecasts. \textbf{Our methods selectively use some series
-into the reconciliation process}, potentially improving overall accuracy
-while still providing reconciled forecasts for the entire hierarchy.
-Moreover, \textbf{our methods allow for computational efficiency by
-avoiding the need to forecast excluded series}. Finally, \textbf{they
-also adapt well to scenarios with missing or extremely sparse data} by
-adding additional constraints to exclude such series, enabling us to
-bypass their base forecasts while still returning reconciled outcomes.''
+exclude.} There may be other practical motivations to use our proposed
+approach. For example, in labour force forecasting, economists may
+\textbf{be interested in various attributes} such as gender, labor
+market region, and duration of job search, which create a complex
+hierarchical structure. \textbf{Some series within this structure may be
+poorly specified for forecasting or exhibit weak patterns}, resulting in
+poor base forecasts. \textbf{Our methods selectively use some series
+into the reconciliation process, potentially improving overall accuracy
+while still providing reconciled forecasts for the entire hierarchy.}
+Moreover, \textbf{the selection procedure avoids the need to forecast
+the excluded series in future operations, at least for a short
+duration}, and employs only the selected series along with the estimated
+weighting matrix for reconciliation, thereby improving computational
+efficiency. Finally, \textbf{they also adapt well to scenarios with
+missing or extremely sparse data} by adding additional constraints to
+exclude such series, enabling us to bypass their base forecasts while
+still returning reconciled outcomes.''
 \end{quote}
 
 \begin{itemize}
@@ -707,16 +713,19 @@ to ensure the accuracy of statements.
 \end{itemize}
 
 \begin{quote}
-(@Shanika, the paper may need additional revisions to better address the
-response.)
-
 In the newly added paragraph in the introduction section, we also have
 discussed other concerns in forecast reconciliation research. For
 example, in complex hierarchical structures, some series may be poorly
 specified for forecasting or exhibit weak patterns, leading to
 suboptimal base forecasts. Additionally, forecasting all series in such
-complex hierarchies can be time-consuming
-\todo{I don't think we address this in our work though it is an issue in hts}.
+complex hierarchies can be time-consuming. Although our methods can be
+time-consuming in performing reconciliation with time series selection,
+they offer a possible advantage once implemented. The selection
+procedure embedded in our methods avoids the need to forecast the
+excluded series in future operations, at least for a short duration, and
+employs only the selected series along with the estimated weighting
+matrix for reconciliation, thereby improving computational
+efficiency.\todo{I don't think we address this in our work though it is an issue in hts. XQ --- The sentence has been rewritten. Again, what I mean is we can improve computational efficiency once our methods are implemented, as we only need the selected series along with the estimated weighting matrix for reconciliation.}
 Lastly, in scenarios with missing or extremely sparse data, it may be
 necessary to exclude these series from the reconciliation process. Our
 proposed methods are designed to adapt effectively to these scenarios.
