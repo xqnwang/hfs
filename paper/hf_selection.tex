@@ -814,9 +814,9 @@ the problem in Equation \eqref{eq-subset}:
 }\end{equation} where \(\mathcal{M}\) is a Big-M parameter (specified
 a-priori) that is sufficiently large that the optimal solution to
 Equation \eqref{eq-subset_mip}, \(\bm{g}^{+*}\), satisfies
-\(\max_{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\).
-The binary variable \(z_j=0\) implies that \(\bm{G}_{\cdot j}=\bm{0}\),
-and \(z_j=1\) implies that
+\(\max_{j \in [n]}\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\),
+and \([n]=\{1,2,\ldots,n\}\). The binary variable \(z_j=0\) implies that
+\(\bm{G}_{\cdot j}=\bm{0}\), and \(z_j=1\) implies that
 \(\sum_{i=1}^{n_b} g_{i + (j-1) n_b}^{+} \leqslant \mathcal{M}\). Such
 Big-M formulations are commonly used in MIP problems to model relations
 between discrete and continuous variables, and have been recently
