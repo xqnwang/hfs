@@ -3,7 +3,7 @@ title: "Optimal forecast reconciliation with time series selection"
 author:
 - name: Xiaoqian Wang
   acknowledgements: |
-      Corresponding author.
+      Corresponding author. E-mail address: \href{mailto:xiaoqian.wang@monash.edu}{xiaoqian.wang@monash.edu} (X. Wang).
   affiliations:
     - name: Monash University
       department: Department of Econometrics \& Business Statistics
@@ -33,6 +33,11 @@ execute:
   cache: false
 date: last-modified
 ---
+
+```{=tex}
+\renewcommand{\theproposition}{\arabic{proposition}} % numbering propositions sequentially and individually by type and not by section
+\setcounter{proposition}{0}
+```
 
 ```{r}
 #| label: load
@@ -598,7 +603,7 @@ The dataset from the Labour Force Survey, released by the Australian Bureau of S
 
 [^1]: The Labour Force Survey data is publicly available at <https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia-detailed/aug-2023>.
 
-We construct a grouped hierarchy by disaggregating the number of unemployed persons over two independent attributes, duration of job search (*Duration*), and State and Territory (*STT* ). At the bottom level, the data are disaggregated by both attributes. We refer to the bottom level as the *Duration* $\times$ *STT* level. Specifically, there are six different groups of job search duration, under 1 month, 1--3 months, 3--6 months, 6--12 months, 1--2 years, and 2 years and over. Additionally, the number of unemployed persons in Australia can be disaggregated by eight states and territories, i.e., NSW, VIC, QLD, SA, WA, TAS, NT, and ACT. So the final grouped hierarchy consists of the top series, six series at the Duration level, eight series at the STT level, and $48$ series at the Duration $\times$ STT level, giving $63$ time series in total, each of length $163$ observations.
+We construct a grouped hierarchy by disaggregating the number of unemployed persons over two independent attributes, duration of job search (*Duration*), and State and Territory (*STT*). At the bottom level, the data are disaggregated by both attributes. We refer to the bottom level as the *Duration* $\times$ *STT* level. Specifically, there are six different groups of job search duration, under 1 month, 1--3 months, 3--6 months, 6--12 months, 1--2 years, and 2 years and over. Additionally, the number of unemployed persons in Australia can be disaggregated by eight states and territories, i.e., NSW, VIC, QLD, SA, WA, TAS, NT, and ACT. So the final grouped hierarchy consists of the top series, six series at the Duration level, eight series at the STT level, and $48$ series at the Duration $\times$ STT level, giving $63$ time series in total, each of length $163$ observations.
 
 <!-- NSW (New South Wales), VIC (Victoria), QLD (Queensland), SA (South Australia), WA (Western Australia), TAS (Tasmania), NT (Northern Territory), and ACT (Australian Capital Territory) -->
 
@@ -683,7 +688,7 @@ Australian domestic tourism flows are measured as the number of overnight trips 
 #| label: fig-tourism-data
 #| results: hide
 #| fig-width: 9
-#| fig-height: 5.5
+#| fig-height: 5
 #| fig-cap: Domestic tourism flows from January 1998 to December 2017 for Australia as well as the states.
 tourism_ts <- readRDS(here::here("paper/results/tourism_hts.rds"))
 tourism_ts |>
@@ -755,7 +760,7 @@ time_tbl |>
   )
 ```
 
-One limitation of the proposed methods is their scalability. As the number of series in a hierarchy increases, efficiently solving these problems becomes increasingly challenging, and the exact computation of the estimates remains a significant hurdle. In this study, we employed Gurobi, a widely used commercial solvers, to tackle the NP-hard MIP problems. @tbl-time provides the computational time for solving the reconciliation problem for a single hierarchy in each of our experiments, considering all candidate hyperparameters and rolling test sets\todo{are these for all hyperparameters and rolling test sets/simulations? Explain what is denoted by "-" in the table. XQ --- Corrected}. Note that the reported time considers all candidate hyperparameters and rolling test sets. In terms of computational resources we used 20 CPUs and 3 GB of memory per CPU in a high-performance computing system. Given these computational demands, we recommend applying the proposed methods primarily to hierarchies of small to moderate size. While there are ongoing efforts to develop MIP-based approaches for solving $L_0$-regularized regression in high-dimensional settings [@Mazumder2022-hx], extending these approaches to accommodate additional constraints remains a challenge, which we leave for future research.
+One limitation of the proposed methods is their scalability. As the number of series in a hierarchy increases, solving these problems efficiently becomes increasingly challenging, and the exact computation of the estimates remains a significant hurdle. In this study, we employed Gurobi, a widely used commercial solvers, to tackle the NP-hard MIP problems. @tbl-time provides the computational time for solving the reconciliation problem for a single hierarchy in each of our experiments, considering all candidate hyperparameters and rolling test sets\todo{are these for all hyperparameters and rolling test sets/simulations? Explain what is denoted by "-" in the table. XQ --- Corrected}. In terms of computational resources we used 20 CPUs and 3 GB of memory per CPU in a high-performance computing system. Given these computational demands, we recommend applying the proposed methods primarily to hierarchies of small to moderate size. While there are ongoing efforts to develop MIP-based approaches for solving $L_0$-regularized regression in high-dimensional settings [@Mazumder2022-hx], extending these approaches to accommodate additional constraints remains a challenge, which we leave for future research.
 
 Other promising directions for further investigation are also worth exploring. Relaxing the assumption of unbiasedness of base forecasts, the Elasso method directly minimizes the mean squared reconciled forecast errors while incorporating regularization terms for time series selection. Unlike constrained "out-of-sample" reconciliation methods, Elasso does not use a $\bm{W}$ matrix in its optimization problem as $\bm{W}$ is introduced when deriving the loss function (Equation \eqref{eq-loss}) under the unbiasedness condition for both base and reconciled forecasts. Future research could explore including a $\bm{V}$ matrix in the Elasso method by considering the following optimization problem $$
 \min_{\bm{G}} \quad \frac{1}{2 T} \operatorname{Tr}\left( \left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)\bm{V}^{-1}\left(\bm{Y}-\hat{\bm{Y}} \bm{G}^{\prime} \bm{S}^{\prime}\right)^{\prime}\right) + \lambda \sum_{j=1}^n w_j \left\|\bm{G}_{\cdot j}\right\|_2,
@@ -808,7 +813,7 @@ Rob J Hyndman was supported by the Australian Research Council Industrial Transf
 
 ### Proofs of Propositions
 
-#### Proof of Proposition 3.1 {#appendix-proofs}
+#### Proof of Proposition 1 {#appendix-proofs}
 
 ::: proof
 Let $\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}$ denote the submatrix of the $r \times c$ matrix $\bm{X}$ with the columns indexed by the set $\mathbb{S}$, where $|\mathbb{S}|$ is the cardinality of the set $\mathbb{S}$. Similarly, let $\bm{X}_{\mathbb{S}\cdot} \in \mathbb{R}^{|\mathbb{S}| \times c}$ denote the submatrix of $\bm{X}$ with the rows indexed by $\mathbb{S}$. If $\mathbb{S}$ is the set of indices of nonzero columns in the solution $\hat{\bm{G}}$ to Equation \eqref{eq-op_u}, then the following equations hold: $$
@@ -820,7 +825,7 @@ $$ This indicates that the number of nonzero columns of $\hat{\bm{G}}$ should be
 Moreover, we have $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) = n_b$ because $\operatorname{rank}(\bm{S}_{\mathbb{S}\cdot}) \leq n_b$, given that $\bm{S}$ has $n_b$ columns. If the solution to Equation \eqref{eq-op_u} yields a $\hat{\bm{G}}$ with exactly $n_b$ nonzero columns (i.e., $|\mathbb{S}|=n_b$), then $\bm{S}_{\mathbb{S}\cdot}$ is a full rank square matrix and thus invertible. Applying Theorem 2 in @Zhang2023-op, $\bm{y}_{\mathbb{S}\cdot}$ is valid for constructing the full hierarchy using nothing but the information embedded in the aggregation constraints. If the solution yields a $\hat{\bm{G}}$ with more than $n_b$ nonzero columns, we should be able to identify more than one subset $\mathbb{S}^* \subset \mathbb{S}$ with $|\mathbb{S}^*|=n_b$ to construct an invertible square matrix $\bm{S}_{\mathbb{S}^{*}\cdot}$ and thereby restore the full hierarchy using the valid $\bm{y}_{\mathbb{S}^{*}\cdot}$. Therefore, the constraint $\bm{GS}=\bm{I}$ ensures that the selected columns of $\hat{\bm{G}}$ correspond to variables that can restore the full hierarchy.
 :::
 
-#### Proof of Proposition 3.2
+#### Proof of Proposition 2
 
 ::: proof
 We have\vspace*{-0.4cm}\enlargethispage{0.4cm} $$
@@ -831,7 +836,7 @@ We have\vspace*{-0.4cm}\enlargethispage{0.4cm} $$
 $$ Substituting these into Equation \eqref{eq-op_u}, the previous problem now takes the form of a regression problem with an additional regularization term and an equality constraint on the coefficients, as shown in Equation \eqref{eq-op_u_reg}.
 :::
 
-#### Proof of Proposition 3.3
+#### Proof of Proposition 3
 
 ::: proof
 Denote $\bm{\beta} = \operatorname{vec}(\bm{G})$, and the first term in the objective of Equation \eqref{eq-lasso} as $L\left(\bm{\beta} \mid \bm{D}\right)$, where $\bm{D}$ is the working data $\{\hat{\bm{y}} , \hat{\bm{y}}^{\prime} \otimes \bm{S}\}$. Relaxing the constraint $\bm{G_h S}=\bm{I_{n_b}}$, we define $\lambda^{1}$ as the smallest $\lambda$ value such that all predictors in the group lasso problem have zero coefficients, i.e., the solution at $\lambda^{1}$ is $\hat{\bm{\beta}}^{1}=\bm{0}$. (Note that there is no intercept in our problem.) Under the Karush-Kuhn-Tucker conditions, we have

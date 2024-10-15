@@ -239,10 +239,12 @@ reconciliation, Variable selection, Integer programming},
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{October 7, 2024}
+\date{October 15, 2024}
 \title{\bf Optimal forecast reconciliation with time series selection}
 \author{
-Xiaoqian Wang\thanks{Corresponding author.} \vspace{0.2em}\\
+Xiaoqian Wang\thanks{Corresponding author. E-mail address:
+\href{mailto:xiaoqian.wang@monash.edu}{xiaoqian.wang@monash.edu} (X.
+Wang).} \vspace{0.2em}\\
 Department of Econometrics \& Business Statistics, Monash
 University \vspace{0.2em}\\
 and \vspace{0.2em}\\Rob J Hyndman \vspace{0.2em}\\
@@ -289,6 +291,9 @@ reconciliation, Variable selection, Integer programming
 \newpage
 %\spacingset{1.8} % DON'T change the spacing!
 \setstretch{1.5}
+
+\renewcommand{\theproposition}{\arabic{proposition}} % numbering propositions sequentially and individually by type and not by section
+\setcounter{proposition}{0}
 
 \section{Introduction}\label{sec-introduction}
 
@@ -1673,7 +1678,7 @@ crucial in such a case to ensure aligned decision making.
 
 We construct a grouped hierarchy by disaggregating the number of
 unemployed persons over two independent attributes, duration of job
-search (\emph{Duration}), and State and Territory (\emph{STT} ). At the
+search (\emph{Duration}), and State and Territory (\emph{STT}). At the
 bottom level, the data are disaggregated by both attributes. We refer to
 the bottom level as the \emph{Duration} \(\times\) \emph{STT} level.
 Specifically, there are six different groups of job search duration,
@@ -2059,18 +2064,17 @@ Number of parameters & 28.0 & 28.0 & 3024 & 8436\\
 \end{table}%
 
 One limitation of the proposed methods is their scalability. As the
-number of series in a hierarchy increases, efficiently solving these
-problems becomes increasingly challenging, and the exact computation of
-the estimates remains a significant hurdle. In this study, we employed
-Gurobi, a widely used commercial solvers, to tackle the NP-hard MIP
-problems. Table~\ref{tbl-time} provides the computational time for
+number of series in a hierarchy increases, solving these problems
+efficiently becomes increasingly challenging, and the exact computation
+of the estimates remains a significant hurdle. In this study, we
+employed Gurobi, a widely used commercial solvers, to tackle the NP-hard
+MIP problems. Table~\ref{tbl-time} provides the computational time for
 solving the reconciliation problem for a single hierarchy in each of our
 experiments, considering all candidate hyperparameters and rolling test
 sets\todo{are these for all hyperparameters and rolling test sets/simulations? Explain what is denoted by "-" in the table. XQ --- Corrected}.
-Note that the reported time considers all candidate hyperparameters and
-rolling test sets. In terms of computational resources we used 20 CPUs
-and 3 GB of memory per CPU in a high-performance computing system. Given
-these computational demands, we recommend applying the proposed methods
+In terms of computational resources we used 20 CPUs and 3 GB of memory
+per CPU in a high-performance computing system. Given these
+computational demands, we recommend applying the proposed methods
 primarily to hierarchies of small to moderate size. While there are
 ongoing efforts to develop MIP-based approaches for solving
 \(L_0\)-regularized regression in high-dimensional settings
@@ -2207,7 +2211,7 @@ IC200100009.
 
 \subsection{Proofs of Propositions}\label{proofs-of-propositions}
 
-\subsubsection{Proof of Proposition 3.1}\label{appendix-proofs}
+\subsubsection{Proof of Proposition 1}\label{appendix-proofs}
 
 \begin{proof}
 Let \(\bm{X}_{\cdot \mathbb{S}} \in \mathbb{R}^{r \times |\mathbb{S}|}\)
@@ -2245,7 +2249,7 @@ and thereby restore the full hierarchy using the valid
 correspond to variables that can restore the full hierarchy.
 \end{proof}
 
-\subsubsection{Proof of Proposition 3.2}\label{proof-of-proposition-3.2}
+\subsubsection{Proof of Proposition 2}\label{proof-of-proposition-2}
 
 \begin{proof}
 We have\vspace*{-0.4cm}\enlargethispage{0.4cm} \[
@@ -2259,7 +2263,7 @@ regularization term and an equality constraint on the coefficients, as
 shown in Equation \eqref{eq-op_u_reg}.
 \end{proof}
 
-\subsubsection{Proof of Proposition 3.3}\label{proof-of-proposition-3.3}
+\subsubsection{Proof of Proposition 3}\label{proof-of-proposition-3}
 
 \begin{proof}
 Denote \(\bm{\beta} = \operatorname{vec}(\bm{G})\), and the first term
