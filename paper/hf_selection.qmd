@@ -5,15 +5,15 @@ author:
   acknowledgements: |
       Corresponding author. E-mail address: \href{mailto:xiaoqian.wang@monash.edu}{xiaoqian.wang@monash.edu} (X. Wang).
   affiliations:
-    - name: Monash University
+    - name: Monash University, VIC 3800, Australia
       department: Department of Econometrics \& Business Statistics
 - name: Rob J Hyndman
   affiliations:
-    - name: Monash University
+    - name: Monash University, VIC 3800, Australia
       department: Department of Econometrics \& Business Statistics
 - name: Shanika L Wickramasuriya
   affiliations:
-    - name: Monash University
+    - name: Monash University, VIC 3800, Australia
       department: Department of Econometrics \& Business Statistics
 abstract: Forecast reconciliation ensures forecasts of time series in a hierarchy adhere to aggregation constraints, enabling aligned decision making. While forecast reconciliation can enhance overall accuracy in a hierarchical or grouped structure, the most substantial improvements generally occur in series with initially poor-performing base forecasts. Forecasts of certain series may get worse after reconciliation. In practical applications, some series in a structure often produce poor base forecasts due to model misspecification or low forecastability. To mitigate their negative impact, we propose two categories of forecast reconciliation methods that incorporate automatic time series selection based on out-of-sample and in-sample information, respectively. These methods keep "poor" base forecasts unused in forming reconciled forecasts, while adjusting the weights assigned to the remaining series accordingly when generating bottom-level reconciled forecasts. Additionally, our methods ameliorate disparities stemming from varied estimators of the base forecast error covariance matrix, alleviating challenges associated with estimator selection. Empirical evaluations through two simulation studies and applications using Australian labour force and domestic tourism data demonstrate the potential of the proposed methods to exclude series with high scaled forecast errors\todo{I don't think it is correct to say that this method excludes series with "high FE" because FE depends on the scale. The top level series might have the largest FE due to its scale but this doesn't necessarity mean that the series produces poor forecasts. XQ --- It should be scaled forecast errors as we report RMSSE in the results.} and show promising results.
 keywords: "Forecasting, Hierarchical time series, Linear forecast reconciliation, Variable selection, Integer programming"
