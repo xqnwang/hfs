@@ -214,7 +214,7 @@
 \raggedbottom
 
 \usepackage[australian]{babel}
-\date{2024-10-15}
+\date{2024-10-18}
 
 \usepackage{color}
 \renewenvironment{quote}
@@ -614,12 +614,10 @@ Figures 4(b) and C.1(b) for setup 2. We have also expanded the related
 results analysis to incorporate insights from these results. Our
 analysis suggests that both forecast variance and forecast correlation
 influence time series selection. In general, time series with high
-scaled forecast
-variance\todo{"high forecast variance"? The top level series might have high forecast variance due to large scale, but that doesn't mean it should be excluded. XQ --- It should be "high scaled forecast variance."}
-and strong correlations with other series are more likely to be
-excluded. For the empirical applications, we did not include heatmaps,
-as the number of time series in these hierarchies is too large to
-present them effectively.
+scaled forecast variance and strong correlations with other series are
+more likely to be excluded. For the empirical applications, we did not
+include heatmaps, as the number of time series in these hierarchies is
+too large to present them effectively.
 \end{quote}
 
 \section*{Reviewer 3}\label{reviewer-3}
@@ -724,12 +722,10 @@ they offer a possible advantage once implemented. The selection
 procedure embedded in our methods avoids the need to forecast the
 excluded series in future operations, at least for a short duration, and
 employs only the selected series along with the estimated weighting
-matrix for reconciliation, thereby improving computational
-efficiency.\todo{I don't think we address this in our work though it is an issue in hts. XQ --- The sentence has been rewritten. Again, what I mean is we can improve computational efficiency once our methods are implemented, as we only need the selected series along with the estimated weighting matrix for reconciliation.}
+matrix for reconciliation, thereby improving computational efficiency.
 Lastly, in scenarios with missing or extremely sparse data, it may be
 necessary to exclude these series from the reconciliation process. Our
 proposed methods are designed to adapt effectively to these scenarios.
-\todo{I am not sure what is more to be added here}
 \end{quote}
 
 \begin{itemize}
