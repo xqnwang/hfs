@@ -3,14 +3,10 @@ title: "Response to reviewers"
 author: "Optimal forecast reconciliation with time series selection"
 bibliography: ../references.bib
 editor: visual
-format:
-   monash-memo-pdf:
-    keep-tex: true
-    pdf-engine: pdflatex
-    fontsize: 11pt
-    linestretch: 1
+format: memo-pdf
 include-in-header: preamble.tex
 date: last-modified
+number-sections: false
 branding: false
 execute:
   echo: false
@@ -21,7 +17,7 @@ execute:
 
 We thank the reviewers for their careful reading of our paper; their comments have led to several improvements and corrections. In this revision, we have addressed all the comments raised by the reviewers, and we provide a point-to-point response to each comment of the review team. Reviewer comments are in black, our responses are in green.
 
-# Reviewer 2 {.unnumbered}
+# Reviewer 2
 
 The paper reformulates forecast reconciliation as a grouped variable selection problem. Regularisation and subset selection are carried out using state-of-the-art optimisation techniques, including Mixed Integer Programming. Recognising that reconciled forecasts $\tilde{\bm{y}}$ are simply linear combinations of base forecasts $\hat{\bm{y}}$ via $\tilde{\bm{y}}=\bm{SG}\hat{\bm{y}}$, setting columns of $\bm{G}$ to zero can eliminate heavily misspecified forecasts from the combination. The simulation results and empirical examples are thorough. In so far as selection methods work, they do so when a diagonal matrix is plugged in to the objective function in place of the forecast covariance matrix.
 
@@ -85,7 +81,7 @@ The paper reformulates forecast reconciliation as a grouped variable selection p
 >
 > Regarding forecast correlation, we have included heatmaps showing the correlations between base forecast errors for both simulations. These are presented in Figures 2(b), B.1(b), and B.2(b) for setup 1, and Figures 4(b) and C.1(b) for setup 2. We have also expanded the related results analysis to incorporate insights from these results. Our analysis suggests that both forecast variance and forecast correlation influence time series selection. In general, time series with high scaled forecast variance and strong correlations with other series are more likely to be excluded. For the empirical applications, we did not include heatmaps, as the number of time series in these hierarchies is too large to present them effectively.
 
-# Reviewer 3 {.unnumbered}
+# Reviewer 3
 
 This paper proposes novel forecast reconciliation methods incorporating time series selection. Two categories of such methods are proposed - one category is based on out-of-sample information while the other category of methods is based on in-sample information. These are illustrated via simulation studies and two empirical applications. The findings are argued to demonstrate improved forecast accuracy, especially at higher aggregation levels, longer forecast horizons and in situations with model misspecification.
 
