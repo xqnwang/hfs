@@ -9,6 +9,7 @@ data/*
 !data/tourism.csv
 !data/labour.csv
 !paper/results/*.rds
+paper/reviews/*.png
 
 # Review comments
 comments/
