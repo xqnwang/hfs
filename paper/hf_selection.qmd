@@ -841,7 +841,7 @@ While this study provides an important advancement in hierarchical forecasting, 
 
 ## Acknowledgments {.unnumbered}
 
-Rob J Hyndman was supported by the Australian Research Council Industrial Transformation Training Centre in Optimisation Technologies, Integrated Methodologies, and Applications (OPTIMA), Project ID IC200100009.
+Xiaoqian Wang and Rob J Hyndman are members of the Australian Research Council Industrial Transformation Training Centre in Optimisation Technologies, Integrated Methodologies, and Applications (OPTIMA), Project ID IC200100009.
 
 ## References {.unnumbered}
 
@@ -851,8 +851,6 @@ Rob J Hyndman was supported by the Australian Research Council Industrial Transf
 ```{=tex}
 \newpage
 \appendix
-\pagenumbering{arabic}% resets `page` counter to 1
-\setcounter{section}{0}
 \renewcommand{\thesubsection}{\Alph{subsection}}
 \renewcommand{\thetable}{\Alph{subsection}.\arabic{table}}
 \renewcommand{\thefigure}{\Alph{subsection}.\arabic{figure}}

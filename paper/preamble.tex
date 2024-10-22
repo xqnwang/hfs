@@ -1,28 +1,17 @@
 \usepackage[textsize=tiny]{todonotes}
-\usepackage{bm}
-\usepackage{mathptmx}
-\usepackage{amsmath} % Ensure amsmath is included for \eqref
-\usepackage[]{natbib}
+\usepackage{bm,mathptmx,amsmath,natbib,microtype,threeparttable,setspace}
+\usepackage{colortbl}
+\usepackage[onlyrefs]{mathtools}
 \usepackage[top=1.5cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
 \allowdisplaybreaks
 \sloppy
-%\clubpenalty = 10000
-%\widowpenalty = 10000
-%\brokenpenalty = 10000
+\clubpenalty = 10000
+\widowpenalty = 10000
+\brokenpenalty = 10000
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{15pt}
-\expandafter\def\expandafter\normalsize\expandafter{%
-  \normalsize  
-  \setlength\abovedisplayskip{1ex}
-  \setlength\belowdisplayskip{1ex}
-  \setlength\abovedisplayshortskip{1ex}
-  \setlength\belowdisplayshortskip{1ex}
-}
 \setlength{\bibsep}{0pt plus 0.3ex}
-\usepackage{microtype}
-\usepackage[onlyrefs]{mathtools}
 \setlength{\tabcolsep}{0.11cm}
-\usepackage{threeparttable}
 \makeatletter
 \g@addto@macro\TPT@defaults{\linespread{1}\selectfont}
 \def\fps@table{!tbh}
@@ -30,7 +19,6 @@
 \makeatother
 
 %% CAPTIONS
-\usepackage{setspace}
 \usepackage{caption}
 \DeclareCaptionStyle{italic}[justification=centering]
  {labelfont={bf},textfont={it},labelsep=colon}
