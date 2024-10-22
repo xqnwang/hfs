@@ -130,6 +130,11 @@ $$
 $$ {#eq-loss}
 where $\|\cdot\|_2$ is the $L_2$ norm. This equation includes two parts in its decomposition, bias and variance of the reconciled forecasts.
 
+
+\todo[inline]{I think it should be conditional, because otherwise you end up with $E[\bm{y}_{T+h}]$ on the RHS which may not even be defined.
+
+Is it correct to say that this is "in general". It is possibly to use a loss function that is not L2.}
+
 #### Minimum trace reconciliation {.unnumbered}
 
 Let $\hat{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h \mid t}$ denote the $h$-step-ahead in-sample *base forecast errors*, and $\tilde{\bm{e}}_{t+h \mid t} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h \mid t}$ denote the $h$-step-ahead *reconciled forecast errors*. Assuming the base forecasts are unbiased and imposing the constraint $\bm{G}_h\bm{ S}=\bm{I}_{n_b}$ to preserve the unbiasedness of the reconciled forecasts, the bias term in Equation \eqref{eq-loss} equates to zero. @Wickramasuriya2019-fc thus formulated the reconciliation problem as minimizing the trace (MinT) of the $h$-step-ahead covariance matrix of the reconciled forecast errors, leading to the unique solution given by
