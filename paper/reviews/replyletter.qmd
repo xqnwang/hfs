@@ -15,7 +15,7 @@ execute:
   cache: false
 ---
 
-We thank the reviewers for their careful reading of our paper, and helpful suggestions; their comments have led to several improvements and corrections. In this revision, we have addressed all the comments raised by the reviewers, and we provide a point-to-point response to each comment of the review team. Reviewer comments are in black, our responses are in green.
+We thank the reviewers for their careful reading of our paper, and helpful suggestions; their comments have led to several improvements and corrections. In this revision, we have addressed all the comments raised by the reviewers. The revised and newly added text is highlighted in \textcolor{blue}{blue} within the manuscript. Here we provide a point-to-point response to each comment of the review team. Reviewer comments are in black, our responses are in \textcolor{darkgreen}{green}.
 
 # Reviewer 2
 
