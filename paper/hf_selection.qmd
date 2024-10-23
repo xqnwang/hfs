@@ -846,6 +846,7 @@ Xiaoqian Wang and Rob J Hyndman are members of the Australian Research Council I
 ```{=tex}
 \newpage
 \appendix
+\pagenumbering{arabic} % reset `page` counter to 1
 \renewcommand{\thesubsection}{\Alph{subsection}}
 \renewcommand{\thetable}{\Alph{subsection}.\arabic{table}}
 \renewcommand{\thefigure}{\Alph{subsection}.\arabic{figure}}
