@@ -12,6 +12,13 @@
 \setlength{\parindent}{15pt}
 \setlength{\bibsep}{0pt plus 0.3ex}
 \setlength{\tabcolsep}{0.11cm}
+\expandafter\def\expandafter\normalsize\expandafter{%
+    \normalsize%
+    \setlength\abovedisplayskip{5pt}%
+    \setlength\belowdisplayskip{5pt}%
+    \setlength\abovedisplayshortskip{3pt}%
+    \setlength\belowdisplayshortskip{3pt}%
+}
 \makeatletter
 \g@addto@macro\TPT@defaults{\linespread{1}\selectfont}
 \def\fps@table{!tbh}

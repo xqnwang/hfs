@@ -1,0 +1,6 @@
+Highlights for the manuscript entitled "Optimal forecast reconciliation with time series selection"
+
+- Presents forecast reconciliation methods with automatic time series selection
+- Formulates the problem using either in-sample or out-of-sample information
+- Keeps "poor" base forecasts unused in forming reconciled forecasts
+- Shows the potential to exclude series with high scaled forecast errors
